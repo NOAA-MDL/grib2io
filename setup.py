@@ -6,7 +6,7 @@ if sys.version_info[0] < 3:
 else:
     import configparser
 
-class _ConfigParser(configparser.SafeConfigParser):
+class _ConfigParser(configparser.ConfigParser):
     def getq(self, s, k, fallback):
         try:
             return self.get(s, k)
@@ -157,13 +157,15 @@ if hasattr(sys,'maxsize'):
 else:
     if sys.maxint > 2**31-1: macros.append(('__64BIT__',1))
 
+runtime_libdirs = libdirs if os.name != "nt" else None
 g2clibext = Extension("g2clib",g2clib_deps,include_dirs=incdirs,\
-            library_dirs=libdirs,libraries=libraries,runtime_library_dirs=libdirs,define_macros=macros)
+            library_dirs=libdirs,libraries=libraries,runtime_library_dirs=runtime_libdirs,
+            define_macros=macros)
 redtoregext =\
 Extension("redtoreg",[redtoreg_pyx],include_dirs=[numpy.get_include()])
 pygribext =\
 Extension("pygrib",[pygrib_pyx],include_dirs=incdirs,library_dirs=libdirs,\
-          runtime_library_dirs=libdirs,libraries=libraries)
+          runtime_library_dirs=runtime_libdirs,libraries=libraries)
 
 # man pages installed in man_dir/man1
 if man_dir is not None:
@@ -188,8 +190,13 @@ if "ncepgrib2" in packages_to_install:
 # Make sure only 1 instance of redtoregext exists in install_ext_modules
 install_ext_modules = list(set(install_ext_modules))
 
+# Import README.md as PyPi long_description
+this_directory = os.path.abspath(os.path.dirname(__file__))
+with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
+
 setup(name = "pygrib",
-      version = "2.0.4",
+      version = "2.0.5",
       description       = "Python module for reading/writing GRIB files",
       author            = "Jeff Whitaker",
       author_email      = "jeffrey.s.whitaker@noaa.gov",
@@ -214,4 +221,6 @@ setup(name = "pygrib",
       ext_modules       = install_ext_modules,
       py_modules        = install_py_modules,
       data_files        = data_files,
-      install_requires  = ["numpy"])
+      install_requires  = ["numpy"],
+      long_description  = long_description,
+      long_description_content_type = 'text/markdown')
