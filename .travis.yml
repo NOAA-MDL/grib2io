@@ -7,7 +7,7 @@ sudo: false
 addons:
   apt:
     packages:
-      - libeccodes
+      - libeccodes0
       - libeccodes-dev
 
 env:
