@@ -13,6 +13,6 @@ include sampledata/*.grb
 include sampledata/*.grb2
 include sampledata/*.grib*
 include sampledata/*.bin
-recursive-include g2clib_src *
+recursive-include NCEPLIBS-g2c *
 include test/README
 include test/*py

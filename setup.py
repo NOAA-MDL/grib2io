@@ -97,26 +97,23 @@ if zlib_libdir is None and zlib_dir is not None:
 if zlib_incdir is None and zlib_dir is not None:
     incdirs.append(os.path.join(zlib_dir,'include'))
 
-# Define g2c sources to compile.  Here we need to remove main.c
-# and mainhome.c from the list.
-g2clib_deps = glob.glob('g2clib_src/*.c')
-g2clib_deps.remove(os.path.join('g2clib_src', 'main.c'))
-g2clib_deps.remove(os.path.join('g2clib_src', 'mainhome.c'))
+# Define g2c sources to compile.
+g2clib_deps = glob.glob('NCEPLIBS-g2c/src/*.c')
 g2clib_deps.append(g2clib_pyx)
-incdirs.append('g2clib_src')
+incdirs.append('NCEPLIBS-g2c/src')
 macros=[]
 
 # If jasper or openjpeg lib not available...
 if 'jasper' not in libraries and 'openjpeg' not in libraries:
-    g2clib_deps.remove(os.path.join('g2clib_src', 'jpcpack.c'))
-    g2clib_deps.remove(os.path.join('g2clib_src', 'jpcunpack.c'))
+    g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'jpcpack.c'))
+    g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'jpcunpack.c'))
 else:
     macros.append(('USE_JPEG2000',1))
 
 # If png lib not available...
 if 'png' not in libraries:
-    g2clib_deps.remove(os.path.join('g2clib_src', 'pngpack.c'))
-    g2clib_deps.remove(os.path.join('g2clib_src', 'pngunpack.c'))
+    g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngpack.c'))
+    g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngunpack.c'))
 else:
     macros.append(('USE_PNG',1))
 
