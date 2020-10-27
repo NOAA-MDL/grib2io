@@ -80,12 +80,11 @@ class open():
         """
         if isinstance(key,slice):
             beg, end, inc = key.indices(self.messages)
-            self._filehandle.seek(beg)
-            return [self.current_message(i+1) for i in range(beg,end,inc)]
+            return [self[i] for i in range(beg,end,inc)]
         elif isinstance(key,int):
             if key == 0: return None
-            self._filehandle.seek(key)
-            return self.current_message(key)
+            self._filehandle.seek(self._index['offset'][key])
+            return [Grib2Message(self._filehandle.read(self._index['size'][key]))]
         else:
             raise KeyError('Key must be an integer or slice')
 
@@ -95,15 +94,15 @@ class open():
         Perform indexing of GRIB2 Messages.
         """
         # Initialize index dictionary
-        self._index['offset'] = []
-        self._index['discipline'] = []
-        self._index['edition'] = []
-        self._index['size'] = []
-        # Set first item (0th index) to None.
-        self._index['offset'].append(None)
-        self._index['discipline'].append(None)
-        self._index['edition'].append(None)
-        self._index['size'].append(None)
+        self._index['offset'] = [None]
+        self._index['discipline'] = [None]
+        self._index['edition'] = [None]
+        self._index['size'] = [None]
+        self._index['hasSubmessage'] = [None]
+        self._index['numberOfSubmessages'] = [None]
+        self._index['identificationSection'] = [None]
+        self._index['productDefinitionTemplateNumber'] = [None]
+        self._index['productDefinitionSection'] = [None]
 
         # Iterate
         while True:
@@ -114,19 +113,77 @@ class open():
 
                 # Test header. Then get information from GRIB2 Section 0: the discipline
                 # number, edition number (should always be 2), and GRIB2 message size.
+                # Then iterate to check for submessages.
                 if header == 'GRIB':
+                    _hassubmessage = False
+                    _nmsg = 1
+
+                    # "Unpack" Section 0
                     self._filehandle.seek(self._filehandle.tell()+2)
                     discipline = int(struct.unpack('>B',self._filehandle.read(1))[0])
                     edition = int(struct.unpack('>B',self._filehandle.read(1))[0])
                     size = struct.unpack('>Q',self._filehandle.read(8))[0]
-                    self._filehandle.seek((pos+size)-4)
-                    trailer = struct.unpack('>4s',self._filehandle.read(4))[0].decode()
-                    if trailer == '7777':
-                        self._index['offset'].append(pos)
-                        self._index['discipline'].append(discipline)
-                        self._index['edition'].append(edition)
-                        self._index['size'].append(size)
-                        self.messages += 1
+
+                    secsize = struct.unpack('>i',self._filehandle.read(4))[0]
+                    secnum = struct.unpack('>B',self._filehandle.read(1))[0]
+                    assert secnum == 1
+                    self._filehandle.seek(self._filehandle.tell()-5)
+                    _grbmsg = self._filehandle.read(secsize)
+                    _grbpos = 0
+
+                    # Unpack Section 1
+                    _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
+                    _grbsec1 = _grbsec1.tolist()
+                    
+                    secrange = range(2,8)
+                    while 1:
+                        for num in secrange:
+                            secsize = struct.unpack('>i',self._filehandle.read(4))[0]
+                            secnum = struct.unpack('>B',self._filehandle.read(1))[0]
+                            if secnum == num:
+                                if secnum == 4:
+                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    _grbmsg = self._filehandle.read(secsize)
+                                    _grbpos = 0
+                                    # Unpack Section 4
+                                    _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
+                                    _pdt = _pdt.tolist()
+                                else:
+                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
+                            else:
+                                if num == 2 and secnum == 3:
+                                    pass # Allow this.  Just means no Local Use Section.
+                                else:
+                                    _hassubmessage = True
+                                self._filehandle.seek(self._filehandle.tell()-5)
+                                continue
+                        trailer = struct.unpack('>4s',self._filehandle.read(4))[0].decode()
+                        if trailer == '7777':
+                            self.messages += 1
+                            self._index['offset'].append(pos)
+                            self._index['discipline'].append(discipline)
+                            self._index['edition'].append(edition)
+                            self._index['size'].append(size)
+                            self._index['hasSubmessage'].append(_hassubmessage)
+                            self._index['numberOfSubmessages'].append(_nmsg)
+                            self._index['identificationSection'].append(_grbsec1)
+                            if _hassubmessage:
+                                self._index['productDefinitionTemplateNumber'][self.messages-1].append(_pdtnum)
+                                self._index['productDefinitionSection'][self.messages-1].append(_pdt)
+                            else:
+                                self._index['productDefinitionTemplateNumber'].append([_pdtnum])
+                                self._index['productDefinitionSection'].append([_pdt])
+                            break
+                        else:
+                            self._filehandle.seek(self._filehandle.tell()-4)
+                            if _nmsg == 1:
+                                self._index['productDefinitionTemplateNumber'].append([_pdtnum])
+                                self._index['productDefinitionSection'].append([_pdt])
+                            else:
+                                self._index['productDefinitionTemplateNumber'][self.messages].append(_pdtnum)
+                                self._index['productDefinitionSection'][self.messages].append(_pdt)
+                            _nmsg += 1
+                            continue
 
             except(struct.error):
                 self._filehandle.seek(0)
