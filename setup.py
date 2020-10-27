@@ -143,9 +143,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # Run setup.py
-from grib2io import __version__ as VERSION
 setup(name = 'grib2io',
-      version = VERSION,
+      version = '0.1.0',
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
       author            = 'Eric Engle',
       author_email      = 'eric.engle@mac.com',
