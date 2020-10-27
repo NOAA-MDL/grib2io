@@ -1,10 +1,11 @@
-import builtins
+__version__ = '0.1.0'
+
 import g2clib
+
+import builtins
 import os
 import struct
 import numpy as np
-
-__version__ = '0.1.0'
 
 ONE_MB = 1024 ** 3
 
@@ -120,20 +121,21 @@ class open():
                     _hassubmessage = False
                     _nmsg = 1
 
-                    # "Unpack" Section 0
+                    # Read and unpack Section 0. Note that this is not done through
+                    # the g2clib.
                     self._filehandle.seek(self._filehandle.tell()+2)
                     discipline = int(struct.unpack('>B',self._filehandle.read(1))[0])
                     edition = int(struct.unpack('>B',self._filehandle.read(1))[0])
+                    assert edition == 2
                     size = struct.unpack('>Q',self._filehandle.read(8))[0]
 
+                    # Read and unpack Section 1
                     secsize = struct.unpack('>i',self._filehandle.read(4))[0]
                     secnum = struct.unpack('>B',self._filehandle.read(1))[0]
                     assert secnum == 1
                     self._filehandle.seek(self._filehandle.tell()-5)
                     _grbmsg = self._filehandle.read(secsize)
                     _grbpos = 0
-
-                    # Unpack Section 1
                     _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     _grbsec1 = _grbsec1.tolist()
                     
@@ -200,6 +202,7 @@ class open():
         """
         self._filehandle.close()
 
+
     def read(self, num=0):
         """    
         Read num GRIB2 messages from the current position
@@ -207,18 +210,22 @@ class open():
         msgs = []
         if self.tell() >= self.messages: return msgs
         if num > 0:
-            msgrange = range(self.tell()+1,self.tell()+num+1)
+            beg = self.tell()+1
+            end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
+            msgrange = range(beg,end+1)
             for n in msgrange:
-                self._filehandle.seek(self._index['offset'][n+1])
-                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n+1])))
+                self._filehandle.seek(self._index['offset'][n])
+                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n])))
                 self.current_message += 1 
         return msgs
+
 
     def rewind(self):
         """
         Set the position of the file to zero in units of GRIB2 messages.
         """
         self.seek(0)
+
 
     def seek(self, pos):
         """
@@ -231,6 +238,7 @@ class open():
             elif pos > 0:
                 self._filehandle.seek(self._index['offset'][pos-1])
                 self.current_message = pos
+
 
     def tell(self):
         """
