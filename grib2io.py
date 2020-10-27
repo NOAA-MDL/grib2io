@@ -4,6 +4,8 @@ import os
 import struct
 import numpy as np
 
+__version__ = '0.1.0'
+
 ONE_MB = 1024 ** 3
 
 class open():
