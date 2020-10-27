@@ -310,7 +310,7 @@ class Grib2Message:
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
                 self.dataRepresentationTemplate = _drt.tolist()
-                self.dataRepresentationTemplate = _drtn
+                self.dataRepresentationTemplateNumber = _drtn
                 self.numberOfDataPoints = _npts
             # Section 6, Bitmap Section.
             elif sectnum == 6:
