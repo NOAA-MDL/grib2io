@@ -37,8 +37,15 @@ class open():
         self.messages = 0
         self.current_message = 0
         self.size = os.path.getsize(self.name)
+        self.closed = self._filehandle.closed
         if 'r' in self.mode: self._build_index()
 
+    def __delete__(self, instance):
+        """
+        """
+        self.close()
+        del self._index
+        
 
     def __enter__(self):
         """
@@ -200,7 +207,9 @@ class open():
         """
         Close the file handle
         """
-        self._filehandle.close()
+        if not self._filehandle.closed:
+            self._filehandle.close()
+            self.closed = self._filehandle.closed
 
 
     def read(self, num=0):
