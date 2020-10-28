@@ -95,7 +95,7 @@ class open():
         elif isinstance(key,int):
             if key == 0: return None
             self._filehandle.seek(self._index['offset'][key])
-            return [Grib2Message(self._filehandle.read(self._index['size'][key]))]
+            return [Grib2Message(self._filehandle.read(self._index['size'][key]),ref=self)]
         else:
             raise KeyError('Key must be an integer or slice')
 
@@ -225,7 +225,7 @@ class open():
             msgrange = range(beg,end+1)
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
-                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n])))
+                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n]),ref=self))
                 self.current_message += 1 
         return msgs
 
@@ -258,11 +258,12 @@ class open():
 
 
 class Grib2Message:
-    def __init__(self, msg):
+    def __init__(self, msg, ref=None):
         """
         """
         self._msg = msg
         self._pos = 0
+        self._ref = ref
         self._datapos = 0
         self._msgcount = 0
         
