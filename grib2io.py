@@ -72,6 +72,7 @@ class open():
         if self.current_message < self.messages:
             return self.read(1)[0]
         else:
+            self.seek(0)
             raise StopIteration
 
 
@@ -264,8 +265,9 @@ class Grib2Message:
         self._msg = msg
         self._pos = 0
         self._ref = ref
-        self._datapos = 0
+        self._datapos = []
         self._msgcount = 0
+        self._secnumlist = []
         
         # Section 0, Indicator Section
         self.indicatorSection = []
@@ -275,67 +277,82 @@ class Grib2Message:
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
         self._pos = 16
+        self._secnumlist.append(0)
         
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
+        self._secnumlist.append(1)
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
-        while 1:
+        while True:
             if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777': break
             if self._msgcount >= 1:
-                print("GRIB2 Message has sub-messages")
+                pass #print("GRIB2 Message has sub-messages")
                 # We have sub-messages... need to convert to lists.
 
+            # Read the length and section number.
             sectlen = struct.unpack('>i',self._msg[self._pos:self._pos+4])[0]
             sectnum = struct.unpack('>B',self._msg[self._pos+4:self._pos+5])[0]
+            self._secnumlist.append(sectnum)
+
             # Section 2, Local Use Section.
             if sectnum == 2:
-                self.localUseSection = self._msg[self._pos+5:self._pos+sectlen]
+                if self._msgcount == 0:
+                    self.localUseSection = []
+                _lus = self._msg[self._pos+5:self._pos+sectlen]
                 self._pos += sectlen
+                self.localUseSection.append(_lus)
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
+                if self._msgcount == 0:
+                    self.gridDefinitionSection  = []
+                    self.gridDefinitionTemplateNumber = []
+                    self.gridDefinitionTemplate = []
+                    self.defList = []
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-                self.gridDefinitionSection = _gds.tolist()
-                self.gridDefinitionTemplateNumber = self.gridDefinitionSection[4]
-                self.gridDefinitionTemplate = _gdtn.tolist()
-                self.deflist = _deflist.tolist()
+                self.gridDefinitionSection.append(_gds.tolist())
+                self.gridDefinitionTemplateNumber.append(_gds[4])
+                self.gridDefinitionTemplate.append(_gdtn.tolist())
+                self.defList.append(_deflist.tolist())
             # Section 4, Product Definition Section.
             elif sectnum == 4:
+                if self._msgcount == 0:
+                    self.productDefinitionTemplate = []
+                    self.productDefinitionTemplateNumber = []
+                    self.coordinateList = []
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
-                self.productDefinitionTemplate = _pdt.tolist()
-                self.productDefinitionTemplateNumber = _pdtn
-                self.coordinateList = _coordlst.tolist()
+                self.productDefinitionTemplate.append(_pdt.tolist())
+                self.productDefinitionTemplateNumber.append(_pdtn)
+                self.coordinateList.append(_coordlst.tolist())
             # Section 5, Data Representation Section.
             elif sectnum == 5:
+                if self._msgcount == 0:
+                    self.dataRepresentationTemplate = []
+                    self.dataRepresentationTemplateNumber = []
+                    self.numberOfDataPoints = []
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
-                self.dataRepresentationTemplate = _drt.tolist()
-                self.dataRepresentationTemplateNumber = _drtn
-                self.numberOfDataPoints = _npts
+                self.dataRepresentationTemplate.append(_drt.tolist())
+                self.dataRepresentationTemplateNumber.append(_drtn)
+                self.numberOfDataPoints.append(_npts)
             # Section 6, Bitmap Section.
             elif sectnum == 6:
-                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
-                #bitmapflag = struct.unpack('>B',self._msg[pos+5])[0]
-                #if bmapflag == 0:
-                #    bitmaps.append(bmap.astype('b'))
-                ## use last defined bitmap.
-                #elif bmapflag == 254:
-                #    bmapflag = 0
-                #    for bmp in bitmaps[::-1]:
-                #        if bmp is not None: bitmaps.append(bmp)
-                #else:
-                #    bitmaps.append(None)
-                #bitmapflags.append(bmapflag)
-                self._pos += sectlen
+                if self._msgcount == 0:
+                    self.bitMapFlag = []
+                    self.bitMap = []
+                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[self._msgcount-1][1],self._pos,np.empty)
+                self.bitMapFlag.append(_bmapflag)
+                self.bitMap.append(_bmap)
+                self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
             # Section 7, Data Section (data unpacked when getfld method is invoked).
-            else:
-                if sectnum != 7:
-                   errmsg = 'Unknown section number = %i' % sectnum
-                   raise ValueError(errmsg) 
-                self._pos += sectlen
-                self._datapos = self._pos
+            elif sectnum == 7:
+                self._datapos.append(self._pos)
+                self._pos += sectlen # REMOVE WHEN UNPACKING DATA IS IMPLEMENTED
                 self._msgcount += 1
+            else:
+                errmsg = 'Unknown section number = %i' % sectnum
+                raise ValueError(errmsg) 
 
 
     def __repr__(self):
