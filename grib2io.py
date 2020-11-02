@@ -3,6 +3,7 @@ __version__ = '0.1.0'
 import g2clib
 
 import builtins
+import copy
 import os
 import struct
 import numpy as np
@@ -91,12 +92,17 @@ class open():
         """
         """
         if isinstance(key,slice):
-            beg, end, inc = key.indices(self.messages)
-            return [self[i] for i in range(beg,end,inc)]
+            if key.start is None and key.stop is None and key.step is None:
+                beg = 1
+                end = self.messages+1
+                inc = 1
+            else:
+                beg, end, inc = key.indices(self.messages)
+            return [self[i][0] for i in range(beg,end,inc)]
         elif isinstance(key,int):
             if key == 0: return None
             self._filehandle.seek(self._index['offset'][key])
-            return [Grib2Message(self._filehandle.read(self._index['size'][key]),ref=self)]
+            return [Grib2Message(self._filehandle.read(self._index['size'][key]),ref=self,num=self._index['messageNumber'][key])]
         else:
             raise KeyError('Key must be an integer or slice')
 
@@ -110,8 +116,10 @@ class open():
         self._index['discipline'] = [None]
         self._index['edition'] = [None]
         self._index['size'] = [None]
-        self._index['hasSubmessage'] = [None]
-        self._index['numberOfSubmessages'] = [None]
+        self._index['submessageOffset'] = [None]
+        self._index['submessageBeginSection'] = [None]
+        self._index['isSubmessage'] = [None]
+        self._index['messageNumber'] = [None]
         self._index['identificationSection'] = [None]
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
@@ -127,8 +135,9 @@ class open():
                 # number, edition number (should always be 2), and GRIB2 message size.
                 # Then iterate to check for submessages.
                 if header == 'GRIB':
-                    _hassubmessage = False
-                    _nmsg = 1
+                    _issubmessage = False
+                    _submsgoffset = 0
+                    _submsgbegin = 0
 
                     # Read and unpack Section 0. Note that this is not done through
                     # the g2clib.
@@ -167,7 +176,9 @@ class open():
                                 if num == 2 and secnum == 3:
                                     pass # Allow this.  Just means no Local Use Section.
                                 else:
-                                    _hassubmessage = True
+                                    _issubmessage = True
+                                    _submsgoffset = (self._filehandle.tell()-5)-(self._index['offset'][self.messages])
+                                    _submsgbegin = secnum
                                 self._filehandle.seek(self._filehandle.tell()-5)
                                 continue
                         trailer = struct.unpack('>4s',self._filehandle.read(4))[0].decode()
@@ -177,25 +188,32 @@ class open():
                             self._index['discipline'].append(discipline)
                             self._index['edition'].append(edition)
                             self._index['size'].append(size)
-                            self._index['hasSubmessage'].append(_hassubmessage)
-                            self._index['numberOfSubmessages'].append(_nmsg)
+                            self._index['messageNumber'].append(self.messages)
+                            self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
-                            if _hassubmessage:
-                                self._index['productDefinitionTemplateNumber'][self.messages-1].append(_pdtnum)
-                                self._index['productDefinitionTemplate'][self.messages-1].append(_pdt)
+                            self._index['productDefinitionTemplateNumber'].append([_pdtnum])
+                            self._index['productDefinitionTemplate'].append([_pdt])
+                            if _issubmessage:
+                                self._index['submessageOffset'].append(_submsgoffset)
+                                self._index['submessageBeginSection'].append(_submsgbegin)
                             else:
-                                self._index['productDefinitionTemplateNumber'].append([_pdtnum])
-                                self._index['productDefinitionTemplate'].append([_pdt])
+                                self._index['submessageOffset'].append(0)
+                                self._index['submessageBeginSection'].append(_submsgbegin)
                             break
                         else:
                             self._filehandle.seek(self._filehandle.tell()-4)
-                            if _nmsg == 1:
-                                self._index['productDefinitionTemplateNumber'].append([_pdtnum])
-                                self._index['productDefinitionTemplate'].append([_pdt])
-                            else:
-                                self._index['productDefinitionTemplateNumber'][self.messages].append(_pdtnum)
-                                self._index['productDefinitionTemplate'][self.messages].append(_pdt)
-                            _nmsg += 1
+                            self.messages += 1
+                            self._index['offset'].append(pos)
+                            self._index['discipline'].append(discipline)
+                            self._index['edition'].append(edition)
+                            self._index['size'].append(size)
+                            self._index['messageNumber'].append(self.messages)
+                            self._index['isSubmessage'].append(_issubmessage)
+                            self._index['identificationSection'].append(_grbsec1)
+                            self._index['productDefinitionTemplateNumber'].append([_pdtnum])
+                            self._index['productDefinitionTemplate'].append([_pdt])
+                            self._index['submessageOffset'].append(_submsgoffset)
+                            self._index['submessageBeginSection'].append(_submsgbegin)
                             continue
 
             except(struct.error):
@@ -221,12 +239,15 @@ class open():
         msgs = []
         if self.tell() >= self.messages: return msgs
         if num > 0:
-            beg = self.tell()+1
-            end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
-            msgrange = range(beg,end+1)
+            if num == 1:
+                msgrange = [self.tell()+1]
+            else:
+                beg = self.tell()+1
+                end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
+                msgrange = range(beg,end+1)
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
-                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n]),ref=self))
+                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n]),ref=self,num=self._index['messageNumber'][n]))
                 self.current_message += 1 
         return msgs
 
@@ -259,15 +280,14 @@ class open():
 
 
 class Grib2Message:
-    def __init__(self, msg, ref=None):
+    def __init__(self, msg, ref=None, num=-1):
         """
         """
         self._msg = msg
         self._pos = 0
         self._ref = ref
-        self._datapos = []
-        self._msgcount = 0
-        self._secnumlist = []
+        self._datapos = 0
+        self._msgnum = num
         
         # Section 0, Indicator Section
         self.indicatorSection = []
@@ -277,79 +297,58 @@ class Grib2Message:
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
         self._pos = 16
-        self._secnumlist.append(0)
         
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
-        self._secnumlist.append(1)
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
         while True:
             if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777': break
-            if self._msgcount >= 1:
-                pass #print("GRIB2 Message has sub-messages")
-                # We have sub-messages... need to convert to lists.
 
             # Read the length and section number.
             sectlen = struct.unpack('>i',self._msg[self._pos:self._pos+4])[0]
             sectnum = struct.unpack('>B',self._msg[self._pos+4:self._pos+5])[0]
-            self._secnumlist.append(sectnum)
+
+            if self._ref._index['isSubmessage'][num]:
+                if sectnum == self._ref._index['submessageBeginSection'][self._msgnum]:
+                    self._pos = self._ref._index['submessageOffset'][self._msgnum]
 
             # Section 2, Local Use Section.
             if sectnum == 2:
-                if self._msgcount == 0:
-                    self.localUseSection = []
                 _lus = self._msg[self._pos+5:self._pos+sectlen]
                 self._pos += sectlen
-                self.localUseSection.append(_lus)
+                self.localUseSection = _lus
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
-                if self._msgcount == 0:
-                    self.gridDefinitionSection  = []
-                    self.gridDefinitionTemplateNumber = []
-                    self.gridDefinitionTemplate = []
-                    self.defList = []
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-                self.gridDefinitionSection.append(_gds.tolist())
-                self.gridDefinitionTemplateNumber.append(_gds[4])
-                self.gridDefinitionTemplate.append(_gdtn.tolist())
-                self.defList.append(_deflist.tolist())
+                self.gridDefinitionSection = _gds.tolist()
+                self.gridDefinitionTemplateNumber = _gds[4]
+                self.gridDefinitionTemplate = _gdtn.tolist()
+                self.defList = _deflist.tolist()
             # Section 4, Product Definition Section.
             elif sectnum == 4:
-                if self._msgcount == 0:
-                    self.productDefinitionTemplate = []
-                    self.productDefinitionTemplateNumber = []
-                    self.coordinateList = []
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
-                self.productDefinitionTemplate.append(_pdt.tolist())
-                self.productDefinitionTemplateNumber.append(_pdtn)
-                self.coordinateList.append(_coordlst.tolist())
+                self.productDefinitionTemplate = _pdt.tolist()
+                self.productDefinitionTemplateNumber = _pdtn
+                self.coordinateList = _coordlst.tolist()
             # Section 5, Data Representation Section.
             elif sectnum == 5:
-                if self._msgcount == 0:
-                    self.dataRepresentationTemplate = []
-                    self.dataRepresentationTemplateNumber = []
-                    self.numberOfDataPoints = []
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
-                self.dataRepresentationTemplate.append(_drt.tolist())
-                self.dataRepresentationTemplateNumber.append(_drtn)
-                self.numberOfDataPoints.append(_npts)
+                self.dataRepresentationTemplate = _drt.tolist()
+                self.dataRepresentationTemplateNumber = _drtn
+                self.numberOfDataPoints = _npts
             # Section 6, Bitmap Section.
             elif sectnum == 6:
-                if self._msgcount == 0:
-                    self.bitMapFlag = []
-                    self.bitMap = []
-                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[self._msgcount-1][1],self._pos,np.empty)
-                self.bitMapFlag.append(_bmapflag)
-                self.bitMap.append(_bmap)
+                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
+                self.bitMapFlag = _bmapflag
+                self.bitMap = _bmap
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
             # Section 7, Data Section (data unpacked when getfld method is invoked).
             elif sectnum == 7:
-                self._datapos.append(self._pos)
+                self._datapos = self._pos
                 self._pos += sectlen # REMOVE WHEN UNPACKING DATA IS IMPLEMENTED
-                self._msgcount += 1
             else:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg) 
@@ -364,7 +363,7 @@ class Grib2Message:
             if not k.startswith('_'):
                 strings.append('%s = %s\n'%(k,self.__dict__[k]))
         return ''.join(strings)
-                
+
 
 #    @property
 #    def discipline(self):
