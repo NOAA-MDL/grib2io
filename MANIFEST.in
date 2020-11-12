@@ -4,10 +4,10 @@ include g2clib.pyx
 include g2clib.c
 include redtoreg.pyx
 include redtoreg.c
-include grib2io.py
 include setup.cfg.template
 include setup.py
 include README.md
+recursive-include grib2io *
 recursive-include docs *
 include sampledata/*.grb
 include sampledata/*.grb2

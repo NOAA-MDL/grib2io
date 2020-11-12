@@ -1,4 +1,4 @@
-from setuptools import setup, Extension
+from setuptools import setup, Extension, find_packages
 from os import environ
 import configparser
 import os
@@ -135,7 +135,7 @@ data_files = None
 # Define installable entities
 install_scripts = []
 install_ext_modules = [g2clibext,redtoregext]
-install_py_modules = ['grib2io']
+install_py_modules = []
 
 # Import README.md as PyPi long_description
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -163,6 +163,7 @@ setup(name = 'grib2io',
       scripts           = install_scripts,
       ext_modules       = install_ext_modules,
       py_modules        = install_py_modules,
+      packages          = find_packages(),
       data_files        = data_files,
       install_requires  = ['numpy'],
       python_requires   = '>=3.6',

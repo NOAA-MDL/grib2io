@@ -1,0 +1,92 @@
+table_4_1_0 = {
+'0':'Temperature',
+'1':'Moisture',
+'2':'Momentum',
+'3':'Mass',
+'4':'Short-wave radiation',
+'5':'Long-wave radiation',
+'6':'Cloud',
+'7':'Thermodynamic Stability indicies',
+'8':'Kinematic Stability indicies',
+'9':'Temperature Probabilities*',
+'10':'Moisture Probabilities*',
+'11':'Momentum Probabilities*',
+'12':'Mass Probabilities*',
+'13':'Aerosols',
+'14':'Trace gases',
+'15':'Radar',
+'16':'Forecast Radar Imagery',
+'17':'Electrodynamics',
+'18':'Nuclear/radiology',
+'19':'Physical atmospheric properties',
+'20':'Atmospheric chemical Constituents',
+'21-189':'Reserved',
+'190':'CCITT IA5 string',
+'191':'Miscellaneous',
+'192-254':'Reserved for Local Use',
+'192':'Covariance',
+'255':'Missing',
+}
+
+table_4_1_1 = {
+'0':'Hydrology basic products',
+'1':'Hydrology probabilities',
+'2':'Inland water and sediment properties',
+'3-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_1_2 = {
+'0':'Vegetation/Biomass',
+'1':'Agricultural/Aquacultural Special Products',
+'2':'Transportation-related Products',
+'3':'Soil Products',
+'4':'Fire Weather Products',
+'5':'Land Surface Products',
+'6-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_1_3 = {
+'0':'Image format products',
+'1':'Quantitative products',
+'2':'Cloud Properties',
+'3':'Flight Rules Conditions',
+'4':'Volcanic Ash',
+'5':'Sea-surface Temperature',
+'6':'Solar Radiation',
+'7-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'192':'Forecast Satellite Imagery',
+'255':'Missing',
+}
+
+table_4_1_4 = {
+'0':'Temperature',
+'1':'Momentum',
+'2':'Charged Particle Mass and Number',
+'3':'Electric and Magnetic Fields',
+'4':'Energetic Particles',
+'5':'Waves',
+'6':'Solar Electromagnetic Emissions',
+'7':'Terrestrial Electromagnetic Emissions',
+'8':'Imagery',
+'9':'Ion-Neutral Coupling',
+'10-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_1_10 = {
+'0':'Waves',
+'1':'Currents',
+'2':'Ice',
+'3':'Surface Properties',
+'4':'Sub-surface Properties',
+'5-190':'Reserved',
+'191':'Miscellaneous',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
