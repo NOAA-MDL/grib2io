@@ -3,6 +3,8 @@ from .section1 import *
 from .section3 import *
 from .section4 import *
 
+from .originating_centers import *
+
 
 def get_table(table,expand=False):
     tbl = globals()['table_'+table.replace('.','_')]
@@ -22,9 +24,12 @@ def get_table(table,expand=False):
 def get_value_from_table(value,table):
     """
     """
-    tbl = get_table(table,expand=True)
-    if isinstance(value,int): value = str(value)
-    return tbl[value]
+    try:
+        tbl = get_table(table,expand=True)
+        if isinstance(value,int): value = str(value)
+        return tbl[value]
+    except(KeyError):
+        return None
 
 
 def get_varname_from_table(discipline,parmcat,parmnum):
