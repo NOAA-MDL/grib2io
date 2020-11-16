@@ -310,6 +310,8 @@ class Grib2Message:
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
+        self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
+        self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
         self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
         self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
         self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
@@ -380,13 +382,12 @@ class Grib2Message:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg) 
 
+        # More attributes from Grid Definition Section (3)
         reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
-
         if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
             earthparams = None
         else:
             earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
-
         if earthparams['shape'] == 'spherical':
             if earthparams['radius'] is None:
                 self.earthRadius = self.gridDefinitionTemplate[1]/(10.**self.gridDefinitionTemplate[2])
@@ -403,7 +404,6 @@ class Grib2Message:
                 self.earthRadius = earthparams['radius']
                 self.earthMajorAxis = earthparams['major_axis']
                 self.earthMinorAxis = earthparams['minor_axis']
-
         if reggrid and self.gridDefinitionTemplateNumber not in [50,51,52,53,100,120,1000,1200]:
             self.nx = self.gridDefinitionTemplate[7]
             self.ny = self.gridDefinitionTemplate[8]
@@ -547,7 +547,127 @@ class Grib2Message:
             self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
             if self.dataRepresentationTemplate[6] == 2:
                 self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
-        
+
+        # Section 4
+        _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
+                   self.productDefinitionTemplate[0],
+                   self.productDefinitionTemplate[1])
+        self.varDescription = _varinfo[0]
+        self.units = _varinfo[1]
+        self.varName = _varinfo[2]
+        self.generatingProcess = tables.get_value_from_table(self.productDefinitionTemplate[4],'generating_process')
+        self.unitOfTimeRange = tables.get_value_from_table(self.productDefinitionTemplate[7],'4.4')
+        self.leadTime = self.productDefinitionTemplate[8]
+        _vals = tables.get_value_from_table(self.productDefinitionTemplate[9],'4.5')
+        self.typeOfFirstFixedSurface = _vals[0]
+        self.unitOfFirstFixedSurface = _vals[1]
+        self.valueOfFristFixedSurface = self.productDefinitionTemplate[11]/(10.**self.productDefinitionTemplate[10])
+        _vals = tables.get_value_from_table(self.productDefinitionTemplate[12],'4.5')
+        self.typeOfSecondFixedSurface = None if _vals[0] == 'Missing' else _vals[0]
+        self.unitOfSecondFixedSurface = None if _vals[1] == 'unknown' else _vals[1]
+        self.valueOfSecondFixedSurface = None if self.typeOfSecondFixedSurface is None else \
+                                         self.productDefinitionTemplate[14]/(10.**self.productDefinitionTemplate[13])
+        if self.productDefinitionTemplateNumber == 1:
+            self.typeOfEnsembleForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],'4.6')
+            self.perturbationNumber = self.productDefinitionTemplate[16]
+            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+        elif self.productDefinitionTemplateNumber == 2:
+            self.typeOfDerivedForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],'4.7')
+            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+        elif self.productDefinitionTemplateNumber == 5:
+            self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+            self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+            self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[16],'4.9')
+            self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
+            self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
+        elif self.productDefinitionTemplateNumber == 6:
+            self.percentileValue = self.productDefinitionTemplate[15]
+        elif self.productDefinitionTemplateNumber == 8:
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[21]
+            self.numberOfMissingValues = self.productDefinitionTemplate[22]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[23],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[24],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[26]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[27],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[28]
+        elif self.productDefinitionTemplateNumber == 9:
+            self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+            self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+            self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[16],'4.9')
+            self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
+            self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[24]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[25]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[26]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[27]
+            self.numberOfMissingValues = self.productDefinitionTemplate[28]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[30],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[31],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[32]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[33],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[34]
+        elif self.productDefinitionTemplateNumber == 10:
+            self.percentileValue = self.productDefinitionTemplate[15]
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[22]
+            self.numberOfMissingValues = self.productDefinitionTemplate[23]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[24],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[27]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[28],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[29]
+        elif self.productDefinitionTemplateNumber == 11:
+            self.typeOfEnsembleForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],'4.6')
+            self.perturbationNumber = self.productDefinitionTemplate[16]
+            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[24]
+            self.numberOfMissingValues = self.productDefinitionTemplate[25]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[27],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[28],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[29]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[30],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[31]
+        elif self.productDefinitionTemplateNumber == 12:
+            self.typeOfDerivedForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],'4.7')
+            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[23]
+            self.numberOfMissingValues = self.productDefinitionTemplate[24]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[27],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
 
 
     def __repr__(self):
