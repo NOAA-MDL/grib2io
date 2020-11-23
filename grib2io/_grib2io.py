@@ -382,7 +382,7 @@ class Grib2Message:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg) 
 
-        # More attributes from Grid Definition Section (3)
+        # Section 3 -- Grid Definition
         reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
         if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
             earthparams = None
@@ -549,7 +549,7 @@ class Grib2Message:
         #    if self.dataRepresentationTemplate[6] == 2:
         #        self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
 
-        # Section 4
+        # Section 4 -- Product Definition
         _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
                    self.productDefinitionTemplate[0],
                    self.productDefinitionTemplate[1])
@@ -672,12 +672,14 @@ class Grib2Message:
 
         # Section 5 -- Data Representation
         if self.dataRepresentationTemplateNumber == 0:
+            # Grid Point Data -- Simple Packing
             self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],'5.1')
         elif self.dataRepresentationTemplateNumber == 2:
+            # Grid Point Data -- Complex Packing
             self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
@@ -695,6 +697,7 @@ class Grib2Message:
             self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
             self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
         elif self.dataRepresentationTemplateNumber == 3:
+            # Grid Point Data -- Complex Packing and Spatial Differencing
             self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
@@ -713,6 +716,25 @@ class Grib2Message:
             self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
             self.spatialDifferenceOrder = tables.get_value_from_table(self.dataRepresentationTemplate[16],'5.6')
             self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
+        elif self.dataRepresentationTemplateNumber == 4:
+            # Grid Point Data - IEEE Floating Point Data
+            self.precision = tables.get_value_from_table(self.dataRepresentationTemplate[0],'5.7')
+        elif self.dataRepresentationTemplateNumber == 40:
+            # Grid Point Data - JPEG2000 Compression
+            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.binScaleFactor = self.dataRepresentationTemplate[1]
+            self.decScaleFactor = self.dataRepresentationTemplate[2]
+            self.nBitsPacking = self.dataRepresentationTemplate[3]
+            self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
+            self.typeOfCompression = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.40')
+            self.targetCompressionRatio = self.dataRepresentationTemplate[6]
+        elif self.dataRepresentationTemplateNumber == 41:
+            # Grid Point Data - PNG Compression
+            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.binScaleFactor = self.dataRepresentationTemplate[1]
+            self.decScaleFactor = self.dataRepresentationTemplate[2]
+            self.nBitsPacking = self.dataRepresentationTemplate[3]
+            self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
 
 
     def __repr__(self):
