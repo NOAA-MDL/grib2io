@@ -355,7 +355,7 @@ class Grib2Message:
                 self.gridDefinitionTemplateNumber = int(_gds[4])
                 self.gridDefinitionTemplate = _gdtn.tolist()
                 self.defList = _deflist.tolist()
-                self.gridDefinitionTemplateNumberString = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
+                self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
             # Section 4, Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
@@ -542,11 +542,12 @@ class Grib2Message:
             self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 204: # curvilinear orthogonal
             self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+
         # Missing value.
-        if self.dataRepresentationTemplateNumber in [2,3] and self.dataRepresentationTemplate[6] != 0:
-            self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
-            if self.dataRepresentationTemplate[6] == 2:
-                self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
+        #if self.dataRepresentationTemplateNumber in [2,3] and self.dataRepresentationTemplate[6] != 0:
+        #    self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
+        #    if self.dataRepresentationTemplate[6] == 2:
+        #        self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
 
         # Section 4
         _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
@@ -668,6 +669,50 @@ class Grib2Message:
             self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
             self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.4')
             self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
+
+        # Section 5 -- Data Representation
+        if self.dataRepresentationTemplateNumber == 0:
+            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.binScaleFactor = self.dataRepresentationTemplate[1]
+            self.decScaleFactor = self.dataRepresentationTemplate[2]
+            self.nBitsPacking = self.dataRepresentationTemplate[3]
+            self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],'5.1')
+        elif self.dataRepresentationTemplateNumber == 2:
+            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.binScaleFactor = self.dataRepresentationTemplate[1]
+            self.decScaleFactor = self.dataRepresentationTemplate[2]
+            self.nBitsPacking = self.dataRepresentationTemplate[3]
+            self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
+            self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
+            self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
+            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.nGroups = self.dataRepresentationTemplate[9]
+            self.refGroupWidth = self.dataRepresentationTemplate[10]
+            self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+            self.refGroupLength = self.dataRepresentationTemplate[12]
+            self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+            self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+            self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+        elif self.dataRepresentationTemplateNumber == 3:
+            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.binScaleFactor = self.dataRepresentationTemplate[1]
+            self.decScaleFactor = self.dataRepresentationTemplate[2]
+            self.nBitsPacking = self.dataRepresentationTemplate[3]
+            self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
+            self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
+            self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
+            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.nGroups = self.dataRepresentationTemplate[9]
+            self.refGroupWidth = self.dataRepresentationTemplate[10]
+            self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+            self.refGroupLength = self.dataRepresentationTemplate[12]
+            self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+            self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+            self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+            self.spatialDifferenceOrder = tables.get_value_from_table(self.dataRepresentationTemplate[16],'5.6')
+            self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
 
 
     def __repr__(self):
