@@ -9,10 +9,12 @@ import os
 import struct
 import math
 import numpy as np
+from numpy import ma
 
 from . import tables
 
 ONE_MB = 1024 ** 3
+DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 
 class open():
     def __init__(self, filename, mode='r'):
@@ -128,6 +130,7 @@ class open():
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
         self._index['varName'] = [None]
+        self._index['bitMap'] = [None]
 
         # Iterate
         while True:
@@ -168,7 +171,13 @@ class open():
                             secsize = struct.unpack('>i',self._filehandle.read(4))[0]
                             secnum = struct.unpack('>B',self._filehandle.read(1))[0]
                             if secnum == num:
-                                if secnum == 4:
+                                if secnum == 3:
+                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    _grbmsg = self._filehandle.read(secsize)
+                                    _grbpos = 0
+                                    # Unpack Section 3
+                                    _gds,_gdtn,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
+                                elif secnum == 4:
                                     self._filehandle.seek(self._filehandle.tell()-5) 
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
@@ -176,6 +185,16 @@ class open():
                                     _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
                                     _varinfo = tables.get_varname_from_table(discipline,_pdt[0],_pdt[1])
+                                elif secnum == 6:
+                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    _grbmsg = self._filehandle.read(secsize)
+                                    _grbpos = 0
+                                    # Unpack Section 6. Save bitmap
+                                    _bmap,_bmapflag = g2clib.unpack6(_grbmsg,_gds[1],_grbpos,np.empty)
+                                    if _bmapflag == 0:
+                                        _bmap_save = copy.deepcopy(_bmap)
+                                    elif _bmapflag == 254:
+                                        _bmap = copy.deepcopy(_bmap_save)
                                 else:
                                     self._filehandle.seek(self._filehandle.tell()+secsize-5)
                             else:
@@ -200,6 +219,7 @@ class open():
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
                             self._index['varName'].append(_varinfo[2])
+                            self._index['bitMap'].append(_bmap)
                             if _issubmessage:
                                 self._index['submessageOffset'].append(_submsgoffset)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
@@ -220,6 +240,7 @@ class open():
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
                             self._index['varName'].append(_varinfo[2])
+                            self._index['bitMap'].append(_bmap)
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
                             continue
@@ -372,9 +393,13 @@ class Grib2Message:
             elif sectnum == 6:
                 _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
                 self.bitMapFlag = _bmapflag
-                self.bitMap = _bmap
+                if self.bitMapFlag == 0:
+                    self.bitMap = _bmap
+                elif self.bitMapFlag == 254:
+                    self.bitMapFlag = 0
+                    self.bitMap = self._ref._index['bitMap'][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
-            # Section 7, Data Section (data unpacked when getfld method is invoked).
+            # Section 7, Data Section (data unpacked when data() method is invoked).
             elif sectnum == 7:
                 self._datapos = self._pos
                 self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
@@ -390,7 +415,7 @@ class Grib2Message:
             earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
         if earthparams['shape'] == 'spherical':
             if earthparams['radius'] is None:
-                self.earthRadius = self.gridDefinitionTemplate[1]/(10.**self.gridDefinitionTemplate[2])
+                self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
             else:
                 self.earthRadius = earthparams['radius']
                 self.earthMajorAxis = None
@@ -735,6 +760,90 @@ class Grib2Message:
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
+
+    def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None):
+        """
+        Returns an unpacked data grid.  Can also be accomplished with L{values}
+        property.
+
+        @keyword fill_value: missing or masked data is filled with this value
+        (default 9.9692099683868690e+36).
+
+        @keyword masked_array: if True, return masked array if there is bitmap
+        for missing or masked data (default True).
+
+        @keyword expand:  if True (default), ECMWF 'reduced' gaussian grids are
+        expanded to regular gaussian grids.
+
+        @keyword order: if 1, linear interpolation is used for expanding reduced
+        gaussian grids.  if 0, nearest neighbor interpolation is used. Default
+        is 0 if grid has missing or bitmapped values, 1 otherwise.
+
+        @return: C{B{data}}, a float32 numpy regular or masked array
+        with shape (nlats,lons) containing the requested grid.
+        """
+        if not hasattr(self,'scanModeFlags'):
+            raise ValueError('Unsupported grid definition template number %s'%self.gridDefinitionTemplateNumber)
+        else:
+            if self.scanModeFlags[2]:
+                storageorder='F'
+            else:
+                storageorder='C'
+        if order is None:
+            if (self.dataRepresentationTemplateNumber in [2,3] and 
+                self.dataRepresentationTemplate[6] != 0) or self.bitMapFlag == 0: 
+                order = 0
+            else:
+                order = 1
+        drtnum = self.dataRepresentationTemplateNumber
+        drtmpl = np.asarray(self.dataRepresentationTemplate,dtype=np.int32)
+        gdtnum = self.gridDefinitionTemplateNumber
+        gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
+        ndpts = self.numberOfDataPoints
+        gdsinfo = self.gridDefinitionInfo
+        ngrdpts = gdsinfo[1]
+        ipos = self._datapos
+        fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
+        # Apply bitmap.
+        if self.bitMapFlag == 0:
+            fld = fill_value*np.ones(ngrdpts,'f')
+            np.put(fld,np.nonzero(self.bitMap),fld1)
+            if masked_array:
+                fld = ma.masked_values(fld,fill_value)
+        # Missing values instead of bitmap
+        elif masked_array and hasattr(self,'priMissingValue'):
+            if hasattr(self,'secMissingValue'):
+                mask = np.logical_or(fld1==self.priMissingValue,fld1==self.secMissingValue)
+            else:
+                mask = fld1 == self.priMissingValue
+            fld = ma.array(fld1,mask=mask)
+        else:
+            fld = fld1
+        if self.nx is not None and self.ny is not None: # Rectangular grid.
+            if ma.isMA(fld):
+                fld = ma.reshape(fld,(self.ny,self.nx))
+            else:
+                fld = np.reshape(fld,(self.ny,self.nx))
+        else:
+            if gdsinfo[2] and gdtnum == 40: # ECMWF 'reduced' global gaussian grid.
+                if expand:
+                    from redtoreg import _redtoreg
+                    self.nx = 2*self.ny
+                    lonsperlat = self.defList
+                    if ma.isMA(fld):
+                        fld = ma.filled(fld)
+                        fld = _redtoreg(self.nx,lonsperlat.astype(np.long),\
+                                fld.astype(np.double),fill_value)
+                        fld = ma.masked_values(fld,fill_value)
+                    else:
+                        fld = _redtoreg(self.nx,lonsperlat.astype(np.long),\
+                                fld.astype(np.double),fill_value)
+        # Check scan modes for rect grids.
+        if self.nx is not None and self.ny is not None:
+            if self.scanModeFlags[3]:
+                fldsave = fld.astype('f') # casting makes a copy
+                fld[1::2,:] = fldsave[1::2,::-1]
+        return fld
 
 
     def __repr__(self):
