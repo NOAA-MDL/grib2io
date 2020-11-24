@@ -14,5 +14,5 @@ include sampledata/*.grb2
 include sampledata/*.grib*
 include sampledata/*.bin
 recursive-include NCEPLIBS-g2c *
-include test/README
-include test/*py
+include tests/README
+include tests/*py
