@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>grib2io.tables.section4_discipline2 API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>grib2io.tables.section4_discipline2</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">table_4_2_2_0  = {
+&#39;0&#39;:[&#39;Land Cover (0=sea, 1=land)&#39;,&#39;Proportion&#39;,&#39;LAND&#39;],
+&#39;1&#39;:[&#39;Surface Roughness&#39;,&#39;m&#39;,&#39;SFCR&#39;],
+&#39;2&#39;:[&#39;Soil Temperature ***&#39;,&#39;K&#39;,&#39;TSOIL&#39;],
+&#39;3&#39;:[&#39;Soil Moisture Content *&#39;,&#39;kg m-2&#39;,&#39;SOILM&#39;],
+&#39;4&#39;:[&#39;Vegetation&#39;,&#39;%&#39;,&#39;VEG&#39;],
+&#39;5&#39;:[&#39;Water Runoff&#39;,&#39;kg m-2&#39;,&#39;WATR&#39;],
+&#39;6&#39;:[&#39;Evapotranspiration (See note 1)&#39;,&#39;kg-2 s-1&#39;,&#39;EVAPT&#39;],
+&#39;7&#39;:[&#39;Model Terrain Height&#39;,&#39;m&#39;,&#39;MTERH&#39;],
+&#39;8&#39;:[&#39;Land Use&#39;,&#39;See Table 4.212&#39;,&#39;LANDU&#39;],
+&#39;9&#39;:[&#39;Volumetric Soil Moisture Content **&#39;,&#39;Proportion&#39;,&#39;SOILW&#39;],
+&#39;10&#39;:[&#39;Ground Heat Flux *&#39;,&#39;W m-2&#39;,&#39;GFLUX&#39;],
+&#39;11&#39;:[&#39;Moisture Availability&#39;,&#39;%&#39;,&#39;MSTAV&#39;],
+&#39;12&#39;:[&#39;Exchange Coefficient&#39;,&#39;kg m-2 s-1&#39;,&#39;SFEXC&#39;],
+&#39;13&#39;:[&#39;Plant Canopy Surface Water&#39;,&#39;kg m-2&#39;,&#39;CNWAT&#39;],
+&#39;14&#39;:[&#39;Blackadars Mixing Length Scale&#39;,&#39;m&#39;,&#39;BMIXL&#39;],
+&#39;15&#39;:[&#39;Canopy Conductance&#39;,&#39;m s-1&#39;,&#39;CCOND&#39;],
+&#39;16&#39;:[&#39;Minimal Stomatal Resistance&#39;,&#39;s m-1&#39;,&#39;RSMIN&#39;],
+&#39;17&#39;:[&#39;Wilting Point *&#39;,&#39;Proportion&#39;,&#39;WILT&#39;],
+&#39;18&#39;:[&#39;Solar parameter in canopy conductance&#39;,&#39;Proportion&#39;,&#39;RCS&#39;],
+&#39;19&#39;:[&#39;Temperature parameter in canopy&#39;,&#39;Proportion&#39;,&#39;RCT&#39;],
+&#39;20&#39;:[&#39;Humidity parameter in canopy conductance&#39;,&#39;Proportion&#39;,&#39;RCQ&#39;],
+&#39;21&#39;:[&#39;Soil moisture parameter in canopy conductance&#39;,&#39;Proportion&#39;,&#39;RCSOL&#39;],
+&#39;22&#39;:[&#39;Soil Moisture ***&#39;,&#39;kg m-3&#39;,&#39;SOILM&#39;],
+&#39;23&#39;:[&#39;Column-Integrated Soil Water ***&#39;,&#39;kg m-2&#39;,&#39;CISOILW&#39;],
+&#39;24&#39;:[&#39;Heat Flux&#39;,&#39;W m-2&#39;,&#39;HFLUX&#39;],
+&#39;25&#39;:[&#39;Volumetric Soil Moisture&#39;,&#39;m3 m-3&#39;,&#39;VSOILM&#39;],
+&#39;26&#39;:[&#39;Wilting Point&#39;,&#39;kg m-3&#39;,&#39;WILT&#39;],
+&#39;27&#39;:[&#39;Volumetric Wilting Point&#39;,&#39;m3 m-3&#39;,&#39;VWILTP&#39;],
+&#39;28&#39;:[&#39;Leaf Area Index&#39;,&#39;Numeric&#39;,&#39;LEAINX&#39;],
+&#39;29&#39;:[&#39;Evergreen Forest Cover&#39;,&#39;Proportion&#39;,&#39;EVGFC&#39;],
+&#39;30&#39;:[&#39;Deciduous Forest Cover&#39;,&#39;Proportion&#39;,&#39;DECFC&#39;],
+&#39;31&#39;:[&#39;Normalized Differential Vegetation Index (NDVI)&#39;,&#39;Numeric&#39;,&#39;NDVINX&#39;],
+&#39;32&#39;:[&#39;Root Depth of Vegetation&#39;,&#39;m&#39;,&#39;RDVEG&#39;],
+&#39;33&#39;:[&#39;Water Runoff and Drainage ****&#39;,&#39;kg m-2&#39;,&#39;WROD&#39;],
+&#39;34&#39;:[&#39;Surface Water Runoff ****&#39;,&#39;kg m-2&#39;,&#39;SFCWRO&#39;],
+&#39;35&#39;:[&#39;Tile Class&#39;,&#39;See Table 4.243&#39;,&#39;TCLASS&#39;],
+&#39;36&#39;:[&#39;Tile Fraction&#39;,&#39;Proportion&#39;,&#39;TFRCT&#39;],
+&#39;37&#39;:[&#39;Tile Percentage&#39;,&#39;%&#39;,&#39;TPERCT&#39;],
+&#39;38&#39;:[&#39;Soil Volumetric Ice Content (Water Equivalent) (See note 2)&#39;,&#39;m3 m-3&#39;,&#39;SOILVIC&#39;],
+&#39;39&#39;:[&#39;Evapotranspiration Rate&#39;,&#39;kg m-2 s-1&#39;,&#39;EVAPTRAT&#39;],
+&#39;39-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Volumetric Soil Moisture Content&#39;,&#39;Fraction&#39;,&#39;SOILW&#39;],
+&#39;193&#39;:[&#39;Ground Heat Flux&#39;,&#39;W m-2&#39;,&#39;GFLUX&#39;],
+&#39;194&#39;:[&#39;Moisture Availability&#39;,&#39;%&#39;,&#39;MSTAV&#39;],
+&#39;195&#39;:[&#39;Exchange Coefficient&#39;,&#39;(kg m-3) (m s-1)&#39;,&#39;SFEXC&#39;],
+&#39;196&#39;:[&#39;Plant Canopy Surface Water&#39;,&#39;kg m-2&#39;,&#39;CNWAT&#39;],
+&#39;197&#39;:[&#39;Blackadar’s Mixing Length Scale&#39;,&#39;m&#39;,&#39;BMIXL&#39;],
+&#39;198&#39;:[&#39;Vegetation Type&#39;,&#39;Integer (0-13)&#39;,&#39;VGTYP&#39;],
+&#39;199&#39;:[&#39;Canopy Conductance&#39;,&#39;m s-1&#39;,&#39;CCOND&#39;],
+&#39;200&#39;:[&#39;Minimal Stomatal Resistance&#39;,&#39;s m-1&#39;,&#39;RSMIN&#39;],
+&#39;201&#39;:[&#39;Wilting Point&#39;,&#39;Fraction&#39;,&#39;WILT&#39;],
+&#39;202&#39;:[&#39;Solar parameter in canopy conductance&#39;,&#39;Fraction&#39;,&#39;RCS&#39;],
+&#39;203&#39;:[&#39;Temperature parameter in canopy conductance&#39;,&#39;Fraction&#39;,&#39;RCT&#39;],
+&#39;204&#39;:[&#39;Humidity parameter in canopy conductance&#39;,&#39;Fraction&#39;,&#39;RCQ&#39;],
+&#39;205&#39;:[&#39;Soil moisture parameter in canopy conductance&#39;,&#39;Fraction&#39;,&#39;RCSOL&#39;],
+&#39;206&#39;:[&#39;Rate of water dropping from canopy to ground&#39;,&#39;unknown&#39;,&#39;RDRIP&#39;],
+&#39;207&#39;:[&#39;Ice-free water surface&#39;,&#39;%&#39;,&#39;ICWAT&#39;],
+&#39;208&#39;:[&#39;Surface exchange coefficients for T and Q divided by delta z&#39;,&#39;m s-1&#39;,&#39;AKHS&#39;],
+&#39;209&#39;:[&#39;Surface exchange coefficients for U and V divided by delta z&#39;,&#39;m s-1&#39;,&#39;AKMS&#39;],
+&#39;210&#39;:[&#39;Vegetation canopy temperature&#39;,&#39;K&#39;,&#39;VEGT&#39;],
+&#39;211&#39;:[&#39;Surface water storage&#39;,&#39;Kg m-2&#39;,&#39;SSTOR&#39;],
+&#39;212&#39;:[&#39;Liquid soil moisture content (non-frozen)&#39;,&#39;Kg m-2&#39;,&#39;LSOIL&#39;],
+&#39;213&#39;:[&#39;Open water evaporation (standing water)&#39;,&#39;W m-2&#39;,&#39;EWATR&#39;],
+&#39;214&#39;:[&#39;Groundwater recharge&#39;,&#39;Kg m-2&#39;,&#39;GWREC&#39;],
+&#39;215&#39;:[&#39;Flood plain recharge&#39;,&#39;Kg m-2&#39;,&#39;QREC&#39;],
+&#39;216&#39;:[&#39;Roughness length for heat&#39;,&#39;m&#39;,&#39;SFCRH&#39;],
+&#39;217&#39;:[&#39;Normalized Difference Vegetation Index&#39;,&#39;unknown&#39;,&#39;NDVI&#39;],
+&#39;218&#39;:[&#39;Land-sea coverage (nearest neighbor) [land=1,sea=0]&#39;,&#39;unknown&#39;,&#39;LANDN&#39;],
+&#39;219&#39;:[&#39;Asymptotic mixing length scale&#39;,&#39;m&#39;,&#39;AMIXL&#39;],
+&#39;220&#39;:[&#39;Water vapor added by precip assimilation&#39;,&#39;Kg m-2&#39;,&#39;WVINC&#39;],
+&#39;221&#39;:[&#39;Water condensate added by precip assimilation&#39;,&#39;Kg m-2&#39;,&#39;WCINC&#39;],
+&#39;222&#39;:[&#39;Water Vapor Flux Convergance (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WVCONV&#39;],
+&#39;223&#39;:[&#39;Water Condensate Flux Convergance (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WCCONV&#39;],
+&#39;224&#39;:[&#39;Water Vapor Zonal Flux (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WVUFLX&#39;],
+&#39;225&#39;:[&#39;Water Vapor Meridional Flux (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WVVFLX&#39;],
+&#39;226&#39;:[&#39;Water Condensate Zonal Flux (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WCUFLX&#39;],
+&#39;227&#39;:[&#39;Water Condensate Meridional Flux (Vertical Int)&#39;,&#39;Kg m-2&#39;,&#39;WCVFLX&#39;],
+&#39;228&#39;:[&#39;Aerodynamic conductance&#39;,&#39;m s-1&#39;,&#39;ACOND&#39;],
+&#39;229&#39;:[&#39;Canopy water evaporation&#39;,&#39;W m-2&#39;,&#39;EVCW&#39;],
+&#39;230&#39;:[&#39;Transpiration&#39;,&#39;W m-2&#39;,&#39;TRANS&#39;],
+&#39;231&#39;:[&#39;Seasonally Minimum Green Vegetation Fraction (over 1-year period)&#39;,&#39;%&#39;,&#39;VEGMIN&#39;],
+&#39;232&#39;:[&#39;Seasonally Maximum Green Vegetation Fraction (over 1-year period)&#39;,&#39;%&#39;,&#39;VEGMAX&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_2_1  = {
+&#39;0-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Cold Advisory for Newborn Livestock&#39;,&#39;unknown&#39;,&#39;CANL&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_2_3  = {
+&#39;0&#39;:[&#39;Soil Type&#39;,&#39;See Table 4.213&#39;,&#39;SOTYP&#39;],
+&#39;1&#39;:[&#39;Upper Layer Soil Temperature *&#39;,&#39;K&#39;,&#39;UPLST&#39;],
+&#39;2&#39;:[&#39;Upper Layer Soil Moisture *&#39;,&#39;kg m-3&#39;,&#39;UPLSM&#39;],
+&#39;3&#39;:[&#39;Lower Layer Soil Moisture *&#39;,&#39;kg m-3&#39;,&#39;LOWLSM&#39;],
+&#39;4&#39;:[&#39;Bottom Layer Soil Temperature *&#39;,&#39;K&#39;,&#39;BOTLST&#39;],
+&#39;5&#39;:[&#39;Liquid Volumetric Soil Moisture (non-frozen)**&#39;,&#39;Proportion&#39;,&#39;SOILL&#39;],
+&#39;6&#39;:[&#39;Number of Soil Layers in Root Zone&#39;,&#39;Numeric&#39;,&#39;RLYRS&#39;],
+&#39;7&#39;:[&#39;Transpiration Stress-onset (soil moisture)**&#39;,&#39;Proportion&#39;,&#39;SMREF&#39;],
+&#39;8&#39;:[&#39;Direct Evaporation Cease (soil moisture)**&#39;,&#39;Proportion&#39;,&#39;SMDRY&#39;],
+&#39;9&#39;:[&#39;Soil Porosity**&#39;,&#39;Proportion&#39;,&#39;POROS&#39;],
+&#39;10&#39;:[&#39;Liquid Volumetric Soil Moisture (Non-Frozen)&#39;,&#39;m3 m-3&#39;,&#39;LIQVSM&#39;],
+&#39;11&#39;:[&#39;Volumetric Transpiration Stree-Onset(Soil Moisture)&#39;,&#39;m3 m-3&#39;,&#39;VOLTSO&#39;],
+&#39;12&#39;:[&#39;Transpiration Stree-Onset(Soil Moisture)&#39;,&#39;kg m-3&#39;,&#39;TRANSO&#39;],
+&#39;13&#39;:[&#39;Volumetric Direct Evaporation Cease(Soil Moisture)&#39;,&#39;m3 m-3&#39;,&#39;VOLDEC&#39;],
+&#39;14&#39;:[&#39;Direct Evaporation Cease(Soil Moisture)&#39;,&#39;kg m-3&#39;,&#39;DIREC&#39;],
+&#39;15&#39;:[&#39;Soil Porosity&#39;,&#39;m3 m-3&#39;,&#39;SOILP&#39;],
+&#39;16&#39;:[&#39;Volumetric Saturation Of Soil Moisture&#39;,&#39;m3 m-3&#39;,&#39;VSOSM&#39;],
+&#39;17&#39;:[&#39;Saturation Of Soil Moisture&#39;,&#39;kg m-3&#39;,&#39;SATOSM&#39;],
+&#39;18&#39;:[&#39;Soil Temperature&#39;,&#39;K&#39;,&#39;SOILTMP&#39;],
+&#39;19&#39;:[&#39;Soil Moisture&#39;,&#39;kg m-3&#39;,&#39;SOILMOI&#39;],
+&#39;20&#39;:[&#39;Column-Integrated Soil Moisture&#39;,&#39;kg m-2&#39;,&#39;CISOILM&#39;],
+&#39;21&#39;:[&#39;Soil Ice&#39;,&#39;kg m-3&#39;,&#39;SOILICE&#39;],
+&#39;22&#39;:[&#39;Column-Integrated Soil Ice&#39;,&#39;kg m-2&#39;,&#39;CISICE&#39;],
+&#39;23&#39;:[&#39;Liquid Water in Snow Pack&#39;,&#39;kg m-2&#39;,&#39;LWSNWP&#39;],
+&#39;24&#39;:[&#39;Frost Index&#39;,&#39;kg day-1&#39;,&#39;FRSTINX&#39;],
+&#39;25&#39;:[&#39;Snow Depth at Elevation Bands&#39;,&#39;kg m-2&#39;,&#39;SNWDEB&#39;],
+&#39;26&#39;:[&#39;Soil Heat Flux&#39;,&#39;W m-2&#39;,&#39;SHFLX&#39;],
+&#39;27&#39;:[&#39;Soil Depth&#39;,&#39;m&#39;,&#39;SOILDEP&#39;],
+&#39;28-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Liquid Volumetric Soil Moisture (non Frozen)&#39;,&#39;Proportion&#39;,&#39;SOILL&#39;],
+&#39;193&#39;:[&#39;Number of Soil Layers in Root Zone&#39;,&#39;non-dim&#39;,&#39;RLYRS&#39;],
+&#39;194&#39;:[&#39;Surface Slope Type&#39;,&#39;Index&#39;,&#39;SLTYP&#39;],
+&#39;195&#39;:[&#39;Transpiration Stress-onset (soil moisture)&#39;,&#39;Proportion&#39;,&#39;SMREF&#39;],
+&#39;196&#39;:[&#39;Direct Evaporation Cease (soil moisture)&#39;,&#39;Proportion&#39;,&#39;SMDRY&#39;],
+&#39;197&#39;:[&#39;Soil Porosity&#39;,&#39;Proportion&#39;,&#39;POROS&#39;],
+&#39;198&#39;:[&#39;Direct Evaporation from Bare Soil&#39;,&#39;W m-2&#39;,&#39;EVBS&#39;],
+&#39;199&#39;:[&#39;Land Surface Precipitation Accumulation&#39;,&#39;kg m-2&#39;,&#39;LSPA&#39;],
+&#39;200&#39;:[&#39;Bare Soil Surface Skin temperature&#39;,&#39;K&#39;,&#39;BARET&#39;],
+&#39;201&#39;:[&#39;Average Surface Skin Temperature&#39;,&#39;K&#39;,&#39;AVSFT&#39;],
+&#39;202&#39;:[&#39;Effective Radiative Skin Temperature&#39;,&#39;K&#39;,&#39;RADT&#39;],
+&#39;203&#39;:[&#39;Field Capacity&#39;,&#39;Fraction&#39;,&#39;FLDCP&#39;],
+&#39;204&#39;:[&#39;Soil Moisture Availability In The Top Soil Layer&#39;,&#39;%&#39;,&#39;MSTAV&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_2_4  = {
+&#39;0&#39;:[&#39;Fire Outlook&#39;,&#39;See Table 4.224&#39;,&#39;FIREOLK&#39;],
+&#39;1&#39;:[&#39;Fire Outlook Due to Dry Thunderstorm&#39;,&#39;See Table 4.224&#39;,&#39;FIREODT&#39;],
+&#39;2&#39;:[&#39;Haines Index&#39;,&#39;Numeric&#39;,&#39;HINDEX&#39;],
+&#39;3&#39;:[&#39;Fire Burned Area&#39;,&#39;%&#39;,&#39;FBAREA&#39;],
+&#39;4&#39;:[&#39;Fosberg Index *&#39;,&#39;Numeric&#39;,&#39;FOSINDX&#39;],
+&#39;5&#39;:[&#39;Fire Weath Index (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;FWINX&#39;],
+&#39;6&#39;:[&#39;Fine Fuel Moisture Code (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;FFMCODE&#39;],
+&#39;7&#39;:[&#39;Duff Moisture Code (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;DUFMCODE&#39;],
+&#39;8&#39;:[&#39;Drought Code (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;DRTCODE&#39;],
+&#39;9&#39;:[&#39;Initial Fire Spread Index (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;INFSINX&#39;],
+&#39;10&#39;:[&#39;Fire Build Up Index (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;FBUPINX&#39;],
+&#39;11&#39;:[&#39;Fire Daily Severity Rating (Canadian Forest Service)&#39;,&#39;Numeric&#39;,&#39;FDSRTE&#39;],
+&#39;12-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_2_5  = {
+&#39;1&#39;:[&#39;Glacier Temperature&#39;,&#39;K&#39;,&#39;GLACTMP&#39;],
+&#39;2-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="grib2io.tables" href="index.html">grib2io.tables</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

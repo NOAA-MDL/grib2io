@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>grib2io.tables.section4 API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>grib2io.tables.section4</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">table_4_1_0 = {
+&#39;0&#39;:&#39;Temperature&#39;,
+&#39;1&#39;:&#39;Moisture&#39;,
+&#39;2&#39;:&#39;Momentum&#39;,
+&#39;3&#39;:&#39;Mass&#39;,
+&#39;4&#39;:&#39;Short-wave radiation&#39;,
+&#39;5&#39;:&#39;Long-wave radiation&#39;,
+&#39;6&#39;:&#39;Cloud&#39;,
+&#39;7&#39;:&#39;Thermodynamic Stability indicies&#39;,
+&#39;8&#39;:&#39;Kinematic Stability indicies&#39;,
+&#39;9&#39;:&#39;Temperature Probabilities*&#39;,
+&#39;10&#39;:&#39;Moisture Probabilities*&#39;,
+&#39;11&#39;:&#39;Momentum Probabilities*&#39;,
+&#39;12&#39;:&#39;Mass Probabilities*&#39;,
+&#39;13&#39;:&#39;Aerosols&#39;,
+&#39;14&#39;:&#39;Trace gases&#39;,
+&#39;15&#39;:&#39;Radar&#39;,
+&#39;16&#39;:&#39;Forecast Radar Imagery&#39;,
+&#39;17&#39;:&#39;Electrodynamics&#39;,
+&#39;18&#39;:&#39;Nuclear/radiology&#39;,
+&#39;19&#39;:&#39;Physical atmospheric properties&#39;,
+&#39;20&#39;:&#39;Atmospheric chemical Constituents&#39;,
+&#39;21-189&#39;:&#39;Reserved&#39;,
+&#39;190&#39;:&#39;CCITT IA5 string&#39;,
+&#39;191&#39;:&#39;Miscellaneous&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Covariance&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_1_1 = {
+&#39;0&#39;:&#39;Hydrology basic products&#39;,
+&#39;1&#39;:&#39;Hydrology probabilities&#39;,
+&#39;2&#39;:&#39;Inland water and sediment properties&#39;,
+&#39;3-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_1_2 = {
+&#39;0&#39;:&#39;Vegetation/Biomass&#39;,
+&#39;1&#39;:&#39;Agricultural/Aquacultural Special Products&#39;,
+&#39;2&#39;:&#39;Transportation-related Products&#39;,
+&#39;3&#39;:&#39;Soil Products&#39;,
+&#39;4&#39;:&#39;Fire Weather Products&#39;,
+&#39;5&#39;:&#39;Land Surface Products&#39;,
+&#39;6-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_1_3 = {
+&#39;0&#39;:&#39;Image format products&#39;,
+&#39;1&#39;:&#39;Quantitative products&#39;,
+&#39;2&#39;:&#39;Cloud Properties&#39;,
+&#39;3&#39;:&#39;Flight Rules Conditions&#39;,
+&#39;4&#39;:&#39;Volcanic Ash&#39;,
+&#39;5&#39;:&#39;Sea-surface Temperature&#39;,
+&#39;6&#39;:&#39;Solar Radiation&#39;,
+&#39;7-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Forecast Satellite Imagery&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_1_4 = {
+&#39;0&#39;:&#39;Temperature&#39;,
+&#39;1&#39;:&#39;Momentum&#39;,
+&#39;2&#39;:&#39;Charged Particle Mass and Number&#39;,
+&#39;3&#39;:&#39;Electric and Magnetic Fields&#39;,
+&#39;4&#39;:&#39;Energetic Particles&#39;,
+&#39;5&#39;:&#39;Waves&#39;,
+&#39;6&#39;:&#39;Solar Electromagnetic Emissions&#39;,
+&#39;7&#39;:&#39;Terrestrial Electromagnetic Emissions&#39;,
+&#39;8&#39;:&#39;Imagery&#39;,
+&#39;9&#39;:&#39;Ion-Neutral Coupling&#39;,
+&#39;10-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_1_10 = {
+&#39;0&#39;:&#39;Waves&#39;,
+&#39;1&#39;:&#39;Currents&#39;,
+&#39;2&#39;:&#39;Ice&#39;,
+&#39;3&#39;:&#39;Surface Properties&#39;,
+&#39;4&#39;:&#39;Sub-surface Properties&#39;,
+&#39;5-190&#39;:&#39;Reserved&#39;,
+&#39;191&#39;:&#39;Miscellaneous&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_3 = {
+&#39;0&#39;:&#39;Analysis&#39;,
+&#39;1&#39;:&#39;Initialization&#39;,
+&#39;2&#39;:&#39;Forecast&#39;,
+&#39;3&#39;:&#39;Bias Corrected Forecast&#39;,
+&#39;4&#39;:&#39;Ensemble Forecast&#39;,
+&#39;5&#39;:&#39;Probability Forecast&#39;,
+&#39;6&#39;:&#39;Forecast Error&#39;,
+&#39;7&#39;:&#39;Analysis Error&#39;,
+&#39;8&#39;:&#39;Observation&#39;,
+&#39;9&#39;:&#39;Climatological&#39;,
+&#39;10&#39;:&#39;Probability-Weighted Forecast&#39;,
+&#39;11&#39;:&#39;Bias-Corrected Ensemble Forecast&#39;,
+&#39;12&#39;:&#39;Post-processed Analysis (See Note)&#39;,
+&#39;13&#39;:&#39;Post-processed Forecast (See Note)&#39;,
+&#39;14&#39;:&#39;Nowcast&#39;,
+&#39;15&#39;:&#39;Hindcast&#39;,
+&#39;16&#39;:&#39;Physical Retrieval&#39;,
+&#39;17&#39;:&#39;Regression Analysis&#39;,
+&#39;18&#39;:&#39;Difference Between Two Forecasts&#39;,
+&#39;19-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Forecast Confidence Indicator&#39;,
+&#39;193&#39;:&#39;Probability-matched Mean&#39;,
+&#39;194&#39;:&#39;Neighborhood Probability&#39;,
+&#39;195&#39;:&#39;Bias-Corrected and Downscaled Ensemble Forecast&#39;,
+&#39;196&#39;:&#39;Perturbed Analysis for Ensemble Initialization&#39;,
+&#39;197&#39;:&#39;Ensemble Agreement Scale Probability&#39;,
+&#39;198&#39;:&#39;Post-Processed Deterministic-Expert-Weighted Forecast&#39;,
+&#39;199&#39;:&#39;Ensemble Forecast Based on Counting&#39;,
+&#39;200&#39;:&#39;Local Probability-matched Mean&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_4 = {
+&#39;0&#39;:&#39;Minute&#39;,
+&#39;1&#39;:&#39;Hour&#39;,
+&#39;2&#39;:&#39;Day&#39;,
+&#39;3&#39;:&#39;Month&#39;,
+&#39;4&#39;:&#39;Year&#39;,
+&#39;5&#39;:&#39;Decade (10 Years)&#39;,
+&#39;6&#39;:&#39;Normal (30 Years)&#39;,
+&#39;7&#39;:&#39;Century (100 Years)&#39;,
+&#39;8&#39;:&#39;Reserved&#39;,
+&#39;9&#39;:&#39;Reserved&#39;,
+&#39;10&#39;:&#39;3 Hours&#39;,
+&#39;11&#39;:&#39;6 Hours&#39;,
+&#39;12&#39;:&#39;12 Hours&#39;,
+&#39;13&#39;:&#39;Second&#39;,
+&#39;14-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_5 = {
+&#39;0&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;1&#39;:[&#39;Ground or Water Surface&#39;,&#39;unknown&#39;],
+&#39;2&#39;:[&#39;Cloud Base Level&#39;,&#39;unknown&#39;],
+&#39;3&#39;:[&#39;Level of Cloud Tops&#39;,&#39;unknown&#39;],
+&#39;4&#39;:[&#39;Level of 0o C Isotherm&#39;,&#39;unknown&#39;],
+&#39;5&#39;:[&#39;Level of Adiabatic Condensation Lifted from the Surface&#39;,&#39;unknown&#39;],
+&#39;6&#39;:[&#39;Maximum Wind Level&#39;,&#39;unknown&#39;],
+&#39;7&#39;:[&#39;Tropopause&#39;,&#39;unknown&#39;],
+&#39;8&#39;:[&#39;Nominal Top of the Atmosphere&#39;,&#39;unknown&#39;],
+&#39;9&#39;:[&#39;Sea Bottom&#39;,&#39;unknown&#39;],
+&#39;10&#39;:[&#39;Entire Atmosphere&#39;,&#39;unknown&#39;],
+&#39;11&#39;:[&#39;Cumulonimbus Base (CB)&#39;,&#39;m&#39;],
+&#39;12&#39;:[&#39;Cumulonimbus Top (CT)&#39;,&#39;m&#39;],
+&#39;13&#39;:[&#39;Lowest level where vertically integrated  cloud cover exceeds the specified percentage (cloud base for a given percentage cloud cover)&#39;,&#39;%&#39;],
+&#39;14&#39;:[&#39;Level of free convection (LFC)&#39;,&#39;unknown&#39;],
+&#39;15&#39;:[&#39;Convection condensation level (CCL)&#39;,&#39;unknown&#39;],
+&#39;16&#39;:[&#39;Level of neutral buoyancy or equilibrium (LNB)&#39;,&#39;unknown&#39;],
+&#39;17-19&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;20&#39;:[&#39;Isothermal Level&#39;,&#39;K&#39;],
+&#39;21&#39;:[&#39;Lowest level where mass density exceeds the specified value  (base for a given threshold of mass density)&#39;,&#39;kg m-3&#39;],
+&#39;22&#39;:[&#39;Highest level where mass density exceeds the specified value (top for a given threshold of mass density)&#39;,&#39;kg m-3&#39;],
+&#39;23&#39;:[&#39;Lowest level where air concentration exceeds the specified value (base for a given threshold of air concentration&#39;,&#39;Bq m-3&#39;],
+&#39;24&#39;:[&#39;Highest level where air concentration exceeds the specified  value (top for a given threshold of air concentration)&#39;,&#39;Bq m-3&#39;],
+&#39;25&#39;:[&#39;Highest level where radar reflectivity exceeds the specified  value (echo top for a given threshold of reflectivity)&#39;,&#39;dBZ&#39;],
+&#39;26-99&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;100&#39;:[&#39;Isobaric Surface&#39;,&#39;Pa&#39;],
+&#39;101&#39;:[&#39;Mean Sea Level&#39;,&#39;unknown&#39;],
+&#39;102&#39;:[&#39;Specific Altitude Above Mean Sea Level&#39;,&#39;m&#39;],
+&#39;103&#39;:[&#39;Specified Height Level Above Ground&#39;,&#39;m&#39;],
+&#39;104&#39;:[&#39;Sigma Level&#39;,&#39;unknown&#39;],
+&#39;105&#39;:[&#39;Hybrid Level&#39;,&#39;unknown&#39;],
+&#39;106&#39;:[&#39;Depth Below Land Surface&#39;,&#39;m&#39;],
+&#39;107&#39;:[&#39;Isentropic (theta) Level&#39;,&#39;K&#39;],
+&#39;108&#39;:[&#39;Level at Specified Pressure Difference from Ground to Level&#39;,&#39;Pa&#39;],
+&#39;109&#39;:[&#39;Potential Vorticity Surface&#39;,&#39;K m2 kg-1 s-1&#39;],
+&#39;110&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;111&#39;:[&#39;Eta Level&#39;,&#39;unknown&#39;],
+&#39;112&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;113&#39;:[&#39;Logarithmic Hybrid Level&#39;,&#39;unknown&#39;],
+&#39;114&#39;:[&#39;Snow Level&#39;,&#39;Numeric&#39;],
+&#39;115&#39;:[&#39;Sigma height level (see Note 4)&#39;,&#39;unknown&#39;],
+&#39;116&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;117&#39;:[&#39;Mixed Layer Depth&#39;,&#39;m&#39;],
+&#39;118&#39;:[&#39;Hybrid Height Level&#39;,&#39;unknown&#39;],
+&#39;119&#39;:[&#39;Hybrid Pressure Level&#39;,&#39;unknown&#39;],
+&#39;120-149&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;150&#39;:[&#39;Generalized Vertical Height Coordinate (see Note 4)&#39;,&#39;unknown&#39;],
+&#39;151&#39;:[&#39;Soil level (See Note 5)&#39;,&#39;Numeric&#39;],
+&#39;152-159&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;160&#39;:[&#39;Depth Below Sea Level&#39;,&#39;m&#39;],
+&#39;161&#39;:[&#39;Depth Below Water Surface&#39;,&#39;m&#39;],
+&#39;162&#39;:[&#39;Lake or River Bottom&#39;,&#39;unknown&#39;],
+&#39;163&#39;:[&#39;Bottom Of Sediment Layer&#39;,&#39;unknown&#39;],
+&#39;164&#39;:[&#39;Bottom Of Thermally Active Sediment Layer&#39;,&#39;unknown&#39;],
+&#39;165&#39;:[&#39;Bottom Of Sediment Layer Penetrated By Thermal Wave&#39;,&#39;unknown&#39;],
+&#39;166&#39;:[&#39;Mixing Layer&#39;,&#39;unknown&#39;],
+&#39;167&#39;:[&#39;Bottom of Root Zone&#39;,&#39;unknown&#39;],
+&#39;168&#39;:[&#39;Ocean Model Level&#39;,&#39;Numeric&#39;],
+&#39;169&#39;:[&#39;Ocean level defined by water density (sigma-theta)  difference from near-surface to level (see Note 7)&#39;,&#39;kg m-3&#39;],
+&#39;170&#39;:[&#39;Ocean level defined by water potential temperature  difference from near-surface to level (see Note 7)&#39;,&#39;K&#39;],
+&#39;171-173&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;174&#39;:[&#39;Top Surface of Ice on Sea, Lake or River&#39;,&#39;unknown&#39;],
+&#39;175&#39;:[&#39;Top Surface of Ice, under Snow, on Sea, Lake or River&#39;,&#39;unknown&#39;],
+&#39;176&#39;:[&#39;Bottom Surface (underside) Ice on Sea, Lake or River&#39;,&#39;unknown&#39;],
+&#39;177&#39;:[&#39;Deep Soil (of indefinite depth)&#39;,&#39;unknown&#39;],
+&#39;178&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;179&#39;:[&#39;Top Surface of Glacier Ice and Inland Ice&#39;,&#39;unknown&#39;],
+&#39;180&#39;:[&#39;Deep Inland or Glacier Ice (of indefinite depth)&#39;,&#39;unknown&#39;],
+&#39;181&#39;:[&#39;Grid Tile Land Fraction as a Model Surface&#39;,&#39;unknown&#39;],
+&#39;182&#39;:[&#39;Grid Tile Water Fraction as a Model Surface&#39;,&#39;unknown&#39;],
+&#39;183&#39;:[&#39;Grid Tile Ice Fraction on Sea, Lake or River as a Model Surface&#39;,&#39;unknown&#39;],
+&#39;184&#39;:[&#39;Grid Tile Glacier Ice and Inland Ice Fraction as a Model Surface&#39;,&#39;unknown&#39;],
+&#39;185-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;],
+&#39;200&#39;:[&#39;Entire atmosphere (considered as a single layer)&#39;,&#39;unknown&#39;],
+&#39;201&#39;:[&#39;Entire ocean (considered as a single layer)&#39;,&#39;unknown&#39;],
+&#39;204&#39;:[&#39;Highest tropospheric freezing level&#39;,&#39;unknown&#39;],
+&#39;206&#39;:[&#39;Grid scale cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;207&#39;:[&#39;Grid scale cloud top level&#39;,&#39;unknown&#39;],
+&#39;209&#39;:[&#39;Boundary layer cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;210&#39;:[&#39;Boundary layer cloud top level&#39;,&#39;unknown&#39;],
+&#39;211&#39;:[&#39;Boundary layer cloud layer&#39;,&#39;unknown&#39;],
+&#39;212&#39;:[&#39;Low cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;213&#39;:[&#39;Low cloud top level&#39;,&#39;unknown&#39;],
+&#39;214&#39;:[&#39;Low cloud layer&#39;,&#39;unknown&#39;],
+&#39;215&#39;:[&#39;Cloud ceiling&#39;,&#39;unknown&#39;],
+&#39;220&#39;:[&#39;Planetary Boundary Layer&#39;,&#39;unknown&#39;],
+&#39;221&#39;:[&#39;Layer Between Two Hybrid Levels&#39;,&#39;unknown&#39;],
+&#39;222&#39;:[&#39;Middle cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;223&#39;:[&#39;Middle cloud top level&#39;,&#39;unknown&#39;],
+&#39;224&#39;:[&#39;Middle cloud layer&#39;,&#39;unknown&#39;],
+&#39;232&#39;:[&#39;High cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;233&#39;:[&#39;High cloud top level&#39;,&#39;unknown&#39;],
+&#39;234&#39;:[&#39;High cloud layer&#39;,&#39;unknown&#39;],
+&#39;235&#39;:[&#39;Ocean Isotherm Level (1/10 ° C)&#39;,&#39;unknown&#39;],
+&#39;236&#39;:[&#39;Layer between two depths below ocean surface&#39;,&#39;unknown&#39;],
+&#39;237&#39;:[&#39;Bottom of Ocean Mixed Layer (m)&#39;,&#39;unknown&#39;],
+&#39;238&#39;:[&#39;Bottom of Ocean Isothermal Layer (m)&#39;,&#39;unknown&#39;],
+&#39;239&#39;:[&#39;Layer Ocean Surface  and 26C Ocean Isothermal Level&#39;,&#39;unknown&#39;],
+&#39;240&#39;:[&#39;Ocean Mixed Layer&#39;,&#39;unknown&#39;],
+&#39;241&#39;:[&#39;Ordered Sequence of Data&#39;,&#39;unknown&#39;],
+&#39;242&#39;:[&#39;Convective cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;243&#39;:[&#39;Convective cloud top level&#39;,&#39;unknown&#39;],
+&#39;244&#39;:[&#39;Convective cloud layer&#39;,&#39;unknown&#39;],
+&#39;245&#39;:[&#39;Lowest level of the wet bulb zero&#39;,&#39;unknown&#39;],
+&#39;246&#39;:[&#39;Maximum equivalent potential temperature level&#39;,&#39;unknown&#39;],
+&#39;247&#39;:[&#39;Equilibrium level&#39;,&#39;unknown&#39;],
+&#39;248&#39;:[&#39;Shallow convective cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;249&#39;:[&#39;Shallow convective cloud top level&#39;,&#39;unknown&#39;],
+&#39;251&#39;:[&#39;Deep convective cloud bottom level&#39;,&#39;unknown&#39;],
+&#39;252&#39;:[&#39;Deep convective cloud top level&#39;,&#39;unknown&#39;],
+&#39;253&#39;:[&#39;Lowest bottom level of supercooled liquid water layer&#39;,&#39;unknown&#39;],
+&#39;254&#39;:[&#39;Highest top level of supercooled liquid water layer&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;],
+}
+
+table_4_6 = {
+&#39;0&#39;:&#39;Unperturbed High-Resolution Control Forecast&#39;,
+&#39;1&#39;:&#39;Unperturbed Low-Resolution Control Forecast&#39;,
+&#39;2&#39;:&#39;Negatively Perturbed Forecast&#39;,
+&#39;3&#39;:&#39;Positively Perturbed Forecast&#39;,
+&#39;4&#39;:&#39;Multi-Model Forecast&#39;,
+&#39;5-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Perturbed Ensemble Member&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_7 = {
+&#39;0&#39;:&#39;Unweighted Mean of All Members&#39;,
+&#39;1&#39;:&#39;Weighted Mean of All Members&#39;,
+&#39;2&#39;:&#39;Standard Deviation with respect to Cluster Mean&#39;,
+&#39;3&#39;:&#39;Standard Deviation with respect to Cluster Mean, Normalized&#39;,
+&#39;4&#39;:&#39;Spread of All Members&#39;,
+&#39;5&#39;:&#39;Large Anomaly Index of All Members (see Note 1)&#39;,
+&#39;6&#39;:&#39;Unweighted Mean of the Cluster Members&#39;,
+&#39;7&#39;:&#39;Interquartile Range (Range between the 25th and 75th quantile)&#39;,
+&#39;8&#39;:&#39;Minimum Of All Ensemble Members (see Note 2)&#39;,
+&#39;9&#39;:&#39;Maximum Of All Ensemble Members (see Note 2)&#39;,
+&#39;7-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Unweighted Mode of All Members&#39;,
+&#39;193&#39;:&#39;Percentile value (10%) of All Members&#39;,
+&#39;194&#39;:&#39;Percentile value (50%) of All Members&#39;,
+&#39;195&#39;:&#39;Percentile value (90%) of All Members&#39;,
+&#39;196&#39;:&#39;Statistically decided weights for each ensemble member&#39;,
+&#39;197&#39;:&#39;Climate Percentile (percentile values from climate distribution)&#39;,
+&#39;198&#39;:&#39;Deviation of Ensemble Mean from Daily Climatology&#39;,
+&#39;199&#39;:&#39;Extreme Forecast Index&#39;,
+&#39;200&#39;:&#39;Equally Weighted Mean&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_8 = {
+&#39;0&#39;:&#39;Anomoly Correlation&#39;,
+&#39;1&#39;:&#39;Root Mean Square&#39;,
+&#39;2-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_9 = {
+&#39;0&#39;:&#39;Probability of event below lower limit&#39;,
+&#39;1&#39;:&#39;Probability of event above upper limit&#39;,
+&#39;2&#39;:&#39;Probability of event between upper and lower limits (the range includes lower limit but no the upper limit)&#39;,
+&#39;3&#39;:&#39;Probability of event above lower limit&#39;,
+&#39;4&#39;:&#39;Probability of event below upper limit&#39;,
+&#39;5&#39;:&#39;Probability of event equal to lower limit&#39;,
+&#39;6&#39;:&#39;Probability of event in above normal category (see Notes 1 and 2)&#39;,
+&#39;9-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_10 = {
+&#39;0&#39;:&#39;Average&#39;,
+&#39;1&#39;:&#39;Accumulation (see Note 1)&#39;,
+&#39;2&#39;:&#39;Maximum&#39;,
+&#39;3&#39;:&#39;Minimum&#39;,
+&#39;4&#39;:&#39;Difference (value at the end of the time range minus value at the beginning)&#39;,
+&#39;5&#39;:&#39;Root Mean Square&#39;,
+&#39;6&#39;:&#39;Standard Deviation&#39;,
+&#39;7&#39;:&#39;Covariance (temporal variance) (see Note 2)&#39;,
+&#39;8&#39;:&#39;Difference ( value at the beginning of the time range minus value at the end)&#39;,
+&#39;9&#39;:&#39;Ratio (see Note 3)&#39;,
+&#39;14-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;192&#39;:&#39;Climatological Mean Value: multiple year averages of quantities which are themselves means over some period of time (P2) less than a year. The reference time (R) indicates the date and time of the start of a period of time, given by R to R + P2, over which a mean is formed; N indicates the number of such period-means that are averaged together to form the climatological value, assuming that the N period-mean fields are separated by one year. The reference time indicates the start of the N-year climatology. N is given in octets 22-23 of the PDS.  If P1 = 0 then the data averaged in the basic interval P2 are assumed to be continuous, i.e., all available data are simply averaged together.  If P1 = 1 (the units of time - octet 18, code table 4 - are not relevant here) then the data averaged together in the basic interval P2 are valid only at the time (hour, minute) given in the reference time, for all the days included in the P2 period. The units of P2 are given by the contents of octet 18 and Table 4.&#39;,
+&#39;193&#39;:&#39;Average of N forecasts (or initialized analyses); each product has forecast period of P1 (P1=0 for initialized analyses); products have reference times at intervals of P2, beginning at the given reference time.&#39;,
+&#39;194&#39;:&#39;Average of N uninitialized analyses, starting at reference time, at intervals of P2.&#39;,
+&#39;195&#39;:&#39;Average of forecast accumulations. P1 = start of accumulation period. P2 = end of accumulation period. Reference time is the start time of the first forecast, other forecasts at 24-hour intervals. Number in Ave = number of forecasts used.&#39;,
+&#39;196&#39;:&#39;Average of successive forecast accumulations. P1 = start of accumulation period. P2 = end of accumulation period. Reference time is the start time of the first forecast, other forecasts at (P2 - P1) intervals. Number in Ave = number of forecasts used&#39;,
+&#39;197&#39;:&#39;Average of forecast averages. P1 = start of averaging period. P2 = end of averaging period. Reference time is the start time of the first forecast, other forecasts at 24-hour intervals. Number in Ave = number of forecast used&#39;,
+&#39;198&#39;:&#39;Average of successive forecast averages. P1 = start of averaging period. P2 = end of averaging period. Reference time is the start time of the first forecast, other forecasts at (P2 - P1) intervals. Number in Ave = number of forecasts used&#39;,
+&#39;199&#39;:&#39;Climatological Average of N analyses, each a year apart, starting from initial time R and for the period from R+P1 to R+P2.&#39;,
+&#39;200&#39;:&#39;Climatological Average of N forecasts, each a year apart, starting from initial time R and for the period from R+P1 to R+P2.&#39;,
+&#39;201&#39;:&#39;Climatological Root Mean Square difference between N forecasts and their verifying analyses, each a year apart, starting with initial time R and for the period from R+P1 to R+P2.&#39;,
+&#39;202&#39;:&#39;Climatological Standard Deviation of N forecasts from the mean of the same N forecasts, for forecasts one year apart. The first forecast starts wtih initial time R and is for the period from R+P1 to R+P2.&#39;,
+&#39;203&#39;:&#39;Climatological Standard Deviation of N analyses from the mean of the same N analyses, for analyses one year apart. The first analyses is valid for period R+P1 to R+P2.&#39;,
+&#39;204&#39;:&#39;Average of forecast accumulations. P1 = start of accumulation period. P2 = end of accumulation period. Reference time is the start time of the first forecast, other forecasts at 6-hour intervals. Number in Ave = number of forecast used&#39;,
+&#39;205&#39;:&#39;Average of forecast averages. P1 = start of averaging period. P2 = end of averaging period. Reference time is the start time of the first forecast, other forecasts at 6-hour intervals. Number in Ave = number of forecast used&#39;,
+&#39;206&#39;:&#39;Average of forecast accumulations. P1 = start of accumulation period. P2 = end of accumulation period. Reference time is the start time of the first forecast, other forecasts at 12-hour intervals. Number in Ave = number of forecast used&#39;,
+&#39;207&#39;:&#39;Average of forecast averages. P1 = start of averaging period. P2 = end of averaging period. Reference time is the start time of the first forecast, other forecasts at 12-hour intervals. Number in Ave = number of forecast used&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}
+
+table_4_11 = {
+&#39;0&#39;:&#39;Reserved&#39;,
+&#39;1&#39;:&#39;Successive times processed have same forecast time, start time of forecast is incremented.&#39;,
+&#39;2&#39;:&#39;Successive times processed have same start time of forecast, forecast time is incremented.&#39;,
+&#39;3&#39;:&#39;Successive times processed have start time of forecast incremented and forecast time decremented so that valid time remains constant.&#39;,
+&#39;4&#39;:&#39;Successive times processed have start time of forecast decremented and forecast time incremented so that valid time remains constant.&#39;,
+&#39;5&#39;:&#39;Floating subinterval of time between forecast time and end of overall time interval.(see Note 1)&#39;,
+&#39;6-191&#39;:&#39;Reserved&#39;,
+&#39;192-254&#39;:&#39;Reserved for Local Use&#39;,
+&#39;255&#39;:&#39;Missing&#39;,
+}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="grib2io.tables" href="index.html">grib2io.tables</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.9.2" />
+<title>grib2io.tables.section4_discipline10 API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>grib2io.tables.section4_discipline10</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">table_4_2_10_0  = {
+&#39;0&#39;:[&#39;Wave Spectra (1)&#39;,&#39;-&#39;,&#39;WVSP1&#39;],
+&#39;1&#39;:[&#39;Wave Spectra (2)&#39;,&#39;-&#39;,&#39;WVSP2&#39;],
+&#39;2&#39;:[&#39;Wave Spectra (3)&#39;,&#39;-&#39;,&#39;WVSP3&#39;],
+&#39;3&#39;:[&#39;Significant Height of Combined Wind Waves and Swell&#39;,&#39;m&#39;,&#39;HTSGW&#39;],
+&#39;4&#39;:[&#39;Direction of Wind Waves&#39;,&#39;degree true&#39;,&#39;WVDIR&#39;],
+&#39;5&#39;:[&#39;Significant Height of Wind Waves&#39;,&#39;m&#39;,&#39;WVHGT&#39;],
+&#39;6&#39;:[&#39;Mean Period of Wind Waves&#39;,&#39;s&#39;,&#39;WVPER&#39;],
+&#39;7&#39;:[&#39;Direction of Swell Waves&#39;,&#39;degree true&#39;,&#39;SWDIR&#39;],
+&#39;8&#39;:[&#39;Significant Height of Swell Waves&#39;,&#39;m&#39;,&#39;SWELL&#39;],
+&#39;9&#39;:[&#39;Mean Period of Swell Waves&#39;,&#39;s&#39;,&#39;SWPER&#39;],
+&#39;10&#39;:[&#39;Primary Wave Direction&#39;,&#39;degree true&#39;,&#39;DIRPW&#39;],
+&#39;11&#39;:[&#39;Primary Wave Mean Period&#39;,&#39;s&#39;,&#39;PERPW&#39;],
+&#39;12&#39;:[&#39;Secondary Wave Direction&#39;,&#39;degree true&#39;,&#39;DIRSW&#39;],
+&#39;13&#39;:[&#39;Secondary Wave Mean Period&#39;,&#39;s&#39;,&#39;PERSW&#39;],
+&#39;14&#39;:[&#39;Direction of Combined Wind Waves and Swell&#39;,&#39;degree true&#39;,&#39;WWSDIR&#39;],
+&#39;15&#39;:[&#39;Mean Period of Combined Wind Waves and Swell&#39;,&#39;s&#39;,&#39;MWSPER&#39;],
+&#39;16&#39;:[&#39;Coefficient of Drag With Waves&#39;,&#39;-&#39;,&#39;CDWW&#39;],
+&#39;17&#39;:[&#39;Friction Velocity&#39;,&#39;m s-1&#39;,&#39;FRICV&#39;],
+&#39;18&#39;:[&#39;Wave Stress&#39;,&#39;N m-2&#39;,&#39;WSTR&#39;],
+&#39;19&#39;:[&#39;Normalised Waves Stress&#39;,&#39;-&#39;,&#39;NWSTR&#39;],
+&#39;20&#39;:[&#39;Mean Square Slope of Waves&#39;,&#39;-&#39;,&#39;MSSW&#39;],
+&#39;21&#39;:[&#39;U-component Surface Stokes Drift&#39;,&#39;m s-1&#39;,&#39;USSD&#39;],
+&#39;22&#39;:[&#39;V-component Surface Stokes Drift&#39;,&#39;m s-1&#39;,&#39;VSSD&#39;],
+&#39;23&#39;:[&#39;Period of Maximum Individual Wave Height&#39;,&#39;s&#39;,&#39;PMAXWH&#39;],
+&#39;24&#39;:[&#39;Maximum Individual Wave Height&#39;,&#39;m&#39;,&#39;MAXWH&#39;],
+&#39;25&#39;:[&#39;Inverse Mean Wave Frequency&#39;,&#39;s&#39;,&#39;IMWF&#39;],
+&#39;26&#39;:[&#39;Inverse Mean Frequency of The Wind Waves&#39;,&#39;s&#39;,&#39;IMFWW&#39;],
+&#39;27&#39;:[&#39;Inverse Mean Frequency of The Total Swell&#39;,&#39;s&#39;,&#39;IMFTSW&#39;],
+&#39;28&#39;:[&#39;Mean Zero-Crossing Wave Period&#39;,&#39;s&#39;,&#39;MZWPER&#39;],
+&#39;29&#39;:[&#39;Mean Zero-Crossing Period of The Wind Waves&#39;,&#39;s&#39;,&#39;MZPWW&#39;],
+&#39;30&#39;:[&#39;Mean Zero-Crossing Period of The Total Swell&#39;,&#39;s&#39;,&#39;MZPTSW&#39;],
+&#39;31&#39;:[&#39;Wave Directional Width&#39;,&#39;-&#39;,&#39;WDIRW&#39;],
+&#39;32&#39;:[&#39;Directional Width of The Wind Waves&#39;,&#39;-&#39;,&#39;DIRWWW&#39;],
+&#39;33&#39;:[&#39;Directional Width of The Total Swell&#39;,&#39;-&#39;,&#39;DIRWTS&#39;],
+&#39;34&#39;:[&#39;Peak Wave Period&#39;,&#39;s&#39;,&#39;PWPER&#39;],
+&#39;35&#39;:[&#39;Peak Period of The Wind Waves&#39;,&#39;s&#39;,&#39;PPERWW&#39;],
+&#39;36&#39;:[&#39;Peak Period of The Total Swell&#39;,&#39;s&#39;,&#39;PPERTS&#39;],
+&#39;37&#39;:[&#39;Altimeter Wave Height&#39;,&#39;m&#39;,&#39;ALTWH&#39;],
+&#39;38&#39;:[&#39;Altimeter Corrected Wave Height&#39;,&#39;m&#39;,&#39;ALCWH&#39;],
+&#39;39&#39;:[&#39;Altimeter Range Relative Correction&#39;,&#39;-&#39;,&#39;ALRRC&#39;],
+&#39;40&#39;:[&#39;10 Metre Neutral Wind Speed Over Waves&#39;,&#39;m s-1&#39;,&#39;MNWSOW&#39;],
+&#39;41&#39;:[&#39;10 Metre Wind Direction Over Waves&#39;,&#39;degree true&#39;,&#39;MWDIRW&#39;],
+&#39;42&#39;:[&#39;Wave Engery Spectrum&#39;,&#39;m-2 s rad-1&#39;,&#39;WESP&#39;],
+&#39;43&#39;:[&#39;Kurtosis of The Sea Surface Elevation Due to Waves&#39;,&#39;-&#39;,&#39;KSSEW&#39;],
+&#39;44&#39;:[&#39;Benjamin-Feir Index&#39;,&#39;-&#39;,&#39;BENINX&#39;],
+&#39;45&#39;:[&#39;Spectral Peakedness Factor&#39;,&#39;s-1&#39;,&#39;SPFTR&#39;],
+&#39;46&#39;:[&#39;Peak wave direction&#39;,&#39;&amp;deg&#39;,&#39;PWAVEDIR&#39;],
+&#39;47&#39;:[&#39;Significant wave height of first swell partition&#39;,&#39;m&#39;,&#39;SWHFSWEL&#39;],
+&#39;48&#39;:[&#39;Significant wave height of second swell partition&#39;,&#39;m&#39;,&#39;SWHSSWEL&#39;],
+&#39;49&#39;:[&#39;Significant wave height of third swell partition&#39;,&#39;m&#39;,&#39;SWHTSWEL&#39;],
+&#39;50&#39;:[&#39;Mean wave period of first swell partition&#39;,&#39;s&#39;,&#39;MWPFSWEL&#39;],
+&#39;51&#39;:[&#39;Mean wave period of second swell partition&#39;,&#39;s&#39;,&#39;MWPSSWEL&#39;],
+&#39;52&#39;:[&#39;Mean wave period of third swell partition&#39;,&#39;s&#39;,&#39;MWPTSWEL&#39;],
+&#39;53&#39;:[&#39;Mean wave direction of first swell partition&#39;,&#39;&amp;deg&#39;,&#39;MWDFSWEL&#39;],
+&#39;54&#39;:[&#39;Mean wave direction of second swell partition&#39;,&#39;&amp;deg&#39;,&#39;MWDSSWEL&#39;],
+&#39;55&#39;:[&#39;Mean wave direction of third swell partition&#39;,&#39;&amp;deg&#39;,&#39;MWDTSWEL&#39;],
+&#39;56&#39;:[&#39;Wave directional width of first swell partition&#39;,&#39;-&#39;,&#39;WDWFSWEL&#39;],
+&#39;57&#39;:[&#39;Wave directional width of second swell partition&#39;,&#39;-&#39;,&#39;WDWSSWEL&#39;],
+&#39;58&#39;:[&#39;Wave directional width of third swell partition&#39;,&#39;-&#39;,&#39;WDWTSWEL&#39;],
+&#39;59&#39;:[&#39;Wave frequency width of first swell partition&#39;,&#39;-&#39;,&#39;WFWFSWEL&#39;],
+&#39;60&#39;:[&#39;Wave frequency width of second swell partition&#39;,&#39;-&#39;,&#39;WFWSSWEL&#39;],
+&#39;61&#39;:[&#39;Wave frequency width of third swell partition&#39;,&#39;-&#39;,&#39;WFWTSWEL&#39;],
+&#39;62&#39;:[&#39;Wave frequency width&#39;,&#39;-&#39;,&#39;WAVEFREW&#39;],
+&#39;63&#39;:[&#39;Frequency width of wind waves&#39;,&#39;-&#39;,&#39;FREWWW&#39;],
+&#39;64&#39;:[&#39;Frequency width of total swell&#39;,&#39;-&#39;,&#39;FREWTSW&#39;],
+&#39;65-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Wave Steepness&#39;,&#39;proportion&#39;,&#39;WSTP&#39;],
+&#39;193&#39;:[&#39;Wave Length&#39;,&#39;unknown&#39;,&#39;WLENG&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_10_1  = {
+&#39;0&#39;:[&#39;Current Direction&#39;,&#39;degree True&#39;,&#39;DIRC&#39;],
+&#39;1&#39;:[&#39;Current Speed&#39;,&#39;m s-1&#39;,&#39;SPC&#39;],
+&#39;2&#39;:[&#39;U-Component of Current&#39;,&#39;m s-1&#39;,&#39;UOGRD&#39;],
+&#39;3&#39;:[&#39;V-Component of Current&#39;,&#39;m s-1&#39;,&#39;VOGRD&#39;],
+&#39;4&#39;:[&#39;Rip Current Occurrence Probability&#39;,&#39;%&#39;,&#39;RIPCOP&#39;],
+&#39;5-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Ocean Mixed Layer U Velocity&#39;,&#39;m s-1&#39;,&#39;OMLU&#39;],
+&#39;193&#39;:[&#39;Ocean Mixed Layer V Velocity&#39;,&#39;m s-1&#39;,&#39;OMLV&#39;],
+&#39;194&#39;:[&#39;Barotropic U velocity&#39;,&#39;m s-1&#39;,&#39;UBARO&#39;],
+&#39;195&#39;:[&#39;Barotropic V velocity&#39;,&#39;m s-1&#39;,&#39;VBARO&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_10_2  = {
+&#39;0&#39;:[&#39;Ice Cover&#39;,&#39;Proportion&#39;,&#39;ICEC&#39;],
+&#39;1&#39;:[&#39;Ice Thickness&#39;,&#39;m&#39;,&#39;ICETK&#39;],
+&#39;2&#39;:[&#39;Direction of Ice Drift&#39;,&#39;degree True&#39;,&#39;DICED&#39;],
+&#39;3&#39;:[&#39;Speed of Ice Drift&#39;,&#39;m s-1&#39;,&#39;SICED&#39;],
+&#39;4&#39;:[&#39;U-Component of Ice Drift&#39;,&#39;m s-1&#39;,&#39;UICE&#39;],
+&#39;5&#39;:[&#39;V-Component of Ice Drift&#39;,&#39;m s-1&#39;,&#39;VICE&#39;],
+&#39;6&#39;:[&#39;Ice Growth Rate&#39;,&#39;m s-1&#39;,&#39;ICEG&#39;],
+&#39;7&#39;:[&#39;Ice Divergence&#39;,&#39;s-1&#39;,&#39;ICED&#39;],
+&#39;8&#39;:[&#39;Ice Temperature&#39;,&#39;K&#39;,&#39;ICETMP&#39;],
+&#39;9&#39;:[&#39;Module of Ice Internal Pressure&#39;,&#39;Pa m&#39;,&#39;ICEPRS&#39;],
+&#39;10&#39;:[&#39;Zonal Vector Component of Vertically Integrated  Ice Internal Pressure&#39;,&#39;Pa m&#39;,&#39;ZVCICEP&#39;],
+&#39;11&#39;:[&#39;Meridional Vector Component of Vertically Integrated  Ice Internal Pressure&#39;,&#39;Pa m&#39;,&#39;MVCICEP&#39;],
+&#39;12&#39;:[&#39;Compressive Ice Strength&#39;,&#39;N m-1&#39;,&#39;CICES&#39;],
+&#39;13-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_10_3  = {
+&#39;0&#39;:[&#39;Water Temperature&#39;,&#39;K&#39;,&#39;WTMP&#39;],
+&#39;1&#39;:[&#39;Deviation of Sea Level from Mean&#39;,&#39;m&#39;,&#39;DSLM&#39;],
+&#39;2&#39;:[&#39;Heat Exchange Coefficient&#39;,&#39;unknown&#39;,&#39;CH&#39;],
+&#39;3&#39;:[&#39;Practical salinity&#39;,&#39;Numeric&#39;,&#39;PRACTSAL&#39;],
+&#39;4-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;Hurricane Storm Surge&#39;,&#39;m&#39;,&#39;SURGE&#39;],
+&#39;193&#39;:[&#39;Extra Tropical Storm Surge&#39;,&#39;m&#39;,&#39;ETSRG&#39;],
+&#39;194&#39;:[&#39;Ocean Surface Elevation Relative to Geoid&#39;,&#39;m&#39;,&#39;ELEV&#39;],
+&#39;195&#39;:[&#39;Sea Surface Height Relative to Geoid&#39;,&#39;m&#39;,&#39;SSHG&#39;],
+&#39;196&#39;:[&#39;Ocean Mixed Layer Potential Density (Reference 2000m)&#39;,&#39;kg m-3&#39;,&#39;P2OMLT&#39;],
+&#39;197&#39;:[&#39;Net Air-Ocean Heat Flux&#39;,&#39;W m-2&#39;,&#39;AOHFLX&#39;],
+&#39;198&#39;:[&#39;Assimilative Heat Flux&#39;,&#39;W m-2&#39;,&#39;ASHFL&#39;],
+&#39;199&#39;:[&#39;Surface Temperature Trend&#39;,&#39;degree per day&#39;,&#39;SSTT&#39;],
+&#39;200&#39;:[&#39;Surface Salinity Trend&#39;,&#39;psu per day&#39;,&#39;SSST&#39;],
+&#39;201&#39;:[&#39;Kinetic Energy&#39;,&#39;J kg-1&#39;,&#39;KENG&#39;],
+&#39;202&#39;:[&#39;Salt Flux&#39;,&#39;kg m-2s-1&#39;,&#39;SLTFL&#39;],
+&#39;203&#39;:[&#39;Heat Exchange Coefficient&#39;,&#39;unknown&#39;,&#39;LCH&#39;],
+&#39;204&#39;:[&#39;Freezing Spray&#39;,&#39;unknown&#39;,&#39;FRZSPR&#39;],
+&#39;205&#39;:[&#39;Total Water Level Accounting for Tide, Wind and Waves&#39;,&#39;m&#39;,&#39;TWLWAV&#39;],
+&#39;206&#39;:[&#39;Total Water Level Increase due to Waves&#39;,&#39;m&#39;,&#39;RUNUP&#39;],
+&#39;207&#39;:[&#39;Mean Increase in Water Level due to Waves&#39;,&#39;m&#39;,&#39;SETUP&#39;],
+&#39;208&#39;:[&#39;Time-varying Increase in Water Level due to Waves&#39;,&#39;m&#39;,&#39;SWASH&#39;],
+&#39;209&#39;:[&#39;Total Water Level Above Dune Toe&#39;,&#39;m&#39;,&#39;TWLDT&#39;],
+&#39;210&#39;:[&#39;Total Water Level Above Dune Crest&#39;,&#39;m&#39;,&#39;TWLDC&#39;],
+&#39;211-241&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;242&#39;:[&#39;20% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG20&#39;],
+&#39;243&#39;:[&#39;30% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG30&#39;],
+&#39;244&#39;:[&#39;40% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG40&#39;],
+&#39;245&#39;:[&#39;50% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG50&#39;],
+&#39;246&#39;:[&#39;60% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG60&#39;],
+&#39;247&#39;:[&#39;70% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG70&#39;],
+&#39;248&#39;:[&#39;80% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG80&#39;],
+&#39;249&#39;:[&#39;90% Tropical Cyclone Storm Surge Exceedance&#39;,&#39;m&#39;,&#39;TCSRG90&#39;],
+&#39;250&#39;:[&#39;Extra Tropical Storm Surge Combined Surge and Tide&#39;,&#39;m&#39;,&#39;ETCWL&#39;],
+&#39;251&#39;:[&#39;Tide&#39;,&#39;m&#39;,&#39;TIDE&#39;],
+&#39;252&#39;:[&#39;Erosion Occurrence Probability&#39;,&#39;%&#39;,&#39;EROSNP&#39;],
+&#39;253&#39;:[&#39;Overwash Occurrence Probability&#39;,&#39;%&#39;,&#39;OWASHP&#39;],
+&#39;254&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_10_4  = {
+&#39;0&#39;:[&#39;Main Thermocline Depth&#39;,&#39;m&#39;,&#39;MTHD&#39;],
+&#39;1&#39;:[&#39;Main Thermocline Anomaly&#39;,&#39;m&#39;,&#39;MTHA&#39;],
+&#39;2&#39;:[&#39;Transient Thermocline Depth&#39;,&#39;m&#39;,&#39;TTHDP&#39;],
+&#39;3&#39;:[&#39;Salinity&#39;,&#39;kg kg-1&#39;,&#39;SALTY&#39;],
+&#39;4&#39;:[&#39;Ocean Vertical Heat Diffusivity&#39;,&#39;m2 s-1&#39;,&#39;OVHD&#39;],
+&#39;5&#39;:[&#39;Ocean Vertical Salt Diffusivity&#39;,&#39;m2 s-1&#39;,&#39;OVSD&#39;],
+&#39;6&#39;:[&#39;Ocean Vertical Momentum Diffusivity&#39;,&#39;m2 s-1&#39;,&#39;OVMD&#39;],
+&#39;7&#39;:[&#39;Bathymetry&#39;,&#39;m&#39;,&#39;BATHY&#39;],
+&#39;8-10&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;11&#39;:[&#39;Shape Factor With Respect To Salinity Profile&#39;,&#39;unknown&#39;,&#39;SFSALP&#39;],
+&#39;12&#39;:[&#39;Shape Factor With Respect To Temperature Profile In  Thermocline&#39;,&#39;unknown&#39;,&#39;SFTMPP&#39;],
+&#39;13&#39;:[&#39;Attenuation Coefficient Of Water With Respect to Solar Radiation&#39;,&#39;m-1&#39;,&#39;ACWSRD&#39;],
+&#39;14&#39;:[&#39;Water Depth&#39;,&#39;m&#39;,&#39;WDEPTH&#39;],
+&#39;15&#39;:[&#39;Water Temperature&#39;,&#39;K&#39;,&#39;WTMPSS&#39;],
+&#39;16&#39;:[&#39;Water Density (rho)&#39;,&#39;kg m-3&#39;,&#39;WATERDEN&#39;],
+&#39;17&#39;:[&#39;Water Density Anomaly (sigma) See note&#39;,&#39;kg m-3&#39;,&#39;WATDENA&#39;],
+&#39;18&#39;:[&#39;Water potential temperature (theta)&#39;,&#39;K&#39;,&#39;WATPTEMP&#39;],
+&#39;19&#39;:[&#39;Water potential density (rho theta)&#39;,&#39;kg m-3&#39;,&#39;WATPDEN&#39;],
+&#39;20&#39;:[&#39;Water potential density anomaly (sigma theta) See Note&#39;,&#39;kg m-3&#39;,&#39;WATPDENA&#39;],
+&#39;21&#39;:[&#39;Practical salinity&#39;,&#39;psu (numeric)&#39;,&#39;PRTSAL&#39;],
+&#39;22-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192&#39;:[&#39;3-D Temperature&#39;,&#39;° c&#39;,&#39;WTMPC&#39;],
+&#39;193&#39;:[&#39;3-D Salinity&#39;,&#39;psu&#39;,&#39;SALIN&#39;],
+&#39;194&#39;:[&#39;Barotropic Kinectic Energy&#39;,&#39;J kg-1&#39;,&#39;BKENG&#39;],
+&#39;195&#39;:[&#39;Geometric Depth Below Sea Surface&#39;,&#39;m&#39;,&#39;DBSS&#39;],
+&#39;196&#39;:[&#39;Interface Depths&#39;,&#39;m&#39;,&#39;INTFD&#39;],
+&#39;197&#39;:[&#39;Ocean Heat Content&#39;,&#39;J m-2&#39;,&#39;OHC&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}
+
+table_4_2_10_191  = {
+&#39;0&#39;:[&#39;Seconds Prior To Initial Reference Time (Defined In Section 1)&#39;,&#39;s&#39;,&#39;IRTSEC&#39;],
+&#39;1&#39;:[&#39;Meridional Overturning Stream Function&#39;,&#39;m3 s-1&#39;,&#39;MOSF&#39;],
+&#39;2&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;3&#39;:[&#39;Days Since Last Observation&#39;,&#39;d&#39;,&#39;DSLOBS&#39;],
+&#39;4-191&#39;:[&#39;Reserved&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;192-254&#39;:[&#39;Reserved for Local Use&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+&#39;255&#39;:[&#39;Missing&#39;,&#39;unknown&#39;,&#39;unknown&#39;],
+}</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="grib2io.tables" href="index.html">grib2io.tables</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+</footer>
+</body>
+</html>
