@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.2" />
+<meta name="generator" content="pdoc 0.9.1" />
 <title>grib2io.tables API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
@@ -31,11 +31,29 @@ from .section1 import *
 from .section3 import *
 from .section4 import *
 from .section5 import *
-
 from .originating_centers import *
 
 
 def get_table(table,expand=False):
+    &#34;&#34;&#34;
+    Return GRIB2 code table as a dictionary.
+
+    Parameters
+    ----------
+
+    **`table : str`**
+
+    Code table number.  Example: &#39;1.0&#39;
+
+    **`expand : bool`**
+
+    When **`True`**, expand output dictionary where keys are a range. Default is **`false`**
+
+    Returns
+    -------
+
+    **`dict`**    
+    &#34;&#34;&#34;
     tbl = globals()[&#39;table_&#39;+table.replace(&#39;.&#39;,&#39;_&#39;)]
     if expand:
         _tbl = {}
@@ -52,6 +70,23 @@ def get_table(table,expand=False):
 
 def get_value_from_table(value,table):
     &#34;&#34;&#34;
+    Return the meaning/definition given a GRIB2 code table `value` and `table`.
+
+    Parameters
+    ----------
+
+    **`value : str`**
+
+    Code table value.  Function will convert integer to string.  Example: &#39;5&#39;
+
+    **`table : str`**
+
+    Code table number.  Example: &#39;1.0&#39;
+
+    Returns
+    -------
+
+    **`str` or `list`**
     &#34;&#34;&#34;
     try:
         tbl = get_table(table,expand=True)
@@ -63,6 +98,27 @@ def get_value_from_table(value,table):
 
 def get_varname_from_table(discipline,parmcat,parmnum):
     &#34;&#34;&#34;
+    Return the GRIB2 variable name information given values of `discipline`,
+    `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments
+    to be converted to a string type if arguments are integer.
+
+    Parameters
+    ----------
+
+    **`discipline : str`**
+
+    Discipline code value of a GRIB2 message.
+
+    **`parmcat : str`**
+
+    Parameter Category value of a GRIB2 message.
+
+    **`parmnum : str`**
+
+    Parameter Number value of a GRIB2 message.
+
+    Returns
+    -------
     &#34;&#34;&#34;
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
@@ -135,12 +191,39 @@ def get_varname_from_table(discipline,parmcat,parmnum):
 <span>def <span class="ident">get_table</span></span>(<span>table, expand=False)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return GRIB2 code table as a dictionary.</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>table : str</code></strong></p>
+<p>Code table number.
+Example: '1.0'</p>
+<p><strong><code>expand : bool</code></strong></p>
+<p>When <strong><code>True</code></strong>, expand output dictionary where keys are a range. Default is <strong><code>false</code></strong></p>
+<h2 id="returns">Returns</h2>
+<p><strong><code>dict</code></strong></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_table(table,expand=False):
+    &#34;&#34;&#34;
+    Return GRIB2 code table as a dictionary.
+
+    Parameters
+    ----------
+
+    **`table : str`**
+
+    Code table number.  Example: &#39;1.0&#39;
+
+    **`expand : bool`**
+
+    When **`True`**, expand output dictionary where keys are a range. Default is **`false`**
+
+    Returns
+    -------
+
+    **`dict`**    
+    &#34;&#34;&#34;
     tbl = globals()[&#39;table_&#39;+table.replace(&#39;.&#39;,&#39;_&#39;)]
     if expand:
         _tbl = {}
@@ -159,13 +242,40 @@ def get_varname_from_table(discipline,parmcat,parmnum):
 <span>def <span class="ident">get_value_from_table</span></span>(<span>value, table)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the meaning/definition given a GRIB2 code table <code>value</code> and <code>table</code>.</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>value : str</code></strong></p>
+<p>Code table value.
+Function will convert integer to string.
+Example: '5'</p>
+<p><strong><code>table : str</code></strong></p>
+<p>Code table number.
+Example: '1.0'</p>
+<h2 id="returns">Returns</h2>
+<p><strong><code>str</code> or <code>list</code></strong></p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_value_from_table(value,table):
     &#34;&#34;&#34;
+    Return the meaning/definition given a GRIB2 code table `value` and `table`.
+
+    Parameters
+    ----------
+
+    **`value : str`**
+
+    Code table value.  Function will convert integer to string.  Example: &#39;5&#39;
+
+    **`table : str`**
+
+    Code table number.  Example: &#39;1.0&#39;
+
+    Returns
+    -------
+
+    **`str` or `list`**
     &#34;&#34;&#34;
     try:
         tbl = get_table(table,expand=True)
@@ -179,13 +289,44 @@ def get_varname_from_table(discipline,parmcat,parmnum):
 <span>def <span class="ident">get_varname_from_table</span></span>(<span>discipline, parmcat, parmnum)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Return the GRIB2 variable name information given values of <code>discipline</code>,
+<code>parmcat</code>, and <code>parmnum</code>. NOTE: This functions allows for all arguments
+to be converted to a string type if arguments are integer.</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>discipline : str</code></strong></p>
+<p>Discipline code value of a GRIB2 message.</p>
+<p><strong><code>parmcat : str</code></strong></p>
+<p>Parameter Category value of a GRIB2 message.</p>
+<p><strong><code>parmnum : str</code></strong></p>
+<p>Parameter Number value of a GRIB2 message.</p>
+<h2 id="returns">Returns</h2></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def get_varname_from_table(discipline,parmcat,parmnum):
     &#34;&#34;&#34;
+    Return the GRIB2 variable name information given values of `discipline`,
+    `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments
+    to be converted to a string type if arguments are integer.
+
+    Parameters
+    ----------
+
+    **`discipline : str`**
+
+    Discipline code value of a GRIB2 message.
+
+    **`parmcat : str`**
+
+    Parameter Category value of a GRIB2 message.
+
+    **`parmnum : str`**
+
+    Parameter Number value of a GRIB2 message.
+
+    Returns
+    -------
     &#34;&#34;&#34;
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
@@ -239,7 +380,7 @@ def get_varname_from_table(discipline,parmcat,parmnum):
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
 </footer>
 </body>
 </html>
