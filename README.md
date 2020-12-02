@@ -37,7 +37,7 @@ pip3 install grib2io
 
 * Clone GitHub repository or download a source release from GitHub or [PyPI](https://pypi.python.org/pypi/grib2io).
 
-* Copy setup.cfg.template to setup.cfg, open in text editor, follow instructions in comments for editing.
+* Copy `setup.cfg.template` to `setup.cfg`, open in text editor, follow instructions in comments for editing.
 
 * Build
 
