@@ -17,8 +17,11 @@ import datetime
 import os
 import struct
 import math
-import numpy as np
+
 from numpy import ma
+import numpy as np
+import pyproj
+
 
 from . import tables
 

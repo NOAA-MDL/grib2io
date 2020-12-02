@@ -12,15 +12,6 @@ class _ConfigParser(configparser.ConfigParser):
         except:
             return fallback
 
-# pyproj is a runtime dependency
-try:
-    import pyproj
-except ImportError:
-    try:
-        from mpl_toolkits.basemap import pyproj
-    except:
-        raise ImportError('either pyproj or basemap required')
-
 # Build time dependancy
 try:
     from Cython.Distutils import build_ext
@@ -165,7 +156,7 @@ setup(name = 'grib2io',
       py_modules        = install_py_modules,
       packages          = find_packages(),
       data_files        = data_files,
-      install_requires  = ['numpy'],
+      install_requires  = ['setuptools>=34.0','numpy>=1.12.0','pyproj>=2.0'],
       python_requires   = '>=3.6',
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
