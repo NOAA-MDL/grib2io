@@ -32,6 +32,11 @@ For macOS, please install GNU compilers via homebrew.  The NCEP G2 C Library wil
 ```shell
 pip3 install grib2io
 ```
+On macOS, please prepend the pip3 with setting `CC` to the full path to GNU C compiler (i.e. gcc)
+
+```shell
+CC=/path/to/gcc pip3 install grib2io
+```
 
 ### Build from Source
 
