@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
-<meta name="generator" content="pdoc 0.9.1" />
+<meta name="generator" content="pdoc 0.9.2" />
 <title>grib2io API documentation</title>
 <meta name="description" content="Introduction
 …" />
@@ -38,7 +38,6 @@ and unpacking of data.</p>
 <pre><code class="python">from ._grib2io import *
 from ._grib2io import __doc__,__pdoc__
 
-#__all__ = [&#39;__version__&#39;,&#39;open&#39;,&#39;Grib2Message&#39;]
 __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 </details>
 </section>
@@ -60,17 +59,44 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 <dl>
 <dt id="grib2io.Grib2Message"><code class="flex name class">
 <span>class <span class="ident">Grib2Message</span></span>
-<span>(</span><span>msg, ref=None, num=-1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Class Constructor</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>msg : bytes</code></strong></p>
+<p>Binary string representing the GRIB2 Message read from file.</p>
+<p><strong><code>ref : grib2io.open, optional</code></strong></p>
+<p>Holds the reference to the where this GRIB2 message originated
+from (i.e. the input file). This allow for interaction with the
+instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.</p>
+<p><strong><code>num : int, optional</code></strong></p>
+<p>Set to the GRIB2 Message number.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Grib2Message:
+    __pdoc__[&#39;grib2io.Grib2Message.__init__&#39;] = True
     def __init__(self, msg, ref=None, num=-1):
         &#34;&#34;&#34;
+        Class Constructor
+
+        Parameters
+        ----------
+
+        **`msg : bytes`**
+
+        Binary string representing the GRIB2 Message read from file.
+
+        **`ref : grib2io.open, optional`**
+
+        Holds the reference to the where this GRIB2 message originated
+        from (i.e. the input file). This allow for interaction with the
+        instance of `grib2io.open`.
+
+        **`num : int, optional`**
+
+        Set to the GRIB2 Message number.
         &#34;&#34;&#34;
         self._msg = msg
         self._pos = 0
@@ -119,6 +145,7 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
             sectlen = struct.unpack(&#39;&gt;i&#39;,self._msg[self._pos:self._pos+4])[0]
             sectnum = struct.unpack(&#39;&gt;B&#39;,self._msg[self._pos+4:self._pos+5])[0]
 
+            # Handle submessage accordingly.
             if self._ref._index[&#39;isSubmessage&#39;][num]:
                 if sectnum == self._ref._index[&#39;submessageBeginSection&#39;][self._msgnum]:
                     self._pos = self._ref._index[&#39;submessageOffset&#39;][self._msgnum]
@@ -155,7 +182,8 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
                 self.bitMapFlag = _bmapflag
                 if self.bitMapFlag == 0:
                     self.bitMap = _bmap
-                elif self.bitMapFlag == 254:
+                elif self.bitMapFlag == 254: 
+                    # Value of 254 says to use a previous bitmap in the file.
                     self.bitMapFlag = 0
                     self.bitMap = self._ref._index[&#39;bitMap&#39;][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
@@ -523,24 +551,35 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 
     def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None):
         &#34;&#34;&#34;
-        Returns an unpacked data grid.  Can also be accomplished with L{values}
-        property.
+        Returns an unpacked data grid.
 
-        @keyword fill_value: missing or masked data is filled with this value
-        (default 9.9692099683868690e+36).
+        Parameters
+        ----------
 
-        @keyword masked_array: if True, return masked array if there is bitmap
-        for missing or masked data (default True).
+        **`fill_value : float, optional`**
 
-        @keyword expand:  if True (default), ECMWF &#39;reduced&#39; gaussian grids are
-        expanded to regular gaussian grids.
+        Missing or masked data is filled with this value or default value given by
+        `DEFAULT_FILL_VALUE`.
 
-        @keyword order: if 1, linear interpolation is used for expanding reduced
-        gaussian grids.  if 0, nearest neighbor interpolation is used. Default
-        is 0 if grid has missing or bitmapped values, 1 otherwise.
+        **`masked_array : bool, optional`**
 
-        @return: C{B{data}}, a float32 numpy regular or masked array
-        with shape (nlats,lons) containing the requested grid.
+        When `True` [DEFAULT], return masked array if there is bitmap for missing or masked data.
+
+        **`expand : bool, optional`**
+
+        When `True` [DEFAULT], ECMWF &#39;reduced&#39; gaussian grids are expanded to regular gaussian grids.
+
+        **`order : int, optional`**
+
+        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
+        values. If 1, linear interpolation is used for expanding reduced gaussian grids.
+
+        Returns
+        -------
+
+        **`numpy.ndarray`**
+
+        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).
         &#34;&#34;&#34;
         if not hasattr(self,&#39;scanModeFlags&#39;):
             raise ValueError(&#39;Unsupported grid definition template number %s&#39;%self.gridDefinitionTemplateNumber)
@@ -618,50 +657,551 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="grib2io.Grib2Message.__init__"><code class="name flex">
+<span>def <span class="ident">__init__</span></span>(<span>self, msg, ref=None, num=-1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class Constructor</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>msg : bytes</code></strong></p>
+<p>Binary string representing the GRIB2 Message read from file.</p>
+<p><strong><code>ref : grib2io.open, optional</code></strong></p>
+<p>Holds the reference to the where this GRIB2 message originated
+from (i.e. the input file). This allow for interaction with the
+instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.</p>
+<p><strong><code>num : int, optional</code></strong></p>
+<p>Set to the GRIB2 Message number.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def __init__(self, msg, ref=None, num=-1):
+    &#34;&#34;&#34;
+    Class Constructor
+
+    Parameters
+    ----------
+
+    **`msg : bytes`**
+
+    Binary string representing the GRIB2 Message read from file.
+
+    **`ref : grib2io.open, optional`**
+
+    Holds the reference to the where this GRIB2 message originated
+    from (i.e. the input file). This allow for interaction with the
+    instance of `grib2io.open`.
+
+    **`num : int, optional`**
+
+    Set to the GRIB2 Message number.
+    &#34;&#34;&#34;
+    self._msg = msg
+    self._pos = 0
+    self._ref = ref
+    self._datapos = 0
+    self._msgnum = num
+    
+    # Section 0, Indicator Section
+    self.indicatorSection = []
+    self.indicatorSection.append(struct.unpack(&#39;&gt;4s&#39;,self._msg[0:4])[0])
+    self.indicatorSection.append(struct.unpack(&#39;&gt;H&#39;,self._msg[4:6])[0])
+    self.indicatorSection.append(self._msg[6])
+    self.indicatorSection.append(self._msg[7])
+    self.indicatorSection.append(struct.unpack(&#39;&gt;Q&#39;,self._msg[8:16])[0])
+    self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)
+    self._pos = 16
+    
+    # Section 1, Indentification Section.
+    self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
+    self.identificationSection = self.identificationSection.tolist()
+    self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],&#39;originating_centers&#39;)
+    self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],&#39;originating_subcenters&#39;)
+    self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],&#39;1.0&#39;)
+    self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],&#39;1.1&#39;)
+    self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],&#39;1.2&#39;)
+    self.year = self.identificationSection[5]
+    self.month = self.identificationSection[6]
+    self.day = self.identificationSection[7]
+    self.hour = self.identificationSection[8]
+    self.minute = self.identificationSection[9]
+    self.second = self.identificationSection[10]
+    self.intreferenceDate = (self.year*1000000)+(self.month*10000)+\
+                            (self.day*100)+self.hour
+    self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
+                                             hour=self.hour,minute=self.minute,
+                                             second=self.second)
+    self.productionStatus = tables.get_value_from_table(self.identificationSection[11],&#39;1.3&#39;)
+    self.typeOfData = tables.get_value_from_table(self.identificationSection[12],&#39;1.4&#39;)
+
+    # After Section 1, perform rest of GRIB2 Decoding inside while loop
+    # to account for sub-messages.
+    while True:
+        if self._msg[self._pos:self._pos+4].decode(&#39;ascii&#39;,&#39;ignore&#39;) == &#39;7777&#39;: break
+
+        # Read the length and section number.
+        sectlen = struct.unpack(&#39;&gt;i&#39;,self._msg[self._pos:self._pos+4])[0]
+        sectnum = struct.unpack(&#39;&gt;B&#39;,self._msg[self._pos+4:self._pos+5])[0]
+
+        # Handle submessage accordingly.
+        if self._ref._index[&#39;isSubmessage&#39;][num]:
+            if sectnum == self._ref._index[&#39;submessageBeginSection&#39;][self._msgnum]:
+                self._pos = self._ref._index[&#39;submessageOffset&#39;][self._msgnum]
+
+        # Section 2, Local Use Section.
+        self.localUseSection = None
+        if sectnum == 2:
+            _lus = self._msg[self._pos+5:self._pos+sectlen]
+            self._pos += sectlen
+            self.localUseSection = _lus
+        # Section 3, Grid Definition Section.
+        elif sectnum == 3:
+            _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
+            self.gridDefinitionInfo = _gds.tolist()
+            self.gridDefinitionTemplateNumber = int(_gds[4])
+            self.gridDefinitionTemplate = _gdtn.tolist()
+            self.defList = _deflist.tolist()
+            self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,&#39;3.1&#39;)
+        # Section 4, Product Definition Section.
+        elif sectnum == 4:
+            _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
+            self.productDefinitionTemplate = _pdt.tolist()
+            self.productDefinitionTemplateNumber = int(_pdtn)
+            self.coordinateList = _coordlst.tolist()
+        # Section 5, Data Representation Section.
+        elif sectnum == 5:
+            _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
+            self.dataRepresentationTemplate = _drt.tolist()
+            self.dataRepresentationTemplateNumber = int(_drtn)
+            self.numberOfDataPoints = _npts
+        # Section 6, Bitmap Section.
+        elif sectnum == 6:
+            _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
+            self.bitMapFlag = _bmapflag
+            if self.bitMapFlag == 0:
+                self.bitMap = _bmap
+            elif self.bitMapFlag == 254: 
+                # Value of 254 says to use a previous bitmap in the file.
+                self.bitMapFlag = 0
+                self.bitMap = self._ref._index[&#39;bitMap&#39;][self._msgnum]
+            self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
+        # Section 7, Data Section (data unpacked when data() method is invoked).
+        elif sectnum == 7:
+            self._datapos = self._pos
+            self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
+        else:
+            errmsg = &#39;Unknown section number = %i&#39; % sectnum
+            raise ValueError(errmsg) 
+
+    # Section 3 -- Grid Definition
+    reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
+    if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
+        earthparams = None
+    else:
+        earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
+    if earthparams[&#39;shape&#39;] == &#39;spherical&#39;:
+        if earthparams[&#39;radius&#39;] is None:
+            self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+        else:
+            self.earthRadius = earthparams[&#39;radius&#39;]
+            self.earthMajorAxis = None
+            self.earthMinorAxis = None
+    elif earthparams[&#39;shape&#39;] == &#39;oblateSpheroid&#39;:
+        if earthparams[&#39;radius&#39;] is None and earthparams[&#39;major_axis&#39;] is None and earthparams[&#39;minor_axis&#39;] is None:
+            self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+            self.earthMajorAxis = self.gridDefinitionTemplate[4]/(10.**self.gridDefinitionTemplate[3])
+            self.earthMinorAxis = self.gridDefinitionTemplate[6]/(10.**self.gridDefinitionTemplate[5])
+        else:
+            self.earthRadius = earthparams[&#39;radius&#39;]
+            self.earthMajorAxis = earthparams[&#39;major_axis&#39;]
+            self.earthMinorAxis = earthparams[&#39;minor_axis&#39;]
+    if reggrid and self.gridDefinitionTemplateNumber not in [50,51,52,53,100,120,1000,1200]:
+        self.nx = self.gridDefinitionTemplate[7]
+        self.ny = self.gridDefinitionTemplate[8]
+    if not reggrid and self.gridDefinitionTemplateNumber == 40: # &#39;reduced&#39; gaussian grid.
+        self.ny = self.gridDefinitionTemplate[8]
+    if self.gridDefinitionTemplateNumber in [0,1,203,205,32768,32769]: # regular or rotated lat/lon grid
+        scalefact = float(self.gridDefinitionTemplate[9])
+        divisor = float(self.gridDefinitionTemplate[10])
+        if scalefact == 0: scalefact = 1.
+        if divisor &lt;= 0: divisor = 1.e6
+        self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
+        self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
+        self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
+        self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
+        self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
+        self.gridlengthYDirection = scalefact*self.gridDefinitionTemplate[17]/divisor
+        if self.latitudeFirstGridpoint &gt; self.latitudeLastGridpoint:
+            self.gridlengthYDirection = -self.gridlengthYDirection
+        if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
+            self.gridlengthXDirection = -self.gridlengthXDirection
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        if self.gridDefinitionTemplateNumber == 1:
+            self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
+            self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
+            self.anglePoleRotation = self.gridDefinitionTemplate[21]
+    elif self.gridDefinitionTemplateNumber == 10: # mercator
+        self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
+        self.longitudeLastGridpoint = self.gridDefinitionTemplate[14]/1.e6
+        self.gridlengthXDirection = self.gridDefinitionTemplate[17]/1.e3
+        self.gridlengthYDirection= self.gridDefinitionTemplate[18]/1.e3
+        self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
+        self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
+        self.proj4_proj = &#39;merc&#39;
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 20: # stereographic
+        projflag = _int2bin(self.gridDefinitionTemplate[16],output=list)[0]
+        self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
+        if projflag == 0:
+            self.proj4_lat_0 = 90
+        elif projflag == 1:
+            self.proj4_lat_0 = -90
+        else:
+            raise ValueError(&#39;Invalid projection center flag = %s&#39;%projflag)
+        self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        self.proj4_proj = &#39;stere&#39;
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 30: # lambert conformal
+        self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
+        self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
+        self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
+        self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        self.proj4_proj = &#39;lcc&#39;
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 31: # albers equal area.
+        self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
+        self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
+        self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
+        self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        self.proj4_proj = &#39;aea&#39;
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41: # gaussian grid.
+        scalefact = float(self.gridDefinitionTemplate[9])
+        divisor = float(self.gridDefinitionTemplate[10])
+        if scalefact == 0: scalefact = 1.
+        if divisor &lt;= 0: divisor = 1.e6
+        self.pointsBetweenPoleAndEquator = self.gridDefinitionTemplate[17]
+        self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
+        self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
+        self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
+        self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
+        if reggrid:
+            self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
+            if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
+                self.gridlengthXDirection = -self.gridlengthXDirection
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        if self.gridDefinitionTemplateNumber == 41:
+            self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
+            self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
+            self.anglePoleRotation = self.gridDefinitionTemplate[21]
+    elif self.gridDefinitionTemplateNumber == 50: # spectral coefficients.
+        self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
+        self.scanModeFlags = [None,None,None,None] # doesn&#39;t apply
+    elif self.gridDefinitionTemplateNumber == 90: # near-sided vertical perspective satellite projection
+        self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
+        self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
+        self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
+        dx = self.gridDefinitionTemplate[12]
+        dy = self.gridDefinitionTemplate[13]
+        # if lat_0 is equator, it&#39;s a geostationary view.
+        if self.proj4_lat_0 == 0.: # if lat_0 is equator, it&#39;s a
+            self.proj4_proj = &#39;geos&#39;
+        # general case of &#39;near-side perspective projection&#39; (untested)
+        else:
+            self.proj4_proj = &#39;nsper&#39;
+            msg = &#39;only geostationary perspective is supported. lat/lon values returned by grid method may be incorrect.&#39;
+            warnings.warn(msg)
+        # latitude of horizon on central meridian
+        lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
+        # longitude of horizon on equator
+        latmax = 90.-(180./np.pi)*np.arcsin(self.earthMinorAxis/self.proj4_h)
+        # truncate to nearest thousandth of a degree (to make sure
+        # they aren&#39;t slightly over the horizon)
+        latmax = int(1000*latmax)/1000.
+        lonmax = int(1000*lonmax)/1000.
+        # h is measured from surface of earth at equator.
+        self.proj4_h = self.proj4_h - self.earthMajorAxis
+        # width and height of visible projection
+        P = pyproj.Proj(proj=self.proj4_proj,\
+                        a=self.earthMajorAxis,b=self.earthMinorAxis,\
+                        lat_0=0,lon_0=0,h=self.proj4_h)
+        x1,y1 = P(0.,latmax); x2,y2 = P(lonmax,0.)
+        width = 2*x2; height = 2*y1
+        self.gridlengthXDirection = width/dx
+        self.gridlengthYDirection = height/dy
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 110: # azimuthal equidistant.
+        self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
+        self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
+        self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
+        self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
+        self.proj4_proj = &#39;aeqd&#39;
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 204: # curvilinear orthogonal
+        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+
+    # Missing value.
+    #if self.dataRepresentationTemplateNumber in [2,3] and self.dataRepresentationTemplate[6] != 0:
+    #    self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
+    #    if self.dataRepresentationTemplate[6] == 2:
+    #        self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
+
+    # Section 4 -- Product Definition
+    _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
+               self.productDefinitionTemplate[0],
+               self.productDefinitionTemplate[1])
+    self.varDescription = _varinfo[0]
+    self.units = _varinfo[1]
+    self.varName = _varinfo[2]
+    self.generatingProcess = tables.get_value_from_table(self.productDefinitionTemplate[4],&#39;generating_process&#39;)
+    self.unitOfTimeRange = tables.get_value_from_table(self.productDefinitionTemplate[7],&#39;4.4&#39;)
+    self.leadTime = self.productDefinitionTemplate[8]
+    _vals = tables.get_value_from_table(self.productDefinitionTemplate[9],&#39;4.5&#39;)
+    self.typeOfFirstFixedSurface = _vals[0]
+    self.unitOfFirstFixedSurface = _vals[1]
+    self.valueOfFristFixedSurface = self.productDefinitionTemplate[11]/(10.**self.productDefinitionTemplate[10])
+    _vals = tables.get_value_from_table(self.productDefinitionTemplate[12],&#39;4.5&#39;)
+    self.typeOfSecondFixedSurface = None if _vals[0] == &#39;Missing&#39; else _vals[0]
+    self.unitOfSecondFixedSurface = None if _vals[1] == &#39;unknown&#39; else _vals[1]
+    self.valueOfSecondFixedSurface = None if self.typeOfSecondFixedSurface is None else \
+                                     self.productDefinitionTemplate[14]/(10.**self.productDefinitionTemplate[13])
+    if self.productDefinitionTemplateNumber == 1:
+        self.typeOfEnsembleForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],&#39;4.6&#39;)
+        self.perturbationNumber = self.productDefinitionTemplate[16]
+        self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+    elif self.productDefinitionTemplateNumber == 2:
+        self.typeOfDerivedForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],&#39;4.7&#39;)
+        self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+    elif self.productDefinitionTemplateNumber == 5:
+        self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+        self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+        self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[16],&#39;4.9&#39;)
+        self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
+        self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
+    elif self.productDefinitionTemplateNumber == 6:
+        self.percentileValue = self.productDefinitionTemplate[15]
+    elif self.productDefinitionTemplateNumber == 8:
+        self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
+        self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+        self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        self.numberOfTimeRanges = self.productDefinitionTemplate[21]
+        self.numberOfMissingValues = self.productDefinitionTemplate[22]
+        self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[23],&#39;4.10&#39;)
+        self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[24],&#39;4.11&#39;)
+        self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],&#39;4.4&#39;)
+        self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[26]
+        self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[27],&#39;4.4&#39;)
+        self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[28]
+    elif self.productDefinitionTemplateNumber == 9:
+        self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+        self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+        self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[16],&#39;4.9&#39;)
+        self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
+        self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
+        self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+        self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[24]
+        self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[25]
+        self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[26]
+        self.numberOfTimeRanges = self.productDefinitionTemplate[27]
+        self.numberOfMissingValues = self.productDefinitionTemplate[28]
+        self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[29],&#39;4.10&#39;)
+        self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[30],&#39;4.11&#39;)
+        self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[31],&#39;4.4&#39;)
+        self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[32]
+        self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[33],&#39;4.4&#39;)
+        self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[34]
+    elif self.productDefinitionTemplateNumber == 10:
+        self.percentileValue = self.productDefinitionTemplate[15]
+        self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+        self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        self.numberOfTimeRanges = self.productDefinitionTemplate[22]
+        self.numberOfMissingValues = self.productDefinitionTemplate[23]
+        self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[24],&#39;4.10&#39;)
+        self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],&#39;4.11&#39;)
+        self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],&#39;4.4&#39;)
+        self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[27]
+        self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[28],&#39;4.4&#39;)
+        self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[29]
+    elif self.productDefinitionTemplateNumber == 11:
+        self.typeOfEnsembleForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],&#39;4.6&#39;)
+        self.perturbationNumber = self.productDefinitionTemplate[16]
+        self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+        self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+        self.numberOfTimeRanges = self.productDefinitionTemplate[24]
+        self.numberOfMissingValues = self.productDefinitionTemplate[25]
+        self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],&#39;4.10&#39;)
+        self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[27],&#39;4.11&#39;)
+        self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[28],&#39;4.4&#39;)
+        self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[29]
+        self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[30],&#39;4.4&#39;)
+        self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[31]
+    elif self.productDefinitionTemplateNumber == 12:
+        self.typeOfDerivedForecast = tables.get_value_from_table(self.productDefinitionTemplate[15],&#39;4.7&#39;)
+        self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+        self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        self.numberOfTimeRanges = self.productDefinitionTemplate[23]
+        self.numberOfMissingValues = self.productDefinitionTemplate[24]
+        self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[25],&#39;4.10&#39;)
+        self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[26],&#39;4.11&#39;)
+        self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[27],&#39;4.4&#39;)
+        self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
+        self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],&#39;4.4&#39;)
+        self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
+
+    # Section 5 -- Data Representation
+    if self.dataRepresentationTemplateNumber == 0:
+        # Grid Point Data -- Simple Packing
+        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.binScaleFactor = self.dataRepresentationTemplate[1]
+        self.decScaleFactor = self.dataRepresentationTemplate[2]
+        self.nBitsPacking = self.dataRepresentationTemplate[3]
+        self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],&#39;5.1&#39;)
+    elif self.dataRepresentationTemplateNumber == 2:
+        # Grid Point Data -- Complex Packing
+        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.binScaleFactor = self.dataRepresentationTemplate[1]
+        self.decScaleFactor = self.dataRepresentationTemplate[2]
+        self.nBitsPacking = self.dataRepresentationTemplate[3]
+        self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
+        self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
+        self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
+        self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+        self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        self.nGroups = self.dataRepresentationTemplate[9]
+        self.refGroupWidth = self.dataRepresentationTemplate[10]
+        self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+        self.refGroupLength = self.dataRepresentationTemplate[12]
+        self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+        self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+        self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+    elif self.dataRepresentationTemplateNumber == 3:
+        # Grid Point Data -- Complex Packing and Spatial Differencing
+        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.binScaleFactor = self.dataRepresentationTemplate[1]
+        self.decScaleFactor = self.dataRepresentationTemplate[2]
+        self.nBitsPacking = self.dataRepresentationTemplate[3]
+        self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
+        self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
+        self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
+        self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+        self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        self.nGroups = self.dataRepresentationTemplate[9]
+        self.refGroupWidth = self.dataRepresentationTemplate[10]
+        self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+        self.refGroupLength = self.dataRepresentationTemplate[12]
+        self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+        self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+        self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+        self.spatialDifferenceOrder = tables.get_value_from_table(self.dataRepresentationTemplate[16],&#39;5.6&#39;)
+        self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
+    elif self.dataRepresentationTemplateNumber == 4:
+        # Grid Point Data - IEEE Floating Point Data
+        self.precision = tables.get_value_from_table(self.dataRepresentationTemplate[0],&#39;5.7&#39;)
+    elif self.dataRepresentationTemplateNumber == 40:
+        # Grid Point Data - JPEG2000 Compression
+        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.binScaleFactor = self.dataRepresentationTemplate[1]
+        self.decScaleFactor = self.dataRepresentationTemplate[2]
+        self.nBitsPacking = self.dataRepresentationTemplate[3]
+        self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
+        self.typeOfCompression = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.40&#39;)
+        self.targetCompressionRatio = self.dataRepresentationTemplate[6]
+    elif self.dataRepresentationTemplateNumber == 41:
+        # Grid Point Data - PNG Compression
+        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.binScaleFactor = self.dataRepresentationTemplate[1]
+        self.decScaleFactor = self.dataRepresentationTemplate[2]
+        self.nBitsPacking = self.dataRepresentationTemplate[3]
+        self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)</code></pre>
+</details>
+</dd>
 <dt id="grib2io.Grib2Message.data"><code class="name flex">
 <span>def <span class="ident">data</span></span>(<span>self, fill_value=9.969209968386869e+36, masked_array=True, expand=True, order=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns an unpacked data grid.
-Can also be accomplished with L{values}
-property.</p>
-<p>@keyword fill_value: missing or masked data is filled with this value
-(default 9.9692099683868690e+36).</p>
-<p>@keyword masked_array: if True, return masked array if there is bitmap
-for missing or masked data (default True).</p>
-<p>@keyword expand:
-if True (default), ECMWF 'reduced' gaussian grids are
-expanded to regular gaussian grids.</p>
-<p>@keyword order: if 1, linear interpolation is used for expanding reduced
-gaussian grids.
-if 0, nearest neighbor interpolation is used. Default
-is 0 if grid has missing or bitmapped values, 1 otherwise.</p>
-<p>@return: C{B{data}}, a float32 numpy regular or masked array
-with shape (nlats,lons) containing the requested grid.</p></div>
+<div class="desc"><p>Returns an unpacked data grid.</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>fill_value : float, optional</code></strong></p>
+<p>Missing or masked data is filled with this value or default value given by
+<code>DEFAULT_FILL_VALUE</code>.</p>
+<p><strong><code>masked_array : bool, optional</code></strong></p>
+<p>When <code>True</code> [DEFAULT], return masked array if there is bitmap for missing or masked data.</p>
+<p><strong><code>expand : bool, optional</code></strong></p>
+<p>When <code>True</code> [DEFAULT], ECMWF 'reduced' gaussian grids are expanded to regular gaussian grids.</p>
+<p><strong><code>order : int, optional</code></strong></p>
+<p>If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped
+values. If 1, linear interpolation is used for expanding reduced gaussian grids.</p>
+<h2 id="returns">Returns</h2>
+<p><strong><code>numpy.ndarray</code></strong></p>
+<p>A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None):
     &#34;&#34;&#34;
-    Returns an unpacked data grid.  Can also be accomplished with L{values}
-    property.
+    Returns an unpacked data grid.
 
-    @keyword fill_value: missing or masked data is filled with this value
-    (default 9.9692099683868690e+36).
+    Parameters
+    ----------
 
-    @keyword masked_array: if True, return masked array if there is bitmap
-    for missing or masked data (default True).
+    **`fill_value : float, optional`**
 
-    @keyword expand:  if True (default), ECMWF &#39;reduced&#39; gaussian grids are
-    expanded to regular gaussian grids.
+    Missing or masked data is filled with this value or default value given by
+    `DEFAULT_FILL_VALUE`.
 
-    @keyword order: if 1, linear interpolation is used for expanding reduced
-    gaussian grids.  if 0, nearest neighbor interpolation is used. Default
-    is 0 if grid has missing or bitmapped values, 1 otherwise.
+    **`masked_array : bool, optional`**
 
-    @return: C{B{data}}, a float32 numpy regular or masked array
-    with shape (nlats,lons) containing the requested grid.
+    When `True` [DEFAULT], return masked array if there is bitmap for missing or masked data.
+
+    **`expand : bool, optional`**
+
+    When `True` [DEFAULT], ECMWF &#39;reduced&#39; gaussian grids are expanded to regular gaussian grids.
+
+    **`order : int, optional`**
+
+    If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
+    values. If 1, linear interpolation is used for expanding reduced gaussian grids.
+
+    Returns
+    -------
+
+    **`numpy.ndarray`**
+
+    A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).
     &#34;&#34;&#34;
     if not hasattr(self,&#39;scanModeFlags&#39;):
         raise ValueError(&#39;Unsupported grid definition template number %s&#39;%self.gridDefinitionTemplateNumber)
@@ -731,10 +1271,32 @@ with shape (nlats,lons) containing the requested grid.</p></div>
 </dd>
 <dt id="grib2io.open"><code class="flex name class">
 <span>class <span class="ident">open</span></span>
-<span>(</span><span>filename, mode='r')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Class Constructor</p>
+<div class="desc"><p>GRIB2 File Object.
+A physical file can contain one or more GRIB2 messages.
+When instantiated,
+class <code><a title="grib2io.open" href="#grib2io.open">open</a></code>, the file named <code>filename</code> is opened for reading (<code>mode = 'r'</code>) and is
+automatically indexed.
+The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.</p>
+<p>A GRIB2 Message may contain submessages whereby Section 2-7 can be repeated.
+grib2io accommodates
+for this by flattening any GRIB2 submessages into multiple individual messages.</p>
+<h2 id="attributes">Attributes</h2>
+<p><strong><code>mode : str</code></strong></p>
+<p>Mode of opening the file.
+For reading, <code>mode = 'rb'</code> and writing, mode = 'wb'.</p>
+<p><strong><code>name : str</code></strong></p>
+<p>Full path name of the GRIB2 file.</p>
+<p><strong><code>messages : int</code></strong></p>
+<p>Count of GRIB2 Messages contained in the file.</p>
+<p><strong><code>current_message : int</code></strong></p>
+<p>Current position of the file in units of GRIB2 Messages.</p>
+<p><strong><code>size : int</code></strong></p>
+<p>Size of the file in units of bytes.</p>
+<p><strong><code>closed : bool</code></strong></p>
+<p>Bool signaling if the file is closed <strong><code>True</code></strong> or open <strong><code>False</code></strong>.</p>
+<p>Class Constructor</p>
 <h2 id="parameters">Parameters</h2>
 <p><strong><code>filename : str</code></strong></p>
 <p>File name.</p>
@@ -746,6 +1308,43 @@ The default is open for reading ('r').</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class open():
+    &#34;&#34;&#34;
+    GRIB2 File Object.  A physical file can contain one or more GRIB2 messages.  When instantiated,
+    class `grib2io.open`, the file named `filename` is opened for reading (`mode = &#39;r&#39;`) and is
+    automatically indexed.  The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.
+
+    A GRIB2 Message may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates
+    for this by flattening any GRIB2 submessages into multiple individual messages.
+
+    Attributes
+    ----------
+
+    **`mode : str`**
+
+    Mode of opening the file.  For reading, `mode = &#39;rb&#39;` and writing, mode = &#39;wb&#39;.
+
+    **`name : str`**
+
+    Full path name of the GRIB2 file.
+
+    **`messages : int`**
+
+    Count of GRIB2 Messages contained in the file.
+
+    **`current_message : int`**
+
+    Current position of the file in units of GRIB2 Messages.
+
+    **`size : int`**
+
+    Size of the file in units of bytes.
+
+    **`closed : bool`**
+
+    Bool signaling if the file is closed **`True`** or open **`False`**.
+
+    &#34;&#34;&#34;
+    __pdoc__[&#39;grib2io.open.__init__&#39;] = True
     def __init__(self, filename, mode=&#39;r&#39;):
         &#34;&#34;&#34;
         Class Constructor
@@ -993,6 +1592,20 @@ The default is open for reading ('r').</p></div>
     def read(self, num=0):
         &#34;&#34;&#34;    
         Read num GRIB2 messages from the current position
+
+        Parameters
+        ----------
+
+        **`num : int`**
+
+        Number of GRIB2 Message to read.
+
+        Returns
+        -------
+
+        **`list`**
+
+        List of `grib2io.Grib2Message` instances.
         &#34;&#34;&#34;
         msgs = []
         if self.tell() &gt;= self.messages: return msgs
@@ -1020,6 +1633,13 @@ The default is open for reading ('r').</p></div>
     def seek(self, pos):
         &#34;&#34;&#34;
         Set the position within the file in units of GRIB2 messages.
+
+        Parameters
+        ----------
+
+        **`pos : int`**
+
+        GRIB2 Message number to set the read pointer to.
         &#34;&#34;&#34;
         if self._hasindex:
             if pos == 0:
@@ -1032,11 +1652,58 @@ The default is open for reading ('r').</p></div>
 
     def tell(self):
         &#34;&#34;&#34;
+        Returns the position of the file in units of GRIB2 Messages.
         &#34;&#34;&#34;
         return self.current_message</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="grib2io.open.__init__"><code class="name flex">
+<span>def <span class="ident">__init__</span></span>(<span>self, filename, mode='r')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class Constructor</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>filename : str</code></strong></p>
+<p>File name.</p>
+<p><strong><code>mode : str, optional, default = 'r'</code></strong></p>
+<p>File handle mode.
+The default is open for reading ('r').</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def __init__(self, filename, mode=&#39;r&#39;):
+    &#34;&#34;&#34;
+    Class Constructor
+
+    Parameters
+    ----------
+
+    **`filename : str`**
+
+    File name.
+
+    **`mode : str, optional, default = &#39;r&#39;`**
+
+    File handle mode.  The default is open for reading (&#39;r&#39;).
+    &#34;&#34;&#34;
+    if mode == &#39;r&#39; or mode == &#39;w&#39;:
+        mode = mode+&#39;b&#39;
+    elif mode == &#39;a&#39;:
+        mode = &#39;wb&#39;
+    self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+    self._hasindex = False
+    self._index = {}
+    self.mode = mode
+    self.name = os.path.abspath(filename)
+    self.messages = 0
+    self.current_message = 0
+    self.size = os.path.getsize(self.name)
+    self.closed = self._filehandle.closed
+    if &#39;r&#39; in self.mode: self._build_index()</code></pre>
+</details>
+</dd>
 <dt id="grib2io.open.close"><code class="name flex">
 <span>def <span class="ident">close</span></span>(<span>self)</span>
 </code></dt>
@@ -1059,7 +1726,13 @@ The default is open for reading ('r').</p></div>
 <span>def <span class="ident">read</span></span>(<span>self, num=0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Read num GRIB2 messages from the current position</p></div>
+<div class="desc"><p>Read num GRIB2 messages from the current position</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>num : int</code></strong></p>
+<p>Number of GRIB2 Message to read.</p>
+<h2 id="returns">Returns</h2>
+<p><strong><code>list</code></strong></p>
+<p>List of <code><a title="grib2io.Grib2Message" href="#grib2io.Grib2Message">Grib2Message</a></code> instances.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1067,6 +1740,20 @@ The default is open for reading ('r').</p></div>
 <pre><code class="python">def read(self, num=0):
     &#34;&#34;&#34;    
     Read num GRIB2 messages from the current position
+
+    Parameters
+    ----------
+
+    **`num : int`**
+
+    Number of GRIB2 Message to read.
+
+    Returns
+    -------
+
+    **`list`**
+
+    List of `grib2io.Grib2Message` instances.
     &#34;&#34;&#34;
     msgs = []
     if self.tell() &gt;= self.messages: return msgs
@@ -1104,7 +1791,10 @@ The default is open for reading ('r').</p></div>
 <span>def <span class="ident">seek</span></span>(<span>self, pos)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Set the position within the file in units of GRIB2 messages.</p></div>
+<div class="desc"><p>Set the position within the file in units of GRIB2 messages.</p>
+<h2 id="parameters">Parameters</h2>
+<p><strong><code>pos : int</code></strong></p>
+<p>GRIB2 Message number to set the read pointer to.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -1112,6 +1802,13 @@ The default is open for reading ('r').</p></div>
 <pre><code class="python">def seek(self, pos):
     &#34;&#34;&#34;
     Set the position within the file in units of GRIB2 messages.
+
+    Parameters
+    ----------
+
+    **`pos : int`**
+
+    GRIB2 Message number to set the read pointer to.
     &#34;&#34;&#34;
     if self._hasindex:
         if pos == 0:
@@ -1126,13 +1823,14 @@ The default is open for reading ('r').</p></div>
 <span>def <span class="ident">tell</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Returns the position of the file in units of GRIB2 Messages.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def tell(self):
     &#34;&#34;&#34;
+    Returns the position of the file in units of GRIB2 Messages.
     &#34;&#34;&#34;
     return self.current_message</code></pre>
 </details>
@@ -1160,12 +1858,14 @@ The default is open for reading ('r').</p></div>
 <li>
 <h4><code><a title="grib2io.Grib2Message" href="#grib2io.Grib2Message">Grib2Message</a></code></h4>
 <ul class="">
+<li><code><a title="grib2io.Grib2Message.__init__" href="#grib2io.Grib2Message.__init__">__init__</a></code></li>
 <li><code><a title="grib2io.Grib2Message.data" href="#grib2io.Grib2Message.data">data</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="grib2io.open" href="#grib2io.open">open</a></code></h4>
-<ul class="">
+<ul class="two-column">
+<li><code><a title="grib2io.open.__init__" href="#grib2io.open.__init__">__init__</a></code></li>
 <li><code><a title="grib2io.open.close" href="#grib2io.open.close">close</a></code></li>
 <li><code><a title="grib2io.open.read" href="#grib2io.open.read">read</a></code></li>
 <li><code><a title="grib2io.open.rewind" href="#grib2io.open.rewind">rewind</a></code></li>
@@ -1179,7 +1879,7 @@ The default is open for reading ('r').</p></div>
 </nav>
 </main>
 <footer id="footer">
-<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.1</a>.</p>
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.9.2</a>.</p>
 </footer>
 </body>
 </html>

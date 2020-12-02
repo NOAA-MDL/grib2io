@@ -27,7 +27,45 @@ __pdoc__ = {}
 ONE_MB = 1024 ** 3
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 
+
 class open():
+    """
+    GRIB2 File Object.  A physical file can contain one or more GRIB2 messages.  When instantiated,
+    class `grib2io.open`, the file named `filename` is opened for reading (`mode = 'r'`) and is
+    automatically indexed.  The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.
+
+    A GRIB2 Message may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates
+    for this by flattening any GRIB2 submessages into multiple individual messages.
+
+    Attributes
+    ----------
+
+    **`mode : str`**
+
+    Mode of opening the file.  For reading, `mode = 'rb'` and writing, mode = 'wb'.
+
+    **`name : str`**
+
+    Full path name of the GRIB2 file.
+
+    **`messages : int`**
+
+    Count of GRIB2 Messages contained in the file.
+
+    **`current_message : int`**
+
+    Current position of the file in units of GRIB2 Messages.
+
+    **`size : int`**
+
+    Size of the file in units of bytes.
+
+    **`closed : bool`**
+
+    Bool signaling if the file is closed **`True`** or open **`False`**.
+
+    """
+    __pdoc__['grib2io.open.__init__'] = True
     def __init__(self, filename, mode='r'):
         """
         Class Constructor
@@ -275,6 +313,20 @@ class open():
     def read(self, num=0):
         """    
         Read num GRIB2 messages from the current position
+
+        Parameters
+        ----------
+
+        **`num : int`**
+
+        Number of GRIB2 Message to read.
+
+        Returns
+        -------
+
+        **`list`**
+
+        List of `grib2io.Grib2Message` instances.
         """
         msgs = []
         if self.tell() >= self.messages: return msgs
@@ -302,6 +354,13 @@ class open():
     def seek(self, pos):
         """
         Set the position within the file in units of GRIB2 messages.
+
+        Parameters
+        ----------
+
+        **`pos : int`**
+
+        GRIB2 Message number to set the read pointer to.
         """
         if self._hasindex:
             if pos == 0:
@@ -314,14 +373,34 @@ class open():
 
     def tell(self):
         """
+        Returns the position of the file in units of GRIB2 Messages.
         """
         return self.current_message
 
 
 
 class Grib2Message:
+    __pdoc__['grib2io.Grib2Message.__init__'] = True
     def __init__(self, msg, ref=None, num=-1):
         """
+        Class Constructor
+
+        Parameters
+        ----------
+
+        **`msg : bytes`**
+
+        Binary string representing the GRIB2 Message read from file.
+
+        **`ref : grib2io.open, optional`**
+
+        Holds the reference to the where this GRIB2 message originated
+        from (i.e. the input file). This allow for interaction with the
+        instance of `grib2io.open`.
+
+        **`num : int, optional`**
+
+        Set to the GRIB2 Message number.
         """
         self._msg = msg
         self._pos = 0
@@ -370,6 +449,7 @@ class Grib2Message:
             sectlen = struct.unpack('>i',self._msg[self._pos:self._pos+4])[0]
             sectnum = struct.unpack('>B',self._msg[self._pos+4:self._pos+5])[0]
 
+            # Handle submessage accordingly.
             if self._ref._index['isSubmessage'][num]:
                 if sectnum == self._ref._index['submessageBeginSection'][self._msgnum]:
                     self._pos = self._ref._index['submessageOffset'][self._msgnum]
@@ -406,7 +486,8 @@ class Grib2Message:
                 self.bitMapFlag = _bmapflag
                 if self.bitMapFlag == 0:
                     self.bitMap = _bmap
-                elif self.bitMapFlag == 254:
+                elif self.bitMapFlag == 254: 
+                    # Value of 254 says to use a previous bitmap in the file.
                     self.bitMapFlag = 0
                     self.bitMap = self._ref._index['bitMap'][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
@@ -774,24 +855,35 @@ class Grib2Message:
 
     def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None):
         """
-        Returns an unpacked data grid.  Can also be accomplished with L{values}
-        property.
+        Returns an unpacked data grid.
 
-        @keyword fill_value: missing or masked data is filled with this value
-        (default 9.9692099683868690e+36).
+        Parameters
+        ----------
 
-        @keyword masked_array: if True, return masked array if there is bitmap
-        for missing or masked data (default True).
+        **`fill_value : float, optional`**
 
-        @keyword expand:  if True (default), ECMWF 'reduced' gaussian grids are
-        expanded to regular gaussian grids.
+        Missing or masked data is filled with this value or default value given by
+        `DEFAULT_FILL_VALUE`.
 
-        @keyword order: if 1, linear interpolation is used for expanding reduced
-        gaussian grids.  if 0, nearest neighbor interpolation is used. Default
-        is 0 if grid has missing or bitmapped values, 1 otherwise.
+        **`masked_array : bool, optional`**
 
-        @return: C{B{data}}, a float32 numpy regular or masked array
-        with shape (nlats,lons) containing the requested grid.
+        When `True` [DEFAULT], return masked array if there is bitmap for missing or masked data.
+
+        **`expand : bool, optional`**
+
+        When `True` [DEFAULT], ECMWF 'reduced' gaussian grids are expanded to regular gaussian grids.
+
+        **`order : int, optional`**
+
+        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
+        values. If 1, linear interpolation is used for expanding reduced gaussian grids.
+
+        Returns
+        -------
+
+        **`numpy.ndarray`**
+
+        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).
         """
         if not hasattr(self,'scanModeFlags'):
             raise ValueError('Unsupported grid definition template number %s'%self.gridDefinitionTemplateNumber)
@@ -869,7 +961,9 @@ class Grib2Message:
 
 
 def _int2bin(i,nbits=8,output=str):
-    """Convert integer to binary string or list"""
+    """
+    Convert integer to binary string or list
+    """
     i = int(i) if not isinstance(i,int) else i
     assert nbits in [8,16,32,64]
     bitstr = "{0:b}".format(i).zfill(nbits)
@@ -879,14 +973,18 @@ def _int2bin(i,nbits=8,output=str):
         return [int(b) for b in bitstr]
 
 def _putieeeint(r):
-    """convert a float to a IEEE format 32 bit integer"""
+    """
+    Convert a float to a IEEE format 32 bit integer
+    """
     ra = np.array([r],'f')
     ia = np.empty(1,'i')
     g2clib.rtoi_ieee(ra,ia)
     return ia[0]
 
 def _getieeeint(i):
-    """convert an IEEE format 32 bit integer to a float"""
+    """
+    Convert an IEEE format 32 bit integer to a float
+    """
     ia = np.array([i],'i')
     ra = np.empty(1,'f')
     g2clib.itor_ieee(ia,ra)
