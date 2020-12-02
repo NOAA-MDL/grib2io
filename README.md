@@ -7,23 +7,46 @@
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![PyPI version](https://badge.fury.io/py/grib2io.svg)](https://badge.fury.io/py/grib2io)
 
-grib2io is a Python package for reading and writing GRIB2 files (WMO GRIdded Binary, Edition 2), leveraging the [NCEP GRIB2 C library](https://github.com/NOAA-EMC/NCEPLIBS-g2c).  This is a fork of the [ncepgrib2](https://github.com/jswhit/pygrib/blob/master/ncepgrib2.py) module of [pygrib](https://github.com/jswhit/pygrib), but functionally, grib2io behaves more like the pygrib module.
+## Introduction
 
-Provided with this package are the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/) in Python dictionary form.  Functions are provided to return strings that represent a given GRIB2 code table value.  It is the intention to add tables from other meteorological centers in the future.
+grib2io provides a Python interface to the [NCEP GRIB2 C library](https://github.com/NOAA-EMC/NCEPLIBS-g2c) for reading and writing GRIB2 files.  The World Meteorological Organization ([WMO](https://www.wmo.int)) **GRI**dded **B**inary, Edition **2** ([GRIB2](https://www.wmo.int/pages/prog/www/WMOCodes/Guides/GRIB/GRIB2_062006.pdf)) is a table-driven, binary data format designed for transmitting large volumes of gridded meteorological data.
 
-Quickstart:
+Initially this project was forked from [pygrib](https://github.com/jswhit/pygrib) which provides interfaces to the ECMWF (via module pygrib) and NCEP GRIB2 (via module ncepgrib2) libraries.  The motivation for grib2io is to bring together the best ideas from pygrib and ncepgrib2 together while being dependent only on the NCEP GRIB2 C library.
 
-* Clone the github repository, or download a source release from https://pypi.python.org/pypi/grib2io. **NOT YET**
+**IMPORTANT:** As of [pygrib v2.1](https://github.com/jswhit/pygrib/releases/tag/v2.1rel), module ncepgrib2 has been ***removed*** from the pygrib project.  
 
-* Copy setup.cfg.template to setup.cfg, open in text editor, follow instructions in
-comments for editing.
+grib2io leverages the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/).  The GRIB2 tables have been converted into Python dictionaries and functions provided to fetch a given table and return values from it.
 
-* Run 'python setup.py build'
+## Requirements
+* Python 3.6+
+* setuptools 34.0+
+* NumPy 1.12+
+* GNU or Intel Fortran compiler
 
-* Run 'python setup.py install' (with sudo if necessary)
+GRIB2 has the ability to compress data using JPEG (via [Jasper](https://github.com/jasper-software/jasper) or [OpenJPEG](https://github.com/uclouvain/openjpeg) or [PNG](https://sourceforge.net/projects/libpng/) compression.  Most \*NIX systems provide these libraries through their respective package management systems.  On macOS, please use [homebrew](https://brew.sh) to install all required compression libraries.
 
-* Run 'python test.py' to test your grib2io installation.
+For macOS, please install GNU compilers via homebrew.  The NCEP G2 C Library will not install using Apple's LLVM clang.
 
-For full installation instructions and API documentation, __INSERT URL HERE__
+## Installation
 
-Questions or comments - contact __INSERT CONTACT INFO__
+```shell
+pip3 install grib2io
+```
+
+### Build from Source
+
+* Clone GitHub repository or download a source release from GitHub or [PyPI](https://pypi.python.org/pypi/grib2io).
+
+* Copy setup.cfg.template to setup.cfg, open in text editor, follow instructions in comments for editing.
+
+* Build
+
+```shell
+python3 setup.py build
+```
+
+* Install
+
+```shell
+[sudo] python3 setup.py install [--user | --prefix=PREFIX]
+```
