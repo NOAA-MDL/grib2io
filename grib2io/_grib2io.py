@@ -8,7 +8,7 @@ data. A physical file can contain one or more GRIB2 messages.  File IO is handle
 a binary string of the GRIB2 message which is then passed to the g2c library for decoding or GRIB2 metadata
 and unpacking of data.
 """
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 import g2clib
 import builtins
@@ -421,7 +421,7 @@ class Grib2Message:
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
         self.discipline = tables.get_value_from_table(self.indicatorSection[2],'0.0')
-        self.md5[0] = _getmd5str(self.indicatorSection)
+        #self.md5[0] = _getmd5str(self.indicatorSection)
         self._pos = 16
         
         # Section 1, Indentification Section.
@@ -445,7 +445,7 @@ class Grib2Message:
                                                  second=self.second)
         self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
         self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
-        self.md5[1] = _getmd5str(self.identificationSection)
+        #self.md5[1] = _getmd5str(self.identificationSection)
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
@@ -463,12 +463,12 @@ class Grib2Message:
 
             # Section 2, Local Use Section.
             self.localUseSection = None
-            self.md5[2] = None
+            #self.md5[2] = None
             if sectnum == 2:
                 _lus = self._msg[self._pos+5:self._pos+sectlen]
                 self._pos += sectlen
                 self.localUseSection = _lus
-                self.md5[2] = _getmd5str(self.identificationSection)
+                #self.md5[2] = _getmd5str(self.identificationSection)
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
@@ -477,21 +477,21 @@ class Grib2Message:
                 self.gridDefinitionTemplate = _gdtn.tolist()
                 self.defList = _deflist.tolist()
                 self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
-                self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
+                #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
             # Section 4, Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
                 self.productDefinitionTemplate = _pdt.tolist()
                 self.productDefinitionTemplateNumber = int(_pdtn)
                 self.coordinateList = _coordlst.tolist()
-                self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
+                #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
             # Section 5, Data Representation Section.
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
                 self.dataRepresentationTemplate = _drt.tolist()
                 self.dataRepresentationTemplateNumber = int(_drtn)
                 self.numberOfDataPoints = _npts
-                self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
+                #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
             # Section 6, Bitmap Section.
             elif sectnum == 6:
                 _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
@@ -503,12 +503,12 @@ class Grib2Message:
                     self.bitMapFlag = 0
                     self.bitMap = self._ref._index['bitMap'][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
-                self.md5[6] = None
+                #self.md5[6] = None
             # Section 7, Data Section (data unpacked when data() method is invoked).
             elif sectnum == 7:
                 self._datapos = self._pos
                 self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
-                self.md5[7] = _getmd5str(self._msg[self._datapos:sectlen+1])
+                #self.md5[7] = _getmd5str(self._msg[self._datapos:sectlen+1])
             else:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg) 
