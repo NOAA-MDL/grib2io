@@ -24,6 +24,7 @@ import pyproj
 
 
 from . import tables
+from . import utils
 
 __pdoc__ = {}
 
@@ -555,7 +556,7 @@ class Grib2Message:
                 self.gridlengthYDirection = -self.gridlengthYDirection
             if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
                 self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
             if self.gridDefinitionTemplateNumber == 1:
                 self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
                 self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
@@ -570,9 +571,9 @@ class Grib2Message:
             self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
             self.proj4_proj = 'merc'
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 20: # stereographic
-            projflag = _int2bin(self.gridDefinitionTemplate[16],output=list)[0]
+            projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
             self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
@@ -586,7 +587,7 @@ class Grib2Message:
             self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
             self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
             self.proj4_proj = 'stere'
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 30: # lambert conformal
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
@@ -597,7 +598,7 @@ class Grib2Message:
             self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
             self.proj4_proj = 'lcc'
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 31: # albers equal area.
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
@@ -608,7 +609,7 @@ class Grib2Message:
             self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
             self.proj4_proj = 'aea'
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41: # gaussian grid.
             scalefact = float(self.gridDefinitionTemplate[9])
             divisor = float(self.gridDefinitionTemplate[10])
@@ -623,7 +624,7 @@ class Grib2Message:
                 self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
                 if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
                     self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
             if self.gridDefinitionTemplateNumber == 41:
                 self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
                 self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
@@ -663,16 +664,16 @@ class Grib2Message:
             width = 2*x2; height = 2*y1
             self.gridlengthXDirection = width/dx
             self.gridlengthYDirection = height/dy
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 110: # azimuthal equidistant.
             self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
             self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
             self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
             self.proj4_proj = 'aeqd'
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
         elif self.gridDefinitionTemplateNumber == 204: # curvilinear orthogonal
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
 
         # Section 4 -- Product Definition
         _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
@@ -798,22 +799,22 @@ class Grib2Message:
         # Section 5 -- Data Representation
         if self.dataRepresentationTemplateNumber == 0:
             # Grid Point Data -- Simple Packing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],'5.1')
         elif self.dataRepresentationTemplateNumber == 2:
             # Grid Point Data -- Complex Packing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
-            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -823,15 +824,15 @@ class Grib2Message:
             self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
         elif self.dataRepresentationTemplateNumber == 3:
             # Grid Point Data -- Complex Packing and Spatial Differencing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
-            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -846,7 +847,7 @@ class Grib2Message:
             self.precision = tables.get_value_from_table(self.dataRepresentationTemplate[0],'5.7')
         elif self.dataRepresentationTemplateNumber == 40:
             # Grid Point Data - JPEG2000 Compression
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -855,7 +856,7 @@ class Grib2Message:
             self.targetCompressionRatio = self.dataRepresentationTemplate[6]
         elif self.dataRepresentationTemplateNumber == 41:
             # Grid Point Data - PNG Compression
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -966,45 +967,3 @@ class Grib2Message:
             if not k.startswith('_'):
                 strings.append('%s = %s\n'%(k,self.__dict__[k]))
         return ''.join(strings)
-
-
-def _int2bin(i,nbits=8,output=str):
-    """
-    Convert integer to binary string or list
-    """
-    i = int(i) if not isinstance(i,int) else i
-    assert nbits in [8,16,32,64]
-    bitstr = "{0:b}".format(i).zfill(nbits)
-    if output is str:
-        return bitstr
-    elif output is list:
-        return [int(b) for b in bitstr]
-
-
-def _putieeeint(r):
-    """
-    Convert a float to a IEEE format 32 bit integer
-    """
-    ra = np.array([r],'f')
-    ia = np.empty(1,'i')
-    g2clib.rtoi_ieee(ra,ia)
-    return ia[0]
-
-
-def _getieeeint(i):
-    """
-    Convert an IEEE format 32 bit integer to a float
-    """
-    ia = np.array([i],'i')
-    ra = np.empty(1,'f')
-    g2clib.itor_ieee(ia,ra)
-    return ra[0]
-
-
-def _getmd5str(a):
-    """
-    Generate a MD5 hash string from input list
-    """
-    import hashlib
-    assert isinstance(a,list) or isinstance(a,bytes)
-    return hashlib.md5(''.join([str(i) for i in a]).encode()).hexdigest()
