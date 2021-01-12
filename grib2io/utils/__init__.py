@@ -46,3 +46,70 @@ def getmd5str(a):
     import hashlib
     assert isinstance(a,list) or isinstance(a,bytes)
     return hashlib.md5(''.join([str(i) for i in a]).encode()).hexdigest()
+
+
+def getdate(year,month,day,hour,minute=None,second=None):
+    """
+    Build an integer date from component input.
+
+    **`year : int`**
+
+    Year in 4-digit format.
+
+    **`month : int`**
+
+    Month in 2-digit format.
+
+    **`day : int`**
+
+    Day in 2-digit format.
+
+    **`hour : int`**
+
+    Hour in 2-digit format.
+
+    **`minute : int, optional`**
+
+    Minute in 2-digit format. This argument is required if second is provided, otherwise
+    it is optional.
+
+    **`second : int, optional`**
+
+    Second in 2-digit format [OPTIONAL].
+
+    """
+    year_exp = 6
+    month_exp = 4
+    day_exp = 2
+    hour_exp = 0
+    #if second is not None and minute is None:
+    #    raise ValueError("Must provide minute argument if second argument is provided.")
+    #year_exp = 6
+    #month_exp = 4
+    #day_exp = 2
+    #hour_exp = 0
+    #minute_exp = -2
+    #second_exp = -4
+    #if minute is not None:
+    #    assert minute >= 0 and minute <= 60
+    #    year_exp += 2
+    #    month_exp += 2
+    #    day_exp += 2
+    #    hour_exp += 2
+    #    minute_exp += 2
+    #    second_exp += 2
+    #if second is not None:
+    #    assert second >= 0 and second <= 60
+    #    year_exp += 2
+    #    month_exp += 2
+    #    day_exp += 2
+    #    hour_exp += 2
+    #    minute_exp += 2
+    #    second_exp += 2
+    idate = (year*pow(10,year_exp))+(month*pow(10,month_exp))+\
+            (day*pow(10,day_exp))+(hour*pow(10,hour_exp))
+    #if minute is not None:
+    #    idate += minute*pow(10,minute_exp)
+    #if second is not None:
+    #    idate += second*pow(10,second_exp)
+    return idate
