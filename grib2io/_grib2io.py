@@ -24,6 +24,7 @@ import pyproj
 
 
 from . import tables
+from . import templates
 from . import utils
 
 __pdoc__ = {}
@@ -412,7 +413,7 @@ class Grib2Message:
         self._datapos = 0
         self._msgnum = num
 
-        self.md5 = {}
+        #self.md5 = {}
         
         # Section 0, Indicator Section
         self.indicatorSection = []
@@ -428,25 +429,8 @@ class Grib2Message:
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
-        self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
-        self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
-        self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
-        self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
-        self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
-        self.year = self.identificationSection[5]
-        self.month = self.identificationSection[6]
-        self.day = self.identificationSection[7]
-        self.hour = self.identificationSection[8]
-        self.minute = self.identificationSection[9]
-        self.second = self.identificationSection[10]
-        self.intreferenceDate = (self.year*1000000)+(self.month*10000)+\
-                                (self.day*100)+self.hour
-        self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
-                                                 hour=self.hour,minute=self.minute,
-                                                 second=self.second)
-        self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
-        self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
-        #self.md5[1] = _getmd5str(self.identificationSection)
+        for k,v in templates.set_section1_keys(self.identificationSection).items():
+            self.__dict__[k] = v
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
