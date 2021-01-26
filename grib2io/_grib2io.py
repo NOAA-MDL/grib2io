@@ -24,7 +24,6 @@ import pyproj
 
 
 from . import tables
-from . import templates
 from . import utils
 
 __pdoc__ = {}
@@ -429,8 +428,24 @@ class Grib2Message:
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
-        for k,v in templates.set_section1_keys(self.identificationSection).items():
-            self.__dict__[k] = v
+        self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
+        self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
+        self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
+        self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
+        self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
+        self.year = self.identificationSection[5]
+        self.month = self.identificationSection[6]
+        self.day = self.identificationSection[7]
+        self.hour = self.identificationSection[8]
+        self.minute = self.identificationSection[9]
+        self.second = self.identificationSection[10]
+        self.intreferenceDate = (self.year*1000000)+(self.month*10000)+\
+                                (self.day*100)+self.hour
+        self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
+                                                 hour=self.hour,minute=self.minute,
+                                                 second=self.second)
+        self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
+        self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
@@ -457,7 +472,7 @@ class Grib2Message:
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-                self.gridDefinitionInfo = _gds.tolist()
+                self.gridDefinitionSection = _gds.tolist()
                 self.gridDefinitionTemplateNumber = int(_gds[4])
                 self.gridDefinitionTemplate = _gdtn.tolist()
                 self.defList = _deflist.tolist()
@@ -479,7 +494,7 @@ class Grib2Message:
                 #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
             # Section 6, Bitmap Section.
             elif sectnum == 6:
-                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
+                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
                 self.bitMapFlag = _bmapflag
                 if self.bitMapFlag == 0:
                     self.bitMap = _bmap
@@ -499,7 +514,7 @@ class Grib2Message:
                 raise ValueError(errmsg) 
 
         # Section 3 -- Grid Definition
-        reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
+        reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
         if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
             earthparams = None
         else:
@@ -896,8 +911,8 @@ class Grib2Message:
         gdtnum = self.gridDefinitionTemplateNumber
         gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
         ndpts = self.numberOfDataPoints
-        gdsinfo = self.gridDefinitionInfo
-        ngrdpts = gdsinfo[1]
+        gds = self.gridDefinitionSection
+        ngrdpts = gds[1]
         ipos = self._datapos
         fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
         # Apply bitmap.
@@ -921,7 +936,7 @@ class Grib2Message:
             else:
                 fld = np.reshape(fld,(self.ny,self.nx))
         else:
-            if gdsinfo[2] and gdtnum == 40: # ECMWF 'reduced' global gaussian grid.
+            if gds[2] and gdtnum == 40: # ECMWF 'reduced' global gaussian grid.
                 if expand:
                     from redtoreg import _redtoreg
                     self.nx = 2*self.ny
