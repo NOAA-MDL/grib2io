@@ -691,9 +691,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         Returns
         -------
 
-        **`tuple`**
+        **`lats, lons : numpy.ndarray`**
 
-        A tuple of numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+        Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
         longitudes in units of degrees.
         &#34;&#34;&#34;
         gdtnum = self.gridDefinitionTemplateNumber
@@ -1472,9 +1472,9 @@ values. If 1, linear interpolation is used for expanding reduced gaussian grids.
 global gaussian, mercator, stereographic, lambert conformal, albers equal-area,
 space-view and azimuthal equidistant grids.</p>
 <h2 id="returns">Returns</h2>
-<p><strong><code>tuple</code></strong></p>
+<p><strong><code>lats, lons : numpy.ndarray</code></strong></p>
 <dl>
-<dt><code>A tuple</code> of <code>numpy.ndarrays with dtype=numpy.float32</code> of <code>grid latitudes and</code></dt>
+<dt><code>Returns two numpy.ndarrays with dtype=numpy.float32</code> of <code>grid latitudes and</code></dt>
 <dd>&nbsp;</dd>
 </dl>
 <p>longitudes in units of degrees.</p></div>
@@ -1491,9 +1491,9 @@ space-view and azimuthal equidistant grids.</p>
     Returns
     -------
 
-    **`tuple`**
+    **`lats, lons : numpy.ndarray`**
 
-    A tuple of numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
     longitudes in units of degrees.
     &#34;&#34;&#34;
     gdtnum = self.gridDefinitionTemplateNumber

@@ -995,9 +995,9 @@ class Grib2Message:
         Returns
         -------
 
-        **`tuple`**
+        **`lats, lons : numpy.ndarray`**
 
-        A tuple of numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+        Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
         longitudes in units of degrees.
         """
         gdtnum = self.gridDefinitionTemplateNumber
