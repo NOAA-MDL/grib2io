@@ -36,7 +36,7 @@ and unpacking of data.</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from ._grib2io import *
-from ._grib2io import __doc__,__pdoc__
+from ._grib2io import __doc__,__pdoc__,__version__
 
 __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 </details>
@@ -47,6 +47,11 @@ __all__ = [&#39;open&#39;,&#39;Grib2Message&#39;]</code></pre>
 <dt><code class="name"><a title="grib2io.tables" href="tables/index.html">grib2io.tables</a></code></dt>
 <dd>
 <div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="grib2io.utils" href="utils/index.html">grib2io.utils</a></code></dt>
+<dd>
+<div class="desc"><p>Collection of utility functions to assist in the encoding and decoding
+of GRIB2 Messages.</p></div>
 </dd>
 </dl>
 </section>
@@ -103,6 +108,8 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self._ref = ref
         self._datapos = 0
         self._msgnum = num
+
+        #self.md5 = {}
         
         # Section 0, Indicator Section
         self.indicatorSection = []
@@ -112,6 +119,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack(&#39;&gt;Q&#39;,self._msg[8:16])[0])
         self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)
+        #self.md5[0] = _getmd5str(self.indicatorSection)
         self._pos = 16
         
         # Section 1, Indentification Section.
@@ -152,33 +160,38 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
 
             # Section 2, Local Use Section.
             self.localUseSection = None
+            #self.md5[2] = None
             if sectnum == 2:
                 _lus = self._msg[self._pos+5:self._pos+sectlen]
                 self._pos += sectlen
                 self.localUseSection = _lus
+                #self.md5[2] = _getmd5str(self.identificationSection)
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-                self.gridDefinitionInfo = _gds.tolist()
+                self.gridDefinitionSection = _gds.tolist()
                 self.gridDefinitionTemplateNumber = int(_gds[4])
                 self.gridDefinitionTemplate = _gdtn.tolist()
                 self.defList = _deflist.tolist()
                 self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,&#39;3.1&#39;)
+                #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
             # Section 4, Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
                 self.productDefinitionTemplate = _pdt.tolist()
                 self.productDefinitionTemplateNumber = int(_pdtn)
                 self.coordinateList = _coordlst.tolist()
+                #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
             # Section 5, Data Representation Section.
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
                 self.dataRepresentationTemplate = _drt.tolist()
                 self.dataRepresentationTemplateNumber = int(_drtn)
                 self.numberOfDataPoints = _npts
+                #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
             # Section 6, Bitmap Section.
             elif sectnum == 6:
-                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
+                _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
                 self.bitMapFlag = _bmapflag
                 if self.bitMapFlag == 0:
                     self.bitMap = _bmap
@@ -187,16 +200,21 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                     self.bitMapFlag = 0
                     self.bitMap = self._ref._index[&#39;bitMap&#39;][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
+                #self.md5[6] = None
             # Section 7, Data Section (data unpacked when data() method is invoked).
             elif sectnum == 7:
                 self._datapos = self._pos
                 self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
+                #self.md5[7] = _getmd5str(self._msg[self._datapos:sectlen+1])
             else:
                 errmsg = &#39;Unknown section number = %i&#39; % sectnum
                 raise ValueError(errmsg) 
 
+        # ----------------------------
         # Section 3 -- Grid Definition
-        reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
+        # ----------------------------
+
+        # Set shape of the Earth parameters
         if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
             earthparams = None
         else:
@@ -204,6 +222,8 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         if earthparams[&#39;shape&#39;] == &#39;spherical&#39;:
             if earthparams[&#39;radius&#39;] is None:
                 self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+                self.earthMajorAxis = None
+                self.earthMinorAxis = None
             else:
                 self.earthRadius = earthparams[&#39;radius&#39;]
                 self.earthMajorAxis = None
@@ -217,12 +237,16 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                 self.earthRadius = earthparams[&#39;radius&#39;]
                 self.earthMajorAxis = earthparams[&#39;major_axis&#39;]
                 self.earthMinorAxis = earthparams[&#39;minor_axis&#39;]
+
+        reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
         if reggrid and self.gridDefinitionTemplateNumber not in [50,51,52,53,100,120,1000,1200]:
             self.nx = self.gridDefinitionTemplate[7]
             self.ny = self.gridDefinitionTemplate[8]
-        if not reggrid and self.gridDefinitionTemplateNumber == 40: # &#39;reduced&#39; gaussian grid.
+        if not reggrid and self.gridDefinitionTemplateNumber == 40:
+            # Reduced Gaussian Grid
             self.ny = self.gridDefinitionTemplate[8]
-        if self.gridDefinitionTemplateNumber in [0,1,203,205,32768,32769]: # regular or rotated lat/lon grid
+        if self.gridDefinitionTemplateNumber in [0,1,203,205,32768,32769]:
+            # Regular or Rotated Lat/Lon Grid
             scalefact = float(self.gridDefinitionTemplate[9])
             divisor = float(self.gridDefinitionTemplate[10])
             if scalefact == 0: scalefact = 1.
@@ -237,12 +261,13 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                 self.gridlengthYDirection = -self.gridlengthYDirection
             if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
                 self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
             if self.gridDefinitionTemplateNumber == 1:
                 self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
                 self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
                 self.anglePoleRotation = self.gridDefinitionTemplate[21]
-        elif self.gridDefinitionTemplateNumber == 10: # mercator
+        elif self.gridDefinitionTemplateNumber == 10:
+            # Mercator
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
             self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
@@ -252,9 +277,10 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
             self.proj4_proj = &#39;merc&#39;
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 20: # stereographic
-            projflag = _int2bin(self.gridDefinitionTemplate[16],output=list)[0]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 20:
+            # Stereographic
+            projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
             self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
@@ -268,8 +294,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
             self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
             self.proj4_proj = &#39;stere&#39;
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 30: # lambert conformal
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 30:
+            # Lambert Conformal
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
             self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
@@ -279,8 +306,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
             self.proj4_proj = &#39;lcc&#39;
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 31: # albers equal area.
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 31:
+            # Albers Equal Area
             self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
             self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
             self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
@@ -290,8 +318,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
             self.proj4_proj = &#39;aea&#39;
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41: # gaussian grid.
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41:
+            # Gaussian Grid
             scalefact = float(self.gridDefinitionTemplate[9])
             divisor = float(self.gridDefinitionTemplate[10])
             if scalefact == 0: scalefact = 1.
@@ -305,15 +334,17 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                 self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
                 if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
                     self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
             if self.gridDefinitionTemplateNumber == 41:
                 self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
                 self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
                 self.anglePoleRotation = self.gridDefinitionTemplate[21]
-        elif self.gridDefinitionTemplateNumber == 50: # spectral coefficients.
+        elif self.gridDefinitionTemplateNumber == 50:
+            # Spectral Coefficients
             self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
-            self.scanModeFlags = [None,None,None,None] # doesn&#39;t apply
-        elif self.gridDefinitionTemplateNumber == 90: # near-sided vertical perspective satellite projection
+            self.scanModeFlags = [None,None,None,None]
+        elif self.gridDefinitionTemplateNumber == 90:
+            # Near-sided Vertical Perspective Satellite Projection
             self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
             self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
@@ -325,7 +356,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             # general case of &#39;near-side perspective projection&#39; (untested)
             else:
                 self.proj4_proj = &#39;nsper&#39;
-                msg = &#39;only geostationary perspective is supported. lat/lon values returned by grid method may be incorrect.&#39;
+                msg = &#39;Only geostationary perspective is supported. Lat/Lon values returned by grid method may be incorrect.&#39;
                 warnings.warn(msg)
             # latitude of horizon on central meridian
             lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
@@ -341,28 +372,28 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             P = pyproj.Proj(proj=self.proj4_proj,\
                             a=self.earthMajorAxis,b=self.earthMinorAxis,\
                             lat_0=0,lon_0=0,h=self.proj4_h)
-            x1,y1 = P(0.,latmax); x2,y2 = P(lonmax,0.)
-            width = 2*x2; height = 2*y1
+            x1,y1 = P(0.,latmax)
+            x2,y2 = P(lonmax,0.)
+            width = 2*x2
+            height = 2*y1
             self.gridlengthXDirection = width/dx
             self.gridlengthYDirection = height/dy
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 110: # azimuthal equidistant.
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 110:
+            # Azimuthal Equidistant
             self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
             self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
             self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
             self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
             self.proj4_proj = &#39;aeqd&#39;
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-        elif self.gridDefinitionTemplateNumber == 204: # curvilinear orthogonal
-            self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+        elif self.gridDefinitionTemplateNumber == 204:
+            # Curvilinear Orthogonal
+            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
 
-        # Missing value.
-        #if self.dataRepresentationTemplateNumber in [2,3] and self.dataRepresentationTemplate[6] != 0:
-        #    self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
-        #    if self.dataRepresentationTemplate[6] == 2:
-        #        self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
-
+        # -------------------------------
         # Section 4 -- Product Definition
+        # -------------------------------
         _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
                    self.productDefinitionTemplate[0],
                    self.productDefinitionTemplate[1])
@@ -483,25 +514,27 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],&#39;4.4&#39;)
             self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
 
+        # --------------------------------
         # Section 5 -- Data Representation
+        # --------------------------------
         if self.dataRepresentationTemplateNumber == 0:
             # Grid Point Data -- Simple Packing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],&#39;5.1&#39;)
         elif self.dataRepresentationTemplateNumber == 2:
             # Grid Point Data -- Complex Packing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
-            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -511,15 +544,15 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
         elif self.dataRepresentationTemplateNumber == 3:
             # Grid Point Data -- Complex Packing and Spatial Differencing
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
-            self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-            self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -534,7 +567,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.precision = tables.get_value_from_table(self.dataRepresentationTemplate[0],&#39;5.7&#39;)
         elif self.dataRepresentationTemplateNumber == 40:
             # Grid Point Data - JPEG2000 Compression
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -543,7 +576,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.targetCompressionRatio = self.dataRepresentationTemplate[6]
         elif self.dataRepresentationTemplateNumber == 41:
             # Grid Point Data - PNG Compression
-            self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -599,8 +632,8 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         gdtnum = self.gridDefinitionTemplateNumber
         gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
         ndpts = self.numberOfDataPoints
-        gdsinfo = self.gridDefinitionInfo
-        ngrdpts = gdsinfo[1]
+        gds = self.gridDefinitionSection
+        ngrdpts = gds[1]
         ipos = self._datapos
         fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
         # Apply bitmap.
@@ -624,7 +657,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             else:
                 fld = np.reshape(fld,(self.ny,self.nx))
         else:
-            if gdsinfo[2] and gdtnum == 40: # ECMWF &#39;reduced&#39; global gaussian grid.
+            if gds[2] and gdtnum == 40: # ECMWF &#39;reduced&#39; global gaussian grid.
                 if expand:
                     from redtoreg import _redtoreg
                     self.nx = 2*self.ny
@@ -643,6 +676,142 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                 fldsave = fld.astype(&#39;f&#39;) # casting makes a copy
                 fld[1::2,:] = fldsave[1::2,::-1]
         return fld
+
+
+    def latlons(self):
+        &#34;&#34;&#34;Alias for `grib2io.Grib2Message.grid` method&#34;&#34;&#34;
+        return self.grid()
+
+    def grid(self):
+        &#34;&#34;&#34;
+        Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon, 
+        global gaussian, mercator, stereographic, lambert conformal, albers equal-area, 
+        space-view and azimuthal equidistant grids.
+
+        Returns
+        -------
+
+        **`tuple`**
+
+        A tuple of numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+        longitudes in units of degrees.
+        &#34;&#34;&#34;
+        gdtnum = self.gridDefinitionTemplateNumber
+        gdtmpl = self.gridDefinitionTemplate
+        reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
+        projparams = {}
+        if self.earthMajorAxis is not None: projparams[&#39;a&#39;]=self.earthMajorAxis
+        if self.earthMajorAxis is not None: projparams[&#39;b&#39;]=self.earthMinorAxis
+        if gdtnum == 0:
+            # Regular lat/lon grid
+            lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+            lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
+            dlon = self.gridlengthXDirection
+            dlat = self.gridlengthYDirection
+            lats = np.arange(lat1,lat2+dlat,dlat)
+            lons = np.arange(lon1,lon2+dlon,dlon)
+            # flip if scan mode says to.
+            #if self.scanModeFlags[0]:
+            #    lons = lons[::-1]
+            #if not self.scanModeFlags[1]:
+            #    lats = lats[::-1]
+            projparams[&#39;proj&#39;] = &#39;cyl&#39;
+            lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
+        #elif gdtnum == 40: # gaussian grid (only works for global!)
+        #    try:
+        #        from pygrib import gaulats
+        #    except:
+        #        raise ImportError(&#34;pygrib required to compute Gaussian lats/lons&#34;)
+        #    lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+        #    lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
+        #    nlats = self.ny
+        #    if not reggrid: # ECMWF &#39;reduced&#39; gaussian grid.
+        #        nlons = 2*nlats
+        #        dlon = 360./nlons
+        #    else:
+        #        nlons = self.nx
+        #        dlon = self.gridlengthXDirection
+        #    lons = np.arange(lon1,lon2+dlon,dlon)
+        #    # compute gaussian lats (north to south)
+        #    lats = gaulats(nlats)
+        #    if lat1 &lt; lat2:  # reverse them if necessary
+        #        lats = lats[::-1]
+        #    # flip if scan mode says to.
+        #    #if self.scanModeFlags[0]:
+        #    #    lons = lons[::-1]
+        #    #if not self.scanModeFlags[1]:
+        #    #    lats = lats[::-1]
+        #    projparams[&#39;proj&#39;] = &#39;cyl&#39;
+        #    lons,lats = np.meshgrid(lons,lats) # make 2-d arrays
+        elif gdtnum in [10,20,30,31,110]:
+            # Mercator, Lambert Conformal, Stereographic, Albers Equal Area, Azimuthal Equidistant
+            dx, dy = self.gridlengthXDirection, self.gridlengthYDirection
+            lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+            if gdtnum == 10: # Mercator.
+                projparams[&#39;lat_ts&#39;]=self.proj4_lat_ts
+                projparams[&#39;proj&#39;]=self.proj4_proj
+                projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+                pj = pyproj.Proj(projparams)
+                llcrnrx, llcrnry = pj(lon1,lat1)
+                x = llcrnrx+dx*np.arange(self.nx)
+                y = llcrnry+dy*np.arange(self.ny)
+                x, y = np.meshgrid(x, y)
+                lons, lats = pj(x, y, inverse=True)
+            elif gdtnum == 20:  # Stereographic
+                projparams[&#39;lat_ts&#39;]=self.proj4_lat_ts
+                projparams[&#39;proj&#39;]=self.proj4_proj
+                projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+                projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+                pj = pyproj.Proj(projparams)
+                llcrnrx, llcrnry = pj(lon1,lat1)
+                x = llcrnrx+dx*np.arange(self.nx)
+                y = llcrnry+dy*np.arange(self.ny)
+                x, y = np.meshgrid(x, y)
+                lons, lats = pj(x, y, inverse=True)
+            elif gdtnum in [30,31]: # Lambert, Albers
+                projparams[&#39;lat_1&#39;]=self.proj4_lat_1
+                projparams[&#39;lat_2&#39;]=self.proj4_lat_2
+                projparams[&#39;proj&#39;]=self.proj4_proj
+                projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+                pj = pyproj.Proj(projparams)
+                llcrnrx, llcrnry = pj(lon1,lat1)
+                x = llcrnrx+dx*np.arange(self.nx)
+                y = llcrnry+dy*np.arange(self.ny)
+                x, y = np.meshgrid(x, y)
+                lons, lats = pj(x, y, inverse=True)
+            elif gdtnum == 110: # Azimuthal Equidistant
+                projparams[&#39;proj&#39;]=self.proj4_proj
+                projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+                projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+                pj = pyproj.Proj(projparams)
+                llcrnrx, llcrnry = pj(lon1,lat1)
+                x = llcrnrx+dx*np.arange(self.nx)
+                y = llcrnry+dy*np.arange(self.ny)
+                x, y = np.meshgrid(x, y)
+                lons, lats = pj(x, y, inverse=True)
+        elif gdtnum == 90:
+            # Satellite Projection
+            dx = self.gridlengthXDirection
+            dy = self.gridlengthYDirection
+            projparams[&#39;proj&#39;]=self.proj4_proj
+            projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+            projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+            projparams[&#39;h&#39;]=self.proj4_h
+            pj = pyproj.Proj(projparams)
+            x = dx*np.indices((self.ny,self.nx),&#39;f&#39;)[1,:,:]
+            x -= 0.5*x.max()
+            y = dy*np.indices((self.ny,self.nx),&#39;f&#39;)[0,:,:]
+            y -= 0.5*y.max()
+            lons, lats = pj(x,y,inverse=True)
+            # Set lons,lats to 1.e30 where undefined
+            abslons = np.fabs(lons)
+            abslats = np.fabs(lats)
+            lons = np.where(abslons &lt; 1.e20, lons, 1.e30)
+            lats = np.where(abslats &lt; 1.e20, lats, 1.e30)
+        else:
+            raise ValueError(&#39;Unsupported grid&#39;)
+        self.projparams = projparams
+        return lats.astype(&#39;f&#39;), lons.astype(&#39;f&#39;)
 
 
     def __repr__(self):
@@ -701,6 +870,8 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
     self._ref = ref
     self._datapos = 0
     self._msgnum = num
+
+    #self.md5 = {}
     
     # Section 0, Indicator Section
     self.indicatorSection = []
@@ -710,6 +881,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
     self.indicatorSection.append(self._msg[7])
     self.indicatorSection.append(struct.unpack(&#39;&gt;Q&#39;,self._msg[8:16])[0])
     self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)
+    #self.md5[0] = _getmd5str(self.indicatorSection)
     self._pos = 16
     
     # Section 1, Indentification Section.
@@ -750,33 +922,38 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
 
         # Section 2, Local Use Section.
         self.localUseSection = None
+        #self.md5[2] = None
         if sectnum == 2:
             _lus = self._msg[self._pos+5:self._pos+sectlen]
             self._pos += sectlen
             self.localUseSection = _lus
+            #self.md5[2] = _getmd5str(self.identificationSection)
         # Section 3, Grid Definition Section.
         elif sectnum == 3:
             _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-            self.gridDefinitionInfo = _gds.tolist()
+            self.gridDefinitionSection = _gds.tolist()
             self.gridDefinitionTemplateNumber = int(_gds[4])
             self.gridDefinitionTemplate = _gdtn.tolist()
             self.defList = _deflist.tolist()
             self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,&#39;3.1&#39;)
+            #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
         # Section 4, Product Definition Section.
         elif sectnum == 4:
             _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
             self.productDefinitionTemplate = _pdt.tolist()
             self.productDefinitionTemplateNumber = int(_pdtn)
             self.coordinateList = _coordlst.tolist()
+            #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
         # Section 5, Data Representation Section.
         elif sectnum == 5:
             _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
             self.dataRepresentationTemplate = _drt.tolist()
             self.dataRepresentationTemplateNumber = int(_drtn)
             self.numberOfDataPoints = _npts
+            #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
         # Section 6, Bitmap Section.
         elif sectnum == 6:
-            _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionInfo[1],self._pos,np.empty)
+            _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
             self.bitMapFlag = _bmapflag
             if self.bitMapFlag == 0:
                 self.bitMap = _bmap
@@ -785,16 +962,21 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
                 self.bitMapFlag = 0
                 self.bitMap = self._ref._index[&#39;bitMap&#39;][self._msgnum]
             self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
+            #self.md5[6] = None
         # Section 7, Data Section (data unpacked when data() method is invoked).
         elif sectnum == 7:
             self._datapos = self._pos
             self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
+            #self.md5[7] = _getmd5str(self._msg[self._datapos:sectlen+1])
         else:
             errmsg = &#39;Unknown section number = %i&#39; % sectnum
             raise ValueError(errmsg) 
 
+    # ----------------------------
     # Section 3 -- Grid Definition
-    reggrid = self.gridDefinitionInfo[2] == 0 # self.gridDefinitionInfo[2]=0 means regular 2-d grid
+    # ----------------------------
+
+    # Set shape of the Earth parameters
     if self.gridDefinitionTemplateNumber in [50,51,52,1200]:
         earthparams = None
     else:
@@ -802,6 +984,8 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
     if earthparams[&#39;shape&#39;] == &#39;spherical&#39;:
         if earthparams[&#39;radius&#39;] is None:
             self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+            self.earthMajorAxis = None
+            self.earthMinorAxis = None
         else:
             self.earthRadius = earthparams[&#39;radius&#39;]
             self.earthMajorAxis = None
@@ -815,12 +999,16 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.earthRadius = earthparams[&#39;radius&#39;]
             self.earthMajorAxis = earthparams[&#39;major_axis&#39;]
             self.earthMinorAxis = earthparams[&#39;minor_axis&#39;]
+
+    reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
     if reggrid and self.gridDefinitionTemplateNumber not in [50,51,52,53,100,120,1000,1200]:
         self.nx = self.gridDefinitionTemplate[7]
         self.ny = self.gridDefinitionTemplate[8]
-    if not reggrid and self.gridDefinitionTemplateNumber == 40: # &#39;reduced&#39; gaussian grid.
+    if not reggrid and self.gridDefinitionTemplateNumber == 40:
+        # Reduced Gaussian Grid
         self.ny = self.gridDefinitionTemplate[8]
-    if self.gridDefinitionTemplateNumber in [0,1,203,205,32768,32769]: # regular or rotated lat/lon grid
+    if self.gridDefinitionTemplateNumber in [0,1,203,205,32768,32769]:
+        # Regular or Rotated Lat/Lon Grid
         scalefact = float(self.gridDefinitionTemplate[9])
         divisor = float(self.gridDefinitionTemplate[10])
         if scalefact == 0: scalefact = 1.
@@ -835,12 +1023,13 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.gridlengthYDirection = -self.gridlengthYDirection
         if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
             self.gridlengthXDirection = -self.gridlengthXDirection
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
         if self.gridDefinitionTemplateNumber == 1:
             self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
             self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
             self.anglePoleRotation = self.gridDefinitionTemplate[21]
-    elif self.gridDefinitionTemplateNumber == 10: # mercator
+    elif self.gridDefinitionTemplateNumber == 10:
+        # Mercator
         self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
         self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
         self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
@@ -850,9 +1039,10 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
         self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
         self.proj4_proj = &#39;merc&#39;
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 20: # stereographic
-        projflag = _int2bin(self.gridDefinitionTemplate[16],output=list)[0]
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 20:
+        # Stereographic
+        projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
         self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
         self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
         self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
@@ -866,8 +1056,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
         self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
         self.proj4_proj = &#39;stere&#39;
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 30: # lambert conformal
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 30:
+        # Lambert Conformal
         self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
         self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
         self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
@@ -877,8 +1068,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
         self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
         self.proj4_proj = &#39;lcc&#39;
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 31: # albers equal area.
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 31:
+        # Albers Equal Area
         self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
         self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
         self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
@@ -888,8 +1080,9 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
         self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
         self.proj4_proj = &#39;aea&#39;
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41: # gaussian grid.
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41:
+        # Gaussian Grid
         scalefact = float(self.gridDefinitionTemplate[9])
         divisor = float(self.gridDefinitionTemplate[10])
         if scalefact == 0: scalefact = 1.
@@ -903,15 +1096,17 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
             self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
             if self.longitudeFirstGridpoint &gt; self.longitudeLastGridpoint:
                 self.gridlengthXDirection = -self.gridlengthXDirection
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
         if self.gridDefinitionTemplateNumber == 41:
             self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
             self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
             self.anglePoleRotation = self.gridDefinitionTemplate[21]
-    elif self.gridDefinitionTemplateNumber == 50: # spectral coefficients.
+    elif self.gridDefinitionTemplateNumber == 50:
+        # Spectral Coefficients
         self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
-        self.scanModeFlags = [None,None,None,None] # doesn&#39;t apply
-    elif self.gridDefinitionTemplateNumber == 90: # near-sided vertical perspective satellite projection
+        self.scanModeFlags = [None,None,None,None]
+    elif self.gridDefinitionTemplateNumber == 90:
+        # Near-sided Vertical Perspective Satellite Projection
         self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
         self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
         self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
@@ -923,7 +1118,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         # general case of &#39;near-side perspective projection&#39; (untested)
         else:
             self.proj4_proj = &#39;nsper&#39;
-            msg = &#39;only geostationary perspective is supported. lat/lon values returned by grid method may be incorrect.&#39;
+            msg = &#39;Only geostationary perspective is supported. Lat/Lon values returned by grid method may be incorrect.&#39;
             warnings.warn(msg)
         # latitude of horizon on central meridian
         lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
@@ -939,28 +1134,28 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         P = pyproj.Proj(proj=self.proj4_proj,\
                         a=self.earthMajorAxis,b=self.earthMinorAxis,\
                         lat_0=0,lon_0=0,h=self.proj4_h)
-        x1,y1 = P(0.,latmax); x2,y2 = P(lonmax,0.)
-        width = 2*x2; height = 2*y1
+        x1,y1 = P(0.,latmax)
+        x2,y2 = P(lonmax,0.)
+        width = 2*x2
+        height = 2*y1
         self.gridlengthXDirection = width/dx
         self.gridlengthYDirection = height/dy
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 110: # azimuthal equidistant.
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 110:
+        # Azimuthal Equidistant
         self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
         self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
         self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
         self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
         self.proj4_proj = &#39;aeqd&#39;
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-    elif self.gridDefinitionTemplateNumber == 204: # curvilinear orthogonal
-        self.scanModeFlags = _int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+    elif self.gridDefinitionTemplateNumber == 204:
+        # Curvilinear Orthogonal
+        self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
 
-    # Missing value.
-    #if self.dataRepresentationTemplateNumber in [2,3] and self.dataRepresentationTemplate[6] != 0:
-    #    self.missingValue = _getieeeint(self.dataRepresentationTemplate[7])
-    #    if self.dataRepresentationTemplate[6] == 2:
-    #        self.missingValue2 = _getieeeint(self.dataRepresentationTemplate[8])
-
+    # -------------------------------
     # Section 4 -- Product Definition
+    # -------------------------------
     _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
                self.productDefinitionTemplate[0],
                self.productDefinitionTemplate[1])
@@ -1081,25 +1276,27 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],&#39;4.4&#39;)
         self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
 
+    # --------------------------------
     # Section 5 -- Data Representation
+    # --------------------------------
     if self.dataRepresentationTemplateNumber == 0:
         # Grid Point Data -- Simple Packing
-        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
         self.binScaleFactor = self.dataRepresentationTemplate[1]
         self.decScaleFactor = self.dataRepresentationTemplate[2]
         self.nBitsPacking = self.dataRepresentationTemplate[3]
         self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[3],&#39;5.1&#39;)
     elif self.dataRepresentationTemplateNumber == 2:
         # Grid Point Data -- Complex Packing
-        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
         self.binScaleFactor = self.dataRepresentationTemplate[1]
         self.decScaleFactor = self.dataRepresentationTemplate[2]
         self.nBitsPacking = self.dataRepresentationTemplate[3]
         self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
         self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
         self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
-        self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-        self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+        self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
         self.nGroups = self.dataRepresentationTemplate[9]
         self.refGroupWidth = self.dataRepresentationTemplate[10]
         self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1109,15 +1306,15 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
     elif self.dataRepresentationTemplateNumber == 3:
         # Grid Point Data -- Complex Packing and Spatial Differencing
-        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
         self.binScaleFactor = self.dataRepresentationTemplate[1]
         self.decScaleFactor = self.dataRepresentationTemplate[2]
         self.nBitsPacking = self.dataRepresentationTemplate[3]
         self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],&#39;5.1&#39;)
         self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],&#39;5.4&#39;)
         self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],&#39;5.5&#39;)
-        self.priMissingValue = _getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
-        self.secMissingValue = _getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+        self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
         self.nGroups = self.dataRepresentationTemplate[9]
         self.refGroupWidth = self.dataRepresentationTemplate[10]
         self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1132,7 +1329,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.precision = tables.get_value_from_table(self.dataRepresentationTemplate[0],&#39;5.7&#39;)
     elif self.dataRepresentationTemplateNumber == 40:
         # Grid Point Data - JPEG2000 Compression
-        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
         self.binScaleFactor = self.dataRepresentationTemplate[1]
         self.decScaleFactor = self.dataRepresentationTemplate[2]
         self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1141,7 +1338,7 @@ instance of <code><a title="grib2io.open" href="#grib2io.open">open</a></code>.<
         self.targetCompressionRatio = self.dataRepresentationTemplate[6]
     elif self.dataRepresentationTemplateNumber == 41:
         # Grid Point Data - PNG Compression
-        self.refValue = _getieeeint(self.dataRepresentationTemplate[0])
+        self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
         self.binScaleFactor = self.dataRepresentationTemplate[1]
         self.decScaleFactor = self.dataRepresentationTemplate[2]
         self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1221,8 +1418,8 @@ values. If 1, linear interpolation is used for expanding reduced gaussian grids.
     gdtnum = self.gridDefinitionTemplateNumber
     gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
     ndpts = self.numberOfDataPoints
-    gdsinfo = self.gridDefinitionInfo
-    ngrdpts = gdsinfo[1]
+    gds = self.gridDefinitionSection
+    ngrdpts = gds[1]
     ipos = self._datapos
     fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
     # Apply bitmap.
@@ -1246,7 +1443,7 @@ values. If 1, linear interpolation is used for expanding reduced gaussian grids.
         else:
             fld = np.reshape(fld,(self.ny,self.nx))
     else:
-        if gdsinfo[2] and gdtnum == 40: # ECMWF &#39;reduced&#39; global gaussian grid.
+        if gds[2] and gdtnum == 40: # ECMWF &#39;reduced&#39; global gaussian grid.
             if expand:
                 from redtoreg import _redtoreg
                 self.nx = 2*self.ny
@@ -1265,6 +1462,170 @@ values. If 1, linear interpolation is used for expanding reduced gaussian grids.
             fldsave = fld.astype(&#39;f&#39;) # casting makes a copy
             fld[1::2,:] = fldsave[1::2,::-1]
     return fld</code></pre>
+</details>
+</dd>
+<dt id="grib2io.Grib2Message.grid"><code class="name flex">
+<span>def <span class="ident">grid</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon,
+global gaussian, mercator, stereographic, lambert conformal, albers equal-area,
+space-view and azimuthal equidistant grids.</p>
+<h2 id="returns">Returns</h2>
+<p><strong><code>tuple</code></strong></p>
+<dl>
+<dt><code>A tuple</code> of <code>numpy.ndarrays with dtype=numpy.float32</code> of <code>grid latitudes and</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>longitudes in units of degrees.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def grid(self):
+    &#34;&#34;&#34;
+    Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon, 
+    global gaussian, mercator, stereographic, lambert conformal, albers equal-area, 
+    space-view and azimuthal equidistant grids.
+
+    Returns
+    -------
+
+    **`tuple`**
+
+    A tuple of numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+    longitudes in units of degrees.
+    &#34;&#34;&#34;
+    gdtnum = self.gridDefinitionTemplateNumber
+    gdtmpl = self.gridDefinitionTemplate
+    reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
+    projparams = {}
+    if self.earthMajorAxis is not None: projparams[&#39;a&#39;]=self.earthMajorAxis
+    if self.earthMajorAxis is not None: projparams[&#39;b&#39;]=self.earthMinorAxis
+    if gdtnum == 0:
+        # Regular lat/lon grid
+        lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+        lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
+        dlon = self.gridlengthXDirection
+        dlat = self.gridlengthYDirection
+        lats = np.arange(lat1,lat2+dlat,dlat)
+        lons = np.arange(lon1,lon2+dlon,dlon)
+        # flip if scan mode says to.
+        #if self.scanModeFlags[0]:
+        #    lons = lons[::-1]
+        #if not self.scanModeFlags[1]:
+        #    lats = lats[::-1]
+        projparams[&#39;proj&#39;] = &#39;cyl&#39;
+        lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
+    #elif gdtnum == 40: # gaussian grid (only works for global!)
+    #    try:
+    #        from pygrib import gaulats
+    #    except:
+    #        raise ImportError(&#34;pygrib required to compute Gaussian lats/lons&#34;)
+    #    lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+    #    lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
+    #    nlats = self.ny
+    #    if not reggrid: # ECMWF &#39;reduced&#39; gaussian grid.
+    #        nlons = 2*nlats
+    #        dlon = 360./nlons
+    #    else:
+    #        nlons = self.nx
+    #        dlon = self.gridlengthXDirection
+    #    lons = np.arange(lon1,lon2+dlon,dlon)
+    #    # compute gaussian lats (north to south)
+    #    lats = gaulats(nlats)
+    #    if lat1 &lt; lat2:  # reverse them if necessary
+    #        lats = lats[::-1]
+    #    # flip if scan mode says to.
+    #    #if self.scanModeFlags[0]:
+    #    #    lons = lons[::-1]
+    #    #if not self.scanModeFlags[1]:
+    #    #    lats = lats[::-1]
+    #    projparams[&#39;proj&#39;] = &#39;cyl&#39;
+    #    lons,lats = np.meshgrid(lons,lats) # make 2-d arrays
+    elif gdtnum in [10,20,30,31,110]:
+        # Mercator, Lambert Conformal, Stereographic, Albers Equal Area, Azimuthal Equidistant
+        dx, dy = self.gridlengthXDirection, self.gridlengthYDirection
+        lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+        if gdtnum == 10: # Mercator.
+            projparams[&#39;lat_ts&#39;]=self.proj4_lat_ts
+            projparams[&#39;proj&#39;]=self.proj4_proj
+            projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+            pj = pyproj.Proj(projparams)
+            llcrnrx, llcrnry = pj(lon1,lat1)
+            x = llcrnrx+dx*np.arange(self.nx)
+            y = llcrnry+dy*np.arange(self.ny)
+            x, y = np.meshgrid(x, y)
+            lons, lats = pj(x, y, inverse=True)
+        elif gdtnum == 20:  # Stereographic
+            projparams[&#39;lat_ts&#39;]=self.proj4_lat_ts
+            projparams[&#39;proj&#39;]=self.proj4_proj
+            projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+            projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+            pj = pyproj.Proj(projparams)
+            llcrnrx, llcrnry = pj(lon1,lat1)
+            x = llcrnrx+dx*np.arange(self.nx)
+            y = llcrnry+dy*np.arange(self.ny)
+            x, y = np.meshgrid(x, y)
+            lons, lats = pj(x, y, inverse=True)
+        elif gdtnum in [30,31]: # Lambert, Albers
+            projparams[&#39;lat_1&#39;]=self.proj4_lat_1
+            projparams[&#39;lat_2&#39;]=self.proj4_lat_2
+            projparams[&#39;proj&#39;]=self.proj4_proj
+            projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+            pj = pyproj.Proj(projparams)
+            llcrnrx, llcrnry = pj(lon1,lat1)
+            x = llcrnrx+dx*np.arange(self.nx)
+            y = llcrnry+dy*np.arange(self.ny)
+            x, y = np.meshgrid(x, y)
+            lons, lats = pj(x, y, inverse=True)
+        elif gdtnum == 110: # Azimuthal Equidistant
+            projparams[&#39;proj&#39;]=self.proj4_proj
+            projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+            projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+            pj = pyproj.Proj(projparams)
+            llcrnrx, llcrnry = pj(lon1,lat1)
+            x = llcrnrx+dx*np.arange(self.nx)
+            y = llcrnry+dy*np.arange(self.ny)
+            x, y = np.meshgrid(x, y)
+            lons, lats = pj(x, y, inverse=True)
+    elif gdtnum == 90:
+        # Satellite Projection
+        dx = self.gridlengthXDirection
+        dy = self.gridlengthYDirection
+        projparams[&#39;proj&#39;]=self.proj4_proj
+        projparams[&#39;lon_0&#39;]=self.proj4_lon_0
+        projparams[&#39;lat_0&#39;]=self.proj4_lat_0
+        projparams[&#39;h&#39;]=self.proj4_h
+        pj = pyproj.Proj(projparams)
+        x = dx*np.indices((self.ny,self.nx),&#39;f&#39;)[1,:,:]
+        x -= 0.5*x.max()
+        y = dy*np.indices((self.ny,self.nx),&#39;f&#39;)[0,:,:]
+        y -= 0.5*y.max()
+        lons, lats = pj(x,y,inverse=True)
+        # Set lons,lats to 1.e30 where undefined
+        abslons = np.fabs(lons)
+        abslats = np.fabs(lats)
+        lons = np.where(abslons &lt; 1.e20, lons, 1.e30)
+        lats = np.where(abslats &lt; 1.e20, lats, 1.e30)
+    else:
+        raise ValueError(&#39;Unsupported grid&#39;)
+    self.projparams = projparams
+    return lats.astype(&#39;f&#39;), lons.astype(&#39;f&#39;)</code></pre>
+</details>
+</dd>
+<dt id="grib2io.Grib2Message.latlons"><code class="name flex">
+<span>def <span class="ident">latlons</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Alias for <code><a title="grib2io.Grib2Message.grid" href="#grib2io.Grib2Message.grid">Grib2Message.grid()</a></code> method</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def latlons(self):
+    &#34;&#34;&#34;Alias for `grib2io.Grib2Message.grid` method&#34;&#34;&#34;
+    return self.grid()</code></pre>
 </details>
 </dd>
 </dl>
@@ -1851,6 +2212,7 @@ The default is open for reading ('r').</p></div>
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
 <li><code><a title="grib2io.tables" href="tables/index.html">grib2io.tables</a></code></li>
+<li><code><a title="grib2io.utils" href="utils/index.html">grib2io.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -1860,6 +2222,8 @@ The default is open for reading ('r').</p></div>
 <ul class="">
 <li><code><a title="grib2io.Grib2Message.__init__" href="#grib2io.Grib2Message.__init__">__init__</a></code></li>
 <li><code><a title="grib2io.Grib2Message.data" href="#grib2io.Grib2Message.data">data</a></code></li>
+<li><code><a title="grib2io.Grib2Message.grid" href="#grib2io.Grib2Message.grid">grid</a></code></li>
+<li><code><a title="grib2io.Grib2Message.latlons" href="#grib2io.Grib2Message.latlons">latlons</a></code></li>
 </ul>
 </li>
 <li>
