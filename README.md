@@ -21,6 +21,7 @@ grib2io leverages the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs
 * Python 3.6+
 * setuptools 34.0+
 * NumPy 1.12+
+* pyproj 1.9.6+
 * C Compiler (GNU or Intel recommended)
 
 GRIB2 has the ability to compress data using JPEG (via [Jasper](https://github.com/jasper-software/jasper) or [OpenJPEG](https://github.com/uclouvain/openjpeg)) or [PNG](https://sourceforge.net/projects/libpng/) compression.  Most \*NIX systems provide these libraries through their respective package management systems.  On macOS, please use [homebrew](https://brew.sh) to install all required compression libraries.
