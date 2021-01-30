@@ -4,3 +4,4 @@ build/
 setup.cfg
 dist/
 *.egg-info
+make_grib2_tables/section*.py
