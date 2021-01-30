@@ -9,6 +9,27 @@ import numpy as np
 def int2bin(i,nbits=8,output=str):
     """
     Convert integer to binary string or list
+
+    Parameters
+    ----------
+
+    **`i : int`**
+
+    Integer value to convert to binary representation.
+
+    **`nbits : int`**
+
+    Number of bits to return.  Valid values are 8 [DEFAULT], 16,
+    32, and 64.
+
+    **`output : [str|int]`**
+
+    Return data as a str or int.
+
+    Returns
+    -------
+
+    A `str` or `int` binary representation of the integer value.
     """
     i = int(i) if not isinstance(i,int) else i
     assert nbits in [8,16,32,64]
