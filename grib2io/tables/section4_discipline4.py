@@ -9,7 +9,6 @@ table_4_2_4_0  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_1  = {
 '0':['Velocity Magnitude (Speed)','m s-1','SPEED'],
 '1':['1st Vector Component of Velocity  (Coordinate system dependent)','m s-1','VEL1'],
@@ -19,7 +18,6 @@ table_4_2_4_1  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_2  = {
 '0':['Particle Number Density','m-3','PLSMDEN'],
 '1':['Electron Density','m-3','ELCDEN'],
@@ -36,7 +34,6 @@ table_4_2_4_2  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_3  = {
 '0':['Magnetic Field Magnitude','T','BTOT'],
 '1':['1st Vector Component of Magnetic Field','T','BVEC1'],
@@ -50,7 +47,6 @@ table_4_2_4_3  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_4  = {
 '0':['Proton Flux (Differential)','(m2 s sr eV)-1','DIFPFLUX'],
 '1':['Proton Flux (Integral)','(m2 s sr)-1','INTPFLUX'],
@@ -63,13 +59,11 @@ table_4_2_4_4  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_5  = {
 '0-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_6  = {
 '0':['Integrated Solar Irradiance','W m-2','TSI'],
 '1':['Solar X-ray Flux (XRS Long)','W m-2','XLONG'],
@@ -82,7 +76,6 @@ table_4_2_4_6  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_7  = {
 '0':['Limb Intensity','m-2 s-1','LMBINT'],
 '1':['Disk Intensity','m-2 s-1','DSKINT'],
@@ -92,7 +85,6 @@ table_4_2_4_7  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_8  = {
 '0':['X-Ray Radiance','W sr-1 m-2','XRAYRAD'],
 '1':['EUV Radiance','W sr-1 m-2','EUVRAD'],
@@ -106,7 +98,6 @@ table_4_2_4_8  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_4_9  = {
 '0':['Pedersen Conductivity','S m-1','SIGPED'],
 '1':['Hall Conductivity','S m-1','SIGHAL'],
@@ -115,4 +106,3 @@ table_4_2_4_9  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-

@@ -68,9 +68,9 @@ table_3_2 = {
 '4':'Earth assumed oblate spheriod as defined in IAG-GRS80 model (major axis = 6,378,137.0 m, minor axis = 6,356,752.314 m, f = 1/298.257222101)',
 '5':'Earth assumed represented by WGS84 (as used by ICAO since 1998) (Uses IAG-GRS80 as a basis)',
 '6':'Earth assumed spherical with radius = 6,371,229.0 m',
-'7':'Earth assumed oblate spheroid with major and minor axes specified (in m) by data producer',
-'8':'Earth model assumed spherical with radius 6,371,200 m, but the horizontal datum of the resulting Latitude/Longitude field is  the WGS84 reference frame',
-'9':'Earth represented by the OSGB 1936 Datum, using the Airy_1830 Spheroid, the Greenwich meridian as 0 Longitude, the Newlyn datum as mean sea level, 0 height.',
+'7':'Earth assumed oblate spheroid with major and minor axes  specified (in m) by data producer',
+'8':'Earth model assumed spherical with radius 6,371,200 m,  but the horizontal datum of the resulting Latitude/Longitude field is  the WGS84 reference frame',
+'9':'Earth represented by the OSGB 1936 Datum,  using the Airy_1830 Spheroid, the Greenwich meridian as 0 Longitude, the Newlyn datum as mean sea  level, 0 height.',
 '10-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
@@ -79,14 +79,13 @@ table_3_2 = {
 earth_params = {
 '0':{'shape':'spherical','radius':6367470.0},
 '1':{'shape':'spherical','radius':None},
-'2':{'shape':'oblateSpheriod','major_axis':6378160.0,'minor_axis':6356775.0,'flattening':1.0/297.0}, 
-'3':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None}, 
-'4':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.314,'flattening':1.0/298.257222101}, 
-'5':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.3142,'flattening':1.0/298.257223563}, 
-'6':{'shape':'spherical','radius':6371229.0}, 
-'7':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None}, 
-'8':{'shape':'spherical','radius':6371200.0}, 
+'2':{'shape':'oblateSpheriod','major_axis':6378160.0,'minor_axis':6356775.0,'flattening':1.0/297.0},
+'3':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None},
+'4':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.314,'flattening':1.0/298.257222101},
+'5':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.3142,'flattening':1.0/298.257223563},
+'6':{'shape':'spherical','radius':6371229.0},
+'7':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None},
+'8':{'shape':'spherical','radius':6371200.0},
 }
-for i in range(9,256): 
+for i in range(9,256):
     earth_params[str(i)] = {'shape':'unknown','radius':None}
-

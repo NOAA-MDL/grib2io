@@ -22,7 +22,6 @@ table_4_2_1_0  = {
 '193':['Storm Surface Runoff','kg m-2','SSRUN'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_1_1  = {
 '0':['Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation)','kg m-2','CPPOP'],
 '1':['Percent Precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period)','%','PPOSP'],
@@ -35,7 +34,6 @@ table_4_2_1_1  = {
 '195':['Probability of Wetting Rain, exceeding in 0.10" in a given time period','%','CWR'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_1_2  = {
 '0':['Water Depth','m','WDPTHIL'],
 '1':['Water Temperature','K','WTMPIL'],
@@ -55,4 +53,3 @@ table_4_2_1_2  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-

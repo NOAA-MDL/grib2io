@@ -70,7 +70,6 @@ table_4_2_10_0  = {
 '193':['Wave Length','unknown','WLENG'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_10_1  = {
 '0':['Current Direction','degree True','DIRC'],
 '1':['Current Speed','m s-1','SPC'],
@@ -85,7 +84,6 @@ table_4_2_10_1  = {
 '195':['Barotropic V velocity','m s-1','VBARO'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_10_2  = {
 '0':['Ice Cover','Proportion','ICEC'],
 '1':['Ice Thickness','m','ICETK'],
@@ -104,7 +102,6 @@ table_4_2_10_2  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_10_3  = {
 '0':['Water Temperature','K','WTMP'],
 '1':['Deviation of Sea Level from Mean','m','DSLM'],
@@ -147,7 +144,6 @@ table_4_2_10_3  = {
 '254':['Reserved','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_10_4  = {
 '0':['Main Thermocline Depth','m','MTHD'],
 '1':['Main Thermocline Anomaly','m','MTHA'],
@@ -179,7 +175,6 @@ table_4_2_10_4  = {
 '197':['Ocean Heat Content','J m-2','OHC'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_10_191  = {
 '0':['Seconds Prior To Initial Reference Time (Defined In Section 1)','s','IRTSEC'],
 '1':['Meridional Overturning Stream Function','m3 s-1','MOSF'],
@@ -189,4 +184,3 @@ table_4_2_10_191  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-

@@ -232,6 +232,9 @@ table_4_5 = {
 '213':['Low cloud top level','unknown'],
 '214':['Low cloud layer','unknown'],
 '215':['Cloud ceiling','unknown'],
+'216':['Effective Layer Top Level','m'],
+'217':['Effective Layer Bottom Level','m'],
+'218':['Effective Layer','m'],
 '220':['Planetary Boundary Layer','unknown'],
 '221':['Layer Between Two Hybrid Levels','unknown'],
 '222':['Middle cloud bottom level','unknown'],
@@ -296,6 +299,10 @@ table_4_7 = {
 '198':'Deviation of Ensemble Mean from Daily Climatology',
 '199':'Extreme Forecast Index',
 '200':'Equally Weighted Mean',
+'201':'Percentile value (5%) of All Members',
+'202':'Percentile value (25%) of All Members',
+'203':'Percentile value (75%) of All Members',
+'204':'Percentile value (95%) of All Members',
 '255':'Missing',
 }
 
@@ -363,3 +370,4 @@ table_4_11 = {
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
+

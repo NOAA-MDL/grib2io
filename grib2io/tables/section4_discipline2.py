@@ -84,14 +84,12 @@ table_4_2_2_0  = {
 '232':['Seasonally Maximum Green Vegetation Fraction (over 1-year period)','%','VEGMAX'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_2_1  = {
 '0-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '192':['Cold Advisory for Newborn Livestock','unknown','CANL'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_2_3  = {
 '0':['Soil Type','See Table 4.213','SOTYP'],
 '1':['Upper Layer Soil Temperature *','K','UPLST'],
@@ -138,7 +136,6 @@ table_4_2_2_3  = {
 '204':['Soil Moisture Availability In The Top Soil Layer','%','MSTAV'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_2_4  = {
 '0':['Fire Outlook','See Table 4.224','FIREOLK'],
 '1':['Fire Outlook Due to Dry Thunderstorm','See Table 4.224','FIREODT'],
@@ -156,11 +153,9 @@ table_4_2_2_4  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_2_5  = {
 '1':['Glacier Temperature','K','GLACTMP'],
 '2-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-

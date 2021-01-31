@@ -13,7 +13,6 @@ table_4_2_3_0  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_1  = {
 '0':['Estimated Precipitation','kg m-2','ESTP'],
 '1':['Instantaneous Rain Rate','kg m-2 s-1','IRRATE'],
@@ -53,7 +52,6 @@ table_4_2_3_1  = {
 '194':['Scatterometer Wind Quality','unknown','SWQI'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_2  = {
 '0':['Clear Sky Probability','%','CSKPROB'],
 '1':['Cloud Top Temperature','K','CTOPTMP'],
@@ -73,7 +71,6 @@ table_4_2_3_2  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_3  = {
 '0':['Probability of Encountering Marginal Visual Flight Rules Conditions','%','PBMVFRC'],
 '1':['Probability of Encountering Low Instrument Flight Rules Conditions','%','PBLIFRC'],
@@ -82,7 +79,6 @@ table_4_2_3_3  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_4  = {
 '0':['Volcanic Ash Probability','%','VOLAPROB'],
 '1':['Volcanic Ash Cloud Top Temperature','K','VOLACDTT'],
@@ -97,7 +93,6 @@ table_4_2_3_4  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_5  = {
 '0':['Interface Sea-Surface Temperature (See Note 1)','K','ISSTMP'],
 '1':['Skin Sea-Surface Temperature (See Note 2)','K','SKSSTMP'],
@@ -109,7 +104,6 @@ table_4_2_3_5  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_6  = {
 '0':['Global Solar Irradiance (See Note 1)','W m-2','GSOLIRR'],
 '1':['Global Solar Exposure (See Note 2)','J m-2','GSOLEXP'],
@@ -121,7 +115,6 @@ table_4_2_3_6  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_3_192  = {
 '0':['Simulated Brightness Temperature for GOES 12, Channel 2','K','SBT122'],
 '1':['Simulated Brightness Temperature for GOES 12, Channel 3','K','SBT123'],
@@ -189,4 +182,3 @@ table_4_2_3_192  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-

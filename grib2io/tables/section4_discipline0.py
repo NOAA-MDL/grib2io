@@ -44,9 +44,9 @@ table_4_2_0_0  = {
 '202':['Vertical Diffusion Heating rate','K s-1','VDFHR'],
 '203':['Potential Temperature at Top of Viscous Sublayer','K','THZ0'],
 '204':['Tropical Cyclone Heat Potential','Jm-2K','TCHP'],
+'205':['Effective Layer (EL) Temperature','C','ELMELT'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_1  = {
 '0':['Specific Humidity','kg kg-1','SPFH'],
 '1':['Relative Humidity','%','RH'],
@@ -237,7 +237,6 @@ table_4_2_0_1  = {
 '245':['Hourly Maximum of Column Vertical Integrated Graupel on Entire Atmosphere','kg m-2','MAXVIG'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_2  = {
 '0':['Wind Direction (from which blowing)','°','WDIR'],
 '1':['Wind Speed','m s-1','WIND'],
@@ -329,9 +328,13 @@ table_4_2_0_2  = {
 '230':['Latest Reasonable Departure Time (90% exceedance)','s','TOD90'],
 '231':['Tropical Wind Direction','°','TPWDIR'],
 '232':['Tropical Wind Speed','m s-1','TPWSPD'],
+'233':['Inflow Based (ESFC) to 50% EL Shear Magnitude','kt','ESHR'],
+'234':['U Component Inflow Based to 50% EL Shear Vector','kt','UESH'],
+'235':['V Component Inflow Based to 50% EL Shear Vector','kt','VESH'],
+'236':['U Component Bunkers Effective Right Motion','kt','UEID'],
+'237':['V Component Bunkers Effective Right Motion','kt','VEID'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_3  = {
 '0':['Pressure','Pa','PRES'],
 '1':['Pressure Reduced to MSL','Pa','PRMSL'],
@@ -397,9 +400,9 @@ table_4_2_0_3  = {
 '219':['Orographic Length Scale, S Component','unknown','ORLSS'],
 '220':['Orographic Length Scale, SW Component','unknown','ORLSSW'],
 '221':['Orographic Length Scale, NW Component','unknown','ORLSNW'],
+'222':['Effective Surface Height','m','EFSH'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_4  = {
 '0':['Net Short-Wave Radiation Flux (Surface)*','W m-2','NSWRS'],
 '1':['Net Short-Wave Radiation Flux (Top of Atmosphere)*','W m-2','NSWRT'],
@@ -439,7 +442,6 @@ table_4_2_0_4  = {
 '205':['Upward Total Radiation Flux','W m-2','UTRF'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_5  = {
 '0':['Net Long-Wave Radiation Flux (Surface)*','W m-2','NLWRS'],
 '1':['Net Long-Wave Radiation Flux (Top of Atmosphere)*','W m-2','NLWRT'],
@@ -460,7 +462,6 @@ table_4_2_0_5  = {
 '197':['Cloud Forcing Net Long Wave Flux','W m-2','CFNLF'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_6  = {
 '0':['Cloud Ice','kg m-2','CICE'],
 '1':['Total Cloud Cover','%','TCDC'],
@@ -521,7 +522,6 @@ table_4_2_0_6  = {
 '201':['Sunshine Duration','s','SUNSD'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_7  = {
 '0':['Parcel Lifted Index (to 500 hPa)','K','PLI'],
 '1':['Best Lifted Index (to 500 hPa)','K','BLI'],
@@ -560,9 +560,14 @@ table_4_2_0_7  = {
 '204':['Effective Storm Relative Helicity','m2 s-2','EFHL'],
 '205':['Enhanced Stretching Potential','Numeric','ESP'],
 '206':['Critical Angle','Degree','CANGLE'],
+'207':['Effective Surface Helicity','m2 s-2','E3KH'],
+'208':['Significant Tornado Parameter with CIN-Effective Layer','numeric','STPC'],
+'209':['Significant Hail Parameter','numeric','SIGH'],
+'210':['Supercell Composite Parameter-Effective Layer','numeric','SCCP'],
+'211':['Significant Tornado parameter-Fixed Layer','numeric','SIGT'],
+'212':['Mixed Layer (100 mb) Virtual LFC','numeric','MLFC'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_13  = {
 '0':['Aerosol Type','See Table 4.205','AEROT'],
 '1-191':['Reserved','unknown','unknown'],
@@ -573,7 +578,6 @@ table_4_2_0_13  = {
 '195':['Integrated column particulate matter (fine)','log10 (µg m-3)','LIPMF'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_14  = {
 '0':['Total Ozone','DU','TOZNE'],
 '1':['Ozone Mixing Ratio','kg kg-1','O3MR'],
@@ -592,9 +596,9 @@ table_4_2_0_14  = {
 '201':['Ozone Daily Max from 8-hour Average','ppbV','OZMAX8'],
 '202':['PM 2.5 Daily Max from 1-hour Average','μg m-3','PDMAX1'],
 '203':['PM 2.5 Daily Max from 24-hour Average','μg m-3','PDMAX24'],
+'204':['Acetaldehyde & Higher Aldehydes','ppbV','ALD2'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_15  = {
 '0':['Base Spectrum Width','m s-1','BSWID'],
 '1':['Base Reflectivity','dB','BREF'],
@@ -617,7 +621,6 @@ table_4_2_0_15  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_16  = {
 '0':['Equivalent radar reflectivity factor for rain','m m6 m-3','REFZR'],
 '1':['Equivalent radar reflectivity factor for snow','m m6 m-3','REFZI'],
@@ -636,7 +639,6 @@ table_4_2_0_16  = {
 '198':['Hourly Maximum of Simulated Reflectivity at 1 km AGL','dB','MAXREF'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_17  = {
 '0':['Lightning Strike Density','m-2 s-1','LTNGSD'],
 '1':['Lightning Potential Index (LPI) (see Note 1)','J kg-1','LTPINX'],
@@ -648,7 +650,6 @@ table_4_2_0_17  = {
 '192':['Lightning','non-dim','LTNG'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_18  = {
 '0':['Air Concentration of Caesium 137','Bq m-3','ACCES'],
 '1':['Air Concentration of Iodine 131','Bq m-3','ACIOD'],
@@ -673,7 +674,6 @@ table_4_2_0_18  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_19  = {
 '0':['Visibility','m','VIS'],
 '1':['Albedo','%','ALBDO'],
@@ -757,7 +757,6 @@ table_4_2_0_19  = {
 '239':['Craven-Wiedenfeld Aggregate Severe Parameter','Numeric','CWASP'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_20  = {
 '0':['Mass Density (Concentration)','kg m-3','MASSDEN'],
 '1':['Column-Integrated Mass Density (See Note 1)','kg m-2','COLMD'],
@@ -824,14 +823,12 @@ table_4_2_0_20  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_190  = {
 '0':['Arbitrary Text String','CCITTIA5','ATEXT'],
 '1-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_191  = {
 '0':['Seconds prior to initial reference time (defined in Section 1)','s','TSEC'],
 '1':['Geographical Latitude','° N','GEOLAT'],
@@ -847,7 +844,6 @@ table_4_2_0_191  = {
 '197':['East Longitude (nearest neighbor) (0 to 360)','°','ELONN'],
 '255':['Missing','unknown','unknown'],
 }
-
 table_4_2_0_192  = {
 '1':['Covariance between zonal and meridional components of  the wind. Defined as [uv]-[u][v], where "[]" indicates the mean over the indicated time span.','m2/s2','COVMZ'],
 '2':['Covariance between zonal component of the wind and temperature.  Defined as [uT]-[u][T], where "[]" indicates the mean over the indicated time span.','K*m/s','COVTZ'],
@@ -865,4 +861,3 @@ table_4_2_0_192  = {
 '14':['Covariance between temperature and temperature.  Defined as [TT]-[T][T], where "[]" indicates the mean over the indicated time span.','K*K','COVTT'],
 '255':['Missing','unknown','unknown'],
 }
-
