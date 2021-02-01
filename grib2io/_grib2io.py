@@ -12,6 +12,7 @@ __version__ = '0.3.0'
 
 import g2clib
 import builtins
+import collections
 import copy
 import datetime
 import os
@@ -390,17 +391,25 @@ class open():
 
     def select(self,**kwargs):
         """
+        Returns a list of `grib2io.Grib2Message` instances filtered by
+        **`**kwargs`**.
         """
         kwargs_allowed = ['leadTime','refDate','shortName']
+        idxs = {}
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
             if k == 'leadTime':
-                pass
+                idxs[k] = np.where(np.asarray([item[8] if item is not None else None for item in self._index['productDefinitionTemplate']])==v)[0]
             elif k == 'refDate':
-                idx = np.where(np.asarray(self._index['refDate'])==v)[0]
+                idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
             elif k == 'shortName':
-                idx = np.where(np.array(self._index['shortName'])==v)[0]
-        return [self[int(i)][0] for i in idx]
+                idxs[k] = np.where(np.array(self._index['shortName'])==v)[0]
+        idxsarr = np.concatenate(tuple(idxs.values()))
+        nidxs = len(idxs.keys())
+        if nidxs == 1:
+            return [self[int(i)][0] for i in idxsarr]
+        elif nidxs > 1:
+            return [self[int(i)][0] for i in [ii[0] for ii in collections.Counter(idxsarr).most_common() if ii[1] == nidxs]]
 
 
 class Grib2Message:
@@ -728,7 +737,7 @@ class Grib2Message:
         _vals = tables.get_value_from_table(self.productDefinitionTemplate[9],'4.5')
         self.typeOfFirstFixedSurface = _vals[0]
         self.unitOfFirstFixedSurface = _vals[1]
-        self.valueOfFristFixedSurface = self.productDefinitionTemplate[11]/(10.**self.productDefinitionTemplate[10])
+        self.valueOfFirstFixedSurface = self.productDefinitionTemplate[11]/(10.**self.productDefinitionTemplate[10])
         _vals = tables.get_value_from_table(self.productDefinitionTemplate[12],'4.5')
         self.typeOfSecondFixedSurface = None if _vals[0] == 'Missing' else _vals[0]
         self.unitOfSecondFixedSurface = None if _vals[1] == 'unknown' else _vals[1]
