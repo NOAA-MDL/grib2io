@@ -183,7 +183,7 @@ class open():
         self._index['identificationSection'] = [None]
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
-        self._index['varName'] = [None]
+        self._index['shortName'] = [None]
         self._index['bitMap'] = [None]
 
         # Iterate
@@ -218,7 +218,6 @@ class open():
                     _grbpos = 0
                     _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     _grbsec1 = _grbsec1.tolist()
-                    
                     secrange = range(2,8)
                     while 1:
                         for num in secrange:
@@ -272,7 +271,7 @@ class open():
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
-                            self._index['varName'].append(_varinfo[2])
+                            self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             if _issubmessage:
                                 self._index['submessageOffset'].append(_submsgoffset)
@@ -293,7 +292,7 @@ class open():
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
-                            self._index['varName'].append(_varinfo[2])
+                            self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
@@ -440,8 +439,7 @@ class Grib2Message:
         self.hour = self.identificationSection[8]
         self.minute = self.identificationSection[9]
         self.second = self.identificationSection[10]
-        self.intreferenceDate = (self.year*1000000)+(self.month*10000)+\
-                                (self.day*100)+self.hour
+        self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
         self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
                                                  hour=self.hour,minute=self.minute,
                                                  second=self.second)
@@ -701,9 +699,9 @@ class Grib2Message:
         _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
                    self.productDefinitionTemplate[0],
                    self.productDefinitionTemplate[1])
-        self.varDescription = _varinfo[0]
+        self.fullName = _varinfo[0]
         self.units = _varinfo[1]
-        self.varName = _varinfo[2]
+        self.shortName = _varinfo[2]
         self.generatingProcess = tables.get_value_from_table(self.productDefinitionTemplate[4],'generating_process')
         self.unitOfTimeRange = tables.get_value_from_table(self.productDefinitionTemplate[7],'4.4')
         self.leadTime = self.productDefinitionTemplate[8]
