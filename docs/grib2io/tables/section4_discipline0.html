@@ -78,9 +78,9 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;202&#39;</span><span class="p">:[</span><span class="s1">&#39;Vertical Diffusion Heating rate&#39;</span><span class="p">,</span><span class="s1">&#39;K s-1&#39;</span><span class="p">,</span><span class="s1">&#39;VDFHR&#39;</span><span class="p">],</span>
 <span class="s1">&#39;203&#39;</span><span class="p">:[</span><span class="s1">&#39;Potential Temperature at Top of Viscous Sublayer&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;THZ0&#39;</span><span class="p">],</span>
 <span class="s1">&#39;204&#39;</span><span class="p">:[</span><span class="s1">&#39;Tropical Cyclone Heat Potential&#39;</span><span class="p">,</span><span class="s1">&#39;Jm-2K&#39;</span><span class="p">,</span><span class="s1">&#39;TCHP&#39;</span><span class="p">],</span>
+<span class="s1">&#39;205&#39;</span><span class="p">:[</span><span class="s1">&#39;Effective Layer (EL) Temperature&#39;</span><span class="p">,</span><span class="s1">&#39;C&#39;</span><span class="p">,</span><span class="s1">&#39;ELMELT&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_1</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Specific Humidity&#39;</span><span class="p">,</span><span class="s1">&#39;kg kg-1&#39;</span><span class="p">,</span><span class="s1">&#39;SPFH&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Relative Humidity&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;RH&#39;</span><span class="p">],</span>
@@ -271,7 +271,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;245&#39;</span><span class="p">:[</span><span class="s1">&#39;Hourly Maximum of Column Vertical Integrated Graupel on Entire Atmosphere&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;MAXVIG&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_2</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Wind Direction (from which blowing)&#39;</span><span class="p">,</span><span class="s1">&#39;°&#39;</span><span class="p">,</span><span class="s1">&#39;WDIR&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Wind Speed&#39;</span><span class="p">,</span><span class="s1">&#39;m s-1&#39;</span><span class="p">,</span><span class="s1">&#39;WIND&#39;</span><span class="p">],</span>
@@ -363,9 +362,13 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;230&#39;</span><span class="p">:[</span><span class="s1">&#39;Latest Reasonable Departure Time (90</span><span class="si">% e</span><span class="s1">xceedance)&#39;</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;TOD90&#39;</span><span class="p">],</span>
 <span class="s1">&#39;231&#39;</span><span class="p">:[</span><span class="s1">&#39;Tropical Wind Direction&#39;</span><span class="p">,</span><span class="s1">&#39;°&#39;</span><span class="p">,</span><span class="s1">&#39;TPWDIR&#39;</span><span class="p">],</span>
 <span class="s1">&#39;232&#39;</span><span class="p">:[</span><span class="s1">&#39;Tropical Wind Speed&#39;</span><span class="p">,</span><span class="s1">&#39;m s-1&#39;</span><span class="p">,</span><span class="s1">&#39;TPWSPD&#39;</span><span class="p">],</span>
+<span class="s1">&#39;233&#39;</span><span class="p">:[</span><span class="s1">&#39;Inflow Based (ESFC) to 50</span><span class="si">% E</span><span class="s1">L Shear Magnitude&#39;</span><span class="p">,</span><span class="s1">&#39;kt&#39;</span><span class="p">,</span><span class="s1">&#39;ESHR&#39;</span><span class="p">],</span>
+<span class="s1">&#39;234&#39;</span><span class="p">:[</span><span class="s1">&#39;U Component Inflow Based to 50</span><span class="si">% E</span><span class="s1">L Shear Vector&#39;</span><span class="p">,</span><span class="s1">&#39;kt&#39;</span><span class="p">,</span><span class="s1">&#39;UESH&#39;</span><span class="p">],</span>
+<span class="s1">&#39;235&#39;</span><span class="p">:[</span><span class="s1">&#39;V Component Inflow Based to 50</span><span class="si">% E</span><span class="s1">L Shear Vector&#39;</span><span class="p">,</span><span class="s1">&#39;kt&#39;</span><span class="p">,</span><span class="s1">&#39;VESH&#39;</span><span class="p">],</span>
+<span class="s1">&#39;236&#39;</span><span class="p">:[</span><span class="s1">&#39;U Component Bunkers Effective Right Motion&#39;</span><span class="p">,</span><span class="s1">&#39;kt&#39;</span><span class="p">,</span><span class="s1">&#39;UEID&#39;</span><span class="p">],</span>
+<span class="s1">&#39;237&#39;</span><span class="p">:[</span><span class="s1">&#39;V Component Bunkers Effective Right Motion&#39;</span><span class="p">,</span><span class="s1">&#39;kt&#39;</span><span class="p">,</span><span class="s1">&#39;VEID&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_3</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Pressure&#39;</span><span class="p">,</span><span class="s1">&#39;Pa&#39;</span><span class="p">,</span><span class="s1">&#39;PRES&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Pressure Reduced to MSL&#39;</span><span class="p">,</span><span class="s1">&#39;Pa&#39;</span><span class="p">,</span><span class="s1">&#39;PRMSL&#39;</span><span class="p">],</span>
@@ -431,9 +434,9 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;219&#39;</span><span class="p">:[</span><span class="s1">&#39;Orographic Length Scale, S Component&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;ORLSS&#39;</span><span class="p">],</span>
 <span class="s1">&#39;220&#39;</span><span class="p">:[</span><span class="s1">&#39;Orographic Length Scale, SW Component&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;ORLSSW&#39;</span><span class="p">],</span>
 <span class="s1">&#39;221&#39;</span><span class="p">:[</span><span class="s1">&#39;Orographic Length Scale, NW Component&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;ORLSNW&#39;</span><span class="p">],</span>
+<span class="s1">&#39;222&#39;</span><span class="p">:[</span><span class="s1">&#39;Effective Surface Height&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;EFSH&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_4</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Net Short-Wave Radiation Flux (Surface)*&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;NSWRS&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Net Short-Wave Radiation Flux (Top of Atmosphere)*&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;NSWRT&#39;</span><span class="p">],</span>
@@ -473,7 +476,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;205&#39;</span><span class="p">:[</span><span class="s1">&#39;Upward Total Radiation Flux&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;UTRF&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_5</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Net Long-Wave Radiation Flux (Surface)*&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;NLWRS&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Net Long-Wave Radiation Flux (Top of Atmosphere)*&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;NLWRT&#39;</span><span class="p">],</span>
@@ -494,7 +496,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;197&#39;</span><span class="p">:[</span><span class="s1">&#39;Cloud Forcing Net Long Wave Flux&#39;</span><span class="p">,</span><span class="s1">&#39;W m-2&#39;</span><span class="p">,</span><span class="s1">&#39;CFNLF&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_6</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Cloud Ice&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;CICE&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Total Cloud Cover&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;TCDC&#39;</span><span class="p">],</span>
@@ -555,7 +556,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;201&#39;</span><span class="p">:[</span><span class="s1">&#39;Sunshine Duration&#39;</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;SUNSD&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_7</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Parcel Lifted Index (to 500 hPa)&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;PLI&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Best Lifted Index (to 500 hPa)&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;BLI&#39;</span><span class="p">],</span>
@@ -594,9 +594,14 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;204&#39;</span><span class="p">:[</span><span class="s1">&#39;Effective Storm Relative Helicity&#39;</span><span class="p">,</span><span class="s1">&#39;m2 s-2&#39;</span><span class="p">,</span><span class="s1">&#39;EFHL&#39;</span><span class="p">],</span>
 <span class="s1">&#39;205&#39;</span><span class="p">:[</span><span class="s1">&#39;Enhanced Stretching Potential&#39;</span><span class="p">,</span><span class="s1">&#39;Numeric&#39;</span><span class="p">,</span><span class="s1">&#39;ESP&#39;</span><span class="p">],</span>
 <span class="s1">&#39;206&#39;</span><span class="p">:[</span><span class="s1">&#39;Critical Angle&#39;</span><span class="p">,</span><span class="s1">&#39;Degree&#39;</span><span class="p">,</span><span class="s1">&#39;CANGLE&#39;</span><span class="p">],</span>
+<span class="s1">&#39;207&#39;</span><span class="p">:[</span><span class="s1">&#39;Effective Surface Helicity&#39;</span><span class="p">,</span><span class="s1">&#39;m2 s-2&#39;</span><span class="p">,</span><span class="s1">&#39;E3KH&#39;</span><span class="p">],</span>
+<span class="s1">&#39;208&#39;</span><span class="p">:[</span><span class="s1">&#39;Significant Tornado Parameter with CIN-Effective Layer&#39;</span><span class="p">,</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span><span class="s1">&#39;STPC&#39;</span><span class="p">],</span>
+<span class="s1">&#39;209&#39;</span><span class="p">:[</span><span class="s1">&#39;Significant Hail Parameter&#39;</span><span class="p">,</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span><span class="s1">&#39;SIGH&#39;</span><span class="p">],</span>
+<span class="s1">&#39;210&#39;</span><span class="p">:[</span><span class="s1">&#39;Supercell Composite Parameter-Effective Layer&#39;</span><span class="p">,</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span><span class="s1">&#39;SCCP&#39;</span><span class="p">],</span>
+<span class="s1">&#39;211&#39;</span><span class="p">:[</span><span class="s1">&#39;Significant Tornado parameter-Fixed Layer&#39;</span><span class="p">,</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span><span class="s1">&#39;SIGT&#39;</span><span class="p">],</span>
+<span class="s1">&#39;212&#39;</span><span class="p">:[</span><span class="s1">&#39;Mixed Layer (100 mb) Virtual LFC&#39;</span><span class="p">,</span><span class="s1">&#39;numeric&#39;</span><span class="p">,</span><span class="s1">&#39;MLFC&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_13</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Aerosol Type&#39;</span><span class="p">,</span><span class="s1">&#39;See Table 4.205&#39;</span><span class="p">,</span><span class="s1">&#39;AEROT&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1-191&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
@@ -607,7 +612,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;195&#39;</span><span class="p">:[</span><span class="s1">&#39;Integrated column particulate matter (fine)&#39;</span><span class="p">,</span><span class="s1">&#39;log10 (µg m-3)&#39;</span><span class="p">,</span><span class="s1">&#39;LIPMF&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_14</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Total Ozone&#39;</span><span class="p">,</span><span class="s1">&#39;DU&#39;</span><span class="p">,</span><span class="s1">&#39;TOZNE&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Ozone Mixing Ratio&#39;</span><span class="p">,</span><span class="s1">&#39;kg kg-1&#39;</span><span class="p">,</span><span class="s1">&#39;O3MR&#39;</span><span class="p">],</span>
@@ -626,9 +630,9 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;201&#39;</span><span class="p">:[</span><span class="s1">&#39;Ozone Daily Max from 8-hour Average&#39;</span><span class="p">,</span><span class="s1">&#39;ppbV&#39;</span><span class="p">,</span><span class="s1">&#39;OZMAX8&#39;</span><span class="p">],</span>
 <span class="s1">&#39;202&#39;</span><span class="p">:[</span><span class="s1">&#39;PM 2.5 Daily Max from 1-hour Average&#39;</span><span class="p">,</span><span class="s1">&#39;μg m-3&#39;</span><span class="p">,</span><span class="s1">&#39;PDMAX1&#39;</span><span class="p">],</span>
 <span class="s1">&#39;203&#39;</span><span class="p">:[</span><span class="s1">&#39;PM 2.5 Daily Max from 24-hour Average&#39;</span><span class="p">,</span><span class="s1">&#39;μg m-3&#39;</span><span class="p">,</span><span class="s1">&#39;PDMAX24&#39;</span><span class="p">],</span>
+<span class="s1">&#39;204&#39;</span><span class="p">:[</span><span class="s1">&#39;Acetaldehyde &amp; Higher Aldehydes&#39;</span><span class="p">,</span><span class="s1">&#39;ppbV&#39;</span><span class="p">,</span><span class="s1">&#39;ALD2&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_15</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Base Spectrum Width&#39;</span><span class="p">,</span><span class="s1">&#39;m s-1&#39;</span><span class="p">,</span><span class="s1">&#39;BSWID&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Base Reflectivity&#39;</span><span class="p">,</span><span class="s1">&#39;dB&#39;</span><span class="p">,</span><span class="s1">&#39;BREF&#39;</span><span class="p">],</span>
@@ -651,7 +655,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_16</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Equivalent radar reflectivity factor for rain&#39;</span><span class="p">,</span><span class="s1">&#39;m m6 m-3&#39;</span><span class="p">,</span><span class="s1">&#39;REFZR&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Equivalent radar reflectivity factor for snow&#39;</span><span class="p">,</span><span class="s1">&#39;m m6 m-3&#39;</span><span class="p">,</span><span class="s1">&#39;REFZI&#39;</span><span class="p">],</span>
@@ -670,7 +673,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;198&#39;</span><span class="p">:[</span><span class="s1">&#39;Hourly Maximum of Simulated Reflectivity at 1 km AGL&#39;</span><span class="p">,</span><span class="s1">&#39;dB&#39;</span><span class="p">,</span><span class="s1">&#39;MAXREF&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_17</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Lightning Strike Density&#39;</span><span class="p">,</span><span class="s1">&#39;m-2 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;LTNGSD&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Lightning Potential Index (LPI) (see Note 1)&#39;</span><span class="p">,</span><span class="s1">&#39;J kg-1&#39;</span><span class="p">,</span><span class="s1">&#39;LTPINX&#39;</span><span class="p">],</span>
@@ -682,7 +684,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;192&#39;</span><span class="p">:[</span><span class="s1">&#39;Lightning&#39;</span><span class="p">,</span><span class="s1">&#39;non-dim&#39;</span><span class="p">,</span><span class="s1">&#39;LTNG&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_18</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Air Concentration of Caesium 137&#39;</span><span class="p">,</span><span class="s1">&#39;Bq m-3&#39;</span><span class="p">,</span><span class="s1">&#39;ACCES&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Air Concentration of Iodine 131&#39;</span><span class="p">,</span><span class="s1">&#39;Bq m-3&#39;</span><span class="p">,</span><span class="s1">&#39;ACIOD&#39;</span><span class="p">],</span>
@@ -707,7 +708,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_19</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Visibility&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;VIS&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Albedo&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;ALBDO&#39;</span><span class="p">],</span>
@@ -791,7 +791,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;239&#39;</span><span class="p">:[</span><span class="s1">&#39;Craven-Wiedenfeld Aggregate Severe Parameter&#39;</span><span class="p">,</span><span class="s1">&#39;Numeric&#39;</span><span class="p">,</span><span class="s1">&#39;CWASP&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_20</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Mass Density (Concentration)&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-3&#39;</span><span class="p">,</span><span class="s1">&#39;MASSDEN&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Column-Integrated Mass Density (See Note 1)&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;COLMD&#39;</span><span class="p">],</span>
@@ -858,14 +857,12 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_190</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Arbitrary Text String&#39;</span><span class="p">,</span><span class="s1">&#39;CCITTIA5&#39;</span><span class="p">,</span><span class="s1">&#39;ATEXT&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1-191&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_191</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Seconds prior to initial reference time (defined in Section 1)&#39;</span><span class="p">,</span><span class="s1">&#39;s&#39;</span><span class="p">,</span><span class="s1">&#39;TSEC&#39;</span><span class="p">],</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Geographical Latitude&#39;</span><span class="p">,</span><span class="s1">&#39;° N&#39;</span><span class="p">,</span><span class="s1">&#39;GEOLAT&#39;</span><span class="p">],</span>
@@ -881,7 +878,6 @@ grib2io.<a href="./../tables.html">tables</a>.section4_discipline0              
 <span class="s1">&#39;197&#39;</span><span class="p">:[</span><span class="s1">&#39;East Longitude (nearest neighbor) (0 to 360)&#39;</span><span class="p">,</span><span class="s1">&#39;°&#39;</span><span class="p">,</span><span class="s1">&#39;ELONN&#39;</span><span class="p">],</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
 <span class="p">}</span>
-
 <span class="n">table_4_2_0_192</span>  <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Covariance between zonal and meridional components of  the wind. Defined as [uv]-[u][v], where &quot;[]&quot; indicates the mean over the indicated time span.&#39;</span><span class="p">,</span><span class="s1">&#39;m2/s2&#39;</span><span class="p">,</span><span class="s1">&#39;COVMZ&#39;</span><span class="p">],</span>
 <span class="s1">&#39;2&#39;</span><span class="p">:[</span><span class="s1">&#39;Covariance between zonal component of the wind and temperature.  Defined as [uT]-[u][T], where &quot;[]&quot; indicates the mean over the indicated time span.&#39;</span><span class="p">,</span><span class="s1">&#39;K*m/s&#39;</span><span class="p">,</span><span class="s1">&#39;COVTZ&#39;</span><span class="p">],</span>
