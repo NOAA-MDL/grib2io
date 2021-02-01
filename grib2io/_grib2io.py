@@ -274,8 +274,8 @@ class open():
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['refDate'].append(_refdate)
-                            self._index['productDefinitionTemplateNumber'].append([_pdtnum])
-                            self._index['productDefinitionTemplate'].append([_pdt])
+                            self._index['productDefinitionTemplateNumber'].append(_pdtnum)
+                            self._index['productDefinitionTemplate'].append(_pdt)
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             if _issubmessage:
@@ -296,8 +296,8 @@ class open():
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['refDate'].append(_refdate)
-                            self._index['productDefinitionTemplateNumber'].append([_pdtnum])
-                            self._index['productDefinitionTemplate'].append([_pdt])
+                            self._index['productDefinitionTemplateNumber'].append(_pdtnum)
+                            self._index['productDefinitionTemplate'].append(_pdt)
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['submessageOffset'].append(_submsgoffset)
@@ -391,10 +391,12 @@ class open():
     def select(self,**kwargs):
         """
         """
-        kwargs_allowed = ['refDate','shortName']
+        kwargs_allowed = ['leadTime','refDate','shortName']
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
-            if k == 'refDate':
+            if k == 'leadTime':
+                pass
+            elif k == 'refDate':
                 idx = np.where(np.asarray(self._index['refDate'])==v)[0]
             elif k == 'shortName':
                 idx = np.where(np.array(self._index['shortName'])==v)[0]
