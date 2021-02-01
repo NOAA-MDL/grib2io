@@ -100,6 +100,8 @@ class open():
         self.size = os.path.getsize(self.name)
         self.closed = self._filehandle.closed
         if 'r' in self.mode: self._build_index()
+        if self._hasindex:
+            self.shortNames = tuple(sorted(set(filter(None,self._index['shortName']))))
 
 
     def __delete__(self, instance):
@@ -181,6 +183,7 @@ class open():
         self._index['isSubmessage'] = [None]
         self._index['messageNumber'] = [None]
         self._index['identificationSection'] = [None]
+        self._index['refDate'] = [None]
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
         self._index['shortName'] = [None]
@@ -218,6 +221,7 @@ class open():
                     _grbpos = 0
                     _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     _grbsec1 = _grbsec1.tolist()
+                    _refdate = utils.getdate(_grbsec1[5],_grbsec1[6],_grbsec1[7],_grbsec1[8])
                     secrange = range(2,8)
                     while 1:
                         for num in secrange:
@@ -269,6 +273,7 @@ class open():
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
+                            self._index['refDate'].append(_refdate)
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
                             self._index['shortName'].append(_varinfo[2])
@@ -290,6 +295,7 @@ class open():
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
+                            self._index['refDate'].append(_refdate)
                             self._index['productDefinitionTemplateNumber'].append([_pdtnum])
                             self._index['productDefinitionTemplate'].append([_pdt])
                             self._index['shortName'].append(_varinfo[2])
@@ -381,6 +387,18 @@ class open():
         """
         return self.current_message
 
+
+    def select(self,**kwargs):
+        """
+        """
+        kwargs_allowed = ['refDate','shortName']
+        for k,v in kwargs.items():
+            if k not in kwargs_allowed: continue
+            if k == 'refDate':
+                idx = np.where(np.asarray(self._index['refDate'])==v)[0]
+            elif k == 'shortName':
+                idx = np.where(np.array(self._index['shortName'])==v)[0]
+        return [self[int(i)][0] for i in idx]
 
 
 class Grib2Message:
