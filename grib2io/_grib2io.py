@@ -414,6 +414,8 @@ class open():
         """
         Returns a list of `grib2io.Grib2Message` instances filtered by
         **`**kwargs`**.
+
+        Supported keyword arguments are: 'leadTime','level','refDate','shortName'
         """
         kwargs_allowed = ['leadTime','level','refDate','shortName']
         idxs = {}
