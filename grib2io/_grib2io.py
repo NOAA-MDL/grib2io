@@ -310,6 +310,27 @@ class open():
                 break
 
         self._hasindex = True
+
+
+    def _find_level(self,level):
+        """
+        """
+        import re
+        # Determine level or layer....TBD
+        if any(re.findall(r'mb|pa|hpa', level, re.IGNORECASE)):
+            # Isobaric Surface (i.e. pressure level) - GRIB ID = 100
+            idx_type = np.where(np.asarray([item[9] if item is not None else None for item in self._index['productDefinitionTemplate']])==100)[0]
+            val = float(re.sub("[^\d\.]", "",level))
+            if any(re.findall(r'mb|hpa', level, re.IGNORECASE)): val *= 100
+            idx_val = np.where(np.asarray([item[11] if item is not None else None for item in self._index['productDefinitionTemplate']])==val)[0]
+            idxs = np.concatenate((idx_type,idx_val))
+        elif any(re.findall(r'm|meter', level, re.IGNORECASE)):
+            # Specified Height Level Above Ground (i.e. height level) - GRIB ID = 103
+            idx_type = np.where(np.asarray([item[9] if item is not None else None for item in self._index['productDefinitionTemplate']])==103)[0]
+            val = float(re.sub("[^\d\.]", "",level))
+            idx_val = np.where(np.asarray([item[11] if item is not None else None for item in self._index['productDefinitionTemplate']])==val)[0]
+            idxs = np.concatenate((idx_type,idx_val))
+        return [i[0] for i in collections.Counter(idxs).most_common() if i[1] == 2]
                     
 
     def close(self):
@@ -394,12 +415,14 @@ class open():
         Returns a list of `grib2io.Grib2Message` instances filtered by
         **`**kwargs`**.
         """
-        kwargs_allowed = ['leadTime','refDate','shortName']
+        kwargs_allowed = ['leadTime','level','refDate','shortName']
         idxs = {}
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
             if k == 'leadTime':
                 idxs[k] = np.where(np.asarray([item[8] if item is not None else None for item in self._index['productDefinitionTemplate']])==v)[0]
+            elif k == 'level':
+                idxs[k] = self._find_level(v)
             elif k == 'refDate':
                 idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
             elif k == 'shortName':
