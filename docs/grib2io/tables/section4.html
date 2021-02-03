@@ -404,6 +404,23 @@
 <span class="s1">&#39;192-254&#39;</span><span class="p">:</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span>
 <span class="s1">&#39;255&#39;</span><span class="p">:</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span>
 <span class="p">}</span>
+
+<span class="n">scale_time_hours</span> <span class="o">=</span> <span class="p">{</span> <span class="mi">0</span><span class="p">:</span> <span class="mf">60.</span><span class="p">,</span>
+                     <span class="mi">1</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+                     <span class="mi">2</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">24.0</span><span class="p">),</span>
+                     <span class="mi">3</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="mf">720.0</span><span class="p">),</span>
+                     <span class="mi">4</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">365.0</span><span class="o">*</span><span class="mf">24.0</span><span class="p">)),</span>
+                     <span class="mi">5</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">10.0</span><span class="o">*</span><span class="mf">365.0</span><span class="o">*</span><span class="mf">24.0</span><span class="p">)),</span>
+                     <span class="mi">6</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">30.0</span><span class="o">*</span><span class="mf">365.0</span><span class="o">*</span><span class="mf">24.0</span><span class="p">)),</span>
+                     <span class="mi">7</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="mf">1.0</span><span class="o">/</span><span class="p">(</span><span class="mf">100.0</span><span class="o">*</span><span class="mf">365.0</span><span class="o">*</span><span class="mf">24.0</span><span class="p">)),</span>
+                     <span class="mi">8</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+                     <span class="mi">9</span><span class="p">:</span> <span class="mf">1.</span><span class="p">,</span>
+                     <span class="mi">10</span><span class="p">:</span> <span class="mf">3.</span><span class="p">,</span>
+                     <span class="mi">11</span><span class="p">:</span> <span class="mf">6.</span><span class="p">,</span>
+                     <span class="mi">12</span><span class="p">:</span> <span class="mf">12.</span><span class="p">,</span>
+                     <span class="mi">13</span><span class="p">:</span> <span class="mf">3600.</span> <span class="p">}</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">14</span><span class="p">,</span><span class="mi">256</span><span class="p">):</span>
+    <span class="n">scale_time_hours</span><span class="p">[</span><span class="n">n</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
 </pre></div>
 
             </details>
