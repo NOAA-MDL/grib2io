@@ -24,7 +24,6 @@ from numpy import ma
 import numpy as np
 import pyproj
 
-
 from . import tables
 from . import utils
 
@@ -319,16 +318,22 @@ class open():
         # Determine level or layer....TBD
         if any(re.findall(r'mb|pa|hpa', level, re.IGNORECASE)):
             # Isobaric Surface (i.e. pressure level) - GRIB ID = 100
-            idx_type = np.where(np.asarray([item[9] if item is not None else None for item in self._index['productDefinitionTemplate']])==100)[0]
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==100)[0]
             val = float(re.sub("[^\d\.]", "",level))
             if any(re.findall(r'mb|hpa', level, re.IGNORECASE)): val *= 100
-            idx_val = np.where(np.asarray([item[11] if item is not None else None for item in self._index['productDefinitionTemplate']])==val)[0]
+            idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
+            idxs = np.concatenate((idx_type,idx_val))
+        elif any(re.findall(r'sig|sigma', level, re.IGNORECASE)):
+            # Sigma Level - GRIB ID = 104
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==104)[0]
+            val = float(re.sub("[^\d\.]", "",level))
+            idx_val = np.where(np.asarray([i[11]/(10**i[10]) if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
         elif any(re.findall(r'm|meter', level, re.IGNORECASE)):
             # Specified Height Level Above Ground (i.e. height level) - GRIB ID = 103
-            idx_type = np.where(np.asarray([item[9] if item is not None else None for item in self._index['productDefinitionTemplate']])==103)[0]
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==103)[0]
             val = float(re.sub("[^\d\.]", "",level))
-            idx_val = np.where(np.asarray([item[11] if item is not None else None for item in self._index['productDefinitionTemplate']])==val)[0]
+            idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
         return [i[0] for i in collections.Counter(idxs).most_common() if i[1] == 2]
                     
@@ -422,7 +427,7 @@ class open():
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
             if k == 'leadTime':
-                idxs[k] = np.where(np.asarray([item[8] if item is not None else None for item in self._index['productDefinitionTemplate']])==v)[0]
+                idxs[k] = np.where(np.asarray([i[8] if i is not None else None for i in self._index['productDefinitionTemplate']])==v)[0]
             elif k == 'level':
                 idxs[k] = self._find_level(v)
             elif k == 'refDate':
