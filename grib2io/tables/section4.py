@@ -371,7 +371,7 @@ table_4_11 = {
 '255':'Missing',
 }
 
-scale_time_hours = {
+table_scale_time_hours = {
 '0': 60.,
 '1': 1.,
 '2': float(1.0/24.0),
@@ -387,4 +387,4 @@ scale_time_hours = {
 '12': 12.,
 '13': 3600. }
 for n in range(14,256):
-    scale_time_hours[str(n)] = 1.
+    table_scale_time_hours[str(n)] = 1.
