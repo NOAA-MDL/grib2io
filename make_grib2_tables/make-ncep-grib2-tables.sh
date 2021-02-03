@@ -86,9 +86,8 @@ table_scale_time_hours = {
 '10': 3.,
 '11': 6.,
 '12': 12.,
-'13': 3600. }
-for n in range(14,256):
-    table_scale_time_hours[str(n)] = 1.
+'13': 3600.,
+'14-255': 1.}
 EOF
 
 # Discipline 0
