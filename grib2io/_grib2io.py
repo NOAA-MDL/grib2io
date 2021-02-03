@@ -318,20 +318,27 @@ class open():
         # Determine level or layer....TBD
         if any(re.findall(r'mb|pa|hpa', level, re.IGNORECASE)):
             # Isobaric Surface (i.e. pressure level) - GRIB ID = 100
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==100)[0]
+            sfctypeid = 100
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
             val = float(re.sub("[^\d\.]", "",level))
             if any(re.findall(r'mb|hpa', level, re.IGNORECASE)): val *= 100
             idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
         elif any(re.findall(r'sig|sigma', level, re.IGNORECASE)):
             # Sigma Level - GRIB ID = 104
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==104)[0]
+            sfctypeid = 104
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
             val = float(re.sub("[^\d\.]", "",level))
             idx_val = np.where(np.asarray([i[11]/(10**i[10]) if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
         elif any(re.findall(r'm|meter', level, re.IGNORECASE)):
-            # Specified Height Level Above Ground (i.e. height level) - GRIB ID = 103
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==103)[0]
+            # Specified Height Level Above (GRIB ID = 103) or Below Ground (GRIB ID = 106) Level
+            sfctypeid = 103
+            if any(re.findall(r'above ground', level, re.IGNORECASE)):
+                sfctypeid = 103
+            if any(re.findall(r'below ground', level, re.IGNORECASE)):
+                sfcid = 106
+            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
             val = float(re.sub("[^\d\.]", "",level))
             idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
@@ -789,6 +796,7 @@ class Grib2Message:
         elif self.productDefinitionTemplateNumber == 6:
             self.percentileValue = self.productDefinitionTemplate[15]
         elif self.productDefinitionTemplateNumber == 8:
+            
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
             self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
             self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
@@ -874,6 +882,13 @@ class Grib2Message:
             self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
             self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.4')
             self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
+
+        if self.productDefinitionTemplateNumber in [8,9,10,11,12]:
+            self.dtEndOfTimePeriod = datetime.datetime(self.yearOfEndOfTimePeriod,self.monthOfEndOfTimePeriod,
+                                     self.dayOfEndOfTimePeriod,hour=self.hourOfEndOfTimePeriod,
+                                     minute=self.minuteOfEndOfTimePeriod,
+                                     second=self.secondOfEndOfTimePeriod)
+            self.leadTime = int((self.dtEndOfTimePeriod-self.dtReferenceDate).total_seconds()/3600.0)
 
         # --------------------------------
         # Section 5 -- Data Representation
