@@ -70,6 +70,25 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
 done
+echo "\t - GRIB2 Time to Hours Table"
+cat << EOF >> section4.py
+scale_time_hours = { 0: 60.,
+                     1: 1.,
+                     2: float(1.0/24.0),
+                     3: float(1.0/720.0),
+                     4: float(1.0/(365.0*24.0)),
+                     5: float(1.0/(10.0*365.0*24.0)),
+                     6: float(1.0/(30.0*365.0*24.0)),
+                     7: float(1.0/(100.0*365.0*24.0)),
+                     8: 1.,
+                     9: 1.,
+                     10: 3.,
+                     11: 6.,
+                     12: 12.,
+                     13: 3600. }
+for n in range(14,256):
+    scale_time_hours[n] = 1.
+EOF
 
 # Discipline 0
 echo " -- Making section4_discipline0.py"
