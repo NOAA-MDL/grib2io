@@ -4,4 +4,5 @@
 # ---------------------------------------------------------------------------------------- 
 # Uses pdoc (https://github.com/mitmproxy/pdoc)
 # ---------------------------------------------------------------------------------------- 
-pdoc -o 'docs' grib2io/
+libdir=$(find $PWD/build -name "lib*" -type d)
+pdoc -o 'docs' $libdir/grib2io/
