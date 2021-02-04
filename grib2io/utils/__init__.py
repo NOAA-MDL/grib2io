@@ -4,7 +4,10 @@ of GRIB2 Messages.
 """
 
 import g2clib
+import datetime
 import numpy as np
+
+from .. import tables
 
 def int2bin(i,nbits=8,output=str):
     """
@@ -134,3 +137,95 @@ def getdate(year,month,day,hour,minute=None,second=None):
     #if second is not None:
     #    idate += second*pow(10,second_exp)
     return idate
+
+
+def getleadtime(idsec,pdtn,pdt):
+    """
+    Computes the lead time (in units of hours) from using information from
+    GRIB2 Identification Section (Section 1), Product Definition Template
+    Number, and Product Definition Template (Section 4).
+
+    Parameters
+    ----------
+
+    **`idsec : array_like`**
+
+    GRIB2 Identification Section (Section 1).
+
+    **`pdtn : int`**
+
+    GRIB2 Product Definition Template Number
+
+    **`idsec : array_like`**
+
+    GRIB2 Product Definition Template (Section 4).
+
+    Returns
+    -------
+
+    **`lt : int`**
+
+    Lead time in units of hours
+    """
+    refdate = datetime.datetime(*idsec[5:11])
+    if pdtn == 8:
+        enddate = datetime.datetime(*pdt[15:21])
+        td = enddate - refdate
+        lt = (td).total_seconds()/3600.0
+    elif pdtn == 9:
+        enddate = datetime.datetime(*pdt[21:27])
+        td = enddate - refdate
+        lt = (td).total_seconds()/3600.0
+    elif pdtn == 10:
+        enddate = datetime.datetime(*pdt[16:22])
+        td = enddate - refdate
+        lt = (td).total_seconds()/3600.0
+    elif pdtn == 11:
+        enddate = datetime.datetime(*pdt[18:24])
+        td = enddate - refdate
+        lt = (td).total_seconds()/3600.0
+    elif pdtn == 12:
+        enddate = datetime.datetime(*pdt[17:23])
+        td = enddate - refdate
+        lt = (td).total_seconds()/3600.0
+    else:
+        lt = pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours'))
+    return int(lt)
+
+
+def getduration(pdtn,pdt):
+    """
+    Computes the duration time (in units of hours) from using information from
+    Product Definition Template Number, and Product Definition Template (Section 4).
+
+    Parameters
+    ----------
+
+    **`pdtn : int`**
+
+    GRIB2 Product Definition Template Number
+
+    **`idsec : array_like`**
+
+    GRIB2 Product Definition Template (Section 4).
+
+    Returns
+    -------
+
+    **`dur : int`**
+
+    Duration time in units of hours
+    """
+    if pdtn == 8:
+        dur = pdt[26]*(tables.get_value_from_table(pdt[25],'scale_time_hours'))
+    elif pdtn == 9:
+        dur = pdt[32]*(tables.get_value_from_table(pdt[31],'scale_time_hours'))
+    elif pdtn == 10:
+        dur = pdt[27]*(tables.get_value_from_table(pdt[26],'scale_time_hours'))
+    elif pdtn == 11:
+        dur = pdt[29]*(tables.get_value_from_table(pdt[28],'scale_time_hours'))
+    elif pdtn == 12:
+        dur = pdt[28]*(tables.get_value_from_table(pdt[27],'scale_time_hours'))
+    else:
+        dur = 0
+    return int(dur)
