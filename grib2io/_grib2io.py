@@ -16,6 +16,7 @@ import collections
 import copy
 import datetime
 import os
+#import pdb
 import struct
 import math
 import warnings
@@ -186,6 +187,8 @@ class open():
         self._index['refDate'] = [None]
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
+        self._index['leadTime'] = [None]
+        self._index['duration'] = [None]
         self._index['shortName'] = [None]
         self._index['bitMap'] = [None]
 
@@ -276,6 +279,8 @@ class open():
                             self._index['refDate'].append(_refdate)
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
+                            self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
+                            self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             if _issubmessage:
@@ -298,6 +303,8 @@ class open():
                             self._index['refDate'].append(_refdate)
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
+                            self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
+                            self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['submessageOffset'].append(_submsgoffset)
@@ -343,7 +350,7 @@ class open():
             idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
             idxs = np.concatenate((idx_type,idx_val))
         return [i[0] for i in collections.Counter(idxs).most_common() if i[1] == 2]
-                    
+
 
     def close(self):
         """
@@ -427,14 +434,26 @@ class open():
         Returns a list of `grib2io.Grib2Message` instances filtered by
         **`**kwargs`**.
 
-        Supported keyword arguments are: 'leadTime','level','refDate','shortName'
+        The following keywords are currently supported:
+
+        **`duration : int`**
+
+        **`leadTime : int`**
+
+        **`level : str`**
+
+        **`refDate : int`**
+
+        **`shortName : str`**
         """
-        kwargs_allowed = ['leadTime','level','refDate','shortName']
+        kwargs_allowed = ['duration','leadTime','level','refDate','shortName']
         idxs = {}
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
-            if k == 'leadTime':
-                idxs[k] = np.where(np.asarray([i[8] if i is not None else None for i in self._index['productDefinitionTemplate']])==v)[0]
+            if k == 'duration':
+                idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['duration']])==v)[0]
+            elif k == 'leadTime':
+                idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['leadTime']])==v)[0]
             elif k == 'level':
                 idxs[k] = self._find_level(v)
             elif k == 'refDate':
@@ -883,12 +902,15 @@ class Grib2Message:
             self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.4')
             self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
 
+        self.leadTime = utils.getleadtime(self.identificationSection,
+                                          self.productDefinitionTemplateNumber,
+                                          self.productDefinitionTemplate)
+
         if self.productDefinitionTemplateNumber in [8,9,10,11,12]:
             self.dtEndOfTimePeriod = datetime.datetime(self.yearOfEndOfTimePeriod,self.monthOfEndOfTimePeriod,
                                      self.dayOfEndOfTimePeriod,hour=self.hourOfEndOfTimePeriod,
                                      minute=self.minuteOfEndOfTimePeriod,
                                      second=self.secondOfEndOfTimePeriod)
-            self.leadTime = int((self.dtEndOfTimePeriod-self.dtReferenceDate).total_seconds()/3600.0)
 
         # --------------------------------
         # Section 5 -- Data Representation
