@@ -7,6 +7,7 @@ of reading and writing GRIB2 Messages.  WMO GRIdded Binary, Edition 2 (GRIB2) fi
 data. A physical file can contain one or more GRIB2 messages.  File IO is handled in Python returning
 a binary string of the GRIB2 message which is then passed to the g2c library for decoding or GRIB2 metadata
 and unpacking of data.
+
 """
 __version__ = '0.3.0'
 
@@ -73,8 +74,8 @@ class open():
     **`shortNames : tuple`**
 
     Tuple of unique short names (i.e. GRIB2 abbreviation names) for each message.
+
     """
-    __pdoc__['grib2io.open.__init__'] = True
     def __init__(self, filename, mode='r'):
         """
         Class Constructor
@@ -89,6 +90,7 @@ class open():
         **`mode : str, optional, default = 'r'`**
 
         File handle mode.  The default is open for reading ('r').
+
         """
         if mode == 'r' or mode == 'w':
             mode = mode+'b'
@@ -472,7 +474,6 @@ class open():
 
 
 class Grib2Message:
-    __pdoc__['grib2io.Grib2Message.__init__'] = True
     def __init__(self, msg, ref=None, num=-1):
         """
         Class Constructor
