@@ -31,6 +31,7 @@ from . import utils
 
 __pdoc__ = {}
 
+
 ONE_MB = 1024 ** 3
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 
@@ -1083,6 +1084,7 @@ class Grib2Message:
     def latlons(self):
         """Alias for `grib2io.Grib2Message.grid` method"""
         return self.grid()
+
 
     def grid(self):
         """
