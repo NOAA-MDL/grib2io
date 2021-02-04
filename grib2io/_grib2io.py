@@ -70,6 +70,9 @@ class open():
 
     Bool signaling if the file is closed **`True`** or open **`False`**.
 
+    **`shortNames : tuple`**
+
+    Tuple of unique short names (i.e. GRIB2 abbreviation names) for each message.
     """
     __pdoc__['grib2io.open.__init__'] = True
     def __init__(self, filename, mode='r'):

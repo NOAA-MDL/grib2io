@@ -150,6 +150,9 @@ and unpacking of data.</p>
 
 <span class="sd">    Bool signaling if the file is closed **`True`** or open **`False`**.</span>
 
+<span class="sd">    **`shortNames : tuple`**</span>
+
+<span class="sd">    Tuple of unique short names (i.e. GRIB2 abbreviation names) for each message.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">__pdoc__</span><span class="p">[</span><span class="s1">&#39;grib2io.open.__init__&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">):</span>
@@ -267,6 +270,8 @@ and unpacking of data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;refDate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplateNumber&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span>
 
@@ -357,6 +362,8 @@ and unpacking of data.</p>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;refDate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_refdate</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplateNumber&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pdtnum</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pdt</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getleadtime</span><span class="p">(</span><span class="n">_grbsec1</span><span class="p">,</span><span class="n">_pdtnum</span><span class="p">,</span><span class="n">_pdt</span><span class="p">))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getduration</span><span class="p">(</span><span class="n">_pdtnum</span><span class="p">,</span><span class="n">_pdt</span><span class="p">))</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_varinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_bmap</span><span class="p">)</span>
                             <span class="k">if</span> <span class="n">_issubmessage</span><span class="p">:</span>
@@ -379,6 +386,8 @@ and unpacking of data.</p>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;refDate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_refdate</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplateNumber&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pdtnum</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_pdt</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getleadtime</span><span class="p">(</span><span class="n">_grbsec1</span><span class="p">,</span><span class="n">_pdtnum</span><span class="p">,</span><span class="n">_pdt</span><span class="p">))</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">utils</span><span class="o">.</span><span class="n">getduration</span><span class="p">(</span><span class="n">_pdtnum</span><span class="p">,</span><span class="n">_pdt</span><span class="p">))</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_varinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_bmap</span><span class="p">)</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_submsgoffset</span><span class="p">)</span>
@@ -424,7 +433,7 @@ and unpacking of data.</p>
             <span class="n">idx_val</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">val</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">idx_type</span><span class="p">,</span><span class="n">idx_val</span><span class="p">))</span>
         <span class="k">return</span> <span class="p">[</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">collections</span><span class="o">.</span><span class="n">Counter</span><span class="p">(</span><span class="n">idxs</span><span class="p">)</span><span class="o">.</span><span class="n">most_common</span><span class="p">()</span> <span class="k">if</span> <span class="n">i</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>
-                    
+
 
     <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
@@ -508,14 +517,26 @@ and unpacking of data.</p>
 <span class="sd">        Returns a list of `grib2io.Grib2Message` instances filtered by</span>
 <span class="sd">        **`**kwargs`**.</span>
 
-<span class="sd">        Supported keyword arguments are: &#39;leadTime&#39;,&#39;level&#39;,&#39;refDate&#39;,&#39;shortName&#39;</span>
+<span class="sd">        The following keywords are currently supported:</span>
+
+<span class="sd">        **`duration : int`**</span>
+
+<span class="sd">        **`leadTime : int`**</span>
+
+<span class="sd">        **`level : str`**</span>
+
+<span class="sd">        **`refDate : int`**</span>
+
+<span class="sd">        **`shortName : str`**</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
+        <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs_allowed</span><span class="p">:</span> <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;leadTime&#39;</span><span class="p">:</span>
-                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;duration&#39;</span><span class="p">:</span>
+                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;leadTime&#39;</span><span class="p">:</span>
+                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;level&#39;</span><span class="p">:</span>
                 <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_level</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;refDate&#39;</span><span class="p">:</span>
@@ -564,6 +585,10 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 <p><strong><code>closed : bool</code></strong></p>
 
 <p>Bool signaling if the file is closed <strong><code>True</code></strong> or open <strong><code>False</code></strong>.</p>
+
+<p><strong><code>shortNames : tuple</code></strong></p>
+
+<p>Tuple of unique short names (i.e. GRIB2 abbreviation names) for each message.</p>
 </div>
 
 
@@ -813,14 +838,26 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 <span class="sd">        Returns a list of `grib2io.Grib2Message` instances filtered by</span>
 <span class="sd">        **`**kwargs`**.</span>
 
-<span class="sd">        Supported keyword arguments are: &#39;leadTime&#39;,&#39;level&#39;,&#39;refDate&#39;,&#39;shortName&#39;</span>
+<span class="sd">        The following keywords are currently supported:</span>
+
+<span class="sd">        **`duration : int`**</span>
+
+<span class="sd">        **`leadTime : int`**</span>
+
+<span class="sd">        **`level : str`**</span>
+
+<span class="sd">        **`refDate : int`**</span>
+
+<span class="sd">        **`shortName : str`**</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
+        <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">kwargs_allowed</span><span class="p">:</span> <span class="k">continue</span>
-            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;leadTime&#39;</span><span class="p">:</span>
-                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;duration&#39;</span><span class="p">:</span>
+                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;leadTime&#39;</span><span class="p">:</span>
+                <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;leadTime&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">v</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;level&#39;</span><span class="p">:</span>
                 <span class="n">idxs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_level</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
             <span class="k">elif</span> <span class="n">k</span> <span class="o">==</span> <span class="s1">&#39;refDate&#39;</span><span class="p">:</span>
@@ -840,7 +877,17 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                     <div class="docstring"><p>Returns a list of <code><a href="#Grib2Message">grib2io.Grib2Message</a></code> instances filtered by
 <strong><code>**kwargs</code></strong>.</p>
 
-<p>Supported keyword arguments are: 'leadTime','level','refDate','shortName'</p>
+<p>The following keywords are currently supported:</p>
+
+<p><strong><code>duration : int</code></strong></p>
+
+<p><strong><code>leadTime : int</code></strong></p>
+
+<p><strong><code>level : str</code></strong></p>
+
+<p><strong><code>refDate : int</code></strong></p>
+
+<p><strong><code>shortName : str</code></strong></p>
 </div>
 
 
@@ -1289,12 +1336,15 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="bp">self</span><span class="o">.</span><span class="n">unitOfTimeRangeOfSuccessiveFields</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">29</span><span class="p">],</span><span class="s1">&#39;4.4&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">timeIncrementOfSuccessiveFields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">30</span><span class="p">]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getleadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplateNumber</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplateNumber</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dtEndOfTimePeriod</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yearOfEndOfTimePeriod</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">monthOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">dayOfEndOfTimePeriod</span><span class="p">,</span><span class="n">hour</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hourOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="n">minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minuteOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="n">second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">secondOfEndOfTimePeriod</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dtEndOfTimePeriod</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dtReferenceDate</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span><span class="p">)</span>
 
         <span class="c1"># --------------------------------</span>
         <span class="c1"># Section 5 -- Data Representation</span>
@@ -2050,12 +2100,15 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="bp">self</span><span class="o">.</span><span class="n">unitOfTimeRangeOfSuccessiveFields</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">29</span><span class="p">],</span><span class="s1">&#39;4.4&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">timeIncrementOfSuccessiveFields</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">30</span><span class="p">]</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">getleadtime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplateNumber</span><span class="p">,</span>
+                                          <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplateNumber</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">]:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">dtEndOfTimePeriod</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">yearOfEndOfTimePeriod</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">monthOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="bp">self</span><span class="o">.</span><span class="n">dayOfEndOfTimePeriod</span><span class="p">,</span><span class="n">hour</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hourOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="n">minute</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">minuteOfEndOfTimePeriod</span><span class="p">,</span>
                                      <span class="n">second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">secondOfEndOfTimePeriod</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">dtEndOfTimePeriod</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">dtReferenceDate</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span><span class="p">)</span>
 
         <span class="c1"># --------------------------------</span>
         <span class="c1"># Section 5 -- Data Representation</span>

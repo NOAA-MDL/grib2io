@@ -37,6 +37,12 @@
                 <li>
                         <a class="function" href="#getdate">getdate</a>
                 </li>
+                <li>
+                        <a class="function" href="#getleadtime">getleadtime</a>
+                </li>
+                <li>
+                        <a class="function" href="#getduration">getduration</a>
+                </li>
         </ul>
 
 
@@ -60,7 +66,10 @@ of GRIB2 Messages.</p>
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">g2clib</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tables</span>
 
 <span class="k">def</span> <span class="nf">int2bin</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">nbits</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span><span class="n">output</span><span class="o">=</span><span class="nb">str</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -190,6 +199,98 @@ of GRIB2 Messages.</p>
     <span class="c1">#if second is not None:</span>
     <span class="c1">#    idate += second*pow(10,second_exp)</span>
     <span class="k">return</span> <span class="n">idate</span>
+
+
+<span class="k">def</span> <span class="nf">getleadtime</span><span class="p">(</span><span class="n">idsec</span><span class="p">,</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the lead time (in units of hours) from using information from</span>
+<span class="sd">    GRIB2 Identification Section (Section 1), Product Definition Template</span>
+<span class="sd">    Number, and Product Definition Template (Section 4).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Identification Section (Section 1).</span>
+
+<span class="sd">    **`pdtn : int`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template Number</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`lt : int`**</span>
+
+<span class="sd">    Lead time in units of hours</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">refdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">idsec</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">11</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">15</span><span class="p">:</span><span class="mi">21</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">21</span><span class="p">:</span><span class="mi">27</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">16</span><span class="p">:</span><span class="mi">22</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">18</span><span class="p">:</span><span class="mi">24</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">17</span><span class="p">:</span><span class="mi">23</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">lt</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">getduration</span><span class="p">(</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the duration time (in units of hours) from using information from</span>
+<span class="sd">    Product Definition Template Number, and Product Definition Template (Section 4).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`pdtn : int`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template Number</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`dur : int`**</span>
+
+<span class="sd">    Duration time in units of hours</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">32</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">31</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">27</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">29</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">28</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">28</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">27</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
 </pre></div>
 
             </details>
@@ -445,6 +546,169 @@ it is optional.</p>
 <p><strong><code>second : int, optional</code></strong></p>
 
 <p>Second in 2-digit format [OPTIONAL].</p>
+</div>
+
+
+                </section>
+                <section id="getleadtime">
+                                <div class="attr function">
+            
+                <span class="def">def</span>
+                <span class="name">getleadtime</span><span class="signature">(idsec, pdtn, pdt)</span>:
+        </div>
+
+                        <details>
+                <summary class="button">View Source</summary>
+                <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">getleadtime</span><span class="p">(</span><span class="n">idsec</span><span class="p">,</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the lead time (in units of hours) from using information from</span>
+<span class="sd">    GRIB2 Identification Section (Section 1), Product Definition Template</span>
+<span class="sd">    Number, and Product Definition Template (Section 4).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Identification Section (Section 1).</span>
+
+<span class="sd">    **`pdtn : int`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template Number</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`lt : int`**</span>
+
+<span class="sd">    Lead time in units of hours</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">refdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">idsec</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">11</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">15</span><span class="p">:</span><span class="mi">21</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">21</span><span class="p">:</span><span class="mi">27</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">16</span><span class="p">:</span><span class="mi">22</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">18</span><span class="p">:</span><span class="mi">24</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="n">enddate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">pdt</span><span class="p">[</span><span class="mi">17</span><span class="p">:</span><span class="mi">23</span><span class="p">])</span>
+        <span class="n">td</span> <span class="o">=</span> <span class="n">enddate</span> <span class="o">-</span> <span class="n">refdate</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="p">(</span><span class="n">td</span><span class="p">)</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">()</span><span class="o">/</span><span class="mf">3600.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lt</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">lt</span><span class="p">)</span>
+</pre></div>
+
+            </details>
+
+                    <div class="docstring"><p>Computes the lead time (in units of hours) from using information from
+GRIB2 Identification Section (Section 1), Product Definition Template
+Number, and Product Definition Template (Section 4).</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>idsec : array_like</code></strong></p>
+
+<p>GRIB2 Identification Section (Section 1).</p>
+
+<p><strong><code>pdtn : int</code></strong></p>
+
+<p>GRIB2 Product Definition Template Number</p>
+
+<p><strong><code>idsec : array_like</code></strong></p>
+
+<p>GRIB2 Product Definition Template (Section 4).</p>
+
+<h2 id="returns">Returns</h2>
+
+<p><strong><code>lt : int</code></strong></p>
+
+<p>Lead time in units of hours</p>
+</div>
+
+
+                </section>
+                <section id="getduration">
+                                <div class="attr function">
+            
+                <span class="def">def</span>
+                <span class="name">getduration</span><span class="signature">(pdtn, pdt)</span>:
+        </div>
+
+                        <details>
+                <summary class="button">View Source</summary>
+                <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">getduration</span><span class="p">(</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Computes the duration time (in units of hours) from using information from</span>
+<span class="sd">    Product Definition Template Number, and Product Definition Template (Section 4).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`pdtn : int`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template Number</span>
+
+<span class="sd">    **`idsec : array_like`**</span>
+
+<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`dur : int`**</span>
+
+<span class="sd">    Duration time in units of hours</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">9</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">32</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">31</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">27</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">11</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">29</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">28</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">28</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">27</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">dur</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
+</pre></div>
+
+            </details>
+
+                    <div class="docstring"><p>Computes the duration time (in units of hours) from using information from
+Product Definition Template Number, and Product Definition Template (Section 4).</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>pdtn : int</code></strong></p>
+
+<p>GRIB2 Product Definition Template Number</p>
+
+<p><strong><code>idsec : array_like</code></strong></p>
+
+<p>GRIB2 Product Definition Template (Section 4).</p>
+
+<h2 id="returns">Returns</h2>
+
+<p><strong><code>dur : int</code></strong></p>
+
+<p>Duration time in units of hours</p>
 </div>
 
 
