@@ -23,6 +23,7 @@ grib2io leverages the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs
 * NumPy 1.12+
 * pyproj 1.9.6+
 * C Compiler (GNU or Intel recommended)
+* Compression libraries: [zlib](https://zlib.net), [jasper](https://github.com/jasper-software/jasper), [libpng](http://libpng.org)
 
 GRIB2 has the ability to compress data using JPEG (via [Jasper](https://github.com/jasper-software/jasper) or [OpenJPEG](https://github.com/uclouvain/openjpeg)) or [PNG](https://sourceforge.net/projects/libpng/) compression.  Most \*NIX systems provide these libraries through their respective package management systems.  On macOS, please use [homebrew](https://brew.sh) to install all required compression libraries.
 
@@ -33,7 +34,7 @@ For macOS, please install GNU compilers via homebrew.  The NCEP G2 C Library wil
 ```shell
 pip3 install grib2io
 ```
-On macOS, please prepend the pip3 with setting `CC` to the full path to GNU C compiler (i.e. gcc)
+On macOS, please prepend the pip3 with setting `CC` to the full path to GNU C compiler (i.e. gcc).  If gcc has been installed via [homebrew](https://brew.sh), the gcc compiler name will have the major version appended (e.g. `/usr/local/bin/gcc-10`).
 
 ```shell
 CC=/path/to/gcc pip3 install grib2io
