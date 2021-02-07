@@ -205,6 +205,13 @@ struct gribfield {
 
 typedef struct gribfield gribfield;
 
+/*  Prototypes for unpacking sections API  */
+g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *);
+g2int g2_unpack3(unsigned char *,g2int *,g2int **,g2int **,g2int *,g2int **,g2int *);
+g2int g2_unpack4(unsigned char *,g2int *,g2int *,g2int **,g2int *,g2float **,g2int *);
+g2int g2_unpack5(unsigned char *,g2int *,g2int *,g2int *,g2int **,g2int *);
+g2int g2_unpack6(unsigned char *,g2int *,g2int ,g2int *,g2int **);
+g2int g2_unpack7(unsigned char *,g2int *,g2int ,g2int *,g2int ,g2int *,g2int ,g2float **);
 
 /*  Prototypes for unpacking API  */
 void seekgb(FILE *,g2int ,g2int ,g2int *,g2int *);
