@@ -371,6 +371,347 @@ table_4_11 = {
 '255':'Missing',
 }
 
+table_4_201 = {
+'0':'Reserved',
+'1':'Rain',
+'2':'Thunderstorm',
+'3':'Freezing Rain',
+'4':'Mixed/Ice',
+'5':'Snow',
+'6':'Wet Snow',
+'7':'Mixture of Rain and Snow',
+'8':'Ice Pellets',
+'9':'Graupel',
+'10':'Hail',
+'11':'Drizzle',
+'12':'Freezing Drizzle',
+'13-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_202 = {
+'0-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_203 = {
+'0':'Clear',
+'1':'Cumulonimbus',
+'2':'Stratus',
+'3':'Stratocumulus',
+'4':'Cumulus',
+'5':'Altostratus',
+'6':'Nimbostratus',
+'7':'Altocumulus',
+'8':'Cirrostratus',
+'9':'Cirrorcumulus',
+'10':'Cirrus',
+'11':'Cumulonimbus - ground-based fog beneath the lowest layer',
+'12':'Stratus - ground-based fog beneath the lowest layer',
+'13':'Stratocumulus - ground-based fog beneath the lowest layer',
+'14':'Cumulus - ground-based fog beneath the lowest layer',
+'15':'Altostratus - ground-based fog beneath the lowest layer',
+'16':'Nimbostratus - ground-based fog beneath the lowest layer',
+'17':'Altocumulus - ground-based fog beneath the lowest layer',
+'18':'Cirrostratus - ground-based fog beneath the lowest layer',
+'19':'Cirrorcumulus - ground-based fog beneath the lowest layer',
+'20':'Cirrus - ground-based fog beneath the lowest layer',
+'21-190':'Reserved',
+'191':'Unknown',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_204 = {
+'0':'None',
+'1':'Isolated (1-2%)',
+'2':'Few (3-5%)',
+'3':'Scattered (16-45%)',
+'4':'Numerous (>45%)',
+'5-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_205 = {
+'0':'Aerosol not present',
+'1':'Aerosol present',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_206 = {
+'0':'Not Present',
+'1':'Present',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_207 = {
+'0':'None',
+'1':'Light',
+'2':'Moderate',
+'3':'Severe',
+'4':'Trace',
+'5':'Heavy',
+'6-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_208 = {
+'0':'None',
+'1':'Light',
+'2':'Moderate',
+'3':'Severe',
+'4':'Extreme',
+'5-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_209 = {
+'0':'Reserved',
+'1':'Stable',
+'2':'Mechanically-Driven Turbulence',
+'3':'Force Convection',
+'4':'Free Convection',
+'5-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_210 = {
+'0':'Contrail Not Present',
+'1':'Contrail Present',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_211 = {
+'0':'Low Bypass',
+'1':'High Bypass',
+'2':'Non-Bypass',
+'3-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_212 = {
+'0':'Reserved',
+'1':'Urban Land',
+'2':'Agricultural',
+'3':'Range Land',
+'4':'Deciduous Forest',
+'5':'Coniferous Forest',
+'6':'Forest/Wetland',
+'7':'Water',
+'8':'Wetlands',
+'9':'Desert',
+'10':'Tundra',
+'11':'Ice',
+'12':'Tropical Forest',
+'13':'Savannah',
+'14-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_213 = {
+'0':'Reserved',
+'1':'Sand',
+'2':'Loamy Sand',
+'3':'Sandy Loam',
+'4':'Silt Loam',
+'5':'Organic',
+'6':'Sandy Clay Loam',
+'7':'Silt Clay Loam',
+'8':'Clay Loam',
+'9':'Sandy Clay',
+'10':'Silty Clay',
+'11':'Clay',
+'12-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_215 = {
+'0-49':'Reserved',
+'50':'No-Snow/No-Cloud',
+'51-99':'Reserved',
+'100':'Clouds',
+'101-249':'Reserved',
+'250':'Snow',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_216 = {
+'0-90':'Elevation in increments of 100 m',
+'91-253':'Reserved',
+'254':'Clouds',
+'255':'Missing',
+}
+
+table_4_217 = {
+'0':'Clear over water',
+'1':'Clear over land',
+'2':'Cloud',
+'3':'No data',
+'4-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_218 = {
+'0':'No Scene Identified',
+'1':'Green Needle-Leafed Forest',
+'2':'Green Broad-Leafed Forest',
+'3':'Deciduous Needle-Leafed Forest',
+'4':'Deciduous Broad-Leafed Forest',
+'5':'Deciduous Mixed Forest',
+'6':'Closed Shrub-Land',
+'7':'Open Shrub-Land',
+'8':'Woody Savannah',
+'9':'Savannah',
+'10':'Grassland',
+'11':'Permanent Wetland',
+'12':'Cropland',
+'13':'Urban',
+'14':'Vegetation / Crops',
+'15':'Permanent Snow / Ice',
+'16':'Barren Desert',
+'17':'Water Bodies',
+'18':'Tundra',
+'19':'Warm Liquid Water Cloud',
+'20':'Supercooled Liquid Water Cloud',
+'21':'Mixed Phase Cloud',
+'22':'Optically Thin Ice Cloud',
+'23':'Optically Thick Ice Cloud',
+'24':'Multi-Layeblack Cloud',
+'25-96':'Reserved',
+'97':'Snow / Ice on Land',
+'98':'Snow / Ice on Water',
+'99':'Sun-Glint',
+'100':'General Cloud',
+'101':'Low Cloud / Fog / Stratus',
+'102':'Low Cloud / Stratocumulus',
+'103':'Low Cloud / Unknown Type',
+'104':'Medium Cloud / Nimbostratus',
+'105':'Medium Cloud / Altostratus',
+'106':'Medium Cloud / Unknown Type',
+'107':'High Cloud / Cumulus',
+'108':'High Cloud / Cirrus',
+'109':'High Cloud / Unknown Type',
+'110':'Unknown Cloud Type',
+'111':'Single layer water cloud',
+'112':'Single layer ice cloud',
+'113-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_222 = {
+'0':'No',
+'1':'Yes',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_223 = {
+'0':'No Fire Detected',
+'1':'Possible Fire Detected',
+'2':'Probable Fire Detected',
+'3':'Missing',
+'4-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_224 = {
+'0':'No Risk Area',
+'1':'Reserved',
+'2':'General Thunderstorm Risk Area',
+'3':'Reserved',
+'4':'Slight Risk Area',
+'5':'Reserved',
+'6':'Moderate Risk Area',
+'7':'Reserved',
+'8':'High Risk Area',
+'9-10':'Reserved',
+'11':'Dry Thunderstorm (Dry Lightning) Risk Area',
+'12-13':'Reserved',
+'14':'Critical Risk Area',
+'15-17':'Reserved',
+'18':'Extreamly Critical Risk Area',
+'19-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_227 = {
+'0':'None',
+'1':'General',
+'2':'Convective',
+'3':'Stratiform',
+'4':'Freezing',
+'5-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_243 = {
+'0':'Reserved',
+'1':'Evergreen broadleaved forest',
+'2':'Deciduous broadleaved closed forest',
+'3':'Deciduous broadleaved open forest',
+'4':'Evergreen needle-leaf forest',
+'5':'Deciduous needle-leaf forest',
+'6':'Mixed leaf trees',
+'7':'Fresh water flooded trees',
+'8':'Saline water flooded trees',
+'9':'Mosaic tree/natural vegetation',
+'10':'Burnt tree cover',
+'11':'Evergreen shurbs closed-open',
+'12':'Deciduous shurbs closed-open',
+'13':'Herbaceous vegetation closed-open',
+'14':'Sparse herbaceous or grass',
+'15':'Flooded shurbs or herbaceous',
+'16':'Cultivated and managed areas',
+'17':'Mosaic crop/tree/natural vegetation',
+'18':'Mosaic crop/shrub/grass',
+'19':'Bare areas',
+'20':'Water',
+'21':'Snow and ice',
+'22':'Artificial surface',
+'23':'Ocean',
+'24':'Irrigated croplands',
+'25':'Rain fed croplands',
+'26':'Mosaic cropland (50-70%)-vegetation (20-50%)',
+'27':'Mosaic vegetation (50-70%)-cropland (20-50%)',
+'28':'Closed broadleaved evergreen forest',
+'29':'Closed needle-leaved evergreen forest',
+'30':'Open needle-leaved deciduous forest',
+'31':'Mixed broadleaved and needle-leave forest',
+'32':'Mosaic shrubland (50-70%)-grassland (20-50%)',
+'33':'Mosaic grassland (50-70%)-shrubland (20-50%)',
+'34':'Closed to open shrubland',
+'35':'Sparse vegetation',
+'36':'Closed to open forest regularly flooded',
+'37':'Closed forest or shrubland permanently flooded',
+'38':'Closed to open grassland regularly flooded',
+'39':'Undefined',
+'40-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
 table_scale_time_hours = {
 '0': 60.,
 '1': 1.,

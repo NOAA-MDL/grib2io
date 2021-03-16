@@ -315,8 +315,8 @@ table_4_2_0_2  = {
 '217':['Convective Gravity wave drag meridional acceleration','m s-2','CNGWDV'],
 '218':['Velocity Point Model Surface','unknown','LMV'],
 '219':['Potential Vorticity (Mass-Weighted)','1/s/m','PVMWW'],
-'220':['Hourly Maximum of Upward Vertical Velocity in the lowest 400hPa','m s-1','MAXUVV'],
-'221':['Hourly Maximum of Downward Vertical Velocity in the lowest 400hPa','m s-1','MAXDVV'],
+'220':['Hourly Maximum of Upward Vertical Velocity','m s-1','MAXUVV'],
+'221':['Hourly Maximum of Downward Vertical Velocity','m s-1','MAXDVV'],
 '222':['U Component of Hourly Maximum 10m Wind Speed','m s-1','MAXUW'],
 '223':['V Component of Hourly Maximum 10m Wind Speed','m s-1','MAXVW'],
 '224':['Ventilation Rate','m2 s-1','VRATE'],
@@ -552,7 +552,7 @@ table_4_2_0_7  = {
 '196':['Ultra Violet Index','W m-2','UVI'],
 '197':['Updraft Helicity','m2 s-2','UPHL'],
 '198':['Leaf Area Index','Numeric','LAI'],
-'199':['Hourly Maximum of Updraft Helicity over Layer 2km to 5 km AGL','m2 s-2','MXUPHL'],
+'199':['Hourly Maximum of Updraft Helicity','m2 s-2','MXUPHL'],
 '200':['Hourly Minimum of Updraft Helicity','m2 s-2','MNUPHL'],
 '201':['Bourgoiun Negative Energy Layer (surface to freezing level)','J kg-1','BNEGELAY'],
 '202':['Bourgoiun Positive Energy Layer (2k ft AGL to 400 hPa)','J kg-1','BPOSELAY'],
@@ -636,7 +636,7 @@ table_4_2_0_16  = {
 '195':['Reflectivity','dB','REFD'],
 '196':['Composite reflectivity','dB','REFC'],
 '197':['Echo Top (See Note 1)','m','RETOP'],
-'198':['Hourly Maximum of Simulated Reflectivity at 1 km AGL','dB','MAXREF'],
+'198':['Hourly Maximum of Simulated Reflectivity','dB','MAXREF'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_0_17  = {
