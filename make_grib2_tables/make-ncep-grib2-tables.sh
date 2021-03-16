@@ -60,12 +60,16 @@ EOF
 # ---------------------------------------------------------------------------------------- 
 # Generate Section 4 Tables for parameter categories and parameter tables unique for each
 # discipline.
+#
+# NOTE: Table 4.225 references a PDF file.
 # ---------------------------------------------------------------------------------------- 
 echo " -- Making section4.py"
 if [ -f section4.py ]; then rm -f section4.py; fi
 echo "\t - Parameter category tables"
 ./get-ncep-grib2-sect4-category-table.py > section4.py
-for table in 4.3 4.4 4.5 4.6 4.7 4.8 4.9 4.10 4.11
+for table in 4.3 4.4 4.5 4.6 4.7 4.8 4.9 4.10 4.11 4.201 4.202 4.203 4.204 4.205 4.206 \
+             4.207 4.208 4.209 4.210 4.211 4.212 4.213 4.215 4.216 4.217 4.218 4.222 \
+             4.223 4.224 4.227 4.243
 do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
