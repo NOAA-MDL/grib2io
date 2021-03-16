@@ -501,6 +501,7 @@ class Grib2Message:
         self._ref = ref
         self._datapos = 0
         self._msgnum = num
+        self.hasLocalUseSection = False
 
         #self.md5 = {}
         
@@ -551,12 +552,13 @@ class Grib2Message:
                     self._pos = self._ref._index['submessageOffset'][self._msgnum]
 
             # Section 2, Local Use Section.
-            self.localUseSection = None
             #self.md5[2] = None
             if sectnum == 2:
-                _lus = self._msg[self._pos+5:self._pos+sectlen]
+                self._lus = self._msg[self._pos+5:self._pos+sectlen]
+                #print('SECTION 2 STUFF = ',_lus)
                 self._pos += sectlen
-                self.localUseSection = _lus
+                #self._lus = _lus
+                self.hasLocalUseSection = True
                 #self.md5[2] = _getmd5str(self.identificationSection)
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
