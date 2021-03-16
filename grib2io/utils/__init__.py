@@ -6,6 +6,7 @@ of GRIB2 Messages.
 import g2clib
 import datetime
 import numpy as np
+import struct
 
 from .. import tables
 
@@ -229,3 +230,54 @@ def getduration(pdtn,pdt):
     else:
         dur = 0
     return int(dur)
+
+
+def decode_mdl_wx_strings(lus):
+    """
+    Decode GRIB2 Local Use Section to obtain MDL Weather Strings.  The
+    decode procedure is defined here:
+
+    https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_mdl_temp2-1.shtml
+
+    Parameters
+    ----------
+
+    **`lus : array_like`**
+
+    GRIB2 Local Use Section containing MDL weather strings.
+
+    Returns
+    -------
+
+    **`list`**
+
+    List of weather strings.
+    """
+    assert lus[0] == 1
+    # Unpack information related to the simple packing method
+    # the packed weather string data.
+    ngroups = struct.unpack('>h',lus[1:3])[0]
+    nvalues = struct.unpack('>i',lus[3:7])[0]
+    refvalue = struct.unpack('>i',lus[7:11])[0]
+    dsf = struct.unpack('>h',lus[11:13])[0]
+    nbits = lus[13]
+    datatype = lus[14]
+    if datatype == 0: # Floating point
+        refvalue = np.float32(getieeeint(refvalue)*10**-dsf)
+    elif datatype == 1: # Integer
+        refvalue = np.int32(getieeeint(refvalue)*10**-dsf)
+    #print("TEST:",ngroups,nvalues,refvalue,dsf,nbits,datatype)
+    # Store the "data" part of the packed weather strings as
+    # a binary string.
+    b = bin(int.from_bytes(lus[15:],byteorder='big'))
+    # Generated begin and end values. Note the offset begins at 2
+    # due to the format nature of b (binary string).
+    idxb = list(range(2,len(b),nbits))[0:nvalues-1]
+    idxe = list(range(2+nbits,len(b)+nbits,nbits))[0:nvalues-1]
+    # Iterate over the packed data, converting the nbits space to
+    # and integer, then convert integer to an ASCII character.
+    wxstring = ''
+    for ib,ie in zip(idxb,idxe):
+        wxstring += chr(int(b[ib:ie],2)+refvalue)
+    # Return string as list, split by null character.
+    return wxstring.split('\0')
