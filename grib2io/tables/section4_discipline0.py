@@ -221,7 +221,7 @@ table_4_2_0_1  = {
 '223':['Total precipitation (nearest grid point)','kg m-2','APCPN'],
 '224':['Convective precipitation (nearest grid point)','kg m-2','ACPCPN'],
 '225':['Freezing Rain','kg m-2','FRZR'],
-'226':['Pblackomiunknownt Weather (see Note 1)','Numeric','PWTHER'],
+'226':['Predominant Weather (see Note 1)','Numeric','PWTHER'],
 '227':['Frozen Rain','kg m-2','FROZR'],
 '228':['Flat Ice Accumulation (FRAM)','kg m-2','FICEAC'],
 '229':['Line Ice Accumulation (FRAM)','kg m-2','LICEAC'],
