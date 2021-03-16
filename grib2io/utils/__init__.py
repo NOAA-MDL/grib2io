@@ -281,3 +281,65 @@ def decode_mdl_wx_strings(lus):
         wxstring += chr(int(b[ib:ie],2)+refvalue)
     # Return string as list, split by null character.
     return wxstring.split('\0')
+
+
+def decode_ndfd_wx_strings(lus):
+    """
+    Decode GRIB2 Local Use Section to obtain NDFD Weather Strings.  The
+    decode procedure is defined here:
+
+    https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_mdl_temp2-1.shtml
+
+    NOTE: From testing, it seems how the process for packing Section 2 for NDFD
+          Weather grids is different than GMOS and thus the need for a different
+          method for decoding NDFD Wx vs. GMOS Wx.
+
+    Parameters
+    ----------
+
+    **`lus : array_like`**
+
+    GRIB2 Local Use Section containing NDFD weather strings.
+
+    Returns
+    -------
+
+    **`list`**
+
+    List of NDFD weather strings.
+    """
+    assert lus[0] == 1
+    # Unpack information related to the simple packing method
+    # the packed weather string data.
+    ngroups = struct.unpack('>h',lus[1:3])[0]
+    nvalues = struct.unpack('>i',lus[3:7])[0]
+    refvalue = struct.unpack('>i',lus[7:11])[0]
+    dsf = struct.unpack('>h',lus[11:13])[0]
+    nbits = lus[13]
+    datatype = lus[14]
+    if datatype == 0: # Floating point
+        refvalue = np.float32(getieeeint(refvalue)*10**-dsf)
+    elif datatype == 1: # Integer
+        refvalue = np.int32(getieeeint(refvalue)*10**-dsf)
+    # Iterate over the data of section 2 in 4-byte (32-bit)
+    # words OR 2-byte word at the end. Each word is unpacked
+    # as an unsigned integer. Then convert the integer word
+    # to a binary string and fill to the appropriate bit
+    # size (16 or 32) and concatenate to b (binary string).
+    b = ''
+    for i in range(15,len(lus),4):
+        if len(lus)-i < 4:
+            iword = struct.unpack('>H',lus[i:i+2])[0]
+            b += bin(iword).split('b')[1].zfill(16)
+        else:
+            iword = struct.unpack('>I',lus[i:i+4])[0]
+            b += bin(iword).split('b')[1].zfill(32)
+    # Iterate over the binary string (b). For each nbits
+    # chunk, convert to an integer, including the refvalue,
+    # and then convert the int to an ASCII character, then
+    # concatenate to wxstring.
+    wxstring = ''
+    for i in range(0,len(b),nbits):
+        wxstring += chr(int(b[i:i+nbits],2)+refvalue)
+    # Return string as list, split by null character.
+    return list(filter(None,wxstring.split('\0')))
