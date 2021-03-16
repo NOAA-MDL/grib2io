@@ -597,6 +597,7 @@ and unpacking of data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -647,12 +648,13 @@ and unpacking of data.</p>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="c1">#self.md5[2] = None</span>
             <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="c1">#print(&#39;SECTION 2 STUFF = &#39;,_lus)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="n">_lus</span>
+                <span class="c1">#self._lus = _lus</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="c1">#self.md5[2] = _getmd5str(self.identificationSection)</span>
             <span class="c1"># Section 3, Grid Definition Section.</span>
             <span class="k">elif</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -2154,6 +2156,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -2204,12 +2207,13 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                     <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="c1">#self.md5[2] = None</span>
             <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="c1">#print(&#39;SECTION 2 STUFF = &#39;,_lus)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="n">_lus</span>
+                <span class="c1">#self._lus = _lus</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="c1">#self.md5[2] = _getmd5str(self.identificationSection)</span>
             <span class="c1"># Section 3, Grid Definition Section.</span>
             <span class="k">elif</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
@@ -2919,6 +2923,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -2969,12 +2974,13 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                     <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="c1">#self.md5[2] = None</span>
             <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
-                <span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_lus</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="n">sectlen</span><span class="p">]</span>
+                <span class="c1">#print(&#39;SECTION 2 STUFF = &#39;,_lus)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">localUseSection</span> <span class="o">=</span> <span class="n">_lus</span>
+                <span class="c1">#self._lus = _lus</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">True</span>
                 <span class="c1">#self.md5[2] = _getmd5str(self.identificationSection)</span>
             <span class="c1"># Section 3, Grid Definition Section.</span>
             <span class="k">elif</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>

@@ -43,6 +43,9 @@
                 <li>
                         <a class="function" href="#getduration">getduration</a>
                 </li>
+                <li>
+                        <a class="function" href="#decode_mdl_wx_strings">decode_mdl_wx_strings</a>
+                </li>
         </ul>
 
 
@@ -68,6 +71,7 @@ of GRIB2 Messages.</p>
 <span class="kn">import</span> <span class="nn">g2clib</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">struct</span>
 
 <span class="kn">from</span> <span class="nn">..</span> <span class="kn">import</span> <span class="n">tables</span>
 
@@ -291,6 +295,58 @@ of GRIB2 Messages.</p>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">dur</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">dur</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">decode_mdl_wx_strings</span><span class="p">(</span><span class="n">lus</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode GRIB2 Local Use Section to obtain MDL Weather Strings.  The</span>
+<span class="sd">    decode procedure is defined here:</span>
+
+<span class="sd">    https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_mdl_temp2-1.shtml</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`lus : array_like`**</span>
+
+<span class="sd">    GRIB2 Local Use Section containing MDL weather strings.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`list`**</span>
+
+<span class="sd">    List of weather strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># Unpack information related to the simple packing method</span>
+    <span class="c1"># the packed weather string data.</span>
+    <span class="n">ngroups</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;h&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nvalues</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;i&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">refvalue</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;i&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">11</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dsf</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;h&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">13</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nbits</span> <span class="o">=</span> <span class="n">lus</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span>
+    <span class="n">datatype</span> <span class="o">=</span> <span class="n">lus</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># Floating point</span>
+        <span class="n">refvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">getieeeint</span><span class="p">(</span><span class="n">refvalue</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">**-</span><span class="n">dsf</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># Integer</span>
+        <span class="n">refvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">getieeeint</span><span class="p">(</span><span class="n">refvalue</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">**-</span><span class="n">dsf</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TEST:&quot;</span><span class="p">,</span><span class="n">ngroups</span><span class="p">,</span><span class="n">nvalues</span><span class="p">,</span><span class="n">refvalue</span><span class="p">,</span><span class="n">dsf</span><span class="p">,</span><span class="n">nbits</span><span class="p">,</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="c1"># Store the &quot;data&quot; part of the packed weather strings as</span>
+    <span class="c1"># a binary string.</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="nb">bin</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">lus</span><span class="p">[</span><span class="mi">15</span><span class="p">:],</span><span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">))</span>
+    <span class="c1"># Generated begin and end values. Note the offset begins at 2</span>
+    <span class="c1"># due to the format nature of b (binary string).</span>
+    <span class="n">idxb</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span><span class="n">nbits</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="n">nvalues</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">idxe</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">nbits</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">nbits</span><span class="p">,</span><span class="n">nbits</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="n">nvalues</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Iterate over the packed data, converting the nbits space to</span>
+    <span class="c1"># and integer, then convert integer to an ASCII character.</span>
+    <span class="n">wxstring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">ib</span><span class="p">,</span><span class="n">ie</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idxb</span><span class="p">,</span><span class="n">idxe</span><span class="p">):</span>
+        <span class="c1">#print(ib,ie,b[ib:ie],int(b[ib:ie],2),chr(int(b[ib:ie],2)))</span>
+        <span class="n">wxstring</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">ib</span><span class="p">:</span><span class="n">ie</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">refvalue</span><span class="p">)</span>
+    <span class="c1"># Return string as list, split by null character.</span>
+    <span class="k">return</span> <span class="n">wxstring</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span><span class="p">)</span>
 </pre></div>
 
             </details>
@@ -709,6 +765,89 @@ Product Definition Template Number, and Product Definition Template (Section 4).
 <p><strong><code>dur : int</code></strong></p>
 
 <p>Duration time in units of hours</p>
+</div>
+
+
+                </section>
+                <section id="decode_mdl_wx_strings">
+                                <div class="attr function">
+            
+                <span class="def">def</span>
+                <span class="name">decode_mdl_wx_strings</span><span class="signature">(lus)</span>:
+        </div>
+
+                        <details>
+                <summary class="button">View Source</summary>
+                <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">decode_mdl_wx_strings</span><span class="p">(</span><span class="n">lus</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Decode GRIB2 Local Use Section to obtain MDL Weather Strings.  The</span>
+<span class="sd">    decode procedure is defined here:</span>
+
+<span class="sd">    https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_mdl_temp2-1.shtml</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`lus : array_like`**</span>
+
+<span class="sd">    GRIB2 Local Use Section containing MDL weather strings.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`list`**</span>
+
+<span class="sd">    List of weather strings.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
+    <span class="c1"># Unpack information related to the simple packing method</span>
+    <span class="c1"># the packed weather string data.</span>
+    <span class="n">ngroups</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;h&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nvalues</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;i&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">3</span><span class="p">:</span><span class="mi">7</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">refvalue</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;i&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">7</span><span class="p">:</span><span class="mi">11</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">dsf</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;h&#39;</span><span class="p">,</span><span class="n">lus</span><span class="p">[</span><span class="mi">11</span><span class="p">:</span><span class="mi">13</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">nbits</span> <span class="o">=</span> <span class="n">lus</span><span class="p">[</span><span class="mi">13</span><span class="p">]</span>
+    <span class="n">datatype</span> <span class="o">=</span> <span class="n">lus</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">datatype</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="c1"># Floating point</span>
+        <span class="n">refvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="n">getieeeint</span><span class="p">(</span><span class="n">refvalue</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">**-</span><span class="n">dsf</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">datatype</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># Integer</span>
+        <span class="n">refvalue</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">(</span><span class="n">getieeeint</span><span class="p">(</span><span class="n">refvalue</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="o">**-</span><span class="n">dsf</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TEST:&quot;</span><span class="p">,</span><span class="n">ngroups</span><span class="p">,</span><span class="n">nvalues</span><span class="p">,</span><span class="n">refvalue</span><span class="p">,</span><span class="n">dsf</span><span class="p">,</span><span class="n">nbits</span><span class="p">,</span><span class="n">datatype</span><span class="p">)</span>
+    <span class="c1"># Store the &quot;data&quot; part of the packed weather strings as</span>
+    <span class="c1"># a binary string.</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="nb">bin</span><span class="p">(</span><span class="nb">int</span><span class="o">.</span><span class="n">from_bytes</span><span class="p">(</span><span class="n">lus</span><span class="p">[</span><span class="mi">15</span><span class="p">:],</span><span class="n">byteorder</span><span class="o">=</span><span class="s1">&#39;big&#39;</span><span class="p">))</span>
+    <span class="c1"># Generated begin and end values. Note the offset begins at 2</span>
+    <span class="c1"># due to the format nature of b (binary string).</span>
+    <span class="n">idxb</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">),</span><span class="n">nbits</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="n">nvalues</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">idxe</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="o">+</span><span class="n">nbits</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">nbits</span><span class="p">,</span><span class="n">nbits</span><span class="p">))[</span><span class="mi">0</span><span class="p">:</span><span class="n">nvalues</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="c1"># Iterate over the packed data, converting the nbits space to</span>
+    <span class="c1"># and integer, then convert integer to an ASCII character.</span>
+    <span class="n">wxstring</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">ib</span><span class="p">,</span><span class="n">ie</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">idxb</span><span class="p">,</span><span class="n">idxe</span><span class="p">):</span>
+        <span class="c1">#print(ib,ie,b[ib:ie],int(b[ib:ie],2),chr(int(b[ib:ie],2)))</span>
+        <span class="n">wxstring</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">b</span><span class="p">[</span><span class="n">ib</span><span class="p">:</span><span class="n">ie</span><span class="p">],</span><span class="mi">2</span><span class="p">)</span><span class="o">+</span><span class="n">refvalue</span><span class="p">)</span>
+    <span class="c1"># Return string as list, split by null character.</span>
+    <span class="k">return</span> <span class="n">wxstring</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\0</span><span class="s1">&#39;</span><span class="p">)</span>
+</pre></div>
+
+            </details>
+
+                    <div class="docstring"><p>Decode GRIB2 Local Use Section to obtain MDL Weather Strings.  The
+decode procedure is defined here:</p>
+
+<p>https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_mdl_temp2-1.shtml</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>lus : array_like</code></strong></p>
+
+<p>GRIB2 Local Use Section containing MDL weather strings.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p><strong><code>list</code></strong></p>
+
+<p>List of weather strings.</p>
 </div>
 
 
