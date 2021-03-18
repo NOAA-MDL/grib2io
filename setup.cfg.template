@@ -20,7 +20,7 @@
 # jasper_libdir =
 
 # ----------------------------------------------------------------------------------------
-# Define paths for OpenJPEG Library
+# Define paths for OpenJPEG Library (VERSION 1.X)
 #
 # Please set openjpeg_dir is include and library files are within the same location.
 # If not, please set openjpeg_incdir and openjpeg_libdir.
@@ -29,6 +29,16 @@
 # openjpeg_incdir =
 # openjpeg_libdir =
 
+# ----------------------------------------------------------------------------------------
+# Define paths for OpenJPEG Library (VERSION 2.X)
+#
+# Please set openjp2_dir is include and library files are within the same location.
+# If not, please set openjp2_incdir and openjp2_libdir.
+# ----------------------------------------------------------------------------------------
+# openjp2_dir = /usr/local
+# openjp2_incdir =
+# openjp2_libdir =
+#
 # ---------------------------------------------------------------------------------------- 
 # Define paths for PNG Library
 #

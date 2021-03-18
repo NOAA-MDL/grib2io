@@ -40,21 +40,29 @@ png_dir = config.getq('directories', 'png_dir', environ.get('PNG_DIR'))
 png_libdir = config.getq('directories', 'png_libdir', environ.get('PNG_LIBDIR'))
 png_incdir = config.getq('directories', 'png_incdir', environ.get('PNG_INCDIR'))
 
-# Get OpenJPEG library info
+# Get OpenJPEG (Version 1.X) library info
 openjpeg_dir = config.getq('directories', 'openjpeg_dir', environ.get('OPENJPEG_DIR'))
 openjpeg_libdir = config.getq('directories', 'openjpeg_libdir', environ.get('OPENJPEG_LIBDIR'))
 openjpeg_incdir = config.getq('directories', 'openjpeg_incdir', environ.get('OPENJPEG_INCDIR'))
+
+# Get OpenJPEG (Version 2.X) library info
+openjp2_dir = config.getq('directories', 'openjp2_dir', environ.get('OPENJP2_DIR'))
+openjp2_libdir = config.getq('directories', 'openjp2_libdir', environ.get('OPENJP2_LIBDIR'))
+openjp2_incdir = config.getq('directories', 'openjp2_incdir', environ.get('OPENJP2_INCDIR'))
 
 # Get Z library info
 zlib_dir = config.getq('directories', 'zlib_dir', environ.get('ZLIB_DIR'))
 zlib_libdir = config.getq('directories', 'zlib_libdir', environ.get('ZLIB_LIBDIR'))
 zlib_incdir = config.getq('directories', 'zlib_incdir', environ.get('ZLIB_INCDIR'))
 
+# Define lists for build
 libraries=[]
 libdirs=[]
+macros=[]
 import numpy
 incdirs=[numpy.get_include()]
 
+# Expand Jasper library and include paths.
 if jasper_dir is not None or jasper_libdir is not None:
     libraries.append('jasper')
 if jasper_libdir is None and jasper_dir is not None:
@@ -64,6 +72,7 @@ if jasper_incdir is None and jasper_dir is not None:
     incdirs.append(os.path.join(jasper_dir,'include'))
     incdirs.append(os.path.join(jasper_dir,'include/jasper'))
 
+# Expand OpenJPEG (Version 1.X) library and include paths.
 if openjpeg_dir is not None or openjpeg_libdir is not None:
     libraries.append('openjpeg')
 if openjpeg_libdir is None and openjpeg_dir is not None:
@@ -72,6 +81,16 @@ if openjpeg_libdir is None and openjpeg_dir is not None:
 if openjpeg_incdir is None and openjpeg_dir is not None:
     incdirs.append(os.path.join(openjpeg_dir,'include'))
 
+# Expand OpenJPEG (Version 2.X) library and include paths.
+if openjp2_dir is not None or openjp2_libdir is not None:
+    libraries.append('openjp2')
+if openjp2_libdir is None and openjp2_dir is not None:
+    libdirs.append(os.path.join(openjp2_dir,'lib'))
+    libdirs.append(os.path.join(openjp2_dir,'lib64'))
+if openjp2_incdir is None and openjp2_dir is not None:
+    incdirs.append(os.path.join(openjp2_dir,'include'))
+
+# Expand PNG library and include paths.
 if png_dir is not None or png_libdir is not None:
     libraries.append('png')
 if png_libdir is None and png_dir is not None:
@@ -80,6 +99,7 @@ if png_libdir is None and png_dir is not None:
 if png_incdir is None and png_dir is not None:
     incdirs.append(os.path.join(png_dir,'include'))
 
+# Expand Z library and include paths.
 if zlib_dir is not None or zlib_libdir is not None:
     libraries.append('z')
 if zlib_libdir is None and zlib_dir is not None:
@@ -92,26 +112,34 @@ if zlib_incdir is None and zlib_dir is not None:
 g2clib_deps = glob.glob('NCEPLIBS-g2c/src/*.c')
 g2clib_deps.append(g2clib_pyx)
 incdirs.append('NCEPLIBS-g2c/src')
-macros=[]
 
-# If jasper or openjpeg lib not available...
-if 'jasper' not in libraries and 'openjpeg' not in libraries:
+# Add macro for JPEG Encoding/Decoding if a JPEG library
+# has been defined, otherwise remove JPEG sources from
+# g2c source list.
+if 'jasper' in libraries or 'openjpeg' in libraries or 'openjp2' in libraries:
+    macros.append(('USE_JPEG2000',1))
+else:
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'jpcpack.c'))
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'jpcunpack.c'))
-else:
-    macros.append(('USE_JPEG2000',1))
 
-# If png lib not available...
-if 'png' not in libraries:
+# Add macro for PNG Encoding/Decoding if a PNG library
+# has been defined, otherwise remove PNG sources from
+# g2c source list.
+if 'png' in libraries:
+    macros.append(('USE_PNG',1))
+else:
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngpack.c'))
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngunpack.c'))
-else:
-    macros.append(('USE_PNG',1))
 
+# Add 64-bit macro
 if hasattr(sys,'maxsize'):
     if sys.maxsize > 2**31-1: macros.append(('__64BIT__',1))
 else:
     if sys.maxint > 2**31-1: macros.append(('__64BIT__',1))
+
+# Cleanup variables where necessary
+incdirs = list(set(incdirs))
+libdirs = list(set(libdirs))
 
 # Define extensions
 runtime_libdirs = libdirs if os.name != 'nt' else None
