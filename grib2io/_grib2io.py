@@ -18,6 +18,7 @@ import copy
 import datetime
 import os
 #import pdb
+import re
 import struct
 import math
 import warnings
@@ -28,6 +29,7 @@ import pyproj
 
 from . import tables
 from . import utils
+
 
 __pdoc__ = {}
 
@@ -327,7 +329,6 @@ class open():
     def _find_level(self,level):
         """
         """
-        import re
         # Determine level or layer....TBD
         if any(re.findall(r'mb|pa|hpa', level, re.IGNORECASE)):
             # Isobaric Surface (i.e. pressure level) - GRIB ID = 100
@@ -502,6 +503,7 @@ class Grib2Message:
         self._datapos = 0
         self._msgnum = num
         self.hasLocalUseSection = False
+        self.isNDFD = False
 
         #self.md5 = {}
         
@@ -536,6 +538,8 @@ class Grib2Message:
                                                  second=self.second)
         self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
         self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
+
+        if self.identificationSection[0:2] == [8,65535]: self.isNDFD = True
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
@@ -987,7 +991,8 @@ class Grib2Message:
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
 
-    def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None):
+    def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None,
+             map_keys=False):
         """
         Returns an unpacked data grid.
 
@@ -1012,12 +1017,18 @@ class Grib2Message:
         If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
         values. If 1, linear interpolation is used for expanding reduced gaussian grids.
 
+        **`map_keys : bool, optional`**
+
+        When `True`, data values will be mapped to the appropriate key data.
+
         Returns
         -------
 
         **`numpy.ndarray`**
 
-        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).
+        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
+        could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will
+        be string-based if map_keys=True.
         """
         if not hasattr(self,'scanModeFlags'):
             raise ValueError('Unsupported grid definition template number %s'%self.gridDefinitionTemplateNumber)
@@ -1080,6 +1091,32 @@ class Grib2Message:
             if self.scanModeFlags[3]:
                 fldsave = fld.astype('f') # casting makes a copy
                 fld[1::2,:] = fldsave[1::2,::-1]
+
+        # Set data to integer according to GRIB metadata
+        if self.typeOfValues == "Integer": fld = fld.astype(np.int32)
+
+        # Map the data values to their respective definitions.
+        if map_keys:
+            fld = fld.astype(np.int32).astype(str)
+            if self.identificationSection[0] == 7 and \
+               self.identificationSection[1] == 14 and \
+               self.shortName == 'PWTHER':
+                # MDL Predominant Weather Grid
+                keys = utils.decode_mdl_wx_strings(self._lus)
+                for n,k in enumerate(keys):
+                    fld = np.where(fld==str(n+1),k,fld)
+            elif self.identificationSection[0] == 8 and \
+                 self.identificationSection[1] == 65535 and \
+                 self.shortName == 'CRAIN':
+                # NDFD Predominant Weather Grid
+                keys = utils.decode_ndfd_wx_strings(self._lus)
+                for n,k in enumerate(keys):
+                    fld = np.where(fld==str(n+1),k,fld)
+            else:
+                
+                tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
+                for k,v in tables.get_table(tbl).items():
+                    fld = np.where(fld==k,v,fld)
         return fld
 
 
