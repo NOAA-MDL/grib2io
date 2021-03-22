@@ -114,6 +114,7 @@ and unpacking of data.</p>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="c1">#import pdb</span>
+<span class="kn">import</span> <span class="nn">re</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 <span class="kn">import</span> <span class="nn">math</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -124,6 +125,7 @@ and unpacking of data.</p>
 
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">tables</span>
 <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">utils</span>
+
 
 <span class="n">__pdoc__</span> <span class="o">=</span> <span class="p">{}</span>
 
@@ -423,7 +425,6 @@ and unpacking of data.</p>
     <span class="k">def</span> <span class="nf">_find_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">level</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">re</span>
         <span class="c1"># Determine level or layer....TBD</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;mb|pa|hpa&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
             <span class="c1"># Isobaric Surface (i.e. pressure level) - GRIB ID = 100</span>
@@ -598,6 +599,7 @@ and unpacking of data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -632,6 +634,8 @@ and unpacking of data.</p>
                                                  <span class="n">second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">productionStatus</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span><span class="s1">&#39;1.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">typeOfData</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span><span class="s1">&#39;1.4&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">65535</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># After Section 1, perform rest of GRIB2 Decoding inside while loop</span>
         <span class="c1"># to account for sub-messages.</span>
@@ -1083,7 +1087,8 @@ and unpacking of data.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">nBitsPacking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataRepresentationTemplate</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">typeOfValues</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataRepresentationTemplate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="s1">&#39;5.1&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">map_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns an unpacked data grid.</span>
 
@@ -1108,12 +1113,18 @@ and unpacking of data.</p>
 <span class="sd">        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped </span>
 <span class="sd">        values. If 1, linear interpolation is used for expanding reduced gaussian grids.</span>
 
+<span class="sd">        **`map_keys : bool, optional`**</span>
+
+<span class="sd">        When `True`, data values will be mapped to the appropriate key data.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
 <span class="sd">        **`numpy.ndarray`**</span>
 
-<span class="sd">        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).</span>
+<span class="sd">        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but</span>
+<span class="sd">        could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will</span>
+<span class="sd">        be string-based if map_keys=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;scanModeFlags&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported grid definition template number </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">gridDefinitionTemplateNumber</span><span class="p">)</span>
@@ -1176,6 +1187,32 @@ and unpacking of data.</p>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanModeFlags</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
                 <span class="n">fldsave</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span> <span class="c1"># casting makes a copy</span>
                 <span class="n">fld</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">fldsave</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Set data to integer according to GRIB metadata</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfValues</span> <span class="o">==</span> <span class="s2">&quot;Integer&quot;</span><span class="p">:</span> <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># Map the data values to their respective definitions.</span>
+        <span class="k">if</span> <span class="n">map_keys</span><span class="p">:</span>
+            <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">7</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">14</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;PWTHER&#39;</span><span class="p">:</span>
+                <span class="c1"># MDL Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_mdl_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">8</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">65535</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;CRAIN&#39;</span><span class="p">:</span>
+                <span class="c1"># NDFD Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_ndfd_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                
+                <span class="n">tbl</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d\.\d+&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fld</span>
 
 
@@ -1630,7 +1667,6 @@ and unpacking of data.</p>
     <span class="k">def</span> <span class="nf">_find_level</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">level</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="kn">import</span> <span class="nn">re</span>
         <span class="c1"># Determine level or layer....TBD</span>
         <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;mb|pa|hpa&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
             <span class="c1"># Isobaric Surface (i.e. pressure level) - GRIB ID = 100</span>
@@ -2157,6 +2193,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -2191,6 +2228,8 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                                                  <span class="n">second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">productionStatus</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span><span class="s1">&#39;1.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">typeOfData</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span><span class="s1">&#39;1.4&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">65535</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># After Section 1, perform rest of GRIB2 Decoding inside while loop</span>
         <span class="c1"># to account for sub-messages.</span>
@@ -2642,7 +2681,8 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="bp">self</span><span class="o">.</span><span class="n">nBitsPacking</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dataRepresentationTemplate</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">typeOfValues</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dataRepresentationTemplate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="s1">&#39;5.1&#39;</span><span class="p">)</span>
 
-    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">map_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns an unpacked data grid.</span>
 
@@ -2667,12 +2707,18 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 <span class="sd">        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped </span>
 <span class="sd">        values. If 1, linear interpolation is used for expanding reduced gaussian grids.</span>
 
+<span class="sd">        **`map_keys : bool, optional`**</span>
+
+<span class="sd">        When `True`, data values will be mapped to the appropriate key data.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
 <span class="sd">        **`numpy.ndarray`**</span>
 
-<span class="sd">        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).</span>
+<span class="sd">        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but</span>
+<span class="sd">        could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will</span>
+<span class="sd">        be string-based if map_keys=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;scanModeFlags&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported grid definition template number </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">gridDefinitionTemplateNumber</span><span class="p">)</span>
@@ -2735,6 +2781,32 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanModeFlags</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
                 <span class="n">fldsave</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span> <span class="c1"># casting makes a copy</span>
                 <span class="n">fld</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">fldsave</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Set data to integer according to GRIB metadata</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfValues</span> <span class="o">==</span> <span class="s2">&quot;Integer&quot;</span><span class="p">:</span> <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># Map the data values to their respective definitions.</span>
+        <span class="k">if</span> <span class="n">map_keys</span><span class="p">:</span>
+            <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">7</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">14</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;PWTHER&#39;</span><span class="p">:</span>
+                <span class="c1"># MDL Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_mdl_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">8</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">65535</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;CRAIN&#39;</span><span class="p">:</span>
+                <span class="c1"># NDFD Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_ndfd_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                
+                <span class="n">tbl</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d\.\d+&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fld</span>
 
 
@@ -2924,6 +2996,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">False</span>
 
         <span class="c1">#self.md5 = {}</span>
         
@@ -2958,6 +3031,8 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                                                  <span class="n">second</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">second</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">productionStatus</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">11</span><span class="p">],</span><span class="s1">&#39;1.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">typeOfData</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">12</span><span class="p">],</span><span class="s1">&#39;1.4&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">65535</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">isNDFD</span> <span class="o">=</span> <span class="kc">True</span>
 
         <span class="c1"># After Section 1, perform rest of GRIB2 Decoding inside while loop</span>
         <span class="c1"># to account for sub-messages.</span>
@@ -3442,13 +3517,15 @@ instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>.</p>
     fill_value=9.969209968386869e+36,
     masked_array=True,
     expand=True,
-    order=None
+    order=None,
+    map_keys=False
 )</span>:
         </div>
 
                         <details>
                 <summary class="button">View Source</summary>
-                <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fill_value</span><span class="o">=</span><span class="n">DEFAULT_FILL_VALUE</span><span class="p">,</span><span class="n">masked_array</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span><span class="n">order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">map_keys</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns an unpacked data grid.</span>
 
@@ -3473,12 +3550,18 @@ instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>.</p>
 <span class="sd">        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped </span>
 <span class="sd">        values. If 1, linear interpolation is used for expanding reduced gaussian grids.</span>
 
+<span class="sd">        **`map_keys : bool, optional`**</span>
+
+<span class="sd">        When `True`, data values will be mapped to the appropriate key data.</span>
+
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 
 <span class="sd">        **`numpy.ndarray`**</span>
 
-<span class="sd">        A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).</span>
+<span class="sd">        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but</span>
+<span class="sd">        could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will</span>
+<span class="sd">        be string-based if map_keys=True.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="s1">&#39;scanModeFlags&#39;</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unsupported grid definition template number </span><span class="si">%s</span><span class="s1">&#39;</span><span class="o">%</span><span class="bp">self</span><span class="o">.</span><span class="n">gridDefinitionTemplateNumber</span><span class="p">)</span>
@@ -3541,6 +3624,32 @@ instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>.</p>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">scanModeFlags</span><span class="p">[</span><span class="mi">3</span><span class="p">]:</span>
                 <span class="n">fldsave</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span> <span class="c1"># casting makes a copy</span>
                 <span class="n">fld</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">fldsave</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">,::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Set data to integer according to GRIB metadata</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">typeOfValues</span> <span class="o">==</span> <span class="s2">&quot;Integer&quot;</span><span class="p">:</span> <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+        <span class="c1"># Map the data values to their respective definitions.</span>
+        <span class="k">if</span> <span class="n">map_keys</span><span class="p">:</span>
+            <span class="n">fld</span> <span class="o">=</span> <span class="n">fld</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">7</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">14</span> <span class="ow">and</span> \
+               <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;PWTHER&#39;</span><span class="p">:</span>
+                <span class="c1"># MDL Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_mdl_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">8</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">identificationSection</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">65535</span> <span class="ow">and</span> \
+                 <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">==</span> <span class="s1">&#39;CRAIN&#39;</span><span class="p">:</span>
+                <span class="c1"># NDFD Predominant Weather Grid</span>
+                <span class="n">keys</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">decode_ndfd_wx_strings</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_lus</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                
+                <span class="n">tbl</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d\.\d+&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">fld</span>
 </pre></div>
 
@@ -3568,11 +3677,17 @@ instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>.</p>
 <p>If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
 values. If 1, linear interpolation is used for expanding reduced gaussian grids.</p>
 
+<p><strong><code>map_keys : bool, optional</code></strong></p>
+
+<p>When <code>True</code>, data values will be mapped to the appropriate key data.</p>
+
 <h2 id="returns">Returns</h2>
 
 <p><strong><code>numpy.ndarray</code></strong></p>
 
-<p>A numpy.ndarray with dtype=numpy.float32 with dimensions (ny,nx).</p>
+<p>A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
+could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will
+be string-based if map_keys=True.</p>
 </div>
 
 
