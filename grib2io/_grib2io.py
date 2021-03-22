@@ -476,7 +476,7 @@ class open():
 
 
 class Grib2Message:
-    def __init__(self, msg, ref=None, num=-1):
+    def __init__(self, msg, source=None, num=-1):
         """
         Class Constructor
 
@@ -487,19 +487,19 @@ class Grib2Message:
 
         Binary string representing the GRIB2 Message read from file.
 
-        **`ref : grib2io.open, optional`**
+        **`source : grib2io.open, optional`**
 
-        Holds the reference to the where this GRIB2 message originated
-        from (i.e. the input file). This allow for interaction with the
-        instance of `grib2io.open`.
+        Source of where where this GRIB2 message originated from
+        (i.e. the input file). This allow for interaction with the
+        instance of `grib2io.open`. Default is None.
 
         **`num : int, optional`**
 
-        Set to the GRIB2 Message number.
+        GRIB2 Message number from `grib2io.open`. Default value is -1.
         """
         self._msg = msg
         self._pos = 0
-        self._ref = ref
+        self._source = sourcsource
         self._datapos = 0
         self._msgnum = num
         self.hasLocalUseSection = False
@@ -551,9 +551,9 @@ class Grib2Message:
             sectnum = struct.unpack('>B',self._msg[self._pos+4:self._pos+5])[0]
 
             # Handle submessage accordingly.
-            if self._ref._index['isSubmessage'][num]:
-                if sectnum == self._ref._index['submessageBeginSection'][self._msgnum]:
-                    self._pos = self._ref._index['submessageOffset'][self._msgnum]
+            if self._source._index['isSubmessage'][num]:
+                if sectnum == self._source._index['submessageBeginSection'][self._msgnum]:
+                    self._pos = self._source._index['submessageOffset'][self._msgnum]
 
             # Section 2, Local Use Section.
             #self.md5[2] = None
@@ -596,7 +596,7 @@ class Grib2Message:
                 elif self.bitMapFlag == 254: 
                     # Value of 254 says to use a previous bitmap in the file.
                     self.bitMapFlag = 0
-                    self.bitMap = self._ref._index['bitMap'][self._msgnum]
+                    self.bitMap = self._source._index['bitMap'][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
                 #self.md5[6] = None
             # Section 7, Data Section (data unpacked when data() method is invoked).
