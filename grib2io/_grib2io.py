@@ -802,6 +802,7 @@ class Grib2Message:
         self.fullName = _varinfo[0]
         self.units = _varinfo[1]
         self.shortName = _varinfo[2]
+        self.typeOfGeneratingProcess = tables.get_value_from_table(self.productDefinitionTemplate[2],'4.3')
         self.generatingProcess = tables.get_value_from_table(self.productDefinitionTemplate[4],'generating_process')
         self.unitOfTimeRange = tables.get_value_from_table(self.productDefinitionTemplate[7],'4.4')
         self.leadTime = self.productDefinitionTemplate[8]
