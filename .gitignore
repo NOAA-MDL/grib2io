@@ -4,5 +4,6 @@ build/
 setup.cfg
 dist/
 *.egg-info
+*.swp
 make_grib2_tables/section*.py
 make_grib2_tables/originating_centers.py
