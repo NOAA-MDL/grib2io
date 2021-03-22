@@ -13,7 +13,7 @@ grib2io provides a Python interface to the [NCEP GRIB2 C library](https://github
 
 Initially this project was forked from [pygrib](https://github.com/jswhit/pygrib) which provides interfaces to the ECMWF (via module pygrib) and NCEP GRIB2 (via module ncepgrib2) libraries.  The motivation for grib2io is to bring together the best ideas from pygrib and ncepgrib2 together while being dependent only on the NCEP GRIB2 C library.
 
-**IMPORTANT:** As of [pygrib v2.1](https://github.com/jswhit/pygrib/releases/tag/v2.1rel), module ncepgrib2 has been ***removed*** from the pygrib project.  
+**IMPORTANT:** As of [pygrib v2.1](https://github.com/jswhit/pygrib/releases/tag/v2.1rel), module ncepgrib2 has been ***removed*** from the pygrib project and is no longer being actively developed.
 
 grib2io leverages the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/).  The GRIB2 tables have been converted into Python dictionaries and functions provided to fetch a given table and return values from it.
 
