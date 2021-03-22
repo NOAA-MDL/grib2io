@@ -40,16 +40,6 @@ png_dir = config.getq('directories', 'png_dir', environ.get('PNG_DIR'))
 png_libdir = config.getq('directories', 'png_libdir', environ.get('PNG_LIBDIR'))
 png_incdir = config.getq('directories', 'png_incdir', environ.get('PNG_INCDIR'))
 
-# Get OpenJPEG (Version 1.X) library info
-openjpeg_dir = config.getq('directories', 'openjpeg_dir', environ.get('OPENJPEG_DIR'))
-openjpeg_libdir = config.getq('directories', 'openjpeg_libdir', environ.get('OPENJPEG_LIBDIR'))
-openjpeg_incdir = config.getq('directories', 'openjpeg_incdir', environ.get('OPENJPEG_INCDIR'))
-
-# Get OpenJPEG (Version 2.X) library info
-openjp2_dir = config.getq('directories', 'openjp2_dir', environ.get('OPENJP2_DIR'))
-openjp2_libdir = config.getq('directories', 'openjp2_libdir', environ.get('OPENJP2_LIBDIR'))
-openjp2_incdir = config.getq('directories', 'openjp2_incdir', environ.get('OPENJP2_INCDIR'))
-
 # Get Z library info
 zlib_dir = config.getq('directories', 'zlib_dir', environ.get('ZLIB_DIR'))
 zlib_libdir = config.getq('directories', 'zlib_libdir', environ.get('ZLIB_LIBDIR'))
@@ -71,24 +61,6 @@ if jasper_libdir is None and jasper_dir is not None:
 if jasper_incdir is None and jasper_dir is not None:
     incdirs.append(os.path.join(jasper_dir,'include'))
     incdirs.append(os.path.join(jasper_dir,'include/jasper'))
-
-# Expand OpenJPEG (Version 1.X) library and include paths.
-if openjpeg_dir is not None or openjpeg_libdir is not None:
-    libraries.append('openjpeg')
-if openjpeg_libdir is None and openjpeg_dir is not None:
-    libdirs.append(os.path.join(openjpeg_dir,'lib'))
-    libdirs.append(os.path.join(openjpeg_dir,'lib64'))
-if openjpeg_incdir is None and openjpeg_dir is not None:
-    incdirs.append(os.path.join(openjpeg_dir,'include'))
-
-# Expand OpenJPEG (Version 2.X) library and include paths.
-if openjp2_dir is not None or openjp2_libdir is not None:
-    libraries.append('openjp2')
-if openjp2_libdir is None and openjp2_dir is not None:
-    libdirs.append(os.path.join(openjp2_dir,'lib'))
-    libdirs.append(os.path.join(openjp2_dir,'lib64'))
-if openjp2_incdir is None and openjp2_dir is not None:
-    incdirs.append(os.path.join(openjp2_dir,'include'))
 
 # Expand PNG library and include paths.
 if png_dir is not None or png_libdir is not None:
@@ -116,7 +88,7 @@ incdirs.append('NCEPLIBS-g2c/src')
 # Add macro for JPEG Encoding/Decoding if a JPEG library
 # has been defined, otherwise remove JPEG sources from
 # g2c source list.
-if 'jasper' in libraries or 'openjpeg' in libraries or 'openjp2' in libraries:
+if 'jasper' in libraries:
     macros.append(('USE_JPEG2000',1))
 else:
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'jpcpack.c'))
