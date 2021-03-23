@@ -518,7 +518,8 @@ class Grib2Message:
         self.indicatorSection.append(self._msg[6])
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
-        self.discipline = tables.get_value_from_table(self.indicatorSection[2],'0.0')
+        #self.discipline = tables.get_value_from_table(self.indicatorSection[2],'0.0')
+        self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
         #self.md5[0] = _getmd5str(self.indicatorSection)
         self._pos = 16
         
@@ -1262,6 +1263,11 @@ class Grib2Message:
         return lats.astype('f'), lons.astype('f')
 
 
+    #def __str__(self):
+    #    """
+    #    """
+
+
     def __repr__(self):
         """
         """
@@ -1271,3 +1277,43 @@ class Grib2Message:
             if not k.startswith('_'):
                 strings.append('%s = %s\n'%(k,self.__dict__[k]))
         return ''.join(strings)
+
+
+class Grib2Metadata():
+    """
+    Class to hold GRIB2 metadata both as numeric code value as stored in
+    GRIB2 and its decoded meaning.
+
+    **`value : int`**
+
+    GRIB2 metadata integer code value.
+
+    **`table : str, optional`**
+
+    GRIB2 table to lookup the `value`. Default is None.
+    """
+    def __init__(self,value,table=None):
+        self.value = value
+        self.table = table
+        if self.table is None:
+            self.meaning = None
+        else:
+            self.meaning = tables.get_value_from_table(self.value,self.table)
+    def __call__(self):
+        return self.value
+    def __repr__(self):
+        return '%s(%d, table = %s)' % (self.__class__.__name__,self.value,self.table)
+    def __str__(self):
+        return '%d - %s' % (self.value,self.meaning)
+    def __eq__(self,other):
+        return self.value == other
+    def __gt__(self,other):
+        return self.value > other
+    def __ge__(self,other):
+        return self.value >= other
+    def __lt__(self,other):
+        return self.value < other
+    def __le__(self,other):
+        return self.value <= other
+    def __contains__(self,other):
+        return other in self.meaning
