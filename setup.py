@@ -156,7 +156,7 @@ setup(name = 'grib2io',
       py_modules        = install_py_modules,
       packages          = find_packages(),
       data_files        = data_files,
-      install_requires  = ['setuptools>=34.0','numpy>=1.12.0','pyproj>=1.9.6'],
+      install_requires  = ['setuptools>=34.0','numpy>=1.12.0','pyproj>=1.9.5'],
       python_requires   = '>=3.6',
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
