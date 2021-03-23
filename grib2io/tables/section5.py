@@ -14,7 +14,7 @@ table_5_0 = {
 '61':'Grid Point Data - Simple Packing With Logarithm Pre-processing  (see Template 5.61)',
 '62-199':'Reserved',
 '200':'Run Length Packing With Level Values  (see Template 5.200)',
-'201-49151':'201-49151',
+'201-49151':'Reserved',
 '49152-65534':'Reserved for Local Use',
 '65535':'Missing',
 }
