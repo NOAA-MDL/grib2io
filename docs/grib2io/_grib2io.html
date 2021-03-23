@@ -72,6 +72,15 @@
                     </ul>
 
                 </li>
+                <li>
+                        <a class="class" href="#Grib2Metadata">Grib2Metadata</a>
+                                    <ul class="memberlist">
+                            <li>
+                                    <a class="function" href="#Grib2Metadata.__init__">Grib2Metadata</a>
+                            </li>
+                    </ul>
+
+                </li>
         </ul>
 
 
@@ -269,7 +278,9 @@ and unpacking of data.</p>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]),</span><span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]),</span>
+                                 <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key must be an integer or slice&#39;</span><span class="p">)</span>
 
@@ -493,7 +504,9 @@ and unpacking of data.</p>
                 <span class="n">msgrange</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">msgrange</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
-                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span><span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
+                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span>
+                                         <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">current_message</span> <span class="o">+=</span> <span class="mi">1</span> 
         <span class="k">return</span> <span class="n">msgs</span>
 
@@ -572,7 +585,7 @@ and unpacking of data.</p>
 
 
 <span class="k">class</span> <span class="nc">Grib2Message</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Class Constructor</span>
 
@@ -583,19 +596,19 @@ and unpacking of data.</p>
 
 <span class="sd">        Binary string representing the GRIB2 Message read from file.</span>
 
-<span class="sd">        **`ref : grib2io.open, optional`**</span>
+<span class="sd">        **`source : grib2io.open, optional`**</span>
 
-<span class="sd">        Holds the reference to the where this GRIB2 message originated</span>
-<span class="sd">        from (i.e. the input file). This allow for interaction with the</span>
-<span class="sd">        instance of `grib2io.open`.</span>
+<span class="sd">        Source of where where this GRIB2 message originated from</span>
+<span class="sd">        (i.e. the input file). This allow for interaction with the</span>
+<span class="sd">        instance of `grib2io.open`. Default is None.</span>
 
 <span class="sd">        **`num : int, optional`**</span>
 
-<span class="sd">        Set to the GRIB2 Message number.</span>
+<span class="sd">        GRIB2 Message number from `grib2io.open`. Default value is -1.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span> <span class="o">=</span> <span class="n">msg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
@@ -610,7 +623,8 @@ and unpacking of data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;Q&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
+        <span class="c1">#self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">Grib2Metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
         <span class="c1">#self.md5[0] = _getmd5str(self.indicatorSection)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">16</span>
         
@@ -647,9 +661,9 @@ and unpacking of data.</p>
             <span class="n">sectnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">4</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="c1"># Handle submessage accordingly.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
             <span class="c1">#self.md5[2] = None</span>
@@ -692,7 +706,7 @@ and unpacking of data.</p>
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">==</span> <span class="mi">254</span><span class="p">:</span> 
                     <span class="c1"># Value of 254 says to use a previous bitmap in the file.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span> <span class="c1"># IMPORTANT: This is here because g2clib.unpack6() does not return updated position.</span>
                 <span class="c1">#self.md5[6] = None</span>
             <span class="c1"># Section 7, Data Section (data unpacked when data() method is invoked).</span>
@@ -894,6 +908,7 @@ and unpacking of data.</p>
         <span class="bp">self</span><span class="o">.</span><span class="n">fullName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">typeOfGeneratingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;4.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generatingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="s1">&#39;generating_process&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unitOfTimeRange</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="s1">&#39;4.4&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
@@ -1353,6 +1368,11 @@ and unpacking of data.</p>
         <span class="k">return</span> <span class="n">lats</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">),</span> <span class="n">lons</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
 
 
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1362,6 +1382,46 @@ and unpacking of data.</p>
             <span class="k">if</span> <span class="ow">not</span> <span class="n">k</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">):</span>
                 <span class="n">strings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> = </span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
         <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">strings</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Grib2Metadata</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to hold GRIB2 metadata both as numeric code value as stored in</span>
+<span class="sd">    GRIB2 and its decoded meaning.</span>
+
+<span class="sd">    **`value : int`**</span>
+
+<span class="sd">    GRIB2 metadata integer code value.</span>
+
+<span class="sd">    **`table : str, optional`**</span>
+
+<span class="sd">    GRIB2 table to lookup the `value`. Default is None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, table = </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">meaning</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">other</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span>
 </pre></div>
 
             </details>
@@ -1511,7 +1571,9 @@ and unpacking of data.</p>
         <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span> <span class="k">return</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])</span>
-            <span class="k">return</span> <span class="p">[</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]),</span><span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])]</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">]),</span>
+                                 <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                 <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">key</span><span class="p">])]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s1">&#39;Key must be an integer or slice&#39;</span><span class="p">)</span>
 
@@ -1735,7 +1797,9 @@ and unpacking of data.</p>
                 <span class="n">msgrange</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">msgrange</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
-                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span><span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
+                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span>
+                                         <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">current_message</span> <span class="o">+=</span> <span class="mi">1</span> 
         <span class="k">return</span> <span class="n">msgs</span>
 
@@ -1975,7 +2039,9 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                 <span class="n">msgrange</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="n">beg</span><span class="p">,</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">msgrange</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">])</span>
-                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span><span class="n">ref</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span><span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
+                <span class="n">msgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Grib2Message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;size&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]),</span>
+                                         <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+                                         <span class="n">num</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;messageNumber&#39;</span><span class="p">][</span><span class="n">n</span><span class="p">]))</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">current_message</span> <span class="o">+=</span> <span class="mi">1</span> 
         <span class="k">return</span> <span class="n">msgs</span>
 </pre></div>
@@ -2166,7 +2232,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                         <details>
                 <summary class="button">View Source</summary>
                 <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Grib2Message</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Class Constructor</span>
 
@@ -2177,19 +2243,19 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
 <span class="sd">        Binary string representing the GRIB2 Message read from file.</span>
 
-<span class="sd">        **`ref : grib2io.open, optional`**</span>
+<span class="sd">        **`source : grib2io.open, optional`**</span>
 
-<span class="sd">        Holds the reference to the where this GRIB2 message originated</span>
-<span class="sd">        from (i.e. the input file). This allow for interaction with the</span>
-<span class="sd">        instance of `grib2io.open`.</span>
+<span class="sd">        Source of where where this GRIB2 message originated from</span>
+<span class="sd">        (i.e. the input file). This allow for interaction with the</span>
+<span class="sd">        instance of `grib2io.open`. Default is None.</span>
 
 <span class="sd">        **`num : int, optional`**</span>
 
-<span class="sd">        Set to the GRIB2 Message number.</span>
+<span class="sd">        GRIB2 Message number from `grib2io.open`. Default value is -1.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span> <span class="o">=</span> <span class="n">msg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
@@ -2204,7 +2270,8 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;Q&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
+        <span class="c1">#self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">Grib2Metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
         <span class="c1">#self.md5[0] = _getmd5str(self.indicatorSection)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">16</span>
         
@@ -2241,9 +2308,9 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="n">sectnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">4</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="c1"># Handle submessage accordingly.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
             <span class="c1">#self.md5[2] = None</span>
@@ -2286,7 +2353,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">==</span> <span class="mi">254</span><span class="p">:</span> 
                     <span class="c1"># Value of 254 says to use a previous bitmap in the file.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span> <span class="c1"># IMPORTANT: This is here because g2clib.unpack6() does not return updated position.</span>
                 <span class="c1">#self.md5[6] = None</span>
             <span class="c1"># Section 7, Data Section (data unpacked when data() method is invoked).</span>
@@ -2488,6 +2555,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">fullName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">typeOfGeneratingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;4.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generatingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="s1">&#39;generating_process&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unitOfTimeRange</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="s1">&#39;4.4&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
@@ -2947,6 +3015,11 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="k">return</span> <span class="n">lats</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">),</span> <span class="n">lons</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
 
 
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+
     <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -2965,11 +3038,11 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                             <div id="Grib2Message.__init__" class="classattr">
                                             <div class="attr function">
             
-                <span class="name">Grib2Message</span><span class="signature">(msg, ref=None, num=-1)</span>        </div>
+                <span class="name">Grib2Message</span><span class="signature">(msg, source=None, num=-1)</span>        </div>
 
                         <details>
                 <summary class="button">View Source</summary>
-                <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+                <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">num</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Class Constructor</span>
 
@@ -2980,19 +3053,19 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
 <span class="sd">        Binary string representing the GRIB2 Message read from file.</span>
 
-<span class="sd">        **`ref : grib2io.open, optional`**</span>
+<span class="sd">        **`source : grib2io.open, optional`**</span>
 
-<span class="sd">        Holds the reference to the where this GRIB2 message originated</span>
-<span class="sd">        from (i.e. the input file). This allow for interaction with the</span>
-<span class="sd">        instance of `grib2io.open`.</span>
+<span class="sd">        Source of where where this GRIB2 message originated from</span>
+<span class="sd">        (i.e. the input file). This allow for interaction with the</span>
+<span class="sd">        instance of `grib2io.open`. Default is None.</span>
 
 <span class="sd">        **`num : int, optional`**</span>
 
-<span class="sd">        Set to the GRIB2 Message number.</span>
+<span class="sd">        GRIB2 Message number from `grib2io.open`. Default value is -1.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span> <span class="o">=</span> <span class="n">msg</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span> <span class="o">=</span> <span class="n">ref</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="n">source</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_datapos</span> <span class="o">=</span> <span class="mi">0</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">False</span>
@@ -3007,7 +3080,8 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">6</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">7</span><span class="p">])</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;Q&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="mi">8</span><span class="p">:</span><span class="mi">16</span><span class="p">])[</span><span class="mi">0</span><span class="p">])</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
+        <span class="c1">#self.discipline = tables.get_value_from_table(self.indicatorSection[2],&#39;0.0&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discipline</span> <span class="o">=</span> <span class="n">Grib2Metadata</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indicatorSection</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;0.0&#39;</span><span class="p">)</span>
         <span class="c1">#self.md5[0] = _getmd5str(self.indicatorSection)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="mi">16</span>
         
@@ -3044,9 +3118,9 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <span class="n">sectnum</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="s1">&#39;&gt;B&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">4</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span><span class="o">+</span><span class="mi">5</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
 
             <span class="c1"># Handle submessage accordingly.</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
-                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;isSubmessage&#39;</span><span class="p">][</span><span class="n">num</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">sectnum</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageBeginSection&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;submessageOffset&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
 
             <span class="c1"># Section 2, Local Use Section.</span>
             <span class="c1">#self.md5[2] = None</span>
@@ -3089,7 +3163,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                 <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">==</span> <span class="mi">254</span><span class="p">:</span> 
                     <span class="c1"># Value of 254 says to use a previous bitmap in the file.</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">bitMapFlag</span> <span class="o">=</span> <span class="mi">0</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ref</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bitMap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;bitMap&#39;</span><span class="p">][</span><span class="bp">self</span><span class="o">.</span><span class="n">_msgnum</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">+=</span> <span class="n">sectlen</span> <span class="c1"># IMPORTANT: This is here because g2clib.unpack6() does not return updated position.</span>
                 <span class="c1">#self.md5[6] = None</span>
             <span class="c1"># Section 7, Data Section (data unpacked when data() method is invoked).</span>
@@ -3291,6 +3365,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
         <span class="bp">self</span><span class="o">.</span><span class="n">fullName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">shortName</span> <span class="o">=</span> <span class="n">_varinfo</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">typeOfGeneratingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="s1">&#39;4.3&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">generatingProcess</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="s1">&#39;generating_process&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">unitOfTimeRange</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">7</span><span class="p">],</span><span class="s1">&#39;4.4&#39;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">leadTime</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">productDefinitionTemplate</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
@@ -3495,15 +3570,15 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
 <p>Binary string representing the GRIB2 Message read from file.</p>
 
-<p><strong><code>ref : <a href="../grib2io.html#open">grib2io.open</a>, optional</code></strong></p>
+<p><strong><code>source : <a href="../grib2io.html#open">grib2io.open</a>, optional</code></strong></p>
 
-<p>Holds the reference to the where this GRIB2 message originated
-from (i.e. the input file). This allow for interaction with the
-instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>.</p>
+<p>Source of where where this GRIB2 message originated from
+(i.e. the input file). This allow for interaction with the
+instance of <code><a href="../grib2io.html#open">grib2io.open</a></code>. Default is None.</p>
 
 <p><strong><code>num : int, optional</code></strong></p>
 
-<p>Set to the GRIB2 Message number.</p>
+<p>GRIB2 Message number from <code><a href="../grib2io.html#open">grib2io.open</a></code>. Default value is -1.</p>
 </div>
 
 
@@ -3868,6 +3943,92 @@ space-view and azimuthal equidistant grids.</p>
 longitudes in units of degrees.</p>
 </div>
 
+
+                            </div>
+                </section>
+                <section id="Grib2Metadata">
+                                        <div class="attr class">
+            
+            <span class="def">class</span>
+            <span class="name">Grib2Metadata</span>:
+        </div>
+
+                        <details>
+                <summary class="button">View Source</summary>
+                <div class="codehilite"><pre><span></span><span class="k">class</span> <span class="nc">Grib2Metadata</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Class to hold GRIB2 metadata both as numeric code value as stored in</span>
+<span class="sd">    GRIB2 and its decoded meaning.</span>
+
+<span class="sd">    **`value : int`**</span>
+
+<span class="sd">    GRIB2 metadata integer code value.</span>
+
+<span class="sd">    **`table : str, optional`**</span>
+
+<span class="sd">    GRIB2 table to lookup the `value`. Default is None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, table = </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">meaning</span><span class="p">)</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
+    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">other</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span>
+</pre></div>
+
+            </details>
+
+                    <div class="docstring"><p>Class to hold GRIB2 metadata both as numeric code value as stored in
+GRIB2 and its decoded meaning.</p>
+
+<p><strong><code>value : int</code></strong></p>
+
+<p>GRIB2 metadata integer code value.</p>
+
+<p><strong><code>table : str, optional</code></strong></p>
+
+<p>GRIB2 table to lookup the <code>value</code>. Default is None.</p>
+</div>
+
+
+                            <div id="Grib2Metadata.__init__" class="classattr">
+                                            <div class="attr function">
+            
+                <span class="name">Grib2Metadata</span><span class="signature">(value, table=None)</span>        </div>
+
+                        <details>
+                <summary class="button">View Source</summary>
+                <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">meaning</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+</pre></div>
+
+            </details>
+
+        
 
                             </div>
                 </section>
