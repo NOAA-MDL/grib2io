@@ -526,11 +526,16 @@ class Grib2Message:
         # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
-        self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
-        self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
-        self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
-        self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
-        self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
+        #self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
+        #self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
+        #self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
+        #self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
+        #self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
+        self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
+        self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
+        self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
+        self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
+        self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
         self.year = self.identificationSection[5]
         self.month = self.identificationSection[6]
         self.day = self.identificationSection[7]
@@ -541,19 +546,28 @@ class Grib2Message:
         self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
                                                  hour=self.hour,minute=self.minute,
                                                  second=self.second)
-        self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
-        self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
+        #self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
+        #self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
+        self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
+        self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
 
         if self.identificationSection[0:2] == [8,65535]: self.isNDFD = True
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
+        sectnum = 1
         while True:
-            if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777': break
+            if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777':
+                break
 
             # Read the length and section number.
             sectlen = struct.unpack('>i',self._msg[self._pos:self._pos+4])[0]
+            prevsectnum = sectnum
             sectnum = struct.unpack('>B',self._msg[self._pos+4:self._pos+5])[0]
+
+            # If the previous section number is > current section number, then
+            # we have encountered a submessage.
+            if prevsectnum > sectnum: break
 
             # Handle submessage accordingly.
             if self._source._index['isSubmessage'][num]:
@@ -573,23 +587,23 @@ class Grib2Message:
             elif sectnum == 3:
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
                 self.gridDefinitionSection = _gds.tolist()
-                self.gridDefinitionTemplateNumber = int(_gds[4])
+                self.gridDefinitionTemplateNumber = Grib2Metadata(int(_gds[4]),table='3.1')
                 self.gridDefinitionTemplate = _gdtn.tolist()
                 self.defList = _deflist.tolist()
-                self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
+                #self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
                 #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
             # Section 4, Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
                 self.productDefinitionTemplate = _pdt.tolist()
-                self.productDefinitionTemplateNumber = int(_pdtn)
+                self.productDefinitionTemplateNumber = Grib2Metadata(int(_pdtn),table='4.0')
                 self.coordinateList = _coordlst.tolist()
                 #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
             # Section 5, Data Representation Section.
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
                 self.dataRepresentationTemplate = _drt.tolist()
-                self.dataRepresentationTemplateNumber = int(_drtn)
+                self.dataRepresentationTemplateNumber = Grib2Metadata(int(_drtn),table='5.0')
                 self.numberOfDataPoints = _npts
                 #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
             # Section 6, Bitmap Section.
