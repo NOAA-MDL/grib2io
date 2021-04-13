@@ -1063,9 +1063,9 @@ class Grib2Message:
                 order = 0
             else:
                 order = 1
-        drtnum = self.dataRepresentationTemplateNumber
+        drtnum = self.dataRepresentationTemplateNumber.value
         drtmpl = np.asarray(self.dataRepresentationTemplate,dtype=np.int32)
-        gdtnum = self.gridDefinitionTemplateNumber
+        gdtnum = self.gridDefinitionTemplateNumber.value
         gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
         ndpts = self.numberOfDataPoints
         gds = self.gridDefinitionSection
