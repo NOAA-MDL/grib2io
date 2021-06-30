@@ -174,7 +174,7 @@ def getleadtime(idsec,pdtn,pdt):
         td = enddate - refdate
         lt = (td).total_seconds()/3600.0
     elif pdtn == 9:
-        enddate = datetime.datetime(*pdt[21:27])
+        enddate = datetime.datetime(*pdt[22:28])
         td = enddate - refdate
         lt = (td).total_seconds()/3600.0
     elif pdtn == 10:
