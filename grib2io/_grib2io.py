@@ -34,7 +34,7 @@ from . import utils
 __pdoc__ = {}
 
 
-ONE_MB = 1024 ** 3
+ONE_MB = 1048576 # 1 MB in units of bytes
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 
 
@@ -864,23 +864,25 @@ class Grib2Message:
         elif self.productDefinitionTemplateNumber == 9:
             self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
             self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-            self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[16],'4.9')
-            self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
-            self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[23]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[24]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[25]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[26]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[27]
-            self.numberOfMissingValues = self.productDefinitionTemplate[28]
-            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[29],'4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[30],'4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[31],'4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[32]
-            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[33],'4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[34]
+            self.typeOfProbability = tables.get_value_from_table(self.productDefinitionTemplate[17],'4.9')
+            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
+                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
+            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
+                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[24]
+            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[25]
+            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[26]
+            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[27]
+            self.numberOfTimeRanges = self.productDefinitionTemplate[28]
+            self.numberOfMissingValues = self.productDefinitionTemplate[29]
+            self.statisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[30],'4.10')
+            self.typeOfTimeIncrementOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[31],'4.11')
+            self.unitOfTimeRangeOfStatisticalProcess = tables.get_value_from_table(self.productDefinitionTemplate[32],'4.4')
+            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[33]
+            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[34],'4.4')
+            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[35]
         elif self.productDefinitionTemplateNumber == 10:
             self.percentileValue = self.productDefinitionTemplate[15]
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
