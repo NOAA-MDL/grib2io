@@ -360,6 +360,7 @@ table_generating_process  = {
 '132':'High Resolution Ensemble Forecast (HREF)',
 '133':'Great Lakes Short Range Wave Model',
 '134':'Rapid Refresh Forecast System (RRFS)',
+'135':'Hurricane Analysis and Forecast System (HAFS)',
 '135-139':'Reserved',
 '140':'North American Regional Reanalysis (NARR)',
 '141':'Land Data Assimilation and Forecast System',

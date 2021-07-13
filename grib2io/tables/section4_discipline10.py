@@ -16,7 +16,7 @@ table_4_2_10_0  = {
 '14':['Direction of Combined Wind Waves and Swell','degree true','WWSDIR'],
 '15':['Mean Period of Combined Wind Waves and Swell','s','MWSPER'],
 '16':['Coefficient of Drag With Waves','-','CDWW'],
-'17':['Friction Velocity','m s-1','FRICV'],
+'17':['Friction Velocity','m s-1','FRICVW'],
 '18':['Wave Stress','N m-2','WSTR'],
 '19':['Normalised Waves Stress','-','NWSTR'],
 '20':['Mean Square Slope of Waves','-','MSSW'],
