@@ -101,6 +101,8 @@ for table in $(seq 0 7 && seq 13 20 && seq 190 192)
 do
    ./get-ncep-grib2-sect4-parameters-table.py 0 $table >> section4_discipline0.py
 done
+sed 's/Pblackomiunknownt/Predominant/g' section4_discipline0.py > junk
+mv junk section4_discipline0.py
 
 # Discipline 1
 echo " -- Making section4_discipline1.py"
@@ -140,6 +142,15 @@ if [ -f section4_discipline10.py ]; then rm -f section4_discipline10.py; fi
 for table in 0 1 2 3 4 191
 do
    ./get-ncep-grib2-sect4-parameters-table.py 10 $table >> section4_discipline10.py
+done
+
+# ---------------------------------------------------------------------------------------- 
+# Remove "See Note" strings from section 4 discipline files.
+# ---------------------------------------------------------------------------------------- 
+for f in $(grep -l '([Ss]ee [Nn]ote [1-9]*)' section*.py)
+do
+   sed 's/ ([Ss]ee [Nn]ote [1-9]*)//g' $f > junk
+   mv junk $f
 done
 
 # ---------------------------------------------------------------------------------------- 
