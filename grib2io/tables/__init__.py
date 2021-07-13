@@ -5,7 +5,6 @@ from .section4 import *
 from .section5 import *
 from .originating_centers import *
 
-
 def get_table(table,expand=False):
     """
     Return GRIB2 code table as a dictionary.
@@ -91,6 +90,10 @@ def get_varname_from_table(discipline,parmcat,parmnum):
 
     Returns
     -------
+
+    **`tuple`** 
+
+    In order, variable full name, units, and short (abbreviated) name
     """
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
