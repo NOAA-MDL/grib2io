@@ -14,7 +14,8 @@ def get_table(table,expand=False):
 
     **`table : str`**
 
-    Code table number.  Example: '1.0'
+    Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value representing
+    the product discipline (e.g. '4.1.0').
 
     **`expand : bool`**
 
@@ -25,18 +26,25 @@ def get_table(table,expand=False):
 
     **`dict`**    
     """
-    tbl = globals()['table_'+table.replace('.','_')]
-    if expand:
-        _tbl = {}
-        for k,v in tbl.items():
-            if '-' in k:
-                irng = [int(i) for i in k.split('-')]
-                for i in range(irng[0],irng[1]+1):
-                    _tbl[str(i)] = v
-            else:
-                _tbl[k] = v
-        tbl = _tbl
-    return tbl
+    if len(table) == 3 and table == '4.1':
+        raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
+    if table.startswith('4.2'):
+        raise Exception('Use function get_varname_from_table() for GRIB2 Code Table 4.2')
+    try:
+        tbl = globals()['table_'+table.replace('.','_')]
+        if expand:
+            _tbl = {}
+            for k,v in tbl.items():
+                if '-' in k:
+                    irng = [int(i) for i in k.split('-')]
+                    for i in range(irng[0],irng[1]+1):
+                        _tbl[str(i)] = v
+                else:
+                    _tbl[k] = v
+            tbl = _tbl
+        return tbl
+    except(KeyError):
+        return {}
 
 
 def get_value_from_table(value,table):
@@ -91,14 +99,17 @@ def get_varname_from_table(discipline,parmcat,parmnum):
     Returns
     -------
 
-    **`tuple`** 
+    **`list`** 
 
     In order, variable full name, units, and short (abbreviated) name
     """
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
     if isinstance(parmnum,int): parmnum = str(parmnum)
-    tblname = 'table_4_2_'+discipline+'_'+parmcat
-    modname = '.section4_discipline'+discipline
-    exec('from '+modname+' import *')
-    return locals()[tblname][parmnum]
+    try:
+        tblname = 'table_4_2_'+discipline+'_'+parmcat
+        modname = '.section4_discipline'+discipline
+        exec('from '+modname+' import *')
+        return locals()[tblname][parmnum]
+    except(ImportError,KeyError):
+        return ['Unknown','Unknown','Unknown']
