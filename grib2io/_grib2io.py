@@ -31,9 +31,6 @@ from . import tables
 from . import utils
 
 
-__pdoc__ = {}
-
-
 ONE_MB = 1048576 # 1 MB in units of bytes
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 

@@ -88,7 +88,8 @@
 
 <span class="sd">    **`table : str`**</span>
 
-<span class="sd">    Code table number.  Example: &#39;1.0&#39;</span>
+<span class="sd">    Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value representing</span>
+<span class="sd">    the product discipline (e.g. &#39;4.1.0&#39;).</span>
 
 <span class="sd">    **`expand : bool`**</span>
 
@@ -99,18 +100,25 @@
 
 <span class="sd">    **`dict`**    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tbl</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;table_&#39;</span><span class="o">+</span><span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">expand</span><span class="p">:</span>
-        <span class="n">_tbl</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
-                <span class="n">irng</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">irng</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">irng</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-                    <span class="n">_tbl</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">_tbl</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="n">tbl</span> <span class="o">=</span> <span class="n">_tbl</span>
-    <span class="k">return</span> <span class="n">tbl</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">table</span> <span class="o">==</span> <span class="s1">&#39;4.1&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;4.2&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Use function get_varname_from_table() for GRIB2 Code Table 4.2&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;table_&#39;</span><span class="o">+</span><span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">expand</span><span class="p">:</span>
+            <span class="n">_tbl</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+                    <span class="n">irng</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">irng</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">irng</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="n">_tbl</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_tbl</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">tbl</span> <span class="o">=</span> <span class="n">_tbl</span>
+        <span class="k">return</span> <span class="n">tbl</span>
+    <span class="k">except</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
 
 
 <span class="k">def</span> <span class="nf">get_value_from_table</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="p">):</span>
@@ -165,17 +173,20 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`tuple`** </span>
+<span class="sd">    **`list`** </span>
 
 <span class="sd">    In order, variable full name, units, and short (abbreviated) name</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">discipline</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmcat</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmcat</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmcat</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmnum</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmnum</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmnum</span><span class="p">)</span>
-    <span class="n">tblname</span> <span class="o">=</span> <span class="s1">&#39;table_4_2_&#39;</span><span class="o">+</span><span class="n">discipline</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">parmcat</span>
-    <span class="n">modname</span> <span class="o">=</span> <span class="s1">&#39;.section4_discipline&#39;</span><span class="o">+</span><span class="n">discipline</span>
-    <span class="n">exec</span><span class="p">(</span><span class="s1">&#39;from &#39;</span><span class="o">+</span><span class="n">modname</span><span class="o">+</span><span class="s1">&#39; import *&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">tblname</span><span class="p">][</span><span class="n">parmnum</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tblname</span> <span class="o">=</span> <span class="s1">&#39;table_4_2_&#39;</span><span class="o">+</span><span class="n">discipline</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">parmcat</span>
+        <span class="n">modname</span> <span class="o">=</span> <span class="s1">&#39;.section4_discipline&#39;</span><span class="o">+</span><span class="n">discipline</span>
+        <span class="n">exec</span><span class="p">(</span><span class="s1">&#39;from &#39;</span><span class="o">+</span><span class="n">modname</span><span class="o">+</span><span class="s1">&#39; import *&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">tblname</span><span class="p">][</span><span class="n">parmnum</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">]</span>
 </pre></div>
 
         </details>
@@ -200,7 +211,8 @@
 
 <span class="sd">    **`table : str`**</span>
 
-<span class="sd">    Code table number.  Example: &#39;1.0&#39;</span>
+<span class="sd">    Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value representing</span>
+<span class="sd">    the product discipline (e.g. &#39;4.1.0&#39;).</span>
 
 <span class="sd">    **`expand : bool`**</span>
 
@@ -211,18 +223,25 @@
 
 <span class="sd">    **`dict`**    </span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">tbl</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;table_&#39;</span><span class="o">+</span><span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
-    <span class="k">if</span> <span class="n">expand</span><span class="p">:</span>
-        <span class="n">_tbl</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-            <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
-                <span class="n">irng</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span>
-                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">irng</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">irng</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
-                    <span class="n">_tbl</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">_tbl</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
-        <span class="n">tbl</span> <span class="o">=</span> <span class="n">_tbl</span>
-    <span class="k">return</span> <span class="n">tbl</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">table</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">table</span> <span class="o">==</span> <span class="s1">&#39;4.1&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;4.2&#39;</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Use function get_varname_from_table() for GRIB2 Code Table 4.2&#39;</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tbl</span> <span class="o">=</span> <span class="nb">globals</span><span class="p">()[</span><span class="s1">&#39;table_&#39;</span><span class="o">+</span><span class="n">table</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="s1">&#39;_&#39;</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">expand</span><span class="p">:</span>
+            <span class="n">_tbl</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tbl</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="s1">&#39;-&#39;</span> <span class="ow">in</span> <span class="n">k</span><span class="p">:</span>
+                    <span class="n">irng</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">k</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)]</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">irng</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">irng</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+                        <span class="n">_tbl</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)]</span> <span class="o">=</span> <span class="n">v</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">_tbl</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span>
+            <span class="n">tbl</span> <span class="o">=</span> <span class="n">_tbl</span>
+        <span class="k">return</span> <span class="n">tbl</span>
+    <span class="k">except</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{}</span>
 </pre></div>
 
         </details>
@@ -233,7 +252,8 @@
 
 <p><strong><code>table : str</code></strong></p>
 
-<p>Code table number.  Example: '1.0'</p>
+<p>Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value representing
+the product discipline (e.g. '4.1.0').</p>
 
 <p><strong><code>expand : bool</code></strong></p>
 
@@ -339,17 +359,20 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`tuple`** </span>
+<span class="sd">    **`list`** </span>
 
 <span class="sd">    In order, variable full name, units, and short (abbreviated) name</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">discipline</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmcat</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmcat</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmcat</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmnum</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmnum</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmnum</span><span class="p">)</span>
-    <span class="n">tblname</span> <span class="o">=</span> <span class="s1">&#39;table_4_2_&#39;</span><span class="o">+</span><span class="n">discipline</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">parmcat</span>
-    <span class="n">modname</span> <span class="o">=</span> <span class="s1">&#39;.section4_discipline&#39;</span><span class="o">+</span><span class="n">discipline</span>
-    <span class="n">exec</span><span class="p">(</span><span class="s1">&#39;from &#39;</span><span class="o">+</span><span class="n">modname</span><span class="o">+</span><span class="s1">&#39; import *&#39;</span><span class="p">)</span>
-    <span class="k">return</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">tblname</span><span class="p">][</span><span class="n">parmnum</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">tblname</span> <span class="o">=</span> <span class="s1">&#39;table_4_2_&#39;</span><span class="o">+</span><span class="n">discipline</span><span class="o">+</span><span class="s1">&#39;_&#39;</span><span class="o">+</span><span class="n">parmcat</span>
+        <span class="n">modname</span> <span class="o">=</span> <span class="s1">&#39;.section4_discipline&#39;</span><span class="o">+</span><span class="n">discipline</span>
+        <span class="n">exec</span><span class="p">(</span><span class="s1">&#39;from &#39;</span><span class="o">+</span><span class="n">modname</span><span class="o">+</span><span class="s1">&#39; import *&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">tblname</span><span class="p">][</span><span class="n">parmnum</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">]</span>
 </pre></div>
 
         </details>
@@ -374,7 +397,7 @@ to be converted to a string type if arguments are integer.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>tuple</code></strong> </p>
+<p><strong><code>list</code></strong> </p>
 
 <p>In order, variable full name, units, and short (abbreviated) name</p>
 </div>
