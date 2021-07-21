@@ -102,7 +102,7 @@ do
    ./get-ncep-grib2-sect4-parameters-table.py 0 $table >> section4_discipline0.py
 done
 sed 's/Pblackomiunknownt/Predominant/g' section4_discipline0.py > junk
-mv junk section4_discipline0.py
+mv -v junk section4_discipline0.py
 
 # Discipline 1
 echo " -- Making section4_discipline1.py"
@@ -150,7 +150,7 @@ done
 for f in $(grep -l '([Ss]ee [Nn]ote [1-9]*)' section*.py)
 do
    sed 's/ ([Ss]ee [Nn]ote [1-9]*)//g' $f > junk
-   mv junk $f
+   mv -v junk $f
 done
 
 # ---------------------------------------------------------------------------------------- 
@@ -163,3 +163,5 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section5.py
 done
+sed "s/:'201-49151',/:'Reserved',/g" section5.py > junk
+mv -v junk section5.py
