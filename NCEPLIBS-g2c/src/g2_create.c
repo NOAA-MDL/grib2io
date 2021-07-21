@@ -1,9 +1,10 @@
+/** @file
+ */
 #include <stdio.h>
 #include "grib2.h"
 
 #define MAPSEC1LEN 13
 
-g2int g2_create(unsigned char *cgrib,g2int *listsec0,g2int *listsec1)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_create 
@@ -63,6 +64,7 @@ g2int g2_create(unsigned char *cgrib,g2int *listsec0,g2int *listsec1)
 //   MACHINE:  
 //
 //$$$
+g2int g2_create(unsigned char *cgrib,g2int *listsec0,g2int *listsec1)
 {
 
       g2int  ierr;

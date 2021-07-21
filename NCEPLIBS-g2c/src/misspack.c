@@ -1,9 +1,9 @@
+/** @file
+ */
 #include <stdlib.h>
 #include <math.h>
 #include "grib2.h"
 
-void misspack(g2float *fld,g2int ndpts,g2int idrsnum,g2int *idrstmpl,
-              unsigned char *cpack, g2int *lcpack)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    misspack
@@ -62,6 +62,8 @@ void misspack(g2float *fld,g2int ndpts,g2int idrsnum,g2int *idrstmpl,
 //   MACHINE:  
 //
 //$$$
+void misspack(g2float *fld,g2int ndpts,g2int idrsnum,g2int *idrstmpl,
+              unsigned char *cpack, g2int *lcpack)
 {
 
       g2int  *ifld, *ifldmiss, *jfld;

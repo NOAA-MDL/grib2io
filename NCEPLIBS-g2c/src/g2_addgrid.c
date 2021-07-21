@@ -1,9 +1,10 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
 
 
-g2int g2_addgrid(unsigned char *cgrib,g2int *igds,g2int *igdstmpl,g2int *ideflist,g2int idefnum)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_addgrid 
@@ -70,6 +71,7 @@ g2int g2_addgrid(unsigned char *cgrib,g2int *igds,g2int *igdstmpl,g2int *ideflis
 //   MACHINE:  
 //
 //$$$
+g2int g2_addgrid(unsigned char *cgrib,g2int *igds,g2int *igdstmpl,g2int *ideflist,g2int idefnum)
 {
 
       g2int ierr;

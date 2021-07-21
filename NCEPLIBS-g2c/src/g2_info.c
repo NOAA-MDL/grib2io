@@ -1,9 +1,9 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
 
-g2int g2_info(unsigned char *cgrib,g2int *listsec0,g2int *listsec1,
-            g2int *numfields,g2int *numlocal)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_info 
@@ -69,6 +69,8 @@ g2int g2_info(unsigned char *cgrib,g2int *listsec0,g2int *listsec1,
 //   MACHINE:  
 //
 //$$$
+g2int g2_info(unsigned char *cgrib,g2int *listsec0,g2int *listsec1,
+            g2int *numfields,g2int *numlocal)
 {
  
       g2int ierr,mapsec1len=13;

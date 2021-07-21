@@ -1,3 +1,5 @@
+/** @file
+ */
 #ifndef USE_PNG
  void dummy(void) {}
 #else   /* USE_PNG */

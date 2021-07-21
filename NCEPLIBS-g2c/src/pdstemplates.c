@@ -1,8 +1,9 @@
+/** @file
+ */
 #include <stdlib.h>
 #include "grib2.h"
 #include "pdstemplates.h"
 
-g2int getpdsindex(g2int number)
 ///$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    getpdsindex
@@ -38,6 +39,7 @@ g2int getpdsindex(g2int number)
 //   MACHINE:  IBM SP
 //
 //$$$/
+g2int getpdsindex(g2int number)
 {
            g2int j,getpdsindex=-1;
 
@@ -52,7 +54,6 @@ g2int getpdsindex(g2int number)
 }
 
 
-gtemplate *getpdstemplate(g2int number)
 ///$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    getpdstemplate 
@@ -92,6 +93,7 @@ gtemplate *getpdstemplate(g2int number)
 //   MACHINE:  IBM SP
 //
 //$$$/
+gtemplate *getpdstemplate(g2int number)
 {
            g2int index;
            gtemplate *new;
@@ -118,7 +120,6 @@ gtemplate *getpdstemplate(g2int number)
 }
          
         
-gtemplate *extpdstemplate(g2int number,g2int *list)
 ///$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    extpdstemplate 
@@ -158,6 +159,7 @@ gtemplate *extpdstemplate(g2int number,g2int *list)
 //   MACHINE:  IBM SP
 //
 //$$$
+gtemplate *extpdstemplate(g2int number,g2int *list)
 {
            gtemplate *new;
            g2int index,i,j,k,l;

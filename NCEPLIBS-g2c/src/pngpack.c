@@ -1,11 +1,11 @@
+/** @file
+ */
 #include <stdlib.h>
 #include <math.h>
 #include "grib2.h"
 
 int enc_png(char *,g2int ,g2int ,g2int ,char *);
 
-void pngpack(g2float *fld,g2int width,g2int height,g2int *idrstmpl,
-             unsigned char *cpack,g2int *lcpack)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    pngpack
@@ -54,6 +54,8 @@ void pngpack(g2float *fld,g2int width,g2int height,g2int *idrstmpl,
 //   MACHINE:  IBM SP
 //
 //$$$
+void pngpack(g2float *fld,g2int width,g2int height,g2int *idrstmpl,
+             unsigned char *cpack,g2int *lcpack)
 {
       g2int  *ifld;
       static g2float alog2=0.69314718;       //  ln(2.0)

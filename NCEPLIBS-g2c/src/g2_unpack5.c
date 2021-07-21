@@ -1,10 +1,10 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
 
 
-g2int g2_unpack5(unsigned char *cgrib,g2int *iofst,g2int *ndpts,g2int *idrsnum,
-               g2int **idrstmpl,g2int *mapdrslen)
 ////$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_unpack5 
@@ -50,6 +50,8 @@ g2int g2_unpack5(unsigned char *cgrib,g2int *iofst,g2int *ndpts,g2int *idrsnum,
 //   MACHINE:  
 //
 //$$$//
+g2int g2_unpack5(unsigned char *cgrib,g2int *iofst,g2int *ndpts,g2int *idrsnum,
+               g2int **idrstmpl,g2int *mapdrslen)
 {
       g2int ierr,needext,i,j,nbits,isecnum;
       g2int lensec,isign,newlen;

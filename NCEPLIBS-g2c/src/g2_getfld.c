@@ -1,3 +1,5 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
@@ -13,8 +15,6 @@ g2int g2_unpack6(unsigned char *,g2int *,g2int ,g2int *, g2int **);
 g2int g2_unpack7(unsigned char *,g2int *,g2int ,g2int *,
                          g2int ,g2int *,g2int ,g2float **);
 
-g2int g2_getfld(unsigned char *cgrib,g2int ifldnum,g2int unpack,g2int expand,
-                gribfield **gfld)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_getfld 
@@ -244,6 +244,8 @@ g2int g2_getfld(unsigned char *cgrib,g2int ifldnum,g2int unpack,g2int expand,
 //   MACHINE:  
 //
 //$$$
+g2int g2_getfld(unsigned char *cgrib,g2int ifldnum,g2int unpack,g2int expand,
+                gribfield **gfld)
 {
     
       g2int have3,have4,have5,have6,have7,ierr,jerr;

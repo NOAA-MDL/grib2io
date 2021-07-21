@@ -1,8 +1,9 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
 
-void seekgb(FILE *lugb,g2int iseek,g2int mseek,g2int *lskip,g2int *lgrib)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //
 // SUBPROGRAM: seekgb         Searches a file for the next GRIB message.
@@ -34,6 +35,7 @@ void seekgb(FILE *lugb,g2int iseek,g2int mseek,g2int *lskip,g2int *lgrib)
 //   LANGUAGE: C
 //
 //$$$
+void seekgb(FILE *lugb,g2int iseek,g2int mseek,g2int *lskip,g2int *lgrib)
 {
       g2int  ret;
       g2int k,k4,ipos,nread,lim,start,vers,lengrib;

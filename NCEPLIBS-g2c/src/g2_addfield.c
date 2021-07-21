@@ -1,3 +1,5 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
@@ -11,14 +13,11 @@ void specpack(g2float *,g2int,g2int,g2int,g2int,g2int *,unsigned char *,
 #ifdef USE_PNG
   void pngpack(g2float *,g2int,g2int,g2int *,unsigned char *,g2int *);
 #endif  /* USE_PNG */
-#ifdef USE_JPEG2000
+#if defined USE_JPEG2000 || defined USE_OPENJPEG
   void jpcpack(g2float *,g2int,g2int,g2int *,unsigned char *,g2int *);
 #endif  /* USE_JPEG2000 */
 
 
-g2int g2_addfield(unsigned char *cgrib,g2int ipdsnum,g2int *ipdstmpl,
-                g2float *coordlist,g2int numcoord,g2int idrsnum,g2int *idrstmpl,
-                g2float *fld,g2int ngrdpts,g2int ibmap,g2int *bmap)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    g2_addfield 
@@ -113,6 +112,9 @@ g2int g2_addfield(unsigned char *cgrib,g2int ipdsnum,g2int *ipdstmpl,
 //   MACHINE:  
 //
 //$$$
+g2int g2_addfield(unsigned char *cgrib,g2int ipdsnum,g2int *ipdstmpl,
+                g2float *coordlist,g2int numcoord,g2int idrsnum,g2int *idrstmpl,
+                g2float *fld,g2int ngrdpts,g2int ibmap,g2int *bmap)
 {
       g2int ierr;
       static unsigned char G=0x47;       // 'G'
@@ -340,7 +342,7 @@ g2int g2_addfield(unsigned char *cgrib,g2int ipdsnum,g2int *ipdstmpl,
            return (-9);
         }
       }
-#ifdef USE_JPEG2000
+#if defined USE_JPEG2000 || defined USE_OPENJPEG
       else if (idrsnum == 40 || idrsnum == 40000) {    /*  JPEG2000 encoding  */
         if (ibmap == 255) {
            getdim(cgrib+lpos3,&width,&height,&iscan);

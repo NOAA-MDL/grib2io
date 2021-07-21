@@ -1,9 +1,10 @@
+/** @file
+ */
 #include <stdlib.h>
 #include <math.h>
 #include "grib2.h"
 
 
-void simpack(g2float *fld,g2int ndpts,g2int *idrstmpl,unsigned char *cpack,g2int *lcpack)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    simpack
@@ -57,6 +58,7 @@ void simpack(g2float *fld,g2int ndpts,g2int *idrstmpl,unsigned char *cpack,g2int
 //   MACHINE:  
 //
 //$$$
+void simpack(g2float *fld,g2int ndpts,g2int *idrstmpl,unsigned char *cpack,g2int *lcpack)
 {
 
       static g2int zero=0;

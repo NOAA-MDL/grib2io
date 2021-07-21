@@ -1,6 +1,7 @@
+/** @file
+ */
 #include "grib2.h"
 
-void rdieee(g2int *rieee,g2float *a,g2int num)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    rdieee 
@@ -28,6 +29,7 @@ void rdieee(g2int *rieee,g2float *a,g2int num)
 //   MACHINE:  IBM SP
 //
 //$$$
+void rdieee(g2int *rieee,g2float *a,g2int num)
 {
 
       g2int  j;

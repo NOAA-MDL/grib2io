@@ -1,11 +1,11 @@
+/** @file
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include "grib2.h"
 
    int dec_jpeg2000(char *,g2int ,g2int *);
 
-g2int jpcunpack(unsigned char *cpack,g2int len,g2int *idrstmpl,g2int ndpts,
-                g2float *fld)
 //$$$  SUBPROGRAM DOCUMENTATION BLOCK
 //                .      .    .                                       .
 // SUBPROGRAM:    jpcunpack
@@ -37,6 +37,8 @@ g2int jpcunpack(unsigned char *cpack,g2int len,g2int *idrstmpl,g2int ndpts,
 //   MACHINE:  IBM SP
 //
 //$$$
+g2int jpcunpack(unsigned char *cpack,g2int len,g2int *idrstmpl,g2int ndpts,
+                g2float *fld)
 {
 
       g2int  *ifld;
