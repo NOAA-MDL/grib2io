@@ -2,14 +2,13 @@
 Introduction
 ============
 
-grib2io is a Python package that provides an interface to the NCEP GRIB2 C (g2c) library for the purpose
-of reading and writing GRIB2 Messages.  WMO GRIdded Binary, Edition 2 (GRIB2) files store 2-D meteorological
+grib2io is a Python package that provides an interface to the [NCEP GRIB2 C (g2c)](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 
+library for the purpose of reading and writing GRIB2 Messages.  WMO GRIdded Binary, Edition 2 (GRIB2) files store 2-D meteorological
 data. A physical file can contain one or more GRIB2 messages.  File IO is handled in Python returning
 a binary string of the GRIB2 message which is then passed to the g2c library for decoding or GRIB2 metadata
 and unpacking of data.
-
 """
-__version__ = '0.3.0'
+__version__ = '0.8.0'
 
 import g2clib
 import builtins
@@ -31,8 +30,9 @@ from . import tables
 from . import utils
 
 
-ONE_MB = 1048576 # 1 MB in units of bytes
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
+GRIB2_EDITION_NUMBER = 2
+ONE_MB = 1048576 # 1 MB in units of bytes
 
 
 class open():
@@ -47,34 +47,19 @@ class open():
     Attributes
     ----------
 
-    **`mode : str`**
+    **`mode`**: File IO mode of opening the file.
 
-    Mode of opening the file.  For reading, `mode = 'rb'` and writing, mode = 'wb'.
+    **`name`**: Full path name of the GRIB2 file.
 
-    **`name : str`**
+    **`messages`**: Count of GRIB2 Messages contained in the file.
 
-    Full path name of the GRIB2 file.
+    **`current_message`**: Current position of the file in units of GRIB2 Messages.
 
-    **`messages : int`**
+    **`size`**: Size of the file in units of bytes.
 
-    Count of GRIB2 Messages contained in the file.
+    **`closed`** `True` is file handle is close; `False` otherwise.
 
-    **`current_message : int`**
-
-    Current position of the file in units of GRIB2 Messages.
-
-    **`size : int`**
-
-    Size of the file in units of bytes.
-
-    **`closed : bool`**
-
-    Bool signaling if the file is closed **`True`** or open **`False`**.
-
-    **`shortNames : tuple`**
-
-    Tuple of unique short names (i.e. GRIB2 abbreviation names) for each message.
-
+    **`variables`**: Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
     """
     def __init__(self, filename, mode='r'):
         """
@@ -83,19 +68,13 @@ class open():
         Parameters
         ----------
 
-        **`filename : str`**
+        **`filename`**: File name containing GRIB2 messages.
 
-        File name.
-
-        **`mode : str, optional, default = 'r'`**
-
-        File handle mode.  The default is open for reading ('r').
-
+        **`mode `**: File access mode where `r` opens the files for reading only;
+        `w` opens the file for writing.
         """
-        if mode == 'r' or mode == 'w':
+        if mode in ['a','r','w']:
             mode = mode+'b'
-        elif mode == 'a':
-            mode = 'wb'
         self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
         self._hasindex = False
         self._index = {}
@@ -105,9 +84,12 @@ class open():
         self.current_message = 0
         self.size = os.path.getsize(self.name)
         self.closed = self._filehandle.closed
+        self.decode = True
         if 'r' in self.mode: self._build_index()
+        # FIX: Cannot perform reads on mode='a'
+        #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
-            self.shortNames = tuple(sorted(set(filter(None,self._index['shortName']))))
+            self.variables = tuple(sorted(set(filter(None,self._index['shortName']))))
 
 
     def __delete__(self, instance):
@@ -170,9 +152,10 @@ class open():
         elif isinstance(key,int):
             if key == 0: return None
             self._filehandle.seek(self._index['offset'][key])
-            return [Grib2Message(self._filehandle.read(self._index['size'][key]),
+            return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
-                                 num=self._index['messageNumber'][key])]
+                                 num=self._index['messageNumber'][key],
+                                 decode=self.decode)]
         else:
             raise KeyError('Key must be an integer or slice')
 
@@ -251,7 +234,7 @@ class open():
                                     # Unpack Section 4
                                     _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
-                                    _varinfo = tables.get_varname_from_table(discipline,_pdt[0],_pdt[1])
+                                    _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1])
                                 elif secnum == 6:
                                     self._filehandle.seek(self._filehandle.tell()-5) 
                                     _grbmsg = self._filehandle.read(secsize)
@@ -374,16 +357,12 @@ class open():
         Parameters
         ----------
 
-        **`num : int`**
-
-        Number of GRIB2 Message to read.
+        **`num`**: integer number of GRIB2 Message to read.
 
         Returns
         -------
 
-        **`list`**
-
-        List of `grib2io.Grib2Message` instances.
+        **`list`**: list of `grib2io.Grib2Message` instances.
         """
         msgs = []
         if self.tell() >= self.messages: return msgs
@@ -396,9 +375,10 @@ class open():
                 msgrange = range(beg,end+1)
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
-                msgs.append(Grib2Message(self._filehandle.read(self._index['size'][n]),
+                msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
                                          source=self,
-                                         num=self._index['messageNumber'][n]))
+                                         num=self._index['messageNumber'][n],
+                                         decode=self.decode))
                 self.current_message += 1 
         return msgs
 
@@ -417,9 +397,7 @@ class open():
         Parameters
         ----------
 
-        **`pos : int`**
-
-        GRIB2 Message number to set the read pointer to.
+        **`pos`**: GRIB2 Message number to set the read pointer to.
         """
         if self._hasindex:
             if pos == 0:
@@ -476,38 +454,102 @@ class open():
             return [self[int(i)][0] for i in [ii[0] for ii in collections.Counter(idxsarr).most_common() if ii[1] == nidxs]]
 
 
-class Grib2Message:
-    def __init__(self, msg, source=None, num=-1):
+    def write(self, msg):
         """
-        Class Constructor
+        Writes a packed GRIB2 message to file.
 
         Parameters
         ----------
 
-        **`msg : bytes`**
+        **`msg`**: instance of `Grib2Message`.
+        """
+        self._filehandle.write(msg._msg)
+        self.size = os.path.getsize(self.name)
+        self.messages += 1
+        self.current_message += 1
 
-        Binary string representing the GRIB2 Message read from file.
+class Grib2Message:
+    def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None):
+        """
+        Class Constructor
 
-        **`source : grib2io.open, optional`**
+        Usage
+        -----
 
-        Source of where where this GRIB2 message originated from
-        (i.e. the input file). This allow for interaction with the
+        The instantiation of this class can handle a GRIB2 message from an existing file or the
+        creation of new GRIB2 message.
+
+        To create a new GRIB2 message, provide the appropriate values to the arguments
+        `discipline` and `idsect`.  When these 2 arguments are not `None`, then a new GRIB2 message is
+        created. NOTE: All other keyword arguments are ignored when a new message is created.
+
+        ...
+
+        Parameters
+        ----------
+
+        **`msg`**: Binary string representing the GRIB2 Message read from file.
+
+        **`source`**: Source of where where this GRIB2 message originated 
+        from (i.e. the input file). This allow for interaction with the 
         instance of `grib2io.open`. Default is None.
 
-        **`num : int, optional`**
+        **`num`**: integer GRIB2 Message number from `grib2io.open`. Default value is -1.
 
-        GRIB2 Message number from `grib2io.open`. Default value is -1.
+        **`decode`**: If True [DEFAULT], decode GRIB2 section lists into metadata 
+        instance variables.
+
+        **`discipline`**: integer GRIB2 Discipline [GRIB2 Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)
+
+        **`idsect`**: Sequence containing GRIB1 Identification Section values (Section 1).
+        - idsect[0] = Id of orginating centre - [ON388 - Table 0](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
+        - idsect[1] = Id of orginating sub-centre - [ON388 - Table C](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)
+        - idsect[2] = GRIB Master Tables Version Number - [Code Table 1.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)
+        - idsect[3] = GRIB Local Tables Version Number - [Code Table 1.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)
+        - idsect[4] = Significance of Reference Time - [Code Table 1.2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)
+        - idsect[5] = Reference Time - Year (4 digits)
+        - idsect[6] = Reference Time - Month
+        - idsect[7] = Reference Time - Day
+        - idsect[8] = Reference Time - Hour
+        - idsect[9] = Reference Time - Minute
+        - idsect[10] = Reference Time - Second
+        - idsect[11] = Production status of data - [Code Table 1.3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)
+        - idsect[12]= Type of processed data - [Code Table 1.4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)
         """
-        self._msg = msg
-        self._pos = 0
         self._source = source
-        self._datapos = 0
         self._msgnum = num
+        self._decode = decode
+        self._pos = 0
+        self._datapos = 0
+        self._sections = []
         self.hasLocalUseSection = False
         self.isNDFD = False
-
+        if discipline is not None and idsect is not None:
+            # New message
+            self._msg,self._pos = g2clib.grib2_create(np.array([discipline,GRIB2_EDITION_NUMBER],np.int32),
+                                                      np.array(idsect,np.int32))
+            self._sections += [0,1]
+        else:
+            # Existing message
+            self._msg = msg
         #self.md5 = {}
-        
+        if self._msg is not None and self._source is not None: self.unpack()
+
+    def __repr__(self):
+        """
+        """
+        strings = []
+        keys = self.__dict__.keys()
+        for k in keys:
+            if not k.startswith('_'):
+                strings.append('%s = %s\n'%(k,self.__dict__[k]))
+        return ''.join(strings)
+
+
+    def unpack(self): 
+        """
+        Unpacks GRIB2 section data from the packed, binary message.
+        """
         # Section 0, Indicator Section
         self.indicatorSection = []
         self.indicatorSection.append(struct.unpack('>4s',self._msg[0:4])[0])
@@ -515,38 +557,12 @@ class Grib2Message:
         self.indicatorSection.append(self._msg[6])
         self.indicatorSection.append(self._msg[7])
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
-        #self.discipline = tables.get_value_from_table(self.indicatorSection[2],'0.0')
-        self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
+        self._sections.append(0)
         #self.md5[0] = _getmd5str(self.indicatorSection)
         self._pos = 16
-        
-        # Section 1, Indentification Section.
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
-        #self.originatingCenter = tables.get_value_from_table(self.identificationSection[0],'originating_centers')
-        #self.originatingSubCenter = tables.get_value_from_table(self.identificationSection[1],'originating_subcenters')
-        #self.masterTableInfo = tables.get_value_from_table(self.identificationSection[2],'1.0')
-        #self.localTableInfo = tables.get_value_from_table(self.identificationSection[3],'1.1')
-        #self.significanceOfReferenceTime = tables.get_value_from_table(self.identificationSection[4],'1.2')
-        self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
-        self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
-        self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
-        self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
-        self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
-        self.year = self.identificationSection[5]
-        self.month = self.identificationSection[6]
-        self.day = self.identificationSection[7]
-        self.hour = self.identificationSection[8]
-        self.minute = self.identificationSection[9]
-        self.second = self.identificationSection[10]
-        self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
-        self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
-                                                 hour=self.hour,minute=self.minute,
-                                                 second=self.second)
-        #self.productionStatus = tables.get_value_from_table(self.identificationSection[11],'1.3')
-        #self.typeOfData = tables.get_value_from_table(self.identificationSection[12],'1.4')
-        self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
-        self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
+        self._sections.append(1)
 
         if self.identificationSection[0:2] == [8,65535]: self.isNDFD = True
 
@@ -567,9 +583,10 @@ class Grib2Message:
             if prevsectnum > sectnum: break
 
             # Handle submessage accordingly.
-            if self._source._index['isSubmessage'][num]:
-                if sectnum == self._source._index['submessageBeginSection'][self._msgnum]:
-                    self._pos = self._source._index['submessageOffset'][self._msgnum]
+            if isinstance(self._source,open):
+                if self._source._index['isSubmessage'][self._msgnum]:
+                    if sectnum == self._source._index['submessageBeginSection'][self._msgnum]:
+                        self._pos = self._source._index['submessageOffset'][self._msgnum]
 
             # Section 2, Local Use Section.
             #self.md5[2] = None
@@ -580,6 +597,7 @@ class Grib2Message:
                 #self._lus = _lus
                 self.hasLocalUseSection = True
                 #self.md5[2] = _getmd5str(self.identificationSection)
+                self._sections.append(2)
             # Section 3, Grid Definition Section.
             elif sectnum == 3:
                 _gds,_gdtn,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
@@ -589,6 +607,7 @@ class Grib2Message:
                 self.defList = _deflist.tolist()
                 #self.gridDefinitionTemplateNumberInfo = tables.get_value_from_table(self.gridDefinitionTemplateNumber,'3.1')
                 #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
+                self._sections.append(3)
             # Section 4, Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
@@ -596,6 +615,7 @@ class Grib2Message:
                 self.productDefinitionTemplateNumber = Grib2Metadata(int(_pdtn),table='4.0')
                 self.coordinateList = _coordlst.tolist()
                 #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
+                self._sections.append(4)
             # Section 5, Data Representation Section.
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
@@ -603,6 +623,7 @@ class Grib2Message:
                 self.dataRepresentationTemplateNumber = Grib2Metadata(int(_drtn),table='5.0')
                 self.numberOfDataPoints = _npts
                 #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
+                self._sections.append(5)
             # Section 6, Bitmap Section.
             elif sectnum == 6:
                 _bmap,_bmapflag = g2clib.unpack6(self._msg,self.gridDefinitionSection[1],self._pos,np.empty)
@@ -612,17 +633,46 @@ class Grib2Message:
                 elif self.bitMapFlag == 254: 
                     # Value of 254 says to use a previous bitmap in the file.
                     self.bitMapFlag = 0
-                    self.bitMap = self._source._index['bitMap'][self._msgnum]
+                    if isinstance(self._source,open):
+                        self.bitMap = self._source._index['bitMap'][self._msgnum]
                 self._pos += sectlen # IMPORTANT: This is here because g2clib.unpack6() does not return updated position.
                 #self.md5[6] = None
+                self._sections.append(6)
             # Section 7, Data Section (data unpacked when data() method is invoked).
             elif sectnum == 7:
                 self._datapos = self._pos
                 self._pos += sectlen # REMOVE THIS WHEN UNPACKING DATA IS IMPLEMENTED
                 #self.md5[7] = _getmd5str(self._msg[self._datapos:sectlen+1])
+                self._sections.append(7)
             else:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg) 
+        if self._decode: self.decode()
+
+    def decode(self):
+        """
+        """
+        # Section 0
+        self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
+
+        # Section 1, Indentification Section.
+        self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
+        self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
+        self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
+        self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
+        self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
+        self.year = self.identificationSection[5]
+        self.month = self.identificationSection[6]
+        self.day = self.identificationSection[7]
+        self.hour = self.identificationSection[8]
+        self.minute = self.identificationSection[9]
+        self.second = self.identificationSection[10]
+        self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
+        self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
+                                                 hour=self.hour,minute=self.minute,
+                                                 second=self.second)
+        self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
+        self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
 
         # ----------------------------
         # Section 3 -- Grid Definition
@@ -808,7 +858,7 @@ class Grib2Message:
         # -------------------------------
         # Section 4 -- Product Definition
         # -------------------------------
-        _varinfo = tables.get_varname_from_table(self.indicatorSection[2],
+        _varinfo = tables.get_varinfo_from_table(self.indicatorSection[2],
                    self.productDefinitionTemplate[0],
                    self.productDefinitionTemplate[1])
         self.fullName = _varinfo[0]
@@ -1010,7 +1060,7 @@ class Grib2Message:
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
 
-    def data(self,fill_value=DEFAULT_FILL_VALUE,masked_array=True,expand=True,order=None,
+    def data(self, fill_value=DEFAULT_FILL_VALUE, masked_array=True, expand=True, order=None,
              map_keys=False):
         """
         Returns an unpacked data grid.
@@ -1018,36 +1068,27 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`fill_value : float, optional`**
+        **`fill_value`**: Missing or masked data is filled with this value or default value given by
+        `DEFAULT_FILL_VALUE`
 
-        Missing or masked data is filled with this value or default value given by
-        `DEFAULT_FILL_VALUE`.
+        **`masked_array`**: If `True` [DEFAULT], return masked array if there is bitmap for missing 
+        or masked data.
 
-        **`masked_array : bool, optional`**
+        **`expand`**: If `True` [DEFAULT], ECMWF 'reduced' gaussian grids are expanded to regular 
+        gaussian grids.
 
-        When `True` [DEFAULT], return masked array if there is bitmap for missing or masked data.
+        **`order`**: If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing 
+        or bitmapped values. If 1, linear interpolation is used for expanding reduced gaussian grids.
 
-        **`expand : bool, optional`**
-
-        When `True` [DEFAULT], ECMWF 'reduced' gaussian grids are expanded to regular gaussian grids.
-
-        **`order : int, optional`**
-
-        If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing or bitmapped 
-        values. If 1, linear interpolation is used for expanding reduced gaussian grids.
-
-        **`map_keys : bool, optional`**
-
-        When `True`, data values will be mapped to the appropriate key data.
+        **`map_keys`**: If `True`, data values will be mapped to the string-based keys that are stored
+        in the Local Use Section (section 2) of the GRIB2 Message.
 
         Returns
         -------
 
-        **`numpy.ndarray`**
-
-        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
-        could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will
-        be string-based if map_keys=True.
+        **`numpy.ndarray`**: A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, 
+        but could be np.int32 if Grib2Message.typeOfValues is integer.  The array dtype will be 
+        string-based if map_keys=True.
         """
         if not hasattr(self,'scanModeFlags'):
             raise ValueError('Unsupported grid definition template number %s'%self.gridDefinitionTemplateNumber)
@@ -1276,26 +1317,140 @@ class Grib2Message:
         return lats.astype('f'), lons.astype('f')
 
 
-    #def __str__(self):
-    #    """
-    #    """
+    def addgrid(self, gdsinfo, gdtmpl, deflist=None):
+        """
+        Add a Grid Definition Section [(Section 3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_doc/grib2_sect3.shtml) 
+        to the GRIB2 message.
+
+        Parameters
+        ----------
+
+        **`gdsinfo`**: Sequence containing information needed for the grid definition section.
+        - gdsinfo[0] = Source of grid definition - [Code Table 3.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml)
+        - gdsinfo[1] = Number of data points
+        - gdsinfo[2] = Number of octets for optional list of numbers defining number of points
+        - gdsinfo[3] = Interpetation of list of numbers defining number of points - [Code Table 3.11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-11.shtml)
+        - gdsinfo[4] = Grid Definition Template Number - [Code Table 3.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)
+
+        **`gdtmpl`**: Sequence of values for the specified Grid Definition Template. Each 
+        element of this integer array contains an entry (in the order specified) of Grid
+        Definition Template 3.NN
+
+        **`deflist`**: Sequence containing the number of grid points contained in each 
+        row (or column) of a non-regular grid.  Used if gdsinfo[2] != 0.
+        """
+        if 3 in self._sections:
+            raise ValueError('GRIB2 Message already contains Grid Definition Section.')
+        if deflist is not None:
+            _deflist = np.array(deflist,dtype=np.int32)
+        else:
+            _deflist = None
+        gdtnum = gdsinfo[4]
+        if gdtnum in [0,1,2,3,40,41,42,43,44,203,205,32768,32769]:
+            self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
+        elif gdtnum == 10: # mercator
+            self.scanModeFlags = utils.int2bin(gdtmpl[15],output=list)[0:4]
+        elif gdtnum == 20: # stereographic
+            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
+        elif gdtnum == 30: # lambert conformal
+            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
+        elif gdtnum == 31: # albers equal area.
+            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
+        elif gdtnum == 90: # near-sided vertical perspective satellite projection
+            self.scanModeFlags = utils.int2bin(gdtmpl[16],output=list)[0:4]
+        elif gdtnum == 110: # azimuthal equidistant.
+            self.scanModeFlags = utils.int2bin(gdtmpl[15],output=list)[0:4]
+        elif gdtnum == 120:
+            self.scanModeFlags = utils.int2bin(gdtmpl[6],output=list)[0:4]
+        elif gdtnum == 204: # curvilinear orthogonal
+            self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
+        elif gdtnum in [1000,1100]:
+            self.scanModeFlags = utils.int2bin(gdtmpl[12],output=list)[0:4]
+        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,
+                                                   np.array(gdsinfo,dtype=np.int32),
+                                                   np.array(gdtmpl,dtype=np.int32),
+                                                   _deflist)
+        self._sections.append(3)
 
 
-    def __repr__(self):
+    def addfield(self, pdtnum, pdtmpl, drtnum, drtmpl, field, coordlist=None):
         """
+        Add a product definition, data representation, bitmap, and data sections 
+        to the `Grib2Message` (i.e. Sections 4-7).  Must be called after the grid 
+        definition section has been added (`addfield`).
+
+        Parameters
+        ----------
+
+        **`pdtnum`**: integer Product Definition Template Number - [Code Table 4.0](http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)
+
+        **`pdtmpl`**: Sequence with the data values for the specified Product Definition 
+        Template (N=pdtnum).  Each element of this integer array contains an entry (in 
+        the order specified) of Product Definition Template 4.N.
+
+        **`drtnum`**: integer Data Representation Template Number - [Code Table 5.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-0.shtml)
+
+        **`drtmpl`**: Sequence with the data values for the specified Data Representation
+        Template (N=drtnum).  Each element of this integer array contains an entry (in 
+        the order specified) of Data Representation Template 5.N.  Note that some values 
+        in this template (eg. reference values, number of bits, etc...) may be changed by the
+        data packing algorithms.  Use this to specify scaling factors and order of spatial 
+        differencing, if desired.
+
+        **`field`**: Numpy array of data points to pack.  If field is a masked array, then 
+        a bitmap is created from the mask.
+
+        **`coordlist`**: Sequence containing floating point values intended to document the 
+        vertical discretization with model data on hybrid coordinate vertical levels. Default is `None`.
         """
-        strings = []
-        keys = self.__dict__.keys()
-        for k in keys:
-            if not k.startswith('_'):
-                strings.append('%s = %s\n'%(k,self.__dict__[k]))
-        return ''.join(strings)
+        if not hasattr(self,'scanModeFlags'):
+            raise ValueError('addgrid() must be called before addfield()')
+        if self.scanModeFlags is not None:
+            if self.scanModeFlags[3]:
+                fieldsave = field.astype('f') # Casting makes a copy
+                field[1::2,:] = fieldsave[1::2,::-1]
+        fld = field.astype('f')
+        if ma.isMA(field):
+            bmap = 1 - np.ravel(field.mask.astype('i'))
+            bitmapflag  = 0
+        else:
+            bitmapflag = 255
+            bmap = None
+        if coordlist is not None:
+            crdlist = np.array(coordlist,'f')
+        else:
+            crdlist = None
+        _pdtnum = pdtnum.value if isinstance(pdtnum,Grib2Metadata) else pdtnum
+        _drtnum = drtnum.value if isinstance(drtnum,Grib2Metadata) else drtnum
+        self._msg,self._pos = g2clib.grib2_addfield(self._msg,
+                                                    _pdtnum,
+                                                    np.array(pdtmpl,dtype=np.int32),
+                                                    crdlist,
+                                                    _drtnum,
+                                                    np.array(drtmpl,dtype=np.int32),
+                                                    np.ravel(fld),
+                                                    bitmapflag,
+                                                    bmap)
+        self._sections.append(4)
+        self._sections.append(5)
+        if bmap is not None: self._sections.append(6)
+        self._sections.append(7)
+
+
+    def end(self):
+        """
+        Add end section (section 8) to the GRIB2 message. A GRIB2 message 
+        is not complete without an end section.  Once an end section is added, 
+        the GRIB2 message can be written to file.
+        """
+        self._msg, self._pos = g2clib.grib2_end(self._msg)
+        self._sections.append(8)
 
 
 class Grib2Metadata():
     """
     Class to hold GRIB2 metadata both as numeric code value as stored in
-    GRIB2 and its decoded meaning.
+    GRIB2 and its plain langauge definition.
 
     **`value : int`**
 
@@ -1305,19 +1460,19 @@ class Grib2Metadata():
 
     GRIB2 table to lookup the `value`. Default is None.
     """
-    def __init__(self,value,table=None):
+    def __init__(self, value, table=None):
         self.value = value
         self.table = table
         if self.table is None:
-            self.meaning = None
+            self.definition = None
         else:
-            self.meaning = tables.get_value_from_table(self.value,self.table)
+            self.definition = tables.get_value_from_table(self.value,self.table)
     def __call__(self):
         return self.value
     def __repr__(self):
         return '%s(%d, table = %s)' % (self.__class__.__name__,self.value,self.table)
     def __str__(self):
-        return '%d - %s' % (self.value,self.meaning)
+        return '%d - %s' % (self.value,self.definition)
     def __eq__(self,other):
         return self.value == other
     def __gt__(self,other):
@@ -1329,4 +1484,4 @@ class Grib2Metadata():
     def __le__(self,other):
         return self.value <= other
     def __contains__(self,other):
-        return other in self.meaning
+        return other in self.definition
