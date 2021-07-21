@@ -17,23 +17,17 @@ def int2bin(i,nbits=8,output=str):
     Parameters
     ----------
 
-    **`i : int`**
+    **`i`**: Integer value to convert to binary representation.
 
-    Integer value to convert to binary representation.
-
-    **`nbits : int`**
-
-    Number of bits to return.  Valid values are 8 [DEFAULT], 16,
+    **`nbits`**: Number of bits to return.  Valid values are 8 [DEFAULT], 16,
     32, and 64.
 
-    **`output : [str|int]`**
-
-    Return data as a str or int.
+    **`output`**: Return data as `str` [DEFAULT] or `list` (list of ints).
 
     Returns
     -------
 
-    A `str` or `int` binary representation of the integer value.
+    `str` or `list` (list of ints) of binary representation of the integer value.
     """
     i = int(i) if not isinstance(i,int) else i
     assert nbits in [8,16,32,64]
@@ -77,31 +71,18 @@ def getdate(year,month,day,hour,minute=None,second=None):
     """
     Build an integer date from component input.
 
-    **`year : int`**
+    **`year`**: Year in 4-digit format.
 
-    Year in 4-digit format.
+    **`month`**: Month in 2-digit format.
 
-    **`month : int`**
+    **`day`**: Day in 2-digit format.
 
-    Month in 2-digit format.
+    **`hour`**: Hour in 2-digit format.
 
-    **`day : int`**
-
-    Day in 2-digit format.
-
-    **`hour : int`**
-
-    Hour in 2-digit format.
-
-    **`minute : int, optional`**
-
-    Minute in 2-digit format. This argument is required if second is provided, otherwise
+    **`minute`**: Minute in 2-digit format. This argument is required if second is provided, otherwise
     it is optional.
 
-    **`second : int, optional`**
-
-    Second in 2-digit format [OPTIONAL].
-
+    **`second`**: Second in 2-digit format [OPTIONAL].
     """
     year_exp = 6
     month_exp = 4
@@ -149,24 +130,16 @@ def getleadtime(idsec,pdtn,pdt):
     Parameters
     ----------
 
-    **`idsec : array_like`**
+    **`idsec`**: seqeunce containing GRIB2 Identification Section (Section 1).
 
-    GRIB2 Identification Section (Section 1).
+    **`pdtn`**: GRIB2 Product Definition Template Number
 
-    **`pdtn : int`**
-
-    GRIB2 Product Definition Template Number
-
-    **`idsec : array_like`**
-
-    GRIB2 Product Definition Template (Section 4).
+    **`idsec`**: seqeunce containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
 
-    **`lt : int`**
-
-    Lead time in units of hours
+    **`lt`**: Lead time in units of hours
     """
     refdate = datetime.datetime(*idsec[5:11])
     if pdtn == 8:
@@ -202,20 +175,14 @@ def getduration(pdtn,pdt):
     Parameters
     ----------
 
-    **`pdtn : int`**
+    **`pdtn`**: GRIB2 Product Definition Template Number
 
-    GRIB2 Product Definition Template Number
-
-    **`idsec : array_like`**
-
-    GRIB2 Product Definition Template (Section 4).
+    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
 
-    **`dur : int`**
-
-    Duration time in units of hours
+    **`dur`**: Duration time in units of hours
     """
     if pdtn == 8:
         dur = pdt[26]*(tables.get_value_from_table(pdt[25],'scale_time_hours'))
@@ -242,16 +209,12 @@ def decode_mdl_wx_strings(lus):
     Parameters
     ----------
 
-    **`lus : array_like`**
-
-    GRIB2 Local Use Section containing MDL weather strings.
+    **`lus`**: GRIB2 Local Use Section containing MDL weather strings.
 
     Returns
     -------
 
-    **`list`**
-
-    List of weather strings.
+    **`list`**: List of weather strings.
     """
     assert lus[0] == 1
     # Unpack information related to the simple packing method
@@ -297,16 +260,12 @@ def decode_ndfd_wx_strings(lus):
     Parameters
     ----------
 
-    **`lus : array_like`**
-
-    GRIB2 Local Use Section containing NDFD weather strings.
+    **`lus`**: GRIB2 Local Use Section containing NDFD weather strings.
 
     Returns
     -------
 
-    **`list`**
-
-    List of NDFD weather strings.
+    **`list`**: List of NDFD weather strings.
     """
     assert lus[0] == 1
     # Unpack information related to the simple packing method
