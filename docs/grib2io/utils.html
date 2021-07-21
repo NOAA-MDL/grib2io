@@ -97,23 +97,17 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`i : int`**</span>
+<span class="sd">    **`i`**: Integer value to convert to binary representation.</span>
 
-<span class="sd">    Integer value to convert to binary representation.</span>
-
-<span class="sd">    **`nbits : int`**</span>
-
-<span class="sd">    Number of bits to return.  Valid values are 8 [DEFAULT], 16,</span>
+<span class="sd">    **`nbits`**: Number of bits to return.  Valid values are 8 [DEFAULT], 16,</span>
 <span class="sd">    32, and 64.</span>
 
-<span class="sd">    **`output : [str|int]`**</span>
-
-<span class="sd">    Return data as a str or int.</span>
+<span class="sd">    **`output`**: Return data as `str` [DEFAULT] or `list` (list of ints).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    A `str` or `int` binary representation of the integer value.</span>
+<span class="sd">    `str` or `list` (list of ints) of binary representation of the integer value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">i</span>
     <span class="k">assert</span> <span class="n">nbits</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">]</span>
@@ -157,31 +151,18 @@ of GRIB2 Messages.</p>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build an integer date from component input.</span>
 
-<span class="sd">    **`year : int`**</span>
+<span class="sd">    **`year`**: Year in 4-digit format.</span>
 
-<span class="sd">    Year in 4-digit format.</span>
+<span class="sd">    **`month`**: Month in 2-digit format.</span>
 
-<span class="sd">    **`month : int`**</span>
+<span class="sd">    **`day`**: Day in 2-digit format.</span>
 
-<span class="sd">    Month in 2-digit format.</span>
+<span class="sd">    **`hour`**: Hour in 2-digit format.</span>
 
-<span class="sd">    **`day : int`**</span>
-
-<span class="sd">    Day in 2-digit format.</span>
-
-<span class="sd">    **`hour : int`**</span>
-
-<span class="sd">    Hour in 2-digit format.</span>
-
-<span class="sd">    **`minute : int, optional`**</span>
-
-<span class="sd">    Minute in 2-digit format. This argument is required if second is provided, otherwise</span>
+<span class="sd">    **`minute`**: Minute in 2-digit format. This argument is required if second is provided, otherwise</span>
 <span class="sd">    it is optional.</span>
 
-<span class="sd">    **`second : int, optional`**</span>
-
-<span class="sd">    Second in 2-digit format [OPTIONAL].</span>
-
+<span class="sd">    **`second`**: Second in 2-digit format [OPTIONAL].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">year_exp</span> <span class="o">=</span> <span class="mi">6</span>
     <span class="n">month_exp</span> <span class="o">=</span> <span class="mi">4</span>
@@ -229,24 +210,16 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`idsec : array_like`**</span>
+<span class="sd">    **`idsec`**: seqeunce containing GRIB2 Identification Section (Section 1).</span>
 
-<span class="sd">    GRIB2 Identification Section (Section 1).</span>
+<span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 
-<span class="sd">    **`pdtn : int`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template Number</span>
-
-<span class="sd">    **`idsec : array_like`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+<span class="sd">    **`idsec`**: seqeunce containing GRIB2 Product Definition Template (Section 4).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`lt : int`**</span>
-
-<span class="sd">    Lead time in units of hours</span>
+<span class="sd">    **`lt`**: Lead time in units of hours</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">refdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">idsec</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">11</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
@@ -282,20 +255,14 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`pdtn : int`**</span>
+<span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 
-<span class="sd">    GRIB2 Product Definition Template Number</span>
-
-<span class="sd">    **`idsec : array_like`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+<span class="sd">    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`dur : int`**</span>
-
-<span class="sd">    Duration time in units of hours</span>
+<span class="sd">    **`dur`**: Duration time in units of hours</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
         <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
@@ -322,16 +289,12 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`lus : array_like`**</span>
-
-<span class="sd">    GRIB2 Local Use Section containing MDL weather strings.</span>
+<span class="sd">    **`lus`**: GRIB2 Local Use Section containing MDL weather strings.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`**</span>
-
-<span class="sd">    List of weather strings.</span>
+<span class="sd">    **`list`**: List of weather strings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="c1"># Unpack information related to the simple packing method</span>
@@ -377,16 +340,12 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`lus : array_like`**</span>
-
-<span class="sd">    GRIB2 Local Use Section containing NDFD weather strings.</span>
+<span class="sd">    **`lus`**: GRIB2 Local Use Section containing NDFD weather strings.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`**</span>
-
-<span class="sd">    List of NDFD weather strings.</span>
+<span class="sd">    **`list`**: List of NDFD weather strings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="c1"># Unpack information related to the simple packing method</span>
@@ -445,23 +404,17 @@ of GRIB2 Messages.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`i : int`**</span>
+<span class="sd">    **`i`**: Integer value to convert to binary representation.</span>
 
-<span class="sd">    Integer value to convert to binary representation.</span>
-
-<span class="sd">    **`nbits : int`**</span>
-
-<span class="sd">    Number of bits to return.  Valid values are 8 [DEFAULT], 16,</span>
+<span class="sd">    **`nbits`**: Number of bits to return.  Valid values are 8 [DEFAULT], 16,</span>
 <span class="sd">    32, and 64.</span>
 
-<span class="sd">    **`output : [str|int]`**</span>
-
-<span class="sd">    Return data as a str or int.</span>
+<span class="sd">    **`output`**: Return data as `str` [DEFAULT] or `list` (list of ints).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    A `str` or `int` binary representation of the integer value.</span>
+<span class="sd">    `str` or `list` (list of ints) of binary representation of the integer value.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">i</span>
     <span class="k">assert</span> <span class="n">nbits</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">8</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">64</span><span class="p">]</span>
@@ -478,22 +431,16 @@ of GRIB2 Messages.</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>i : int</code></strong></p>
+<p><strong><code>i</code></strong>: Integer value to convert to binary representation.</p>
 
-<p>Integer value to convert to binary representation.</p>
-
-<p><strong><code>nbits : int</code></strong></p>
-
-<p>Number of bits to return.  Valid values are 8 [DEFAULT], 16,
+<p><strong><code>nbits</code></strong>: Number of bits to return.  Valid values are 8 [DEFAULT], 16,
 32, and 64.</p>
 
-<p><strong><code>output : [str|int]</code></strong></p>
-
-<p>Return data as a str or int.</p>
+<p><strong><code>output</code></strong>: Return data as <code>str</code> [DEFAULT] or <code>list</code> (list of ints).</p>
 
 <h2 id="returns">Returns</h2>
 
-<p>A <code>str</code> or <code>int</code> binary representation of the integer value.</p>
+<p><code>str</code> or <code>list</code> (list of ints) of binary representation of the integer value.</p>
 </div>
 
 
@@ -592,31 +539,18 @@ of GRIB2 Messages.</p>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Build an integer date from component input.</span>
 
-<span class="sd">    **`year : int`**</span>
+<span class="sd">    **`year`**: Year in 4-digit format.</span>
 
-<span class="sd">    Year in 4-digit format.</span>
+<span class="sd">    **`month`**: Month in 2-digit format.</span>
 
-<span class="sd">    **`month : int`**</span>
+<span class="sd">    **`day`**: Day in 2-digit format.</span>
 
-<span class="sd">    Month in 2-digit format.</span>
+<span class="sd">    **`hour`**: Hour in 2-digit format.</span>
 
-<span class="sd">    **`day : int`**</span>
-
-<span class="sd">    Day in 2-digit format.</span>
-
-<span class="sd">    **`hour : int`**</span>
-
-<span class="sd">    Hour in 2-digit format.</span>
-
-<span class="sd">    **`minute : int, optional`**</span>
-
-<span class="sd">    Minute in 2-digit format. This argument is required if second is provided, otherwise</span>
+<span class="sd">    **`minute`**: Minute in 2-digit format. This argument is required if second is provided, otherwise</span>
 <span class="sd">    it is optional.</span>
 
-<span class="sd">    **`second : int, optional`**</span>
-
-<span class="sd">    Second in 2-digit format [OPTIONAL].</span>
-
+<span class="sd">    **`second`**: Second in 2-digit format [OPTIONAL].</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">year_exp</span> <span class="o">=</span> <span class="mi">6</span>
     <span class="n">month_exp</span> <span class="o">=</span> <span class="mi">4</span>
@@ -659,30 +593,18 @@ of GRIB2 Messages.</p>
 
             <div class="docstring"><p>Build an integer date from component input.</p>
 
-<p><strong><code>year : int</code></strong></p>
+<p><strong><code>year</code></strong>: Year in 4-digit format.</p>
 
-<p>Year in 4-digit format.</p>
+<p><strong><code>month</code></strong>: Month in 2-digit format.</p>
 
-<p><strong><code>month : int</code></strong></p>
+<p><strong><code>day</code></strong>: Day in 2-digit format.</p>
 
-<p>Month in 2-digit format.</p>
+<p><strong><code>hour</code></strong>: Hour in 2-digit format.</p>
 
-<p><strong><code>day : int</code></strong></p>
-
-<p>Day in 2-digit format.</p>
-
-<p><strong><code>hour : int</code></strong></p>
-
-<p>Hour in 2-digit format.</p>
-
-<p><strong><code>minute : int, optional</code></strong></p>
-
-<p>Minute in 2-digit format. This argument is required if second is provided, otherwise
+<p><strong><code>minute</code></strong>: Minute in 2-digit format. This argument is required if second is provided, otherwise
 it is optional.</p>
 
-<p><strong><code>second : int, optional</code></strong></p>
-
-<p>Second in 2-digit format [OPTIONAL].</p>
+<p><strong><code>second</code></strong>: Second in 2-digit format [OPTIONAL].</p>
 </div>
 
 
@@ -706,24 +628,16 @@ it is optional.</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`idsec : array_like`**</span>
+<span class="sd">    **`idsec`**: seqeunce containing GRIB2 Identification Section (Section 1).</span>
 
-<span class="sd">    GRIB2 Identification Section (Section 1).</span>
+<span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 
-<span class="sd">    **`pdtn : int`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template Number</span>
-
-<span class="sd">    **`idsec : array_like`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+<span class="sd">    **`idsec`**: seqeunce containing GRIB2 Product Definition Template (Section 4).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`lt : int`**</span>
-
-<span class="sd">    Lead time in units of hours</span>
+<span class="sd">    **`lt`**: Lead time in units of hours</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">refdate</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="o">*</span><span class="n">idsec</span><span class="p">[</span><span class="mi">5</span><span class="p">:</span><span class="mi">11</span><span class="p">])</span>
     <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
@@ -759,23 +673,15 @@ Number, and Product Definition Template (Section 4).</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>idsec : array_like</code></strong></p>
+<p><strong><code>idsec</code></strong>: seqeunce containing GRIB2 Identification Section (Section 1).</p>
 
-<p>GRIB2 Identification Section (Section 1).</p>
+<p><strong><code>pdtn</code></strong>: GRIB2 Product Definition Template Number</p>
 
-<p><strong><code>pdtn : int</code></strong></p>
-
-<p>GRIB2 Product Definition Template Number</p>
-
-<p><strong><code>idsec : array_like</code></strong></p>
-
-<p>GRIB2 Product Definition Template (Section 4).</p>
+<p><strong><code>idsec</code></strong>: seqeunce containing GRIB2 Product Definition Template (Section 4).</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>lt : int</code></strong></p>
-
-<p>Lead time in units of hours</p>
+<p><strong><code>lt</code></strong>: Lead time in units of hours</p>
 </div>
 
 
@@ -798,20 +704,14 @@ Number, and Product Definition Template (Section 4).</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`pdtn : int`**</span>
+<span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 
-<span class="sd">    GRIB2 Product Definition Template Number</span>
-
-<span class="sd">    **`idsec : array_like`**</span>
-
-<span class="sd">    GRIB2 Product Definition Template (Section 4).</span>
+<span class="sd">    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`dur : int`**</span>
-
-<span class="sd">    Duration time in units of hours</span>
+<span class="sd">    **`dur`**: Duration time in units of hours</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">8</span><span class="p">:</span>
         <span class="n">dur</span> <span class="o">=</span> <span class="n">pdt</span><span class="p">[</span><span class="mi">26</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="n">pdt</span><span class="p">[</span><span class="mi">25</span><span class="p">],</span><span class="s1">&#39;scale_time_hours&#39;</span><span class="p">))</span>
@@ -835,19 +735,13 @@ Product Definition Template Number, and Product Definition Template (Section 4).
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>pdtn : int</code></strong></p>
+<p><strong><code>pdtn</code></strong>: GRIB2 Product Definition Template Number</p>
 
-<p>GRIB2 Product Definition Template Number</p>
-
-<p><strong><code>idsec : array_like</code></strong></p>
-
-<p>GRIB2 Product Definition Template (Section 4).</p>
+<p><strong><code>pdt</code></strong>: sequence containing GRIB2 Product Definition Template (Section 4).</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>dur : int</code></strong></p>
-
-<p>Duration time in units of hours</p>
+<p><strong><code>dur</code></strong>: Duration time in units of hours</p>
 </div>
 
 
@@ -872,16 +766,12 @@ Product Definition Template Number, and Product Definition Template (Section 4).
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`lus : array_like`**</span>
-
-<span class="sd">    GRIB2 Local Use Section containing MDL weather strings.</span>
+<span class="sd">    **`lus`**: GRIB2 Local Use Section containing MDL weather strings.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`**</span>
-
-<span class="sd">    List of weather strings.</span>
+<span class="sd">    **`list`**: List of weather strings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="c1"># Unpack information related to the simple packing method</span>
@@ -922,15 +812,11 @@ decode procedure is defined here:</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>lus : array_like</code></strong></p>
-
-<p>GRIB2 Local Use Section containing MDL weather strings.</p>
+<p><strong><code>lus</code></strong>: GRIB2 Local Use Section containing MDL weather strings.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>list</code></strong></p>
-
-<p>List of weather strings.</p>
+<p><strong><code>list</code></strong>: List of weather strings.</p>
 </div>
 
 
@@ -959,16 +845,12 @@ decode procedure is defined here:</p>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`lus : array_like`**</span>
-
-<span class="sd">    GRIB2 Local Use Section containing NDFD weather strings.</span>
+<span class="sd">    **`lus`**: GRIB2 Local Use Section containing NDFD weather strings.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`**</span>
-
-<span class="sd">    List of NDFD weather strings.</span>
+<span class="sd">    **`list`**: List of NDFD weather strings.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="n">lus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span>
     <span class="c1"># Unpack information related to the simple packing method</span>
@@ -1020,15 +902,11 @@ decode procedure is defined here:</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>lus : array_like</code></strong></p>
-
-<p>GRIB2 Local Use Section containing NDFD weather strings.</p>
+<p><strong><code>lus</code></strong>: GRIB2 Local Use Section containing NDFD weather strings.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>list</code></strong></p>
-
-<p>List of NDFD weather strings.</p>
+<p><strong><code>list</code></strong>: List of NDFD weather strings.</p>
 </div>
 
 

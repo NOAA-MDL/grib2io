@@ -52,7 +52,7 @@
                     <a class="function" href="#get_value_from_table">get_value_from_table</a>
             </li>
             <li>
-                    <a class="function" href="#get_varname_from_table">get_varname_from_table</a>
+                    <a class="function" href="#get_varinfo_from_table">get_varinfo_from_table</a>
             </li>
     </ul>
 
@@ -79,21 +79,17 @@
 <span class="kn">from</span> <span class="nn">.section5</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.originating_centers</span> <span class="kn">import</span> <span class="o">*</span>
 
-<span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return GRIB2 code table as a dictionary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`table : str`**</span>
+<span class="sd">    **`table`**: Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value </span>
+<span class="sd">    representing the product discipline (e.g. &#39;4.1.0&#39;).</span>
 
-<span class="sd">    Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value representing</span>
-<span class="sd">    the product discipline (e.g. &#39;4.1.0&#39;).</span>
-
-<span class="sd">    **`expand : bool`**</span>
-
-<span class="sd">    When **`True`**, expand output dictionary where keys are a range. Default is **`false`**</span>
+<span class="sd">    **`expand`**: If `True`, expand output dictionary where keys are a range.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -121,25 +117,21 @@
         <span class="k">return</span> <span class="p">{}</span>
 
 
-<span class="k">def</span> <span class="nf">get_value_from_table</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_value_from_table</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the meaning/definition given a GRIB2 code table `value` and `table`.</span>
+<span class="sd">    Return the definition given a GRIB2 code table.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`value : str`**</span>
+<span class="sd">    **`value`**: `int` or `str` code table value.</span>
 
-<span class="sd">    Code table value.  Function will convert integer to string.  Example: &#39;5&#39;</span>
-
-<span class="sd">    **`table : str`**</span>
-
-<span class="sd">    Code table number.  Example: &#39;1.0&#39;</span>
+<span class="sd">    **`table`**: `str` code table number.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`str` or `list`**</span>
+<span class="sd">    Table value or `None` if not found.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">tbl</span> <span class="o">=</span> <span class="n">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -149,33 +141,29 @@
         <span class="k">return</span> <span class="kc">None</span>
 
 
-<span class="k">def</span> <span class="nf">get_varname_from_table</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="n">parmcat</span><span class="p">,</span><span class="n">parmnum</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">get_varinfo_from_table</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="n">parmcat</span><span class="p">,</span><span class="n">parmnum</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the GRIB2 variable name information given values of `discipline`,</span>
+<span class="sd">    Return the GRIB2 variable information given values of `discipline`,</span>
 <span class="sd">    `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments</span>
 <span class="sd">    to be converted to a string type if arguments are integer.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`discipline : str`**</span>
+<span class="sd">    **`discipline`**: `int` or `str` of Discipline code value of a GRIB2 message.</span>
 
-<span class="sd">    Discipline code value of a GRIB2 message.</span>
+<span class="sd">    **`parmcat`**: `int` or `str` of Parameter Category value of a GRIB2 message.</span>
 
-<span class="sd">    **`parmcat : str`**</span>
-
-<span class="sd">    Parameter Category value of a GRIB2 message.</span>
-
-<span class="sd">    **`parmnum : str`**</span>
-
-<span class="sd">    Parameter Number value of a GRIB2 message.</span>
+<span class="sd">    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`** </span>
-
-<span class="sd">    In order, variable full name, units, and short (abbreviated) name</span>
+<span class="sd">    **`list`**: containing variable information. &quot;Unknown&quot; is given for item of</span>
+<span class="sd">    information if variable is not found.</span>
+<span class="sd">    - list[0] = full name</span>
+<span class="sd">    - list[1] = units</span>
+<span class="sd">    - list[2] = short name (abbreviated name)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">discipline</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmcat</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmcat</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmcat</span><span class="p">)</span>
@@ -202,21 +190,17 @@
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Return GRIB2 code table as a dictionary.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`table : str`**</span>
+<span class="sd">    **`table`**: Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value </span>
+<span class="sd">    representing the product discipline (e.g. &#39;4.1.0&#39;).</span>
 
-<span class="sd">    Code table number (e.g. &#39;1.0&#39;). NOTE: Code table &#39;4.1&#39; requires a 3rd value representing</span>
-<span class="sd">    the product discipline (e.g. &#39;4.1.0&#39;).</span>
-
-<span class="sd">    **`expand : bool`**</span>
-
-<span class="sd">    When **`True`**, expand output dictionary where keys are a range. Default is **`false`**</span>
+<span class="sd">    **`expand`**: If `True`, expand output dictionary where keys are a range.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
@@ -250,14 +234,10 @@
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>table : str</code></strong></p>
+<p><strong><code>table</code></strong>: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value 
+representing the product discipline (e.g. '4.1.0').</p>
 
-<p>Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value representing
-the product discipline (e.g. '4.1.0').</p>
-
-<p><strong><code>expand : bool</code></strong></p>
-
-<p>When <strong><code>True</code></strong>, expand output dictionary where keys are a range. Default is <strong><code>false</code></strong></p>
+<p><strong><code>expand</code></strong>: If <code>True</code>, expand output dictionary where keys are a range.</p>
 
 <h2 id="returns">Returns</h2>
 
@@ -276,25 +256,21 @@ the product discipline (e.g. '4.1.0').</p>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_value_from_table</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="n">table</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_value_from_table</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the meaning/definition given a GRIB2 code table `value` and `table`.</span>
+<span class="sd">    Return the definition given a GRIB2 code table.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`value : str`**</span>
+<span class="sd">    **`value`**: `int` or `str` code table value.</span>
 
-<span class="sd">    Code table value.  Function will convert integer to string.  Example: &#39;5&#39;</span>
-
-<span class="sd">    **`table : str`**</span>
-
-<span class="sd">    Code table number.  Example: &#39;1.0&#39;</span>
+<span class="sd">    **`table`**: `str` code table number.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`str` or `list`**</span>
+<span class="sd">    Table value or `None` if not found.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">tbl</span> <span class="o">=</span> <span class="n">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span><span class="n">expand</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -306,62 +282,54 @@ the product discipline (e.g. '4.1.0').</p>
 
         </details>
 
-            <div class="docstring"><p>Return the meaning/definition given a GRIB2 code table <code>value</code> and <code>table</code>.</p>
+            <div class="docstring"><p>Return the definition given a GRIB2 code table.</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>value : str</code></strong></p>
+<p><strong><code>value</code></strong>: <code>int</code> or <code>str</code> code table value.</p>
 
-<p>Code table value.  Function will convert integer to string.  Example: '5'</p>
-
-<p><strong><code>table : str</code></strong></p>
-
-<p>Code table number.  Example: '1.0'</p>
+<p><strong><code>table</code></strong>: <code>str</code> code table number.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>str</code> or <code>list</code></strong></p>
+<p>Table value or <code>None</code> if not found.</p>
 </div>
 
 
                 </section>
-                <section id="get_varname_from_table">
-                            <div class="attr function"><a class="headerlink" href="#get_varname_from_table">#&nbsp;&nbsp</a>
+                <section id="get_varinfo_from_table">
+                            <div class="attr function"><a class="headerlink" href="#get_varinfo_from_table">#&nbsp;&nbsp</a>
 
         
             <span class="def">def</span>
-            <span class="name">get_varname_from_table</span><span class="signature">(discipline, parmcat, parmnum)</span>:
+            <span class="name">get_varinfo_from_table</span><span class="signature">(discipline, parmcat, parmnum)</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_varname_from_table</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="n">parmcat</span><span class="p">,</span><span class="n">parmnum</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_varinfo_from_table</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="n">parmcat</span><span class="p">,</span><span class="n">parmnum</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Return the GRIB2 variable name information given values of `discipline`,</span>
+<span class="sd">    Return the GRIB2 variable information given values of `discipline`,</span>
 <span class="sd">    `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments</span>
 <span class="sd">    to be converted to a string type if arguments are integer.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 
-<span class="sd">    **`discipline : str`**</span>
+<span class="sd">    **`discipline`**: `int` or `str` of Discipline code value of a GRIB2 message.</span>
 
-<span class="sd">    Discipline code value of a GRIB2 message.</span>
+<span class="sd">    **`parmcat`**: `int` or `str` of Parameter Category value of a GRIB2 message.</span>
 
-<span class="sd">    **`parmcat : str`**</span>
-
-<span class="sd">    Parameter Category value of a GRIB2 message.</span>
-
-<span class="sd">    **`parmnum : str`**</span>
-
-<span class="sd">    Parameter Number value of a GRIB2 message.</span>
+<span class="sd">    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`list`** </span>
-
-<span class="sd">    In order, variable full name, units, and short (abbreviated) name</span>
+<span class="sd">    **`list`**: containing variable information. &quot;Unknown&quot; is given for item of</span>
+<span class="sd">    information if variable is not found.</span>
+<span class="sd">    - list[0] = full name</span>
+<span class="sd">    - list[1] = units</span>
+<span class="sd">    - list[2] = short name (abbreviated name)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">discipline</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">discipline</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">discipline</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">parmcat</span><span class="p">,</span><span class="nb">int</span><span class="p">):</span> <span class="n">parmcat</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">parmcat</span><span class="p">)</span>
@@ -377,29 +345,28 @@ the product discipline (e.g. '4.1.0').</p>
 
         </details>
 
-            <div class="docstring"><p>Return the GRIB2 variable name information given values of <code>discipline</code>,
+            <div class="docstring"><p>Return the GRIB2 variable information given values of <code>discipline</code>,
 <code>parmcat</code>, and <code>parmnum</code>. NOTE: This functions allows for all arguments
 to be converted to a string type if arguments are integer.</p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>discipline : str</code></strong></p>
+<p><strong><code>discipline</code></strong>: <code>int</code> or <code>str</code> of Discipline code value of a GRIB2 message.</p>
 
-<p>Discipline code value of a GRIB2 message.</p>
+<p><strong><code>parmcat</code></strong>: <code>int</code> or <code>str</code> of Parameter Category value of a GRIB2 message.</p>
 
-<p><strong><code>parmcat : str</code></strong></p>
-
-<p>Parameter Category value of a GRIB2 message.</p>
-
-<p><strong><code>parmnum : str</code></strong></p>
-
-<p>Parameter Number value of a GRIB2 message.</p>
+<p><strong><code>parmnum</code></strong>: <code>int</code> or <code>str</code> of Parameter Number value of a GRIB2 message.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>list</code></strong> </p>
+<p><strong><code>list</code></strong>: containing variable information. "Unknown" is given for item of
+information if variable is not found.</p>
 
-<p>In order, variable full name, units, and short (abbreviated) name</p>
+<ul>
+<li>list[0] = full name</li>
+<li>list[1] = units</li>
+<li>list[2] = short name (abbreviated name)</li>
+</ul>
 </div>
 
 
