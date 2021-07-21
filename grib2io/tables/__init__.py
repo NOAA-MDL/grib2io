@@ -5,21 +5,17 @@ from .section4 import *
 from .section5 import *
 from .originating_centers import *
 
-def get_table(table,expand=False):
+def get_table(table, expand=False):
     """
     Return GRIB2 code table as a dictionary.
 
     Parameters
     ----------
 
-    **`table : str`**
+    **`table`**: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value 
+    representing the product discipline (e.g. '4.1.0').
 
-    Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value representing
-    the product discipline (e.g. '4.1.0').
-
-    **`expand : bool`**
-
-    When **`True`**, expand output dictionary where keys are a range. Default is **`false`**
+    **`expand`**: If `True`, expand output dictionary where keys are a range.
 
     Returns
     -------
@@ -47,25 +43,21 @@ def get_table(table,expand=False):
         return {}
 
 
-def get_value_from_table(value,table):
+def get_value_from_table(value, table):
     """
-    Return the meaning/definition given a GRIB2 code table `value` and `table`.
+    Return the definition given a GRIB2 code table.
 
     Parameters
     ----------
 
-    **`value : str`**
+    **`value`**: `int` or `str` code table value.
 
-    Code table value.  Function will convert integer to string.  Example: '5'
-
-    **`table : str`**
-
-    Code table number.  Example: '1.0'
+    **`table`**: `str` code table number.
 
     Returns
     -------
 
-    **`str` or `list`**
+    Table value or `None` if not found.
     """
     try:
         tbl = get_table(table,expand=True)
@@ -75,33 +67,29 @@ def get_value_from_table(value,table):
         return None
 
 
-def get_varname_from_table(discipline,parmcat,parmnum):
+def get_varinfo_from_table(discipline,parmcat,parmnum):
     """
-    Return the GRIB2 variable name information given values of `discipline`,
+    Return the GRIB2 variable information given values of `discipline`,
     `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments
     to be converted to a string type if arguments are integer.
 
     Parameters
     ----------
 
-    **`discipline : str`**
+    **`discipline`**: `int` or `str` of Discipline code value of a GRIB2 message.
 
-    Discipline code value of a GRIB2 message.
+    **`parmcat`**: `int` or `str` of Parameter Category value of a GRIB2 message.
 
-    **`parmcat : str`**
-
-    Parameter Category value of a GRIB2 message.
-
-    **`parmnum : str`**
-
-    Parameter Number value of a GRIB2 message.
+    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.
 
     Returns
     -------
 
-    **`list`** 
-
-    In order, variable full name, units, and short (abbreviated) name
+    **`list`**: containing variable information. "Unknown" is given for item of
+    information if variable is not found.
+    - list[0] = full name
+    - list[1] = units
+    - list[2] = short name (abbreviated name)
     """
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
