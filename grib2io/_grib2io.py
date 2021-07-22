@@ -539,10 +539,16 @@ class Grib2Message:
         """
         """
         strings = []
-        keys = self.__dict__.keys()
-        for k in keys:
-            if not k.startswith('_'):
-                strings.append('%s = %s\n'%(k,self.__dict__[k]))
+        for k,v in self.__dict__.items():
+            if k.startswith('_'): continue
+            if isinstance(v,str):
+                strings.append('%s = \'%s\'\n'%(k,v))
+            elif isinstance(v,int):
+                strings.append('%s = %d\n'%(k,v))
+            elif isinstance(v,float):
+                strings.append('%s = %f\n'%(k,v))
+            else:
+                strings.append('%s = %s\n'%(k,v))
         return ''.join(strings)
 
 
