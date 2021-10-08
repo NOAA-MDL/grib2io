@@ -1453,6 +1453,18 @@ class Grib2Message:
         self._sections.append(8)
 
 
+    def to_bytes(self):
+        """
+        Return grib data in byte format. Useful for exporting data in non-file formats.
+        For example, can be used to output grib data directly to S3 using the boto3 client
+        without the need to write a temporary file to upload first.
+
+        Returns
+        -------
+        Returns GRIB2 formatted message as bytes.
+        """
+        return self._msg
+
 class Grib2Metadata():
     """
     Class to hold GRIB2 metadata both as numeric code value as stored in
