@@ -97,7 +97,7 @@ class open():
         """
         self.close()
         del self._index
-        
+
 
     def __enter__(self):
         """
@@ -222,13 +222,13 @@ class open():
                             secnum = struct.unpack('>B',self._filehandle.read(1))[0]
                             if secnum == num:
                                 if secnum == 3:
-                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
                                     # Unpack Section 3
                                     _gds,_gdtn,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
                                 elif secnum == 4:
-                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
                                     # Unpack Section 4
@@ -236,7 +236,7 @@ class open():
                                     _pdt = _pdt.tolist()
                                     _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1])
                                 elif secnum == 6:
-                                    self._filehandle.seek(self._filehandle.tell()-5) 
+                                    self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
                                     # Unpack Section 6. Save bitmap
@@ -379,7 +379,7 @@ class open():
                                          source=self,
                                          num=self._index['messageNumber'][n],
                                          decode=self.decode))
-                self.current_message += 1 
+                self.current_message += 1
         return msgs
 
 
@@ -552,7 +552,7 @@ class Grib2Message:
         return ''.join(strings)
 
 
-    def unpack(self): 
+    def unpack(self):
         """
         Unpacks GRIB2 section data from the packed, binary message.
         """
@@ -636,7 +636,7 @@ class Grib2Message:
                 self.bitMapFlag = _bmapflag
                 if self.bitMapFlag == 0:
                     self.bitMap = _bmap
-                elif self.bitMapFlag == 254: 
+                elif self.bitMapFlag == 254:
                     # Value of 254 says to use a previous bitmap in the file.
                     self.bitMapFlag = 0
                     if isinstance(self._source,open):
@@ -652,7 +652,7 @@ class Grib2Message:
                 self._sections.append(7)
             else:
                 errmsg = 'Unknown section number = %i' % sectnum
-                raise ValueError(errmsg) 
+                raise ValueError(errmsg)
         if self._decode: self.decode()
 
     def decode(self):
@@ -899,7 +899,7 @@ class Grib2Message:
         elif self.productDefinitionTemplateNumber == 6:
             self.percentileValue = self.productDefinitionTemplate[15]
         elif self.productDefinitionTemplateNumber == 8:
-            
+
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
             self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
             self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
@@ -1017,7 +1017,7 @@ class Grib2Message:
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
             self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
@@ -1035,7 +1035,7 @@ class Grib2Message:
             self.typeOfValues = tables.get_value_from_table(self.dataRepresentationTemplate[4],'5.1')
             self.groupSplitMethod = tables.get_value_from_table(self.dataRepresentationTemplate[5],'5.4')
             self.typeOfMissingValue = tables.get_value_from_table(self.dataRepresentationTemplate[6],'5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None 
+            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
             self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
@@ -1104,8 +1104,8 @@ class Grib2Message:
             else:
                 storageorder='C'
         if order is None:
-            if (self.dataRepresentationTemplateNumber in [2,3] and 
-                self.dataRepresentationTemplate[6] != 0) or self.bitMapFlag == 0: 
+            if (self.dataRepresentationTemplateNumber in [2,3] and
+                self.dataRepresentationTemplate[6] != 0) or self.bitMapFlag == 0:
                 order = 0
             else:
                 order = 1
@@ -1179,7 +1179,7 @@ class Grib2Message:
                 for n,k in enumerate(keys):
                     fld = np.where(fld==str(n+1),k,fld)
             else:
-                
+
                 tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
                 for k,v in tables.get_table(tbl).items():
                     fld = np.where(fld==k,v,fld)
@@ -1452,18 +1452,29 @@ class Grib2Message:
         self._msg, self._pos = g2clib.grib2_end(self._msg)
         self._sections.append(8)
 
-
-    def to_bytes(self):
+    def to_bytes(self, validate=True):
         """
         Return grib data in byte format. Useful for exporting data in non-file formats.
         For example, can be used to output grib data directly to S3 using the boto3 client
         without the need to write a temporary file to upload first.
 
+        Parameters
+        ----------
+        **`validate`**: bool (Default: True) If true, validates first/last four bytes for proper formatting, else
+        returns None. If False, message is output as is.
+
         Returns
         -------
         Returns GRIB2 formatted message as bytes.
         """
-        return self._msg
+        if validate:
+            if str(self._msg[0:4] + self._msg[-4:], 'utf-8') == 'GRIB7777':
+                return self._msg
+            else:
+                return None
+        else:
+            return self._msg
+
 
 class Grib2Metadata():
     """
