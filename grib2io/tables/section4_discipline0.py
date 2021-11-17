@@ -45,6 +45,7 @@ table_4_2_0_0  = {
 '203':['Potential Temperature at Top of Viscous Sublayer','K','THZ0'],
 '204':['Tropical Cyclone Heat Potential','Jm-2K','TCHP'],
 '205':['Effective Layer (EL) Temperature','C','ELMELT'],
+'206':['Wet Bulb Globe Temperature','K','WETGLBT'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_0_1  = {
