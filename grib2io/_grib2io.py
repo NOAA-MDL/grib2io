@@ -5,8 +5,8 @@ Introduction
 grib2io is a Python package that provides an interface to the [NCEP GRIB2 C (g2c)](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 
 library for the purpose of reading and writing GRIB2 Messages.  WMO GRIdded Binary, Edition 2 (GRIB2) files store 2-D meteorological
 data. A physical file can contain one or more GRIB2 messages.  File IO is handled in Python returning
-a binary string of the GRIB2 message which is then passed to the g2c library for decoding or GRIB2 metadata
-and unpacking of data.
+a binary string of the GRIB2 message which is then passed to the g2c library for decoding of GRIB2 metadata
+and unpacking of data values.
 """
 __version__ = '0.8.0'
 
