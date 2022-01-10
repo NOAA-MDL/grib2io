@@ -330,9 +330,9 @@ class open():
         elif any(re.findall(r'm|meter', level, re.IGNORECASE)):
             # Specified Height Level Above (GRIB ID = 103) or Below Ground (GRIB ID = 106) Level
             sfctypeid = 103
-            if any(re.findall(r'above ground', level, re.IGNORECASE)):
+            if any(re.findall(r'above ground|agl', level, re.IGNORECASE)):
                 sfctypeid = 103
-            if any(re.findall(r'below ground', level, re.IGNORECASE)):
+            if any(re.findall(r'below ground|bgl', level, re.IGNORECASE)):
                 sfcid = 106
             idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
             val = float(re.sub("[^\d\.]", "",level))
@@ -426,7 +426,9 @@ class open():
 
         **`leadTime : int`**
 
-        **`level : str`**
+        **`level : str`** string of value and units of the level of interest. For pressure level, use either:
+        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`
+        with optional `above ground` or `agl` [DEFAULT] or `below ground" or `bgl`.
 
         **`refDate : int`**
 
@@ -1179,7 +1181,7 @@ class Grib2Message:
                 for n,k in enumerate(keys):
                     fld = np.where(fld==str(n+1),k,fld)
             else:
-
+                # For data whose units are defined in a code table
                 tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
                 for k,v in tables.get_table(tbl).items():
                     fld = np.where(fld==k,v,fld)
