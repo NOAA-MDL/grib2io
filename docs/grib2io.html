@@ -133,8 +133,8 @@ grib2io    </h1>
 <p>grib2io is a Python package that provides an interface to the <a href="https://github.com/NOAA-EMC/NCEPLIBS-g2c">NCEP GRIB2 C (g2c)</a> 
 library for the purpose of reading and writing GRIB2 Messages.  WMO GRIdded Binary, Edition 2 (GRIB2) files store 2-D meteorological
 data. A physical file can contain one or more GRIB2 messages.  File IO is handled in Python returning
-a binary string of the GRIB2 message which is then passed to the g2c library for decoding or GRIB2 metadata
-and unpacking of data.</p>
+a binary string of the GRIB2 message which is then passed to the g2c library for decoding of GRIB2 metadata
+and unpacking of data values.</p>
 </div>
 
                         <details>
@@ -454,9 +454,9 @@ and unpacking of data.</p>
         <span class="k">elif</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;m|meter&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
             <span class="c1"># Specified Height Level Above (GRIB ID = 103) or Below Ground (GRIB ID = 106) Level</span>
             <span class="n">sfctypeid</span> <span class="o">=</span> <span class="mi">103</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;above ground&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;above ground|agl&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
                 <span class="n">sfctypeid</span> <span class="o">=</span> <span class="mi">103</span>
-            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;below ground&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;below ground|bgl&#39;</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)):</span>
                 <span class="n">sfcid</span> <span class="o">=</span> <span class="mi">106</span>
             <span class="n">idx_type</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span><span class="p">[</span><span class="s1">&#39;productDefinitionTemplate&#39;</span><span class="p">]])</span><span class="o">==</span><span class="n">sfctypeid</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;[^\d\.]&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span><span class="n">level</span><span class="p">))</span>
@@ -550,7 +550,9 @@ and unpacking of data.</p>
 
 <span class="sd">        **`leadTime : int`**</span>
 
-<span class="sd">        **`level : str`**</span>
+<span class="sd">        **`level : str`** string of value and units of the level of interest. For pressure level, use either:</span>
+<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`</span>
+<span class="sd">        with optional `above ground` or `agl` [DEFAULT] or `below ground&quot; or `bgl`.</span>
 
 <span class="sd">        **`refDate : int`**</span>
 
@@ -866,7 +868,9 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
 <span class="sd">        **`leadTime : int`**</span>
 
-<span class="sd">        **`level : str`**</span>
+<span class="sd">        **`level : str`** string of value and units of the level of interest. For pressure level, use either:</span>
+<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`</span>
+<span class="sd">        with optional `above ground` or `agl` [DEFAULT] or `below ground&quot; or `bgl`.</span>
 
 <span class="sd">        **`refDate : int`**</span>
 
@@ -905,7 +909,9 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
 <p><strong><code>leadTime : int</code></strong></p>
 
-<p><strong><code>level : str</code></strong></p>
+<p><strong><code>level : str</code></strong> string of value and units of the level of interest. For pressure level, use either:
+<code>mb</code>, <code>pa</code>, or <code>hpa</code>.  For sigma levels, use <code>sig</code> or <code>sigma</code>.  For geometric height, use <code>m</code> or <code>meter</code>
+with optional <code>above ground</code> or <code>agl</code> [DEFAULT] or <code>below ground" or</code>bgl`.</p>
 
 <p><strong><code>refDate : int</code></strong></p>
 
@@ -1673,7 +1679,7 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
                 <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
                     <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-
+                <span class="c1"># For data whose units are defined in a code table</span>
                 <span class="n">tbl</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d\.\d+&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
@@ -2786,7 +2792,7 @@ instance variables.</p>
                 <span class="k">for</span> <span class="n">n</span><span class="p">,</span><span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">keys</span><span class="p">):</span>
                     <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="nb">str</span><span class="p">(</span><span class="n">n</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span><span class="n">k</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
-
+                <span class="c1"># For data whose units are defined in a code table</span>
                 <span class="n">tbl</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d\.\d+&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">,</span><span class="n">re</span><span class="o">.</span><span class="n">IGNORECASE</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
                 <span class="k">for</span> <span class="n">k</span><span class="p">,</span><span class="n">v</span> <span class="ow">in</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">tbl</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                     <span class="n">fld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">fld</span><span class="o">==</span><span class="n">k</span><span class="p">,</span><span class="n">v</span><span class="p">,</span><span class="n">fld</span><span class="p">)</span>
