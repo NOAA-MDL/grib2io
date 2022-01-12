@@ -121,7 +121,7 @@ class open():
         """
         """
         if self.current_message < self.messages:
-            return self.read(1)[0]
+            return self.read()[0]
         else:
             self.seek(0)
             raise StopIteration
@@ -350,7 +350,7 @@ class open():
             self.closed = self._filehandle.closed
 
 
-    def read(self, num=0):
+    def read(self, num=1):
         """    
         Read num GRIB2 messages from the current position
 
@@ -427,7 +427,7 @@ class open():
         **`leadTime : int`**
 
         **`level : str`** string of value and units of the level of interest. For pressure level, use either:
-        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`
+        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`
         with optional `above ground` or `agl` [DEFAULT] or `below ground" or `bgl`.
 
         **`refDate : int`**
