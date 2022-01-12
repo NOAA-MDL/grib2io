@@ -1089,7 +1089,8 @@ class Grib2Message:
         or bitmapped values. If 1, linear interpolation is used for expanding reduced gaussian grids.
 
         **`map_keys`**: If `True`, data values will be mapped to the string-based keys that are stored
-        in the Local Use Section (section 2) of the GRIB2 Message.
+        in the Local Use Section (section 2) of the GRIB2 Message or in a code table as specified in the
+        units (i.e. "See Table 4.xxx").
 
         Returns
         -------
