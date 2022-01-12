@@ -245,7 +245,7 @@ and unpacking of data values.</p>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_message</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="p">:</span>
-            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
             <span class="k">raise</span> <span class="ne">StopIteration</span>
@@ -474,7 +474,7 @@ and unpacking of data values.</p>
             <span class="bp">self</span><span class="o">.</span><span class="n">closed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filehandle</span><span class="o">.</span><span class="n">closed</span>
 
 
-    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;    </span>
 <span class="sd">        Read num GRIB2 messages from the current position</span>
 
@@ -541,22 +541,22 @@ and unpacking of data values.</p>
 
     <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns a list of `grib2io.Grib2Message` instances filtered by</span>
-<span class="sd">        **`**kwargs`**.</span>
+<span class="sd">        Returns a list of `grib2io.Grib2Message` instances based on the selection **`**kwargs`**.</span>
 
 <span class="sd">        The following keywords are currently supported:</span>
 
-<span class="sd">        **`duration : int`**</span>
+<span class="sd">        **`duration : int`** specifiying the time duration (in unit of hours) of a GRIB2 Message that is </span>
+<span class="sd">        determined from a period of time.</span>
 
-<span class="sd">        **`leadTime : int`**</span>
+<span class="sd">        **`leadTime : int`** specifying ending lead time (in units of hours) of a GRIB2 Message.</span>
 
 <span class="sd">        **`level : str`** string of value and units of the level of interest. For pressure level, use either:</span>
-<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`</span>
+<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`</span>
 <span class="sd">        with optional `above ground` or `agl` [DEFAULT] or `below ground&quot; or `bgl`.</span>
 
-<span class="sd">        **`refDate : int`**</span>
+<span class="sd">        **`refDate : int`** specifying the reference date in `YYYYMMDDHH[MMSS]` format.</span>
 
-<span class="sd">        **`shortName : str`**</span>
+<span class="sd">        **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -707,12 +707,12 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
         
             <span class="def">def</span>
-            <span class="name">read</span><span class="signature">(self, num=0)</span>:
+            <span class="name">read</span><span class="signature">(self, num=1)</span>:
     </div>
 
                 <details>
             <summary>View Source</summary>
-            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;    </span>
 <span class="sd">        Read num GRIB2 messages from the current position</span>
 
@@ -859,22 +859,22 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
             <summary>View Source</summary>
             <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Returns a list of `grib2io.Grib2Message` instances filtered by</span>
-<span class="sd">        **`**kwargs`**.</span>
+<span class="sd">        Returns a list of `grib2io.Grib2Message` instances based on the selection **`**kwargs`**.</span>
 
 <span class="sd">        The following keywords are currently supported:</span>
 
-<span class="sd">        **`duration : int`**</span>
+<span class="sd">        **`duration : int`** specifiying the time duration (in unit of hours) of a GRIB2 Message that is </span>
+<span class="sd">        determined from a period of time.</span>
 
-<span class="sd">        **`leadTime : int`**</span>
+<span class="sd">        **`leadTime : int`** specifying ending lead time (in units of hours) of a GRIB2 Message.</span>
 
 <span class="sd">        **`level : str`** string of value and units of the level of interest. For pressure level, use either:</span>
-<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height, use `m` or `meter`</span>
+<span class="sd">        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`</span>
 <span class="sd">        with optional `above ground` or `agl` [DEFAULT] or `below ground&quot; or `bgl`.</span>
 
-<span class="sd">        **`refDate : int`**</span>
+<span class="sd">        **`refDate : int`** specifying the reference date in `YYYYMMDDHH[MMSS]` format.</span>
 
-<span class="sd">        **`shortName : str`**</span>
+<span class="sd">        **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">kwargs_allowed</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">,</span><span class="s1">&#39;leadTime&#39;</span><span class="p">,</span><span class="s1">&#39;level&#39;</span><span class="p">,</span><span class="s1">&#39;refDate&#39;</span><span class="p">,</span><span class="s1">&#39;shortName&#39;</span><span class="p">]</span>
         <span class="n">idxs</span> <span class="o">=</span> <span class="p">{}</span>
@@ -900,22 +900,22 @@ for this by flattening any GRIB2 submessages into multiple individual messages.<
 
         </details>
 
-            <div class="docstring"><p>Returns a list of <code><a href="#Grib2Message">grib2io.Grib2Message</a></code> instances filtered by
-<strong><code>**kwargs</code></strong>.</p>
+            <div class="docstring"><p>Returns a list of <code><a href="#Grib2Message">grib2io.Grib2Message</a></code> instances based on the selection <strong><code>**kwargs</code></strong>.</p>
 
 <p>The following keywords are currently supported:</p>
 
-<p><strong><code>duration : int</code></strong></p>
+<p><strong><code>duration : int</code></strong> specifiying the time duration (in unit of hours) of a GRIB2 Message that is 
+determined from a period of time.</p>
 
-<p><strong><code>leadTime : int</code></strong></p>
+<p><strong><code>leadTime : int</code></strong> specifying ending lead time (in units of hours) of a GRIB2 Message.</p>
 
 <p><strong><code>level : str</code></strong> string of value and units of the level of interest. For pressure level, use either:
-<code>mb</code>, <code>pa</code>, or <code>hpa</code>.  For sigma levels, use <code>sig</code> or <code>sigma</code>.  For geometric height, use <code>m</code> or <code>meter</code>
+<code>mb</code>, <code>pa</code>, or <code>hpa</code>.  For sigma levels, use <code>sig</code> or <code>sigma</code>.  For geometric height level, use <code>m</code> or <code>meter</code>
 with optional <code>above ground</code> or <code>agl</code> [DEFAULT] or <code>below ground" or</code>bgl`.</p>
 
-<p><strong><code>refDate : int</code></strong></p>
+<p><strong><code>refDate : int</code></strong> specifying the reference date in <code>YYYYMMDDHH[MMSS]</code> format.</p>
 
-<p><strong><code>shortName : str</code></strong></p>
+<p><strong><code>shortName : str</code></strong> the GRIB2 <code>shortName</code>.  This is the abbreviation name found in the NCEP GRIB2 tables.</p>
 </div>
 
 

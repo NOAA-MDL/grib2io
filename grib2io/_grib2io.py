@@ -417,22 +417,22 @@ class open():
 
     def select(self,**kwargs):
         """
-        Returns a list of `grib2io.Grib2Message` instances filtered by
-        **`**kwargs`**.
+        Returns a list of `grib2io.Grib2Message` instances based on the selection **`**kwargs`**.
 
         The following keywords are currently supported:
 
-        **`duration : int`**
+        **`duration : int`** specifiying the time duration (in unit of hours) of a GRIB2 Message that is 
+        determined from a period of time.
 
-        **`leadTime : int`**
+        **`leadTime : int`** specifying ending lead time (in units of hours) of a GRIB2 Message.
 
         **`level : str`** string of value and units of the level of interest. For pressure level, use either:
         `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`
         with optional `above ground` or `agl` [DEFAULT] or `below ground" or `bgl`.
 
-        **`refDate : int`**
+        **`refDate : int`** specifying the reference date in `YYYYMMDDHH[MMSS]` format.
 
-        **`shortName : str`**
+        **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.
         """
         kwargs_allowed = ['duration','leadTime','level','refDate','shortName']
         idxs = {}
