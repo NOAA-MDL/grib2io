@@ -156,8 +156,10 @@ class open():
                                  source=self,
                                  num=self._index['messageNumber'][key],
                                  decode=self.decode)]
+        elif isinstance(key,str):
+            return self.select(shortName=key)
         else:
-            raise KeyError('Key must be an integer or slice')
+            raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
     def _build_index(self):
