@@ -13,3 +13,4 @@ RUN wget http://security.ubuntu.com/ubuntu/pool/main/j/jasper/libjasper-dev_1.90
       && sudo dpkg --install libjasper-dev_1.900.1-debian1-2.4ubuntu1.3_amd64.deb \
       && rm libjasper1_1.900.1-debian1-2.4ubuntu1.3_amd64.deb \
       && rm libjasper-dev_1.900.1-debian1-2.4ubuntu1.3_amd64.deb
+      && pip install numpy pyproj

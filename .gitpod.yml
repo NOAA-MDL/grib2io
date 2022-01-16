@@ -6,11 +6,8 @@ image:
 
 tasks:
   - name: Install Dependencies
-    env:
-      DEPENDS: "numpy pyproj"
     init: |
       cp setup.cfg.template setup.cfg
-      pip install $DEPENDS
       pip install -e .
 
 vscode:
