@@ -1,20 +1,21 @@
 
-# g2clib Library
+# NCEPLIBS-g2c
 
 This library contains C decoder/encoder routines for GRIB edition 2.
-The user API for the GRIB2 routines is described in file "grib2c.doc".
 
 This is related to the
 [NCEPLIBS](https://github.com/NOAA-EMC/NCEPLIBS) project.
 
 For complete documentation see
-https://noaa-emc.github.io/NCEPLIBS-g2c/.
+https://noaa-emc.github.io/NCEPLIBS-g2c/. For the NCEP WMO GRIB2
+Documentation see
+https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/.
 
 ## Authors
 
-Boi Vuong, Hang Lei
+Stephen Gilbert, Wesley Ebisuzaki, Boi Vuong
 
-Code Manager: Boi Vuong
+Code Manager: Hang Lei, Edward Hartnett
 
 ## Prerequisites
 
@@ -33,9 +34,13 @@ Code Manager: Boi Vuong
   compression/decompression routines used by libpng.a for PNG image
   compression support. Tested version: zlib-1.2.6.
 
+- [openjpeg.a](https://www.openjpeg.org/) - OpenJPEG is an open-source
+  JPEG 2000 codec written in C language. OpenJPEG is only used if
+  CMake build option USE_OpenJPEG is turned on.
+
 ## Installing
 
-This "C" source code conatins many uses of the C++ comment style "//".
+This C source code conatins many uses of the C++ comment style "//".
 Please make sure you include the appropriate compiler option in the
 CFLAGS variable in the makefile to allow the use of "//" comment
 indicators.
@@ -48,6 +53,14 @@ installed on your system.
 If you do not wish to bother with the external libs and don't need PNG
 and JPEG2000 support, you can use the CMake options USE_PNG,
 USE_Jasper, and USE_OpenJPEG.
+
+## References
+
+Kumar, V. Krishna, Gilbert, Stephen A., [GRIB2 conversion and its
+usage at NCEP](docs/GRIB2_conversion_and_its_usage_at_NCEP.pdf), 14-18
+November 2005, 10th Workshop on Meteorological Operational Systems
+ECMWF User Orientation, retrieved on July 27, 2021 from
+https://www.yumpu.com/en/document/view/11925806/grib2-conversion-and-its-usage-at-ncep.
 
 ## Disclaimer
 

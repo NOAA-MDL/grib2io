@@ -1,17 +1,19 @@
-/** @file
- */
-/*
- * Modified for use in NCEPLIBS-g2c.
- */
-
-/*
+/** 
+ * @file
+ * @brief JPEG functions, originally from ECMWF, modified for use in NCEPLIBS-g2c.
+ *
  * Copyright 2005-2019 ECMWF.
  *
- * This software is licensed under the terms of the Apache Licence Version 2.0
- * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+ * This software is licensed under the terms of the Apache Licence
+ * Version 2.0 which can be obtained at
+ * http://www.apache.org/licenses/LICENSE-2.0.
  *
- * In applying this licence, ECMWF does not waive the privileges and immunities granted to it by
- * virtue of its status as an intergovernmental organisation nor does it submit to any jurisdiction.
+ * In applying this licence, ECMWF does not waive the privileges and
+ * immunities granted to it by virtue of its status as an
+ * intergovernmental organisation nor does it submit to any
+ * jurisdiction.
+ *
+ * @author ECMWF programmer
  */
 
 #if !defined USE_JPEG2000 && defined USE_OPENJPEG
@@ -24,18 +26,42 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * Print JPEG warning.
+ *
+ * @param msg Message.
+ * @param client_data Client data.
+ *
+ * @author ECMWF programmer
+ */
 static void openjpeg_warning(const char *msg, void *client_data)
 {
     (void)client_data;
     fprintf(stderr,"openjpeg: %s",msg);
 }
 
+/**
+ * Print JPEG error.
+ *
+ * @param msg Message.
+ * @param client_data Client data.
+ *
+ * @author ECMWF programmer
+ */
 static void openjpeg_error(const char *msg, void *client_data)
 {
     (void)client_data;
     fprintf(stderr,"openjpeg: %s",msg);
 }
 
+/**
+ * Print JPEG info.
+ *
+ * @param msg Message.
+ * @param client_data Client data.
+ *
+ * @author ECMWF programmer
+ */
 static void openjpeg_info(const char *msg, void *client_data)
 {
     (void)msg;
@@ -55,7 +81,17 @@ typedef struct
     OPJ_SIZE_T offset;      /* where we are currently in our data */
 } opj_memory_stream;
 
-/* This will read from our memory to the buffer */
+/** 
+ * This will read from our memory to the buffer.
+ *
+ * @param buffer Buffer.
+ * @param nb_bytes Number of bytes.
+ * @param p_user_data User data.
+ *
+ * @return size
+ *
+ * @author ECMWF programmer
+ */
 static OPJ_SIZE_T opj_memory_stream_read(void *buffer, OPJ_SIZE_T nb_bytes, void * p_user_data)
 {
     opj_memory_stream* mstream = (opj_memory_stream*) p_user_data; /* Our data */
@@ -74,7 +110,17 @@ static OPJ_SIZE_T opj_memory_stream_read(void *buffer, OPJ_SIZE_T nb_bytes, void
     return nb_bytes_read;
 }
 
-/* Write from the buffer to our memory */
+/** 
+ * This will Write from the buffer to our memory.
+ *
+ * @param buffer Buffer.
+ * @param nb_bytes Number of bytes.
+ * @param p_user_data User data.
+ *
+ * @return size
+ *
+ * @author ECMWF programmer
+ */
 static OPJ_SIZE_T opj_memory_stream_write(void *buffer, OPJ_SIZE_T nb_bytes, void *user_data)
 {
     opj_memory_stream* mstream = (opj_memory_stream*) user_data; /* our data */
@@ -94,7 +140,16 @@ static OPJ_SIZE_T opj_memory_stream_write(void *buffer, OPJ_SIZE_T nb_bytes, voi
     return nb_bytes_write;
 }
 
-/* Moves the pointer forward, but never more than we have */
+/**
+ * Moves the pointer forward, but never more than we have.
+ *
+ * @param nb_bytes Number of bytes.
+ * @param p_user_data User data.
+ *
+ * @return number of bytes moved
+ *
+ * @author ECMWF programmer
+ */
 static OPJ_OFF_T opj_memory_stream_skip(OPJ_OFF_T nb_bytes, void *user_data)
 {
     opj_memory_stream* mstream = (opj_memory_stream*) user_data;
@@ -110,7 +165,16 @@ static OPJ_OFF_T opj_memory_stream_skip(OPJ_OFF_T nb_bytes, void *user_data)
     return (OPJ_OFF_T)l_nb_bytes; /* Return how far we jumped */
 }
 
-/* Sets the pointer to anywhere in the memory */
+/**
+ * Sets the pointer to anywhere in the memory.
+ *
+ * @param nb_bytes Number of bytes.
+ * @param user_data User data.
+ *
+ * @return true if successful.
+ *
+ * @author ECMWF programmer
+*/
 static OPJ_BOOL opj_memory_stream_seek(OPJ_OFF_T nb_bytes, void * user_data)
 {
     opj_memory_stream* mstream = (opj_memory_stream*) user_data;
@@ -123,68 +187,69 @@ static OPJ_BOOL opj_memory_stream_seek(OPJ_OFF_T nb_bytes, void * user_data)
     return OPJ_TRUE;
 }
 
+/**
+ * Do nothing.
+ *
+ * @param p_user_data User data.
+ *
+ * @author ECMWF programmer
+*/
 static void opj_memory_stream_do_nothing(void * p_user_data)
 {
     OPJ_ARG_NOT_USED(p_user_data);
 }
 
-/* Create a stream to use memory as the input or output */
+/**
+ * Create a stream to use memory as the input or output.
+ *
+ * @param memoryStream Memory stream.
+ * @param is_read_stream True if this is a read stream.
+ *
+ * @return pointer to stream
+ *
+ * @author ECMWF programmer
+ */
 static opj_stream_t* opj_stream_create_default_memory_stream(opj_memory_stream* memoryStream, OPJ_BOOL is_read_stream)
 {
-	opj_stream_t* stream;
+    opj_stream_t* stream;
 
-	if (!(stream = opj_stream_default_create(is_read_stream)))
-		return (NULL);
+    if (!(stream = opj_stream_default_create(is_read_stream)))
+        return (NULL);
     /* Set how to work with the frame buffer */
-	if (is_read_stream)
-		opj_stream_set_read_function(stream, opj_memory_stream_read);
-	else
-		opj_stream_set_write_function(stream, opj_memory_stream_write);
+    if (is_read_stream)
+        opj_stream_set_read_function(stream, opj_memory_stream_read);
+    else
+        opj_stream_set_write_function(stream, opj_memory_stream_write);
 
-	opj_stream_set_seek_function(stream, opj_memory_stream_seek);
-	opj_stream_set_skip_function(stream, opj_memory_stream_skip);
-	opj_stream_set_user_data(stream, memoryStream, opj_memory_stream_do_nothing);
-	opj_stream_set_user_data_length(stream, memoryStream->dataSize);
-	return stream;
+    opj_stream_set_seek_function(stream, opj_memory_stream_seek);
+    opj_stream_set_skip_function(stream, opj_memory_stream_skip);
+    opj_stream_set_user_data(stream, memoryStream, opj_memory_stream_do_nothing);
+    opj_stream_set_user_data_length(stream, memoryStream->dataSize);
+    return stream;
 }
 
+/**
+ * This Function decodes a JPEG2000 code stream specified in the
+ * JPEG2000 Part-1 standard (i.e., ISO/IEC 15444-1) using OpenJPEG.
+ *
+ * PROGRAM HISTORY LOG:
+ * - 2002-12-02  Gilbert
+ * - 2016-06-08  Jovic
+ *
+ * @param injpc Input JPEG2000 code stream.
+ * @param bufsize Length (in bytes) of the input JPEG2000 code stream.
+ * @param outfld Output matrix of grayscale image values.
+ *
+ * @return
+ * - 0 Successful decode
+ * - -3 Error decode jpeg2000 code stream.
+ * - -5 decoded image had multiple color components. Only grayscale is expected.
+ *
+ * @note Requires OpenJPEG Version 2.
+ *
+ * @author Stephen Gilbert, Jovic
+ */
 int dec_jpeg2000(char *injpc,g2int bufsize,g2int *outfld)
-/*$$$  SUBPROGRAM DOCUMENTATION BLOCK
-*                .      .    .                                       .
-* SUBPROGRAM:    dec_jpeg2000      Decodes JPEG2000 code stream
-*   PRGMMR: Jovic            ORG: W/NP11     DATE: 2020-06-08
-*
-* ABSTRACT: This Function decodes a JPEG2000 code stream specified in the
-*   JPEG2000 Part-1 standard (i.e., ISO/IEC 15444-1) using OpenJPEG
-*
-* PROGRAM HISTORY LOG:
-* 2002-12-02  Gilbert
-* 2016-06-08  Jovic
-*
-* USAGE:     int dec_jpeg2000(char *injpc,g2int bufsize,g2int *outfld)
-*
-*   INPUT ARGUMENTS:
-*      injpc - Input JPEG2000 code stream.
-*    bufsize - Length (in bytes) of the input JPEG2000 code stream.
-*
-*   OUTPUT ARGUMENTS:
-*     outfld - Output matrix of grayscale image values.
-*
-*   RETURN VALUES :
-*          0 = Successful decode
-*         -3 = Error decode jpeg2000 code stream.
-*         -5 = decoded image had multiple color components.
-*              Only grayscale is expected.
-*
-* REMARKS:
-*
-*      Requires OpenJPEG Version 2
-*
-* ATTRIBUTES:
-*   LANGUAGE: C
-*   MACHINE:  Linux
-*
-*$$$*/
 {
     int iret = 0;
     OPJ_INT32 mask;
@@ -194,7 +259,7 @@ int dec_jpeg2000(char *injpc,g2int bufsize,g2int *outfld)
     opj_codec_t *codec = NULL;
 
     /* set decoding parameters to default values */
-    opj_dparameters_t parameters = {0,};	/* decompression parameters */
+    opj_dparameters_t parameters = {0,};        /* decompression parameters */
     opj_set_default_decoder_parameters(&parameters);
     parameters.decod_format = 1; /* JP2_FMT */
 
@@ -266,61 +331,42 @@ cleanup:
     return iret;
 }
 
+/**
+ * This Function encodes a grayscale image into a JPEG2000 code stream
+ * specified in the JPEG2000 Part-1 standard (i.e., ISO/IEC 15444-1)
+ * using OpenJPEG library.
+ *
+ * PROGRAM HISTORY LOG:
+ * - 2002-12-02  Gilbert
+ * - 2016-06-08  Jovic
+ *
+ * @param cin Packed matrix of Grayscale image values to encode.
+ * @param width width of image
+ * @param height height of image
+ * @param nbits depth (in bits) of image.i.e number of bits used to
+ * hold each data value
+ * @param ltype indicator of lossless or lossy compression = 1, for
+ * lossy compression != 1, for lossless compression.
+ * @param ratio target compression ratio.  (ratio:1) Used only when
+ * ltype == 1.
+ * @param retry Pointer to option type. 1 = try increasing number of
+ * guard bits otherwise, no additional options.
+ * @param outjpc Output encoded JPEG2000 code stream.
+ * @param jpclen Number of bytes allocated for new JPEG2000 code
+ * stream in outjpc.
+ *
+ * @return
+ * - > 0 Length in bytes of encoded JPEG2000 code stream
+ * - -3 Error decode jpeg2000 code stream.
+ * - -5 decoded image had multiple color components. Only grayscale is expected.
+ *
+ * @note Requires OpenJPEG Version 2.
+ *
+ * @author Stephen Gilbert, Jovic
+ */
 int enc_jpeg2000(unsigned char *cin, g2int width, g2int height, g2int nbits,
                  g2int ltype, g2int ratio, g2int retry, char *outjpc,
                  g2int jpclen)
-/*$$$  SUBPROGRAM DOCUMENTATION BLOCK
-*                .      .    .                                       .
-* SUBPROGRAM:    enc_jpeg2000      Encodes JPEG2000 code stream
-*   PRGMMR: Jovic            ORG: W/NP11     DATE: 2020-06-08
-*
-* ABSTRACT: This Function encodes a grayscale image into a JPEG2000 code stream
-*   specified in the JPEG2000 Part-1 standard (i.e., ISO/IEC 15444-1)
-*   using OpenJPEG library
-*
-* PROGRAM HISTORY LOG:
-* 2002-12-02  Gilbert
-* 2016-06-08  Jovic
-*
-* USAGE:    int enc_jpeg2000(unsigned char *cin,g2int width,g2int height,
-*                            g2int nbits, g2int ltype, g2int ratio,
-*                            g2int retry, char *outjpc, g2int jpclen)
-*
-*   INPUT ARGUMENTS:
-*      cin   - Packed matrix of Grayscale image values to encode.
-*     width  - width of image
-*     height - height of image
-*     nbits  - depth (in bits) of image.  i.e number of bits
-*              used to hold each data value
-*    ltype   - indicator of lossless or lossy compression
-*              = 1, for lossy compression
-*              != 1, for lossless compression
-*    ratio   - target compression ratio.  (ratio:1)
-*              Used only when ltype == 1.
-*    retry   - Pointer to option type.
-*              1 = try increasing number of guard bits
-*              otherwise, no additional options
-*    jpclen  - Number of bytes allocated for new JPEG2000 code stream in
-*              outjpc.
-*
-*   INPUT ARGUMENTS:
-*     outjpc - Output encoded JPEG2000 code stream
-*
-*   RETURN VALUES :
-*        > 0 = Length in bytes of encoded JPEG2000 code stream
-*         -3 = Error decode jpeg2000 code stream.
-*         -5 = decoded image had multiple color components.
-*              Only grayscale is expected.
-*
-* REMARKS:
-*
-*      Requires OpenJPEG Version 2.
-*
-* ATTRIBUTES:
-*   LANGUAGE: C
-*   MACHINE:  Linux
-*
-*$$$*/
 {
     (void) retry;
     int iret = 0;
@@ -331,7 +377,7 @@ int enc_jpeg2000(unsigned char *cin, g2int width, g2int height, g2int nbits,
     opj_stream_t *stream = NULL;
 
     /* set encoding parameters to default values */
-    opj_cparameters_t parameters = {0,};	/* compression parameters */
+    opj_cparameters_t parameters = {0,};        /* compression parameters */
     opj_set_default_encoder_parameters(&parameters);
 
     parameters.tcp_numlayers  = 1;

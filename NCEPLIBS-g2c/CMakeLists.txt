@@ -10,6 +10,8 @@ project(
   VERSION ${pVersion}
   LANGUAGES C)
 
+include(GNUInstallDirs)
+
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/")
 
 # Handle user options.
@@ -47,11 +49,11 @@ else()
 endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "^(Intel)$")
-  set(CMAKE_C_FLAGS "-g -traceback")
+  set(CMAKE_C_FLAGS "-g -traceback ${CMAKE_C_FLAGS}")
   set(CMAKE_C_FLAGS_RELEASE "-O3")
   set(CMAKE_C_FLAGS_DEBUG "-O0")
 elseif(CMAKE_C_COMPILER_ID MATCHES "^(GNU|Clang|AppleClang)$")
-  set(CMAKE_C_FLAGS "-g")
+  set(CMAKE_C_FLAGS "-g ${CMAKE_C_FLAGS}")
   set(CMAKE_C_FLAGS_RELEASE "-O3")
   set(CMAKE_C_FLAGS_DEBUG "-O0 -ggdb -Wall")
 endif()
@@ -62,7 +64,7 @@ set(lib_name ${PROJECT_NAME})
 
 add_library(${lib_name} STATIC ${c_src})
 
-target_compile_definitions(${lib_name} PUBLIC __64BIT__)
+target_compile_definitions(${lib_name} PUBLIC)
 
 set(private_includes "")
 
@@ -108,14 +110,14 @@ target_include_directories(
 install(
   TARGETS ${lib_name}
   EXPORT ${PROJECT_NAME}Exports
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  PUBLIC_HEADER DESTINATION include)
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 ### Package config
 include(CMakePackageConfigHelpers)
-set(CONFIG_INSTALL_DESTINATION lib/cmake/${PROJECT_NAME})
+set(CONFIG_INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME})
 
 export(EXPORT ${PROJECT_NAME}Exports
   NAMESPACE ${PROJECT_NAME}::
@@ -146,4 +148,8 @@ install(EXPORT ${PROJECT_NAME}Exports
 if(ENABLE_DOCS)
   find_package(Doxygen REQUIRED)
 endif()
-add_subdirectory(docs)  
+add_subdirectory(docs)
+
+# Run unit tests.
+include(CTest)
+add_subdirectory(tests)
