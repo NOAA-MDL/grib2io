@@ -103,12 +103,6 @@ else:
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngpack.c'))
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngunpack.c'))
 
-# Add 64-bit macro
-if hasattr(sys,'maxsize'):
-    if sys.maxsize > 2**31-1: macros.append(('__64BIT__',1))
-else:
-    if sys.maxint > 2**31-1: macros.append(('__64BIT__',1))
-
 # Cleanup variables where necessary
 incdirs = list(set(incdirs))
 libdirs = list(set(libdirs))
