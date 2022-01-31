@@ -741,6 +741,17 @@ table_4_227 = {
 '255':'Missing',
 }
 
+table_4_228 = {
+'0':'None',
+'1':'Trace',
+'2':'Light',
+'3':'Moderate',
+'4':'Severe',
+'6-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
 table_4_243 = {
 '0':'Reserved',
 '1':'Evergreen broadleaved forest',
