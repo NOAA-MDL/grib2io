@@ -1278,8 +1278,10 @@ static const char __pyx_k_rarr[] = "rarr";
 static const char __pyx_k_rdat[] = "rdat";
 static const char __pyx_k_rmax[] = "rmax";
 static const char __pyx_k_rmin[] = "rmin";
+static const char __pyx_k_sec2[] = "sec2";
 static const char __pyx_k_test[] = "__test__";
 static const char __pyx_k_cgrib[] = "cgrib";
+static const char __pyx_k_csec2[] = "csec2";
 static const char __pyx_k_dtype[] = "dtype";
 static const char __pyx_k_field[] = "field";
 static const char __pyx_k_ibmap[] = "ibmap";
@@ -1312,6 +1314,7 @@ static const char __pyx_k_gdtnum[] = "gdtnum";
 static const char __pyx_k_idsect[] = "idsect";
 static const char __pyx_k_idslen[] = "idslen";
 static const char __pyx_k_import[] = "__import__";
+static const char __pyx_k_lcsec2[] = "lcsec2";
 static const char __pyx_k_pdsnum[] = "pdsnum";
 static const char __pyx_k_pdtmpl[] = "pdtmpl";
 static const char __pyx_k_bufleni[] = "bufleni";
@@ -1322,6 +1325,7 @@ static const char __pyx_k_float32[] = "float32";
 static const char __pyx_k_gdstmpl[] = "gdstmpl";
 static const char __pyx_k_gribmsg[] = "gribmsg";
 static const char __pyx_k_ibitmap[] = "ibitmap";
+static const char __pyx_k_ibmapyy[] = "ibmapyy";
 static const char __pyx_k_idefnum[] = "idefnum";
 static const char __pyx_k_idrsnum[] = "idrsnum";
 static const char __pyx_k_igdsnum[] = "igdsnum";
@@ -1369,10 +1373,12 @@ static const char __pyx_k_minmaxstring[] = "minmaxstring";
 static const char __pyx_k_storageorder[] = "storageorder";
 static const char __pyx_k_grib2_addgrid[] = "grib2_addgrid";
 static const char __pyx_k_grib2_addfield[] = "grib2_addfield";
+static const char __pyx_k_grib2_addlocal[] = "grib2_addlocal";
 static const char __pyx_k_bitsofprecision[] = "bitsofprecision";
 static const char __pyx_k_digitsofprecision[] = "digitsofprecision";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
 static const char __pyx_k_unknown_array_type_s[] = "unknown array type %s";
+static const char __pyx_k_Cython_code_to_provide_python_i[] = "\nCython code to provide python interfaces to functions in the NCEP g2c library.\n\nIMPORTANT: Make changes to this file, not the C code that Cython generates.\n";
 static const char __pyx_k_Error_unpacking_section_1_error[] = "Error unpacking section 1 - error code = %i";
 static const char __pyx_k_Error_unpacking_section_3_error[] = "Error unpacking section 3 - error code = %i";
 static const char __pyx_k_Error_unpacking_section_4_error[] = "Error unpacking section 4 - error code = %i";
@@ -1383,11 +1389,11 @@ static const char __pyx_k_error_getting_buffer_for_output[] = "error getting buf
 static const char __pyx_k_error_in_grib2_end_error_code_i[] = "error in grib2_end, error code = %i";
 static const char __pyx_k_integer_output_array_must_be_as[] = "integer output array must be as least as long a real input array";
 static const char __pyx_k_Error_in_grib2_create_error_code[] = "Error in grib2_create, error code = %i";
-static const char __pyx_k_Pyrex_code_to_provide_python_int[] = "Pyrex code to provide python interfaces to functions\nin the NCEP grib2c library. Make changes to this file, not the\nc-wrappers that Pyrex generates.";
 static const char __pyx_k_error_getting_buffer_for_input_i[] = "error getting buffer for input integer array";
 static const char __pyx_k_error_getting_buffer_for_input_r[] = "error getting buffer for input real array";
 static const char __pyx_k_error_in_grib2_addfield_error_co[] = "error in grib2_addfield, error code = %i";
 static const char __pyx_k_error_in_grib2_addgrid_error_cod[] = "error in grib2_addgrid, error code = %i";
+static const char __pyx_k_error_in_grib2_addlocal_error_co[] = "error in grib2_addlocal, error code = %i";
 static const char __pyx_k_real_output_array_must_be_as_lea[] = "real output array must be as least as long a integerinput array";
 static const char __pyx_k_error_getting_buffer_for_output_2[] = "error getting buffer for output real array";
 static PyObject *__pyx_n_u_C;
@@ -1415,6 +1421,7 @@ static PyObject *__pyx_n_s_cgrib;
 static PyObject *__pyx_n_s_cline_in_traceback;
 static PyObject *__pyx_n_s_coordlist;
 static PyObject *__pyx_n_s_coordlistdat;
+static PyObject *__pyx_n_s_csec2;
 static PyObject *__pyx_n_s_data;
 static PyObject *__pyx_n_s_deflist;
 static PyObject *__pyx_n_s_deflistdat;
@@ -1432,6 +1439,7 @@ static PyObject *__pyx_kp_u_error_getting_buffer_for_output;
 static PyObject *__pyx_kp_u_error_getting_buffer_for_output_2;
 static PyObject *__pyx_kp_u_error_in_grib2_addfield_error_co;
 static PyObject *__pyx_kp_u_error_in_grib2_addgrid_error_cod;
+static PyObject *__pyx_kp_u_error_in_grib2_addlocal_error_co;
 static PyObject *__pyx_kp_u_error_in_grib2_end_error_code_i;
 static PyObject *__pyx_n_u_f4;
 static PyObject *__pyx_n_s_fcoordlist;
@@ -1454,6 +1462,7 @@ static PyObject *__pyx_n_s_gdtmpldat;
 static PyObject *__pyx_n_s_gdtnum;
 static PyObject *__pyx_n_s_grib2_addfield;
 static PyObject *__pyx_n_s_grib2_addgrid;
+static PyObject *__pyx_n_s_grib2_addlocal;
 static PyObject *__pyx_n_s_grib2_create;
 static PyObject *__pyx_n_s_grib2_end;
 static PyObject *__pyx_n_s_gribmsg;
@@ -1463,6 +1472,7 @@ static PyObject *__pyx_n_u_i4;
 static PyObject *__pyx_n_s_iarr;
 static PyObject *__pyx_n_s_ibitmap;
 static PyObject *__pyx_n_s_ibmap;
+static PyObject *__pyx_n_s_ibmapyy;
 static PyObject *__pyx_n_s_icoordlist;
 static PyObject *__pyx_n_s_idat;
 static PyObject *__pyx_n_s_idata;
@@ -1487,6 +1497,7 @@ static PyObject *__pyx_n_s_ipos;
 static PyObject *__pyx_n_s_isec0;
 static PyObject *__pyx_n_s_isec1;
 static PyObject *__pyx_n_s_itor_ieee;
+static PyObject *__pyx_n_s_lcsec2;
 static PyObject *__pyx_n_s_lgrib;
 static PyObject *__pyx_n_s_listsec0;
 static PyObject *__pyx_n_s_listsec0dat;
@@ -1523,6 +1534,7 @@ static PyObject *__pyx_kp_u_real_output_array_must_be_as_lea;
 static PyObject *__pyx_n_s_rmax;
 static PyObject *__pyx_n_s_rmin;
 static PyObject *__pyx_n_s_rtoi_ieee;
+static PyObject *__pyx_n_s_sec2;
 static PyObject *__pyx_n_s_storageorder;
 static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_kp_u_unknown_array_type_s;
@@ -1545,6 +1557,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
 static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_gribmsg); /* proto */
 static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_gribmsg, PyObject *__pyx_v_gds, PyObject *__pyx_v_gdstmpl, PyObject *__pyx_v_deflist, CYTHON_UNUSED PyObject *__pyx_v_defnum); /* proto */
 static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_gribmsg, PyObject *__pyx_v_pdsnum, PyObject *__pyx_v_pdstmpl, PyObject *__pyx_v_coordlist, PyObject *__pyx_v_drsnum, PyObject *__pyx_v_drstmpl, PyObject *__pyx_v_field, PyObject *__pyx_v_ibitmap, PyObject *__pyx_v_bitmap); /* proto */
+static PyObject *__pyx_pf_6g2clib_24grib2_addlocal(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_gribmsg, PyObject *__pyx_v_sec2); /* proto */
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_1;
 static PyObject *__pyx_int_2;
@@ -1566,6 +1579,7 @@ static PyObject *__pyx_tuple__22;
 static PyObject *__pyx_tuple__24;
 static PyObject *__pyx_tuple__26;
 static PyObject *__pyx_tuple__28;
+static PyObject *__pyx_tuple__30;
 static PyObject *__pyx_codeobj__7;
 static PyObject *__pyx_codeobj__9;
 static PyObject *__pyx_codeobj__11;
@@ -1578,11 +1592,12 @@ static PyObject *__pyx_codeobj__23;
 static PyObject *__pyx_codeobj__25;
 static PyObject *__pyx_codeobj__27;
 static PyObject *__pyx_codeobj__29;
+static PyObject *__pyx_codeobj__31;
 /* Late includes */
 
-/* "g2clib.pyx":55
- * # routines for convert to/from IEEE integers.
- * 
+/* "g2clib.pyx":67
+ * # Routines for convert to/from IEEE integers.
+ * # ----------------------------------------------------------------------------------------
  * def rtoi_ieee(object rarr, object iarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts a float32 array into an int32 array of IEEE formatted values
@@ -1624,11 +1639,11 @@ static PyObject *__pyx_pw_6g2clib_1rtoi_ieee(PyObject *__pyx_self, PyObject *__p
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_iarr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("rtoi_ieee", 1, 2, 2, 1); __PYX_ERR(0, 55, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("rtoi_ieee", 1, 2, 2, 1); __PYX_ERR(0, 67, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "rtoi_ieee") < 0)) __PYX_ERR(0, 55, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "rtoi_ieee") < 0)) __PYX_ERR(0, 67, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -1641,7 +1656,7 @@ static PyObject *__pyx_pw_6g2clib_1rtoi_ieee(PyObject *__pyx_self, PyObject *__p
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("rtoi_ieee", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 55, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("rtoi_ieee", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 67, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.rtoi_ieee", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1669,7 +1684,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("rtoi_ieee", 0);
 
-  /* "g2clib.pyx":66
+  /* "g2clib.pyx":78
  *     cdef g2int i1
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:             # <<<<<<<<<<<<<<
@@ -1679,7 +1694,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_1 = ((PyObject_AsReadBuffer(__pyx_v_rarr, (&__pyx_v_rdat), (&__pyx_v_buflenr)) != 0) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":67
+    /* "g2clib.pyx":79
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for input real array'             # <<<<<<<<<<<<<<
@@ -1687,9 +1702,9 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  *         raise RuntimeError, 'error getting buffer for output integer array'
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_error_getting_buffer_for_input_r, 0, 0);
-    __PYX_ERR(0, 67, __pyx_L1_error)
+    __PYX_ERR(0, 79, __pyx_L1_error)
 
-    /* "g2clib.pyx":66
+    /* "g2clib.pyx":78
  *     cdef g2int i1
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:             # <<<<<<<<<<<<<<
@@ -1698,7 +1713,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":68
+  /* "g2clib.pyx":80
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for input real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :             # <<<<<<<<<<<<<<
@@ -1708,7 +1723,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_1 = ((PyObject_AsWriteBuffer(__pyx_v_iarr, (&__pyx_v_idat), (&__pyx_v_bufleni)) != 0) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":69
+    /* "g2clib.pyx":81
  *         raise RuntimeError, 'error getting buffer for input real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for output integer array'             # <<<<<<<<<<<<<<
@@ -1716,9 +1731,9 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  *         raise RuntimeError, 'integer output array must be as least as long a real input array'
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_error_getting_buffer_for_output, 0, 0);
-    __PYX_ERR(0, 69, __pyx_L1_error)
+    __PYX_ERR(0, 81, __pyx_L1_error)
 
-    /* "g2clib.pyx":68
+    /* "g2clib.pyx":80
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for input real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :             # <<<<<<<<<<<<<<
@@ -1727,7 +1742,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":70
+  /* "g2clib.pyx":82
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for output integer array'
  *     if bufleni < buflenr:             # <<<<<<<<<<<<<<
@@ -1737,7 +1752,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_1 = ((__pyx_v_bufleni < __pyx_v_buflenr) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":71
+    /* "g2clib.pyx":83
  *         raise RuntimeError, 'error getting buffer for output integer array'
  *     if bufleni < buflenr:
  *         raise RuntimeError, 'integer output array must be as least as long a real input array'             # <<<<<<<<<<<<<<
@@ -1745,9 +1760,9 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  *     idata = <g2int *>idat
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_integer_output_array_must_be_as, 0, 0);
-    __PYX_ERR(0, 71, __pyx_L1_error)
+    __PYX_ERR(0, 83, __pyx_L1_error)
 
-    /* "g2clib.pyx":70
+    /* "g2clib.pyx":82
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for output integer array'
  *     if bufleni < buflenr:             # <<<<<<<<<<<<<<
@@ -1756,7 +1771,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":72
+  /* "g2clib.pyx":84
  *     if bufleni < buflenr:
  *         raise RuntimeError, 'integer output array must be as least as long a real input array'
  *     rdata = <g2float *>rdat             # <<<<<<<<<<<<<<
@@ -1765,7 +1780,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_rdata = ((g2float *)__pyx_v_rdat);
 
-  /* "g2clib.pyx":73
+  /* "g2clib.pyx":85
  *         raise RuntimeError, 'integer output array must be as least as long a real input array'
  *     rdata = <g2float *>rdat
  *     idata = <g2int *>idat             # <<<<<<<<<<<<<<
@@ -1774,7 +1789,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_idata = ((g2int *)__pyx_v_idat);
 
-  /* "g2clib.pyx":74
+  /* "g2clib.pyx":86
  *     rdata = <g2float *>rdat
  *     idata = <g2int *>idat
  *     mkieee(rdata, idata, buflenr//4)             # <<<<<<<<<<<<<<
@@ -1783,9 +1798,9 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   mkieee(__pyx_v_rdata, __pyx_v_idata, __Pyx_div_Py_ssize_t(__pyx_v_buflenr, 4));
 
-  /* "g2clib.pyx":55
- * # routines for convert to/from IEEE integers.
- * 
+  /* "g2clib.pyx":67
+ * # Routines for convert to/from IEEE integers.
+ * # ----------------------------------------------------------------------------------------
  * def rtoi_ieee(object rarr, object iarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts a float32 array into an int32 array of IEEE formatted values
@@ -1803,7 +1818,7 @@ static PyObject *__pyx_pf_6g2clib_rtoi_ieee(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "g2clib.pyx":76
+/* "g2clib.pyx":88
  *     mkieee(rdata, idata, buflenr//4)
  * 
  * def itor_ieee(object iarr, object rarr):             # <<<<<<<<<<<<<<
@@ -1847,11 +1862,11 @@ static PyObject *__pyx_pw_6g2clib_3itor_ieee(PyObject *__pyx_self, PyObject *__p
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_rarr)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("itor_ieee", 1, 2, 2, 1); __PYX_ERR(0, 76, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("itor_ieee", 1, 2, 2, 1); __PYX_ERR(0, 88, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "itor_ieee") < 0)) __PYX_ERR(0, 76, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "itor_ieee") < 0)) __PYX_ERR(0, 88, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -1864,7 +1879,7 @@ static PyObject *__pyx_pw_6g2clib_3itor_ieee(PyObject *__pyx_self, PyObject *__p
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("itor_ieee", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 76, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("itor_ieee", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 88, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.itor_ieee", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -1892,7 +1907,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("itor_ieee", 0);
 
-  /* "g2clib.pyx":85
+  /* "g2clib.pyx":97
  *     cdef g2int *idata
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:             # <<<<<<<<<<<<<<
@@ -1902,7 +1917,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
   __pyx_t_1 = ((PyObject_AsReadBuffer(__pyx_v_rarr, (&__pyx_v_rdat), (&__pyx_v_buflenr)) != 0) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":86
+    /* "g2clib.pyx":98
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for output real array'             # <<<<<<<<<<<<<<
@@ -1910,9 +1925,9 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  *         raise RuntimeError, 'error getting buffer for input integer array'
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_error_getting_buffer_for_output_2, 0, 0);
-    __PYX_ERR(0, 86, __pyx_L1_error)
+    __PYX_ERR(0, 98, __pyx_L1_error)
 
-    /* "g2clib.pyx":85
+    /* "g2clib.pyx":97
  *     cdef g2int *idata
  *     cdef Py_ssize_t bufleni, buflenr
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:             # <<<<<<<<<<<<<<
@@ -1921,7 +1936,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   }
 
-  /* "g2clib.pyx":87
+  /* "g2clib.pyx":99
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for output real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :             # <<<<<<<<<<<<<<
@@ -1931,7 +1946,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
   __pyx_t_1 = ((PyObject_AsWriteBuffer(__pyx_v_iarr, (&__pyx_v_idat), (&__pyx_v_bufleni)) != 0) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":88
+    /* "g2clib.pyx":100
  *         raise RuntimeError, 'error getting buffer for output real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for input integer array'             # <<<<<<<<<<<<<<
@@ -1939,9 +1954,9 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  *         raise RuntimeError, 'real output array must be as least as long a integerinput array'
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_error_getting_buffer_for_input_i, 0, 0);
-    __PYX_ERR(0, 88, __pyx_L1_error)
+    __PYX_ERR(0, 100, __pyx_L1_error)
 
-    /* "g2clib.pyx":87
+    /* "g2clib.pyx":99
  *     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
  *         raise RuntimeError, 'error getting buffer for output real array'
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :             # <<<<<<<<<<<<<<
@@ -1950,7 +1965,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   }
 
-  /* "g2clib.pyx":89
+  /* "g2clib.pyx":101
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for input integer array'
  *     if buflenr < bufleni:             # <<<<<<<<<<<<<<
@@ -1960,7 +1975,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
   __pyx_t_1 = ((__pyx_v_buflenr < __pyx_v_bufleni) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":90
+    /* "g2clib.pyx":102
  *         raise RuntimeError, 'error getting buffer for input integer array'
  *     if buflenr < bufleni:
  *         raise RuntimeError, 'real output array must be as least as long a integerinput array'             # <<<<<<<<<<<<<<
@@ -1968,9 +1983,9 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  *     idata = <g2int *>idat
  */
     __Pyx_Raise(__pyx_builtin_RuntimeError, __pyx_kp_u_real_output_array_must_be_as_lea, 0, 0);
-    __PYX_ERR(0, 90, __pyx_L1_error)
+    __PYX_ERR(0, 102, __pyx_L1_error)
 
-    /* "g2clib.pyx":89
+    /* "g2clib.pyx":101
  *     if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
  *         raise RuntimeError, 'error getting buffer for input integer array'
  *     if buflenr < bufleni:             # <<<<<<<<<<<<<<
@@ -1979,7 +1994,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   }
 
-  /* "g2clib.pyx":91
+  /* "g2clib.pyx":103
  *     if buflenr < bufleni:
  *         raise RuntimeError, 'real output array must be as least as long a integerinput array'
  *     rdata = <g2float *>rdat             # <<<<<<<<<<<<<<
@@ -1988,7 +2003,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   __pyx_v_rdata = ((g2float *)__pyx_v_rdat);
 
-  /* "g2clib.pyx":92
+  /* "g2clib.pyx":104
  *         raise RuntimeError, 'real output array must be as least as long a integerinput array'
  *     rdata = <g2float *>rdat
  *     idata = <g2int *>idat             # <<<<<<<<<<<<<<
@@ -1997,7 +2012,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   __pyx_v_idata = ((g2int *)__pyx_v_idat);
 
-  /* "g2clib.pyx":93
+  /* "g2clib.pyx":105
  *     rdata = <g2float *>rdat
  *     idata = <g2int *>idat
  *     rdieee(idata, rdata, bufleni//4)             # <<<<<<<<<<<<<<
@@ -2006,7 +2021,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
  */
   rdieee(__pyx_v_idata, __pyx_v_rdata, __Pyx_div_Py_ssize_t(__pyx_v_bufleni, 4));
 
-  /* "g2clib.pyx":76
+  /* "g2clib.pyx":88
  *     mkieee(rdata, idata, buflenr//4)
  * 
  * def itor_ieee(object iarr, object rarr):             # <<<<<<<<<<<<<<
@@ -2026,7 +2041,7 @@ static PyObject *__pyx_pf_6g2clib_2itor_ieee(CYTHON_UNUSED PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "g2clib.pyx":95
+/* "g2clib.pyx":107
  *     rdieee(idata, rdata, bufleni//4)
  * 
  * cdef _toarray(void *items, object a):             # <<<<<<<<<<<<<<
@@ -2052,7 +2067,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("_toarray", 0);
 
-  /* "g2clib.pyx":105
+  /* "g2clib.pyx":117
  * 
  *     # get pointer to data buffer.
  *     PyObject_AsWriteBuffer(a, &abuf, &buflen)             # <<<<<<<<<<<<<<
@@ -2061,24 +2076,24 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
  */
   (void)(PyObject_AsWriteBuffer(__pyx_v_a, (&__pyx_v_abuf), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":107
+  /* "g2clib.pyx":119
  *     PyObject_AsWriteBuffer(a, &abuf, &buflen)
  * 
  *     if str(a.dtype) == 'int32':             # <<<<<<<<<<<<<<
  *       idata = <g2int *>abuf
  *       # fill buffer.
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyUnicode_Type)), __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyUnicode_Type)), __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = (__Pyx_PyUnicode_Equals(__pyx_t_2, __pyx_n_u_int32, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 107, __pyx_L1_error)
+  __pyx_t_3 = (__Pyx_PyUnicode_Equals(__pyx_t_2, __pyx_n_u_int32, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 119, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = (__pyx_t_3 != 0);
   if (__pyx_t_4) {
 
-    /* "g2clib.pyx":108
+    /* "g2clib.pyx":120
  * 
  *     if str(a.dtype) == 'int32':
  *       idata = <g2int *>abuf             # <<<<<<<<<<<<<<
@@ -2087,17 +2102,17 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
  */
     __pyx_v_idata = ((g2int *)__pyx_v_abuf);
 
-    /* "g2clib.pyx":110
+    /* "g2clib.pyx":122
  *       idata = <g2int *>abuf
  *       # fill buffer.
  *       for i from 0 <= i < len(a):             # <<<<<<<<<<<<<<
  *         idata[i] = (<g2int *>items)[i]
  *     elif str(a.dtype) == 'float32':
  */
-    __pyx_t_5 = PyObject_Length(__pyx_v_a); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 110, __pyx_L1_error)
+    __pyx_t_5 = PyObject_Length(__pyx_v_a); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 122, __pyx_L1_error)
     for (__pyx_v_i = 0; __pyx_v_i < __pyx_t_5; __pyx_v_i++) {
 
-      /* "g2clib.pyx":111
+      /* "g2clib.pyx":123
  *       # fill buffer.
  *       for i from 0 <= i < len(a):
  *         idata[i] = (<g2int *>items)[i]             # <<<<<<<<<<<<<<
@@ -2107,7 +2122,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
       (__pyx_v_idata[__pyx_v_i]) = (((g2int *)__pyx_v_items)[__pyx_v_i]);
     }
 
-    /* "g2clib.pyx":107
+    /* "g2clib.pyx":119
  *     PyObject_AsWriteBuffer(a, &abuf, &buflen)
  * 
  *     if str(a.dtype) == 'int32':             # <<<<<<<<<<<<<<
@@ -2117,24 +2132,24 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
     goto __pyx_L3;
   }
 
-  /* "g2clib.pyx":112
+  /* "g2clib.pyx":124
  *       for i from 0 <= i < len(a):
  *         idata[i] = (<g2int *>items)[i]
  *     elif str(a.dtype) == 'float32':             # <<<<<<<<<<<<<<
  *       fdata = <g2float *>abuf
  *       # fill buffer.
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 124, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyUnicode_Type)), __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&PyUnicode_Type)), __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 124, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_float32, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 112, __pyx_L1_error)
+  __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_float32, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 124, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = (__pyx_t_4 != 0);
   if (likely(__pyx_t_3)) {
 
-    /* "g2clib.pyx":113
+    /* "g2clib.pyx":125
  *         idata[i] = (<g2int *>items)[i]
  *     elif str(a.dtype) == 'float32':
  *       fdata = <g2float *>abuf             # <<<<<<<<<<<<<<
@@ -2143,17 +2158,17 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
  */
     __pyx_v_fdata = ((g2float *)__pyx_v_abuf);
 
-    /* "g2clib.pyx":115
+    /* "g2clib.pyx":127
  *       fdata = <g2float *>abuf
  *       # fill buffer.
  *       for i from 0 <= i < len(a):             # <<<<<<<<<<<<<<
  *         fdata[i] = (<g2float *>items)[i]
  *     else:
  */
-    __pyx_t_5 = PyObject_Length(__pyx_v_a); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 115, __pyx_L1_error)
+    __pyx_t_5 = PyObject_Length(__pyx_v_a); if (unlikely(__pyx_t_5 == ((Py_ssize_t)-1))) __PYX_ERR(0, 127, __pyx_L1_error)
     for (__pyx_v_i = 0; __pyx_v_i < __pyx_t_5; __pyx_v_i++) {
 
-      /* "g2clib.pyx":116
+      /* "g2clib.pyx":128
  *       # fill buffer.
  *       for i from 0 <= i < len(a):
  *         fdata[i] = (<g2float *>items)[i]             # <<<<<<<<<<<<<<
@@ -2163,7 +2178,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
       (__pyx_v_fdata[__pyx_v_i]) = (((g2float *)__pyx_v_items)[__pyx_v_i]);
     }
 
-    /* "g2clib.pyx":112
+    /* "g2clib.pyx":124
  *       for i from 0 <= i < len(a):
  *         idata[i] = (<g2int *>items)[i]
  *     elif str(a.dtype) == 'float32':             # <<<<<<<<<<<<<<
@@ -2173,7 +2188,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
     goto __pyx_L3;
   }
 
-  /* "g2clib.pyx":118
+  /* "g2clib.pyx":130
  *         fdata[i] = (<g2float *>items)[i]
  *     else:
  *       free(items)             # <<<<<<<<<<<<<<
@@ -2183,28 +2198,28 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
   /*else*/ {
     free(__pyx_v_items);
 
-    /* "g2clib.pyx":119
+    /* "g2clib.pyx":131
  *     else:
  *       free(items)
  *       raise RuntimeError('unknown array type %s' % a.dtype)             # <<<<<<<<<<<<<<
  * 
  *     free(items)
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 119, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_a, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 131, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_2 = __Pyx_PyUnicode_FormatSafe(__pyx_kp_u_unknown_array_type_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 119, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyUnicode_FormatSafe(__pyx_kp_u_unknown_array_type_s, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 131, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 119, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 131, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 119, __pyx_L1_error)
+    __PYX_ERR(0, 131, __pyx_L1_error)
   }
   __pyx_L3:;
 
-  /* "g2clib.pyx":121
+  /* "g2clib.pyx":133
  *       raise RuntimeError('unknown array type %s' % a.dtype)
  * 
  *     free(items)             # <<<<<<<<<<<<<<
@@ -2213,7 +2228,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
  */
   free(__pyx_v_items);
 
-  /* "g2clib.pyx":122
+  /* "g2clib.pyx":134
  * 
  *     free(items)
  *     return a             # <<<<<<<<<<<<<<
@@ -2225,7 +2240,7 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
   __pyx_r = __pyx_v_a;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":95
+  /* "g2clib.pyx":107
  *     rdieee(idata, rdata, bufleni//4)
  * 
  * cdef _toarray(void *items, object a):             # <<<<<<<<<<<<<<
@@ -2245,9 +2260,9 @@ static PyObject *__pyx_f_6g2clib__toarray(void *__pyx_v_items, PyObject *__pyx_v
   return __pyx_r;
 }
 
-/* "g2clib.pyx":127
- * # routines for reading grib2 files.
- * 
+/* "g2clib.pyx":140
+ * # Routine for reading GRIB2 files.
+ * # ----------------------------------------------------------------------------------------
  * def unpack1(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """              .      .    .                                       .
  *  Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
@@ -2292,17 +2307,17 @@ static PyObject *__pyx_pw_6g2clib_5unpack1(PyObject *__pyx_self, PyObject *__pyx
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, 1); __PYX_ERR(0, 127, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, 1); __PYX_ERR(0, 140, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, 2); __PYX_ERR(0, 127, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, 2); __PYX_ERR(0, 140, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack1") < 0)) __PYX_ERR(0, 127, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack1") < 0)) __PYX_ERR(0, 140, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2317,7 +2332,7 @@ static PyObject *__pyx_pw_6g2clib_5unpack1(PyObject *__pyx_self, PyObject *__pyx
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 127, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack1", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 140, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack1", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2352,7 +2367,7 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack1", 0);
 
-  /* "g2clib.pyx":169
+  /* "g2clib.pyx":182
  *     cdef g2int i, iofst, ierr, idslen
  *     cdef g2int *ids
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -2361,19 +2376,19 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":170
+  /* "g2clib.pyx":183
  *     cdef g2int *ids
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)
  *     if ierr != 0:
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 170, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 183, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":171
+  /* "g2clib.pyx":184
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)             # <<<<<<<<<<<<<<
@@ -2382,7 +2397,7 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_ierr = g2_unpack1(__pyx_v_cgrib, (&__pyx_v_iofst), (&__pyx_v_ids), (&__pyx_v_idslen));
 
-  /* "g2clib.pyx":172
+  /* "g2clib.pyx":185
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -2392,35 +2407,35 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":173
+    /* "g2clib.pyx":186
  *     ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)
  *     if ierr != 0:
  *        msg = "Error unpacking section 1 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 173, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 186, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_1_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 173, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_1_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 186, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":174
+    /* "g2clib.pyx":187
  *     if ierr != 0:
  *        msg = "Error unpacking section 1 - error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  * 
  *     idsect = _toarray(ids, zeros(idslen, 'i4'))
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 174, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 187, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 174, __pyx_L1_error)
+    __PYX_ERR(0, 187, __pyx_L1_error)
 
-    /* "g2clib.pyx":172
+    /* "g2clib.pyx":185
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -2429,14 +2444,14 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   }
 
-  /* "g2clib.pyx":176
+  /* "g2clib.pyx":189
  *        raise RuntimeError(msg)
  * 
  *     idsect = _toarray(ids, zeros(idslen, 'i4'))             # <<<<<<<<<<<<<<
  *     return idsect,iofst//8
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_idslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 176, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_idslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_4 = __pyx_v_zeros; __pyx_t_5 = NULL;
@@ -2454,7 +2469,7 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2463,14 +2478,14 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 189, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -2481,18 +2496,18 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
     __Pyx_GIVEREF(__pyx_n_u_i4);
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_n_u_i4);
     __pyx_t_1 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 176, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 189, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_ids, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 176, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_ids, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 189, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_idsect = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":177
+  /* "g2clib.pyx":190
  * 
  *     idsect = _toarray(ids, zeros(idslen, 'i4'))
  *     return idsect,iofst//8             # <<<<<<<<<<<<<<
@@ -2500,9 +2515,9 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 190, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 177, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 190, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_idsect);
   __Pyx_GIVEREF(__pyx_v_idsect);
@@ -2514,9 +2529,9 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":127
- * # routines for reading grib2 files.
- * 
+  /* "g2clib.pyx":140
+ * # Routine for reading GRIB2 files.
+ * # ----------------------------------------------------------------------------------------
  * def unpack1(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """              .      .    .                                       .
  *  Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
@@ -2539,7 +2554,7 @@ static PyObject *__pyx_pf_6g2clib_4unpack1(CYTHON_UNUSED PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-/* "g2clib.pyx":181
+/* "g2clib.pyx":193
  * 
  * 
  * def unpack3(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
@@ -2586,17 +2601,17 @@ static PyObject *__pyx_pw_6g2clib_7unpack3(PyObject *__pyx_self, PyObject *__pyx
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, 1); __PYX_ERR(0, 181, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, 1); __PYX_ERR(0, 193, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, 2); __PYX_ERR(0, 181, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, 2); __PYX_ERR(0, 193, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack3") < 0)) __PYX_ERR(0, 181, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack3") < 0)) __PYX_ERR(0, 193, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2611,7 +2626,7 @@ static PyObject *__pyx_pw_6g2clib_7unpack3(PyObject *__pyx_self, PyObject *__pyx
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 181, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack3", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 193, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack3", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -2651,7 +2666,7 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack3", 0);
 
-  /* "g2clib.pyx":230
+  /* "g2clib.pyx":242
  *     cdef g2int *ideflist
  *     cdef g2int mapgridlen, iofst, idefnum, ierr
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -2660,19 +2675,19 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":231
+  /* "g2clib.pyx":243
  *     cdef g2int mapgridlen, iofst, idefnum, ierr
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
  *     if ierr != 0:
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 231, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 243, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":232
+  /* "g2clib.pyx":244
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)             # <<<<<<<<<<<<<<
@@ -2681,7 +2696,7 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_ierr = g2_unpack3(__pyx_v_cgrib, (&__pyx_v_iofst), (&__pyx_v_igds), (&__pyx_v_igdstmpl), (&__pyx_v_mapgridlen), (&__pyx_v_ideflist), (&__pyx_v_idefnum));
 
-  /* "g2clib.pyx":233
+  /* "g2clib.pyx":245
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -2691,35 +2706,35 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":234
+    /* "g2clib.pyx":246
  *     ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
  *     if ierr != 0:
  *        msg = "Error unpacking section 3 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 246, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_3_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 234, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_3_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 246, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":235
+    /* "g2clib.pyx":247
  *     if ierr != 0:
  *        msg = "Error unpacking section 3 - error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  * 
  *     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 235, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 247, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 235, __pyx_L1_error)
+    __PYX_ERR(0, 247, __pyx_L1_error)
 
-    /* "g2clib.pyx":233
+    /* "g2clib.pyx":245
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -2728,14 +2743,14 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   }
 
-  /* "g2clib.pyx":237
+  /* "g2clib.pyx":249
  *        raise RuntimeError(msg)
  * 
  *     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))             # <<<<<<<<<<<<<<
  *     gds = _toarray(igds, zeros(5, 'i4'))
  *     deflist = _toarray(ideflist, zeros(idefnum, 'i4'))
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mapgridlen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 237, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mapgridlen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_4 = __pyx_v_zeros; __pyx_t_5 = NULL;
@@ -2753,7 +2768,7 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -2762,14 +2777,14 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -2780,40 +2795,40 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
     __Pyx_GIVEREF(__pyx_n_u_i4);
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_n_u_i4);
     __pyx_t_1 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 237, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 249, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_igdstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 237, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_igdstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 249, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_gdtmpl = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":238
+  /* "g2clib.pyx":250
  * 
  *     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))
  *     gds = _toarray(igds, zeros(5, 'i4'))             # <<<<<<<<<<<<<<
  *     deflist = _toarray(ideflist, zeros(idefnum, 'i4'))
  * 
  */
-  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_v_zeros, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_Call(__pyx_v_zeros, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __pyx_f_6g2clib__toarray(__pyx_v_igds, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_t_3 = __pyx_f_6g2clib__toarray(__pyx_v_igds, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_gds = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "g2clib.pyx":239
+  /* "g2clib.pyx":251
  *     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))
  *     gds = _toarray(igds, zeros(5, 'i4'))
  *     deflist = _toarray(ideflist, zeros(idefnum, 'i4'))             # <<<<<<<<<<<<<<
  * 
  *     return gds,gdtmpl,deflist,iofst//8
  */
-  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_idefnum); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 239, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_idefnum); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 251, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_7 = __pyx_v_zeros; __pyx_t_1 = NULL;
@@ -2831,7 +2846,7 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_7)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_t_4, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2840,14 +2855,14 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_t_4, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   } else
   #endif
   {
-    __pyx_t_5 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     if (__pyx_t_1) {
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_1); __pyx_t_1 = NULL;
@@ -2858,28 +2873,28 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
     __Pyx_GIVEREF(__pyx_n_u_i4);
     PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_6, __pyx_n_u_i4);
     __pyx_t_4 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_5, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 239, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_5, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 251, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __pyx_f_6g2clib__toarray(__pyx_v_ideflist, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 239, __pyx_L1_error)
+  __pyx_t_7 = __pyx_f_6g2clib__toarray(__pyx_v_ideflist, __pyx_t_3); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 251, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_deflist = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "g2clib.pyx":241
+  /* "g2clib.pyx":253
  *     deflist = _toarray(ideflist, zeros(idefnum, 'i4'))
  * 
  *     return gds,gdtmpl,deflist,iofst//8             # <<<<<<<<<<<<<<
  * 
- * def unpack4(gribmsg,ipos,object zeros):
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 253, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_3 = PyTuple_New(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 241, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 253, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_gds);
   __Pyx_GIVEREF(__pyx_v_gds);
@@ -2897,7 +2912,7 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":181
+  /* "g2clib.pyx":193
  * 
  * 
  * def unpack3(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
@@ -2924,8 +2939,8 @@ static PyObject *__pyx_pf_6g2clib_6unpack3(CYTHON_UNUSED PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-/* "g2clib.pyx":243
- *     return gds,gdtmpl,deflist,iofst//8
+/* "g2clib.pyx":256
+ * 
  * 
  * def unpack4(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -2971,17 +2986,17 @@ static PyObject *__pyx_pw_6g2clib_9unpack4(PyObject *__pyx_self, PyObject *__pyx
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, 1); __PYX_ERR(0, 243, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, 1); __PYX_ERR(0, 256, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, 2); __PYX_ERR(0, 243, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, 2); __PYX_ERR(0, 256, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack4") < 0)) __PYX_ERR(0, 243, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack4") < 0)) __PYX_ERR(0, 256, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2996,7 +3011,7 @@ static PyObject *__pyx_pw_6g2clib_9unpack4(PyObject *__pyx_self, PyObject *__pyx
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 243, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack4", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 256, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack4", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -3035,7 +3050,7 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack4", 0);
 
-  /* "g2clib.pyx":281
+  /* "g2clib.pyx":294
  *     cdef g2float *icoordlist
  *     cdef g2int mappdslen, iofst, ipdsnum, ierr, numcoord
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -3044,19 +3059,19 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":282
+  /* "g2clib.pyx":295
  *     cdef g2int mappdslen, iofst, ipdsnum, ierr, numcoord
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
  *     if ierr != 0:
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 282, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 295, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":283
+  /* "g2clib.pyx":296
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)             # <<<<<<<<<<<<<<
@@ -3065,7 +3080,7 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   __pyx_v_ierr = g2_unpack4(__pyx_v_cgrib, (&__pyx_v_iofst), (&__pyx_v_ipdsnum), (&__pyx_v_ipdstmpl), (&__pyx_v_mappdslen), (&__pyx_v_icoordlist), (&__pyx_v_numcoord));
 
-  /* "g2clib.pyx":284
+  /* "g2clib.pyx":297
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3075,35 +3090,35 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":285
+    /* "g2clib.pyx":298
  *     ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
  *     if ierr != 0:
  *        msg = "Error unpacking section 4 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 298, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_4_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 285, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_4_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 298, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":286
+    /* "g2clib.pyx":299
  *     if ierr != 0:
  *        msg = "Error unpacking section 4 - error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  * 
  *     pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, 'i4'))
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 286, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 299, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 286, __pyx_L1_error)
+    __PYX_ERR(0, 299, __pyx_L1_error)
 
-    /* "g2clib.pyx":284
+    /* "g2clib.pyx":297
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3112,14 +3127,14 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
  */
   }
 
-  /* "g2clib.pyx":288
+  /* "g2clib.pyx":301
  *        raise RuntimeError(msg)
  * 
  *     pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, 'i4'))             # <<<<<<<<<<<<<<
  *     coordlist = _toarray(icoordlist, zeros(numcoord, 'f4'))
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mappdslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 288, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mappdslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_4 = __pyx_v_zeros; __pyx_t_5 = NULL;
@@ -3137,7 +3152,7 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -3146,14 +3161,14 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 288, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -3164,25 +3179,25 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
     __Pyx_GIVEREF(__pyx_n_u_i4);
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_n_u_i4);
     __pyx_t_1 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 288, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 301, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_ipdstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 288, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_ipdstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 301, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_pdtmpl = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":289
+  /* "g2clib.pyx":302
  * 
  *     pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, 'i4'))
  *     coordlist = _toarray(icoordlist, zeros(numcoord, 'f4'))             # <<<<<<<<<<<<<<
  * 
  *     return pdtmpl,ipdsnum,coordlist,iofst//8
  */
-  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_numcoord); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_numcoord); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 302, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_7 = __pyx_v_zeros; __pyx_t_1 = NULL;
@@ -3200,7 +3215,7 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_7)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_t_3, __pyx_n_u_f4};
-    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
@@ -3209,14 +3224,14 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
     PyObject *__pyx_temp[3] = {__pyx_t_1, __pyx_t_3, __pyx_n_u_f4};
-    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   } else
   #endif
   {
-    __pyx_t_5 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 289, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 302, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     if (__pyx_t_1) {
       __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_1); __pyx_t_1 = NULL;
@@ -3227,30 +3242,30 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
     __Pyx_GIVEREF(__pyx_n_u_f4);
     PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_6, __pyx_n_u_f4);
     __pyx_t_3 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_5, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 289, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_5, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 302, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
   __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = __pyx_f_6g2clib__toarray(__pyx_v_icoordlist, __pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 289, __pyx_L1_error)
+  __pyx_t_7 = __pyx_f_6g2clib__toarray(__pyx_v_icoordlist, __pyx_t_4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 302, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_v_coordlist = __pyx_t_7;
   __pyx_t_7 = 0;
 
-  /* "g2clib.pyx":291
+  /* "g2clib.pyx":304
  *     coordlist = _toarray(icoordlist, zeros(numcoord, 'f4'))
  * 
  *     return pdtmpl,ipdsnum,coordlist,iofst//8             # <<<<<<<<<<<<<<
  * 
- * def unpack5(gribmsg,ipos,object zeros):
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__pyx_v_ipdsnum); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__pyx_v_ipdsnum); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 304, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 304, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyTuple_New(4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 291, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 304, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_INCREF(__pyx_v_pdtmpl);
   __Pyx_GIVEREF(__pyx_v_pdtmpl);
@@ -3268,8 +3283,8 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   __pyx_t_5 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":243
- *     return gds,gdtmpl,deflist,iofst//8
+  /* "g2clib.pyx":256
+ * 
  * 
  * def unpack4(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -3294,8 +3309,8 @@ static PyObject *__pyx_pf_6g2clib_8unpack4(CYTHON_UNUSED PyObject *__pyx_self, P
   return __pyx_r;
 }
 
-/* "g2clib.pyx":293
- *     return pdtmpl,ipdsnum,coordlist,iofst//8
+/* "g2clib.pyx":307
+ * 
  * 
  * def unpack5(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -3341,17 +3356,17 @@ static PyObject *__pyx_pw_6g2clib_11unpack5(PyObject *__pyx_self, PyObject *__py
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, 1); __PYX_ERR(0, 293, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, 1); __PYX_ERR(0, 307, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, 2); __PYX_ERR(0, 293, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, 2); __PYX_ERR(0, 307, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack5") < 0)) __PYX_ERR(0, 293, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack5") < 0)) __PYX_ERR(0, 307, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -3366,7 +3381,7 @@ static PyObject *__pyx_pw_6g2clib_11unpack5(PyObject *__pyx_self, PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 293, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack5", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 307, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack5", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -3403,7 +3418,7 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack5", 0);
 
-  /* "g2clib.pyx":327
+  /* "g2clib.pyx":341
  *     cdef g2int *idrstmpl
  *     cdef g2int iofst, ierr, ndpts, idrsnum, mapdrslen
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -3412,19 +3427,19 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":328
+  /* "g2clib.pyx":342
  *     cdef g2int iofst, ierr, ndpts, idrsnum, mapdrslen
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
  *     if ierr != 0:
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 328, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 342, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":329
+  /* "g2clib.pyx":343
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)             # <<<<<<<<<<<<<<
@@ -3433,7 +3448,7 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_ierr = g2_unpack5(__pyx_v_cgrib, (&__pyx_v_iofst), (&__pyx_v_ndpts), (&__pyx_v_idrsnum), (&__pyx_v_idrstmpl), (&__pyx_v_mapdrslen));
 
-  /* "g2clib.pyx":330
+  /* "g2clib.pyx":344
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3443,35 +3458,35 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":331
+    /* "g2clib.pyx":345
  *     ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
  *     if ierr != 0:
  *        msg = "Error unpacking section 5 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 331, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 345, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_5_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 331, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_5_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 345, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":332
+    /* "g2clib.pyx":346
  *     if ierr != 0:
  *        msg = "Error unpacking section 5 - error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  * 
  *     drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i4'))
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 332, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 346, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 332, __pyx_L1_error)
+    __PYX_ERR(0, 346, __pyx_L1_error)
 
-    /* "g2clib.pyx":330
+    /* "g2clib.pyx":344
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3480,14 +3495,14 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":334
+  /* "g2clib.pyx":348
  *        raise RuntimeError(msg)
  * 
  *     drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i4'))             # <<<<<<<<<<<<<<
  *     return drtmpl,idrsnum,ndpts,iofst//8
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mapdrslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_mapdrslen); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 348, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_zeros);
   __pyx_t_4 = __pyx_v_zeros; __pyx_t_5 = NULL;
@@ -3505,7 +3520,7 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 334, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -3514,14 +3529,14 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 334, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   } else
   #endif
   {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 334, __pyx_L1_error)
+    __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 348, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     if (__pyx_t_5) {
       __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -3532,32 +3547,32 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_GIVEREF(__pyx_n_u_i4);
     PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_n_u_i4);
     __pyx_t_1 = 0;
-    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 334, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 348, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
   }
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_idrstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 334, __pyx_L1_error)
+  __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_idrstmpl, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 348, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_v_drtmpl = __pyx_t_4;
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":335
+  /* "g2clib.pyx":349
  * 
  *     drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i4'))
  *     return drtmpl,idrsnum,ndpts,iofst//8             # <<<<<<<<<<<<<<
  * 
- * def unpack6(gribmsg,ndpts,ipos,object zeros):
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_idrsnum); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_idrsnum); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ndpts); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ndpts); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __pyx_t_7 = __Pyx_PyInt_From_int32_t(__Pyx_div_g2int(__pyx_v_iofst, 8)); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_1 = PyTuple_New(4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 335, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 349, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_drtmpl);
   __Pyx_GIVEREF(__pyx_v_drtmpl);
@@ -3575,8 +3590,8 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":293
- *     return pdtmpl,ipdsnum,coordlist,iofst//8
+  /* "g2clib.pyx":307
+ * 
  * 
  * def unpack5(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -3600,8 +3615,8 @@ static PyObject *__pyx_pf_6g2clib_10unpack5(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "g2clib.pyx":337
- *     return drtmpl,idrsnum,ndpts,iofst//8
+/* "g2clib.pyx":352
+ * 
  * 
  * def unpack6(gribmsg,ndpts,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -3650,23 +3665,23 @@ static PyObject *__pyx_pw_6g2clib_13unpack6(PyObject *__pyx_self, PyObject *__py
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ndpts)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 1); __PYX_ERR(0, 337, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 1); __PYX_ERR(0, 352, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 2); __PYX_ERR(0, 337, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 2); __PYX_ERR(0, 352, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 3); __PYX_ERR(0, 337, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, 3); __PYX_ERR(0, 352, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack6") < 0)) __PYX_ERR(0, 337, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack6") < 0)) __PYX_ERR(0, 352, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
@@ -3683,7 +3698,7 @@ static PyObject *__pyx_pw_6g2clib_13unpack6(PyObject *__pyx_self, PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 337, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack6", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 352, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack6", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -3719,7 +3734,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack6", 0);
 
-  /* "g2clib.pyx":369
+  /* "g2clib.pyx":384
  *     cdef g2int iofst, ierr, ngpts, ibmap
  *     cdef g2int *bmap
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -3728,19 +3743,19 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":370
+  /* "g2clib.pyx":385
  *     cdef g2int *bmap
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 370, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 385, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":371
+  /* "g2clib.pyx":386
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ngpts = <g2int>PyInt_AsLong(ndpts)             # <<<<<<<<<<<<<<
@@ -3749,7 +3764,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_ngpts = ((g2int)PyInt_AsLong(__pyx_v_ndpts));
 
-  /* "g2clib.pyx":372
+  /* "g2clib.pyx":387
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)             # <<<<<<<<<<<<<<
@@ -3758,7 +3773,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_ierr = g2_unpack6(__pyx_v_cgrib, (&__pyx_v_iofst), __pyx_v_ngpts, (&__pyx_v_ibmap), (&__pyx_v_bmap));
 
-  /* "g2clib.pyx":373
+  /* "g2clib.pyx":388
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3768,35 +3783,35 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":374
+    /* "g2clib.pyx":389
  *     ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
  *     if ierr != 0:
  *         msg = "Error unpacking section 6 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *         raise RuntimeError(msg)
  *     if ibmap == 0:
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 374, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_6_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 374, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_6_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 389, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":375
+    /* "g2clib.pyx":390
  *     if ierr != 0:
  *         msg = "Error unpacking section 6 - error code = %i" % ierr
  *         raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  *     if ibmap == 0:
  *         bitmap = _toarray(bmap, zeros(ngpts, 'i4'))
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 375, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 390, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 375, __pyx_L1_error)
+    __PYX_ERR(0, 390, __pyx_L1_error)
 
-    /* "g2clib.pyx":373
+    /* "g2clib.pyx":388
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -3805,7 +3820,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":376
+  /* "g2clib.pyx":391
  *         msg = "Error unpacking section 6 - error code = %i" % ierr
  *         raise RuntimeError(msg)
  *     if ibmap == 0:             # <<<<<<<<<<<<<<
@@ -3815,14 +3830,14 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_2 = ((__pyx_v_ibmap == 0) != 0);
   if (__pyx_t_2) {
 
-    /* "g2clib.pyx":377
+    /* "g2clib.pyx":392
  *         raise RuntimeError(msg)
  *     if ibmap == 0:
  *         bitmap = _toarray(bmap, zeros(ngpts, 'i4'))             # <<<<<<<<<<<<<<
  *     else:
  *         bitmap = None
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ngpts); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ngpts); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 392, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_INCREF(__pyx_v_zeros);
     __pyx_t_4 = __pyx_v_zeros; __pyx_t_5 = NULL;
@@ -3840,7 +3855,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 377, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 392, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -3849,14 +3864,14 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
       PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_t_1, __pyx_n_u_i4};
-      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 377, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 392, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     } else
     #endif
     {
-      __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 377, __pyx_L1_error)
+      __pyx_t_7 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 392, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       if (__pyx_t_5) {
         __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_5); __pyx_t_5 = NULL;
@@ -3867,18 +3882,18 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
       __Pyx_GIVEREF(__pyx_n_u_i4);
       PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_6, __pyx_n_u_i4);
       __pyx_t_1 = 0;
-      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 377, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_7, NULL); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 392, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     }
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_bmap, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 377, __pyx_L1_error)
+    __pyx_t_4 = __pyx_f_6g2clib__toarray(__pyx_v_bmap, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 392, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_bitmap = __pyx_t_4;
     __pyx_t_4 = 0;
 
-    /* "g2clib.pyx":376
+    /* "g2clib.pyx":391
  *         msg = "Error unpacking section 6 - error code = %i" % ierr
  *         raise RuntimeError(msg)
  *     if ibmap == 0:             # <<<<<<<<<<<<<<
@@ -3888,7 +3903,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
     goto __pyx_L4;
   }
 
-  /* "g2clib.pyx":379
+  /* "g2clib.pyx":394
  *         bitmap = _toarray(bmap, zeros(ngpts, 'i4'))
  *     else:
  *         bitmap = None             # <<<<<<<<<<<<<<
@@ -3899,7 +3914,7 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_INCREF(Py_None);
     __pyx_v_bitmap = Py_None;
 
-    /* "g2clib.pyx":380
+    /* "g2clib.pyx":395
  *     else:
  *         bitmap = None
  *         free(bmap)             # <<<<<<<<<<<<<<
@@ -3910,17 +3925,17 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   }
   __pyx_L4:;
 
-  /* "g2clib.pyx":381
+  /* "g2clib.pyx":396
  *         bitmap = None
  *         free(bmap)
  *     return bitmap,ibmap             # <<<<<<<<<<<<<<
  * 
- * def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ibmap); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ibmap); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 396, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 381, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 396, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_bitmap);
   __Pyx_GIVEREF(__pyx_v_bitmap);
@@ -3932,8 +3947,8 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":337
- *     return drtmpl,idrsnum,ndpts,iofst//8
+  /* "g2clib.pyx":352
+ * 
  * 
  * def unpack6(gribmsg,ndpts,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
@@ -3957,8 +3972,8 @@ static PyObject *__pyx_pf_6g2clib_12unpack6(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "g2clib.pyx":383
- *     return bitmap,ibmap
+/* "g2clib.pyx":399
+ * 
  * 
  * def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):             # <<<<<<<<<<<<<<
  *     """
@@ -4027,43 +4042,43 @@ static PyObject *__pyx_pw_6g2clib_15unpack7(PyObject *__pyx_self, PyObject *__py
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gdtnum)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 1); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 1); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gdtmpl)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 2); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 2); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_drtnum)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 3); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 3); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_drtmpl)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 4); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 4); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
         if (likely((values[5] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ndpts)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 5); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 5); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  6:
         if (likely((values[6] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ipos)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 6); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 6); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  7:
         if (likely((values[7] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_zeros)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 7); __PYX_ERR(0, 383, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, 7); __PYX_ERR(0, 399, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  8:
@@ -4079,7 +4094,7 @@ static PyObject *__pyx_pw_6g2clib_15unpack7(PyObject *__pyx_self, PyObject *__py
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack7") < 0)) __PYX_ERR(0, 383, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "unpack7") < 0)) __PYX_ERR(0, 399, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -4112,7 +4127,7 @@ static PyObject *__pyx_pw_6g2clib_15unpack7(PyObject *__pyx_self, PyObject *__py
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 383, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("unpack7", 0, 8, 10, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 399, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.unpack7", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -4166,7 +4181,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("unpack7", 0);
 
-  /* "g2clib.pyx":433
+  /* "g2clib.pyx":449
  *     cdef int n
  *     cdef Py_ssize_t buflen
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -4175,19 +4190,19 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":434
+  /* "g2clib.pyx":450
  *     cdef Py_ssize_t buflen
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)             # <<<<<<<<<<<<<<
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     idrsnum = <g2int>PyInt_AsLong(drtnum)
  */
-  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 434, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Multiply(__pyx_v_ipos, __pyx_int_8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 450, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_iofst = ((g2int)PyInt_AsLong(__pyx_t_1));
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":435
+  /* "g2clib.pyx":451
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ngpts = <g2int>PyInt_AsLong(ndpts)             # <<<<<<<<<<<<<<
@@ -4196,7 +4211,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_ngpts = ((g2int)PyInt_AsLong(__pyx_v_ndpts));
 
-  /* "g2clib.pyx":436
+  /* "g2clib.pyx":452
  *     iofst = <g2int>PyInt_AsLong(ipos*8)
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     idrsnum = <g2int>PyInt_AsLong(drtnum)             # <<<<<<<<<<<<<<
@@ -4205,7 +4220,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_idrsnum = ((g2int)PyInt_AsLong(__pyx_v_drtnum));
 
-  /* "g2clib.pyx":437
+  /* "g2clib.pyx":453
  *     ngpts = <g2int>PyInt_AsLong(ndpts)
  *     idrsnum = <g2int>PyInt_AsLong(drtnum)
  *     igdsnum = <g2int>PyInt_AsLong(gdtnum)             # <<<<<<<<<<<<<<
@@ -4214,7 +4229,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_igdsnum = ((g2int)PyInt_AsLong(__pyx_v_gdtnum));
 
-  /* "g2clib.pyx":438
+  /* "g2clib.pyx":454
  *     idrsnum = <g2int>PyInt_AsLong(drtnum)
  *     igdsnum = <g2int>PyInt_AsLong(gdtnum)
  *     PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)             # <<<<<<<<<<<<<<
@@ -4223,7 +4238,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_drtmpl, (&__pyx_v_drtmpldat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":439
+  /* "g2clib.pyx":455
  *     igdsnum = <g2int>PyInt_AsLong(gdtnum)
  *     PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)
  *     PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)             # <<<<<<<<<<<<<<
@@ -4232,7 +4247,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_gdtmpl, (&__pyx_v_gdtmpldat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":440
+  /* "g2clib.pyx":456
  *     PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)
  *     PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)
  *     idrstmpl = <g2int *>drtmpldat             # <<<<<<<<<<<<<<
@@ -4241,7 +4256,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_idrstmpl = ((g2int *)__pyx_v_drtmpldat);
 
-  /* "g2clib.pyx":441
+  /* "g2clib.pyx":457
  *     PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)
  *     idrstmpl = <g2int *>drtmpldat
  *     igdstmpl = <g2int *>gdtmpldat             # <<<<<<<<<<<<<<
@@ -4250,7 +4265,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_igdstmpl = ((g2int *)__pyx_v_gdtmpldat);
 
-  /* "g2clib.pyx":442
+  /* "g2clib.pyx":458
  *     idrstmpl = <g2int *>drtmpldat
  *     igdstmpl = <g2int *>gdtmpldat
  *     ierr=g2_unpack7(cgrib,&iofst,igdsnum,igdstmpl,idrsnum,idrstmpl,ngpts,&fld)             # <<<<<<<<<<<<<<
@@ -4259,7 +4274,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   __pyx_v_ierr = g2_unpack7(__pyx_v_cgrib, (&__pyx_v_iofst), __pyx_v_igdsnum, __pyx_v_igdstmpl, __pyx_v_idrsnum, __pyx_v_idrstmpl, __pyx_v_ngpts, (&__pyx_v_fld));
 
-  /* "g2clib.pyx":443
+  /* "g2clib.pyx":459
  *     igdstmpl = <g2int *>gdtmpldat
  *     ierr=g2_unpack7(cgrib,&iofst,igdsnum,igdstmpl,idrsnum,idrstmpl,ngpts,&fld)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -4269,35 +4284,35 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
   __pyx_t_2 = ((__pyx_v_ierr != 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":444
+    /* "g2clib.pyx":460
  *     ierr=g2_unpack7(cgrib,&iofst,igdsnum,igdstmpl,idrsnum,idrstmpl,ngpts,&fld)
  *     if ierr != 0:
  *        msg = "Error unpacking section 7 - error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  * 
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 444, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 460, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_7_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 444, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_Error_unpacking_section_7_error, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 460, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":445
+    /* "g2clib.pyx":461
  *     if ierr != 0:
  *        msg = "Error unpacking section 7 - error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 445, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 461, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 445, __pyx_L1_error)
+    __PYX_ERR(0, 461, __pyx_L1_error)
 
-    /* "g2clib.pyx":443
+    /* "g2clib.pyx":459
  *     igdstmpl = <g2int *>gdtmpldat
  *     ierr=g2_unpack7(cgrib,&iofst,igdsnum,igdstmpl,idrsnum,idrstmpl,ngpts,&fld)
  *     if ierr != 0:             # <<<<<<<<<<<<<<
@@ -4306,17 +4321,17 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":448
+  /* "g2clib.pyx":464
  * 
  * 
  *     if printminmax:             # <<<<<<<<<<<<<<
  *         rmax=-<float>9.9e31
  *         rmin=<float>9.9e31
  */
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_printminmax); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 448, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_v_printminmax); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 464, __pyx_L1_error)
   if (__pyx_t_2) {
 
-    /* "g2clib.pyx":449
+    /* "g2clib.pyx":465
  * 
  *     if printminmax:
  *         rmax=-<float>9.9e31             # <<<<<<<<<<<<<<
@@ -4325,7 +4340,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
     __pyx_v_rmax = (-((float)9.9e31));
 
-    /* "g2clib.pyx":450
+    /* "g2clib.pyx":466
  *     if printminmax:
  *         rmax=-<float>9.9e31
  *         rmin=<float>9.9e31             # <<<<<<<<<<<<<<
@@ -4334,17 +4349,17 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
     __pyx_v_rmin = ((float)9.9e31);
 
-    /* "g2clib.pyx":451
+    /* "g2clib.pyx":467
  *         rmax=-<float>9.9e31
  *         rmin=<float>9.9e31
  *         for n from 0 <= n < ndpts:             # <<<<<<<<<<<<<<
  *             if fld[n] > rmax: rmax=fld[n]
  *             if fld[n] < rmin: rmin=fld[n]
  */
-    __pyx_t_4 = __Pyx_PyInt_As_int(__pyx_v_ndpts); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 451, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_As_int(__pyx_v_ndpts); if (unlikely((__pyx_t_4 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 467, __pyx_L1_error)
     for (__pyx_v_n = 0; __pyx_v_n < __pyx_t_4; __pyx_v_n++) {
 
-      /* "g2clib.pyx":452
+      /* "g2clib.pyx":468
  *         rmin=<float>9.9e31
  *         for n from 0 <= n < ndpts:
  *             if fld[n] > rmax: rmax=fld[n]             # <<<<<<<<<<<<<<
@@ -4356,7 +4371,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
         __pyx_v_rmax = (__pyx_v_fld[__pyx_v_n]);
       }
 
-      /* "g2clib.pyx":453
+      /* "g2clib.pyx":469
  *         for n from 0 <= n < ndpts:
  *             if fld[n] > rmax: rmax=fld[n]
  *             if fld[n] < rmin: rmin=fld[n]             # <<<<<<<<<<<<<<
@@ -4369,62 +4384,62 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
       }
     }
 
-    /* "g2clib.pyx":454
+    /* "g2clib.pyx":470
  *             if fld[n] > rmax: rmax=fld[n]
  *             if fld[n] < rmin: rmin=fld[n]
  *         fldmax = PyFloat_FromDouble(rmax)             # <<<<<<<<<<<<<<
  *         fldmin = PyFloat_FromDouble(rmin)
  *         bitsofprecision = drtmpl[3]
  */
-    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_rmax); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 454, __pyx_L1_error)
+    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_rmax); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 470, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_fldmax = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":455
+    /* "g2clib.pyx":471
  *             if fld[n] < rmin: rmin=fld[n]
  *         fldmax = PyFloat_FromDouble(rmax)
  *         fldmin = PyFloat_FromDouble(rmin)             # <<<<<<<<<<<<<<
  *         bitsofprecision = drtmpl[3]
  *         digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
  */
-    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_rmin); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 455, __pyx_L1_error)
+    __pyx_t_3 = PyFloat_FromDouble(__pyx_v_rmin); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 471, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_fldmin = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":456
+    /* "g2clib.pyx":472
  *         fldmax = PyFloat_FromDouble(rmax)
  *         fldmin = PyFloat_FromDouble(rmin)
  *         bitsofprecision = drtmpl[3]             # <<<<<<<<<<<<<<
  *         digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
  *         format = "%."+repr(digitsofprecision+1)+"g"
  */
-    __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_drtmpl, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 456, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_drtmpl, 3, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 472, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_bitsofprecision = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":457
+    /* "g2clib.pyx":473
  *         fldmin = PyFloat_FromDouble(rmin)
  *         bitsofprecision = drtmpl[3]
  *         digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))             # <<<<<<<<<<<<<<
  *         format = "%."+repr(digitsofprecision+1)+"g"
  *         minmaxstring = 'min/max='+format+'/'+format
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_math); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_math); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ceil); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ceil); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_math); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_math); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_log10); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_log10); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_7);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_math); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_8, __pyx_n_s_math); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pow); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_GetAttrStr(__pyx_t_8, __pyx_n_s_pow); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     __pyx_t_8 = NULL;
@@ -4442,7 +4457,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_9)) {
       PyObject *__pyx_temp[3] = {__pyx_t_8, __pyx_int_2, __pyx_v_bitsofprecision};
-      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 457, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 473, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_6);
     } else
@@ -4450,13 +4465,13 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_9)) {
       PyObject *__pyx_temp[3] = {__pyx_t_8, __pyx_int_2, __pyx_v_bitsofprecision};
-      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 457, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 473, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
       __Pyx_GOTREF(__pyx_t_6);
     } else
     #endif
     {
-      __pyx_t_10 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 457, __pyx_L1_error)
+      __pyx_t_10 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 473, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       if (__pyx_t_8) {
         __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_10, 0, __pyx_t_8); __pyx_t_8 = NULL;
@@ -4467,7 +4482,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
       __Pyx_INCREF(__pyx_v_bitsofprecision);
       __Pyx_GIVEREF(__pyx_v_bitsofprecision);
       PyTuple_SET_ITEM(__pyx_t_10, 1+__pyx_t_4, __pyx_v_bitsofprecision);
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_10, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 457, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_10, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 473, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     }
@@ -4485,7 +4500,7 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_1 = (__pyx_t_9) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_9, __pyx_t_6) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6);
     __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 457, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
     __pyx_t_7 = NULL;
@@ -4501,62 +4516,62 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
     __pyx_t_3 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_7, __pyx_t_1) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_1);
     __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 457, __pyx_L1_error)
+    if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyNumber_Int(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 457, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyNumber_Int(__pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 473, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_digitsofprecision = __pyx_t_5;
     __pyx_t_5 = 0;
 
-    /* "g2clib.pyx":458
+    /* "g2clib.pyx":474
  *         bitsofprecision = drtmpl[3]
  *         digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
  *         format = "%."+repr(digitsofprecision+1)+"g"             # <<<<<<<<<<<<<<
  *         minmaxstring = 'min/max='+format+'/'+format
  *         minmaxstring = minmaxstring % (fldmin,fldmax)
  */
-    __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_v_digitsofprecision, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 458, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_v_digitsofprecision, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 474, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_3 = PyObject_Repr(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 458, __pyx_L1_error)
+    __pyx_t_3 = PyObject_Repr(__pyx_t_5); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 474, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = PyNumber_Add(__pyx_kp_u__2, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 458, __pyx_L1_error)
+    __pyx_t_5 = PyNumber_Add(__pyx_kp_u__2, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 474, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyNumber_Add(__pyx_t_5, __pyx_n_u_g); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 458, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Add(__pyx_t_5, __pyx_n_u_g); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 474, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_format = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":459
+    /* "g2clib.pyx":475
  *         digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
  *         format = "%."+repr(digitsofprecision+1)+"g"
  *         minmaxstring = 'min/max='+format+'/'+format             # <<<<<<<<<<<<<<
  *         minmaxstring = minmaxstring % (fldmin,fldmax)
  *         print(minmaxstring)
  */
-    __pyx_t_3 = PyNumber_Add(__pyx_kp_u_min_max, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 459, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Add(__pyx_kp_u_min_max, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = PyNumber_Add(__pyx_t_3, __pyx_kp_u__3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 459, __pyx_L1_error)
+    __pyx_t_5 = PyNumber_Add(__pyx_t_3, __pyx_kp_u__3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 475, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __pyx_t_3 = PyNumber_Add(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 459, __pyx_L1_error)
+    __pyx_t_3 = PyNumber_Add(__pyx_t_5, __pyx_v_format); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 475, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_v_minmaxstring = __pyx_t_3;
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":460
+    /* "g2clib.pyx":476
  *         format = "%."+repr(digitsofprecision+1)+"g"
  *         minmaxstring = 'min/max='+format+'/'+format
  *         minmaxstring = minmaxstring % (fldmin,fldmax)             # <<<<<<<<<<<<<<
  *         print(minmaxstring)
  * 
  */
-    __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 476, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_INCREF(__pyx_v_fldmin);
     __Pyx_GIVEREF(__pyx_v_fldmin);
@@ -4564,24 +4579,24 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
     __Pyx_INCREF(__pyx_v_fldmax);
     __Pyx_GIVEREF(__pyx_v_fldmax);
     PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_v_fldmax);
-    __pyx_t_5 = PyNumber_Remainder(__pyx_v_minmaxstring, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 460, __pyx_L1_error)
+    __pyx_t_5 = PyNumber_Remainder(__pyx_v_minmaxstring, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 476, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF_SET(__pyx_v_minmaxstring, __pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "g2clib.pyx":461
+    /* "g2clib.pyx":477
  *         minmaxstring = 'min/max='+format+'/'+format
  *         minmaxstring = minmaxstring % (fldmin,fldmax)
  *         print(minmaxstring)             # <<<<<<<<<<<<<<
  * 
  *     data = _toarray(fld, zeros(ngpts, 'f4', order=storageorder))
  */
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_minmaxstring); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 461, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_minmaxstring); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 477, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "g2clib.pyx":448
+    /* "g2clib.pyx":464
  * 
  * 
  *     if printminmax:             # <<<<<<<<<<<<<<
@@ -4590,16 +4605,16 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
  */
   }
 
-  /* "g2clib.pyx":463
+  /* "g2clib.pyx":479
  *         print(minmaxstring)
  * 
  *     data = _toarray(fld, zeros(ngpts, 'f4', order=storageorder))             # <<<<<<<<<<<<<<
  *     return data
  * 
  */
-  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ngpts); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ngpts); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 479, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 479, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_GIVEREF(__pyx_t_5);
   PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_5);
@@ -4607,33 +4622,33 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
   __Pyx_GIVEREF(__pyx_n_u_f4);
   PyTuple_SET_ITEM(__pyx_t_3, 1, __pyx_n_u_f4);
   __pyx_t_5 = 0;
-  __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 479, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_order, __pyx_v_storageorder) < 0) __PYX_ERR(0, 463, __pyx_L1_error)
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_v_zeros, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 463, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_order, __pyx_v_storageorder) < 0) __PYX_ERR(0, 479, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_v_zeros, __pyx_t_3, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 479, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = __pyx_f_6g2clib__toarray(__pyx_v_fld, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 463, __pyx_L1_error)
+  __pyx_t_5 = __pyx_f_6g2clib__toarray(__pyx_v_fld, __pyx_t_1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 479, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_v_data = __pyx_t_5;
   __pyx_t_5 = 0;
 
-  /* "g2clib.pyx":464
+  /* "g2clib.pyx":480
  * 
  *     data = _toarray(fld, zeros(ngpts, 'f4', order=storageorder))
  *     return data             # <<<<<<<<<<<<<<
  * 
- * # routines for writing grib2 files.
+ * # ----------------------------------------------------------------------------------------
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_data);
   __pyx_r = __pyx_v_data;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":383
- *     return bitmap,ibmap
+  /* "g2clib.pyx":399
+ * 
  * 
  * def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):             # <<<<<<<<<<<<<<
  *     """
@@ -4666,9 +4681,9 @@ static PyObject *__pyx_pf_6g2clib_14unpack7(CYTHON_UNUSED PyObject *__pyx_self, 
   return __pyx_r;
 }
 
-/* "g2clib.pyx":468
- * # routines for writing grib2 files.
- * 
+/* "g2clib.pyx":485
+ * # Routines for writing grib2 files.
+ * # ----------------------------------------------------------------------------------------
  * def grib2_create(object listsec0, object listsec1):             # <<<<<<<<<<<<<<
  *     """
  *  Initializes a new GRIB2 message and packs
@@ -4710,11 +4725,11 @@ static PyObject *__pyx_pw_6g2clib_17grib2_create(PyObject *__pyx_self, PyObject 
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_listsec1)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_create", 1, 2, 2, 1); __PYX_ERR(0, 468, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_create", 1, 2, 2, 1); __PYX_ERR(0, 485, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_create") < 0)) __PYX_ERR(0, 468, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_create") < 0)) __PYX_ERR(0, 485, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
       goto __pyx_L5_argtuple_error;
@@ -4727,7 +4742,7 @@ static PyObject *__pyx_pw_6g2clib_17grib2_create(PyObject *__pyx_self, PyObject 
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("grib2_create", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 468, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("grib2_create", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 485, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.grib2_create", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -4763,33 +4778,33 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("grib2_create", 0);
 
-  /* "g2clib.pyx":517
+  /* "g2clib.pyx":534
  *     cdef unsigned char *cgrib
  *     # cgrib needs to be big enough to hold sec0 and sec1.
  *     lgrib = 4*(len(listsec0)+len(listsec1))             # <<<<<<<<<<<<<<
  *     gribmsg = lgrib*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  */
-  __pyx_t_1 = PyObject_Length(__pyx_v_listsec0); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 517, __pyx_L1_error)
-  __pyx_t_2 = PyObject_Length(__pyx_v_listsec1); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 517, __pyx_L1_error)
-  __pyx_t_3 = PyInt_FromSsize_t((4 * (__pyx_t_1 + __pyx_t_2))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 517, __pyx_L1_error)
+  __pyx_t_1 = PyObject_Length(__pyx_v_listsec0); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 534, __pyx_L1_error)
+  __pyx_t_2 = PyObject_Length(__pyx_v_listsec1); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 534, __pyx_L1_error)
+  __pyx_t_3 = PyInt_FromSsize_t((4 * (__pyx_t_1 + __pyx_t_2))); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 534, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_lgrib = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "g2clib.pyx":518
+  /* "g2clib.pyx":535
  *     # cgrib needs to be big enough to hold sec0 and sec1.
  *     lgrib = 4*(len(listsec0)+len(listsec1))
  *     gribmsg = lgrib*b" "             # <<<<<<<<<<<<<<
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     PyObject_AsReadBuffer(listsec0, &listsec0dat, &buflen)
  */
-  __pyx_t_3 = PyNumber_Multiply(__pyx_v_lgrib, __pyx_kp_b__4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 518, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_Multiply(__pyx_v_lgrib, __pyx_kp_b__4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 535, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __pyx_v_gribmsg = __pyx_t_3;
   __pyx_t_3 = 0;
 
-  /* "g2clib.pyx":519
+  /* "g2clib.pyx":536
  *     lgrib = 4*(len(listsec0)+len(listsec1))
  *     gribmsg = lgrib*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -4798,7 +4813,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":520
+  /* "g2clib.pyx":537
  *     gribmsg = lgrib*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     PyObject_AsReadBuffer(listsec0, &listsec0dat, &buflen)             # <<<<<<<<<<<<<<
@@ -4807,7 +4822,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_listsec0, (&__pyx_v_listsec0dat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":521
+  /* "g2clib.pyx":538
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     PyObject_AsReadBuffer(listsec0, &listsec0dat, &buflen)
  *     PyObject_AsReadBuffer(listsec1, &listsec1dat, &buflen)             # <<<<<<<<<<<<<<
@@ -4816,7 +4831,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_listsec1, (&__pyx_v_listsec1dat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":522
+  /* "g2clib.pyx":539
  *     PyObject_AsReadBuffer(listsec0, &listsec0dat, &buflen)
  *     PyObject_AsReadBuffer(listsec1, &listsec1dat, &buflen)
  *     isec0 = <g2int *>listsec0dat             # <<<<<<<<<<<<<<
@@ -4825,7 +4840,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   __pyx_v_isec0 = ((g2int *)__pyx_v_listsec0dat);
 
-  /* "g2clib.pyx":523
+  /* "g2clib.pyx":540
  *     PyObject_AsReadBuffer(listsec1, &listsec1dat, &buflen)
  *     isec0 = <g2int *>listsec0dat
  *     isec1 = <g2int *>listsec1dat             # <<<<<<<<<<<<<<
@@ -4834,7 +4849,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   __pyx_v_isec1 = ((g2int *)__pyx_v_listsec1dat);
 
-  /* "g2clib.pyx":524
+  /* "g2clib.pyx":541
  *     isec0 = <g2int *>listsec0dat
  *     isec1 = <g2int *>listsec1dat
  *     ierr = g2_create(cgrib,isec0,isec1)             # <<<<<<<<<<<<<<
@@ -4843,7 +4858,7 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   __pyx_v_ierr = g2_create(__pyx_v_cgrib, __pyx_v_isec0, __pyx_v_isec1);
 
-  /* "g2clib.pyx":525
+  /* "g2clib.pyx":542
  *     isec1 = <g2int *>listsec1dat
  *     ierr = g2_create(cgrib,isec0,isec1)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -4853,35 +4868,35 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
   __pyx_t_4 = ((__pyx_v_ierr < 0) != 0);
   if (unlikely(__pyx_t_4)) {
 
-    /* "g2clib.pyx":526
+    /* "g2clib.pyx":543
  *     ierr = g2_create(cgrib,isec0,isec1)
  *     if ierr < 0:
  *        msg = "Error in grib2_create, error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  */
-    __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 526, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 543, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_5 = PyUnicode_Format(__pyx_kp_u_Error_in_grib2_create_error_code, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 526, __pyx_L1_error)
+    __pyx_t_5 = PyUnicode_Format(__pyx_kp_u_Error_in_grib2_create_error_code, __pyx_t_3); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 543, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "g2clib.pyx":527
+    /* "g2clib.pyx":544
  *     if ierr < 0:
  *        msg = "Error in grib2_create, error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr
  */
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 527, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 544, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_Raise(__pyx_t_5, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __PYX_ERR(0, 527, __pyx_L1_error)
+    __PYX_ERR(0, 544, __pyx_L1_error)
 
-    /* "g2clib.pyx":525
+    /* "g2clib.pyx":542
  *     isec1 = <g2int *>listsec1dat
  *     ierr = g2_create(cgrib,isec0,isec1)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -4890,29 +4905,29 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
  */
   }
 
-  /* "g2clib.pyx":528
+  /* "g2clib.pyx":545
  *        msg = "Error in grib2_create, error code = %i" % ierr
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)             # <<<<<<<<<<<<<<
  *     return gribmsg, ierr
  * 
  */
-  __pyx_t_5 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 528, __pyx_L1_error)
+  __pyx_t_5 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 545, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "g2clib.pyx":529
+  /* "g2clib.pyx":546
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr             # <<<<<<<<<<<<<<
  * 
- * def grib2_end(gribmsg):
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 529, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 546, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 529, __pyx_L1_error)
+  __pyx_t_3 = PyTuple_New(2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 546, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_INCREF(__pyx_v_gribmsg);
   __Pyx_GIVEREF(__pyx_v_gribmsg);
@@ -4924,9 +4939,9 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
   __pyx_t_3 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":468
- * # routines for writing grib2 files.
- * 
+  /* "g2clib.pyx":485
+ * # Routines for writing grib2 files.
+ * # ----------------------------------------------------------------------------------------
  * def grib2_create(object listsec0, object listsec1):             # <<<<<<<<<<<<<<
  *     """
  *  Initializes a new GRIB2 message and packs
@@ -4947,8 +4962,8 @@ static PyObject *__pyx_pf_6g2clib_16grib2_create(CYTHON_UNUSED PyObject *__pyx_s
   return __pyx_r;
 }
 
-/* "g2clib.pyx":531
- *     return gribmsg, ierr
+/* "g2clib.pyx":549
+ * 
  * 
  * def grib2_end(gribmsg):             # <<<<<<<<<<<<<<
  *     """
@@ -4985,19 +5000,19 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
   __Pyx_RefNannySetupContext("grib2_end", 0);
   __Pyx_INCREF(__pyx_v_gribmsg);
 
-  /* "g2clib.pyx":564
+  /* "g2clib.pyx":582
  *     cdef unsigned char *cgrib
  *     # add some extra space to grib message (enough to hold section 8).
  *     gribmsg = gribmsg + b'        '             # <<<<<<<<<<<<<<
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_gribend(cgrib)
  */
-  __pyx_t_1 = PyNumber_Add(__pyx_v_gribmsg, __pyx_kp_b__5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 564, __pyx_L1_error)
+  __pyx_t_1 = PyNumber_Add(__pyx_v_gribmsg, __pyx_kp_b__5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 582, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_1);
   __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":565
+  /* "g2clib.pyx":583
  *     # add some extra space to grib message (enough to hold section 8).
  *     gribmsg = gribmsg + b'        '
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -5006,7 +5021,7 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":566
+  /* "g2clib.pyx":584
  *     gribmsg = gribmsg + b'        '
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_gribend(cgrib)             # <<<<<<<<<<<<<<
@@ -5015,7 +5030,7 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
  */
   __pyx_v_ierr = g2_gribend(__pyx_v_cgrib);
 
-  /* "g2clib.pyx":567
+  /* "g2clib.pyx":585
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_gribend(cgrib)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -5025,35 +5040,35 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_t_2 = ((__pyx_v_ierr < 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":568
+    /* "g2clib.pyx":586
  *     ierr = g2_gribend(cgrib)
  *     if ierr < 0:
  *        msg = "error in grib2_end, error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  */
-    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 586, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_end_error_code_i, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 568, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_end_error_code_i, __pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 586, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":569
+    /* "g2clib.pyx":587
  *     if ierr < 0:
  *        msg = "error in grib2_end, error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 569, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 587, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 569, __pyx_L1_error)
+    __PYX_ERR(0, 587, __pyx_L1_error)
 
-    /* "g2clib.pyx":567
+    /* "g2clib.pyx":585
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_gribend(cgrib)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -5062,19 +5077,19 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
  */
   }
 
-  /* "g2clib.pyx":570
+  /* "g2clib.pyx":588
  *        msg = "error in grib2_end, error code = %i" % ierr
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)             # <<<<<<<<<<<<<<
  *     return gribmsg, ierr
  * 
  */
-  __pyx_t_3 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 570, __pyx_L1_error)
+  __pyx_t_3 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 588, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "g2clib.pyx":571
+  /* "g2clib.pyx":589
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr             # <<<<<<<<<<<<<<
@@ -5082,9 +5097,9 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
  * def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 571, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 589, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 571, __pyx_L1_error)
+  __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 589, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_INCREF(__pyx_v_gribmsg);
   __Pyx_GIVEREF(__pyx_v_gribmsg);
@@ -5096,8 +5111,8 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":531
- *     return gribmsg, ierr
+  /* "g2clib.pyx":549
+ * 
  * 
  * def grib2_end(gribmsg):             # <<<<<<<<<<<<<<
  *     """
@@ -5118,7 +5133,7 @@ static PyObject *__pyx_pf_6g2clib_18grib2_end(CYTHON_UNUSED PyObject *__pyx_self
   return __pyx_r;
 }
 
-/* "g2clib.pyx":573
+/* "g2clib.pyx":591
  *     return gribmsg, ierr
  * 
  * def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):             # <<<<<<<<<<<<<<
@@ -5173,13 +5188,13 @@ static PyObject *__pyx_pw_6g2clib_21grib2_addgrid(PyObject *__pyx_self, PyObject
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gds)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, 1); __PYX_ERR(0, 573, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, 1); __PYX_ERR(0, 591, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gdstmpl)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, 2); __PYX_ERR(0, 573, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, 2); __PYX_ERR(0, 591, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
@@ -5195,7 +5210,7 @@ static PyObject *__pyx_pw_6g2clib_21grib2_addgrid(PyObject *__pyx_self, PyObject
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_addgrid") < 0)) __PYX_ERR(0, 573, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_addgrid") < 0)) __PYX_ERR(0, 591, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -5218,7 +5233,7 @@ static PyObject *__pyx_pw_6g2clib_21grib2_addgrid(PyObject *__pyx_self, PyObject
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 573, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("grib2_addgrid", 0, 3, 5, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 591, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.grib2_addgrid", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5255,7 +5270,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   __Pyx_RefNannySetupContext("grib2_addgrid", 0);
   __Pyx_INCREF(__pyx_v_gribmsg);
 
-  /* "g2clib.pyx":629
+  /* "g2clib.pyx":647
  *     cdef void *gdstmpldat
  *     cdef Py_ssize_t buflen
  *     PyObject_AsReadBuffer(gds, &gdsdat, &buflen)             # <<<<<<<<<<<<<<
@@ -5264,7 +5279,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_gds, (&__pyx_v_gdsdat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":630
+  /* "g2clib.pyx":648
  *     cdef Py_ssize_t buflen
  *     PyObject_AsReadBuffer(gds, &gdsdat, &buflen)
  *     PyObject_AsReadBuffer(gdstmpl, &gdstmpldat, &buflen)             # <<<<<<<<<<<<<<
@@ -5273,7 +5288,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_gdstmpl, (&__pyx_v_gdstmpldat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":631
+  /* "g2clib.pyx":649
  *     PyObject_AsReadBuffer(gds, &gdsdat, &buflen)
  *     PyObject_AsReadBuffer(gdstmpl, &gdstmpldat, &buflen)
  *     igds = <g2int *>gdsdat             # <<<<<<<<<<<<<<
@@ -5282,7 +5297,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_igds = ((g2int *)__pyx_v_gdsdat);
 
-  /* "g2clib.pyx":632
+  /* "g2clib.pyx":650
  *     PyObject_AsReadBuffer(gdstmpl, &gdstmpldat, &buflen)
  *     igds = <g2int *>gdsdat
  *     igdstmpl = <g2int *>gdstmpldat             # <<<<<<<<<<<<<<
@@ -5291,7 +5306,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_igdstmpl = ((g2int *)__pyx_v_gdstmpldat);
 
-  /* "g2clib.pyx":633
+  /* "g2clib.pyx":651
  *     igds = <g2int *>gdsdat
  *     igdstmpl = <g2int *>gdstmpldat
  *     if igds[2] != 0:             # <<<<<<<<<<<<<<
@@ -5301,7 +5316,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_1 = (((__pyx_v_igds[2]) != 0) != 0);
   if (__pyx_t_1) {
 
-    /* "g2clib.pyx":634
+    /* "g2clib.pyx":652
  *     igdstmpl = <g2int *>gdstmpldat
  *     if igds[2] != 0:
  *        PyObject_AsReadBuffer(deflist, &deflistdat, &buflen)             # <<<<<<<<<<<<<<
@@ -5310,7 +5325,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
     (void)(PyObject_AsReadBuffer(__pyx_v_deflist, (&__pyx_v_deflistdat), (&__pyx_v_buflen)));
 
-    /* "g2clib.pyx":635
+    /* "g2clib.pyx":653
  *     if igds[2] != 0:
  *        PyObject_AsReadBuffer(deflist, &deflistdat, &buflen)
  *        ideflist = <g2int *>deflistdat             # <<<<<<<<<<<<<<
@@ -5319,20 +5334,20 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
     __pyx_v_ideflist = ((g2int *)__pyx_v_deflistdat);
 
-    /* "g2clib.pyx":636
+    /* "g2clib.pyx":654
  *        PyObject_AsReadBuffer(deflist, &deflistdat, &buflen)
  *        ideflist = <g2int *>deflistdat
  *        idefnum = <g2int>PyInt_AsLong(len(deflist))             # <<<<<<<<<<<<<<
  *     else:
  *        ideflist = NULL
  */
-    __pyx_t_2 = PyObject_Length(__pyx_v_deflist); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 636, __pyx_L1_error)
-    __pyx_t_3 = PyInt_FromSsize_t(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 636, __pyx_L1_error)
+    __pyx_t_2 = PyObject_Length(__pyx_v_deflist); if (unlikely(__pyx_t_2 == ((Py_ssize_t)-1))) __PYX_ERR(0, 654, __pyx_L1_error)
+    __pyx_t_3 = PyInt_FromSsize_t(__pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 654, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __pyx_v_idefnum = ((g2int)PyInt_AsLong(__pyx_t_3));
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":633
+    /* "g2clib.pyx":651
  *     igds = <g2int *>gdsdat
  *     igdstmpl = <g2int *>gdstmpldat
  *     if igds[2] != 0:             # <<<<<<<<<<<<<<
@@ -5342,7 +5357,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
     goto __pyx_L3;
   }
 
-  /* "g2clib.pyx":638
+  /* "g2clib.pyx":656
  *        idefnum = <g2int>PyInt_AsLong(len(deflist))
  *     else:
  *        ideflist = NULL             # <<<<<<<<<<<<<<
@@ -5352,7 +5367,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   /*else*/ {
     __pyx_v_ideflist = NULL;
 
-    /* "g2clib.pyx":639
+    /* "g2clib.pyx":657
  *     else:
  *        ideflist = NULL
  *        idefnum = 0             # <<<<<<<<<<<<<<
@@ -5363,34 +5378,34 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   }
   __pyx_L3:;
 
-  /* "g2clib.pyx":640
+  /* "g2clib.pyx":658
  *        ideflist = NULL
  *        idefnum = 0
  *     gribmsg = gribmsg + 4*(256+4+gds[2]+1)*b" "             # <<<<<<<<<<<<<<
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
  */
-  __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_gds, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_GetItemInt(__pyx_v_gds, 2, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyInt_AddCObj(__pyx_int_260, __pyx_t_3, 0x104, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_AddCObj(__pyx_int_260, __pyx_t_3, 0x104, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_t_4, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_AddObjC(__pyx_t_4, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Multiply(__pyx_int_4, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Multiply(__pyx_int_4, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-  __pyx_t_3 = PyNumber_Multiply(__pyx_t_4, __pyx_kp_b__4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_3 = PyNumber_Multiply(__pyx_t_4, __pyx_kp_b__4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Add(__pyx_v_gribmsg, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Add(__pyx_v_gribmsg, __pyx_t_3); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":641
+  /* "g2clib.pyx":659
  *        idefnum = 0
  *     gribmsg = gribmsg + 4*(256+4+gds[2]+1)*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -5399,7 +5414,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":642
+  /* "g2clib.pyx":660
  *     gribmsg = gribmsg + 4*(256+4+gds[2]+1)*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)             # <<<<<<<<<<<<<<
@@ -5408,7 +5423,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   __pyx_v_ierr = g2_addgrid(__pyx_v_cgrib, __pyx_v_igds, __pyx_v_igdstmpl, __pyx_v_ideflist, __pyx_v_idefnum);
 
-  /* "g2clib.pyx":643
+  /* "g2clib.pyx":661
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -5418,35 +5433,35 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_1 = ((__pyx_v_ierr < 0) != 0);
   if (unlikely(__pyx_t_1)) {
 
-    /* "g2clib.pyx":644
+    /* "g2clib.pyx":662
  *     ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
  *     if ierr < 0:
  *        msg = "error in grib2_addgrid, error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  */
-    __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 644, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 662, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_addgrid_error_cod, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 644, __pyx_L1_error)
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_addgrid_error_cod, __pyx_t_4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 662, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_3);
     __pyx_t_3 = 0;
 
-    /* "g2clib.pyx":645
+    /* "g2clib.pyx":663
  *     if ierr < 0:
  *        msg = "error in grib2_addgrid, error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr
  */
-    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 645, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 663, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_Raise(__pyx_t_3, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
-    __PYX_ERR(0, 645, __pyx_L1_error)
+    __PYX_ERR(0, 663, __pyx_L1_error)
 
-    /* "g2clib.pyx":643
+    /* "g2clib.pyx":661
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -5455,19 +5470,19 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  */
   }
 
-  /* "g2clib.pyx":646
+  /* "g2clib.pyx":664
  *        msg = "error in grib2_addgrid, error code = %i" % ierr
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)             # <<<<<<<<<<<<<<
  *     return gribmsg, ierr
  * 
  */
-  __pyx_t_3 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 646, __pyx_L1_error)
+  __pyx_t_3 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 664, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_3);
   __pyx_t_3 = 0;
 
-  /* "g2clib.pyx":647
+  /* "g2clib.pyx":665
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr             # <<<<<<<<<<<<<<
@@ -5475,9 +5490,9 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 665, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_v_gribmsg);
   __Pyx_GIVEREF(__pyx_v_gribmsg);
@@ -5489,7 +5504,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":573
+  /* "g2clib.pyx":591
  *     return gribmsg, ierr
  * 
  * def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):             # <<<<<<<<<<<<<<
@@ -5511,7 +5526,7 @@ static PyObject *__pyx_pf_6g2clib_20grib2_addgrid(CYTHON_UNUSED PyObject *__pyx_
   return __pyx_r;
 }
 
-/* "g2clib.pyx":650
+/* "g2clib.pyx":668
  * 
  * 
  * def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,             # <<<<<<<<<<<<<<
@@ -5576,53 +5591,53 @@ static PyObject *__pyx_pw_6g2clib_23grib2_addfield(PyObject *__pyx_self, PyObjec
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_pdsnum)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 1); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 1); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_pdstmpl)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 2); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 2); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_coordlist)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 3); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 3); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  4:
         if (likely((values[4] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_drsnum)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 4); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 4); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  5:
         if (likely((values[5] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_drstmpl)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 5); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 5); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  6:
         if (likely((values[6] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_field)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 6); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 6); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  7:
         if (likely((values[7] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_ibitmap)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 7); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 7); __PYX_ERR(0, 668, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  8:
         if (likely((values[8] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_bitmap)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 8); __PYX_ERR(0, 650, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, 8); __PYX_ERR(0, 668, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_addfield") < 0)) __PYX_ERR(0, 650, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_addfield") < 0)) __PYX_ERR(0, 668, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 9) {
       goto __pyx_L5_argtuple_error;
@@ -5649,7 +5664,7 @@ static PyObject *__pyx_pw_6g2clib_23grib2_addfield(PyObject *__pyx_self, PyObjec
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 650, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("grib2_addfield", 1, 9, 9, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 668, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("g2clib.grib2_addfield", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -5673,7 +5688,6 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   g2float *__pyx_v_fcoordlist;
   g2int *__pyx_v_bmap;
   g2int __pyx_v_ngrdpts;
-  g2int __pyx_v_ibmap;
   void *__pyx_v_pdtmpldat;
   void *__pyx_v_drtmpldat;
   void *__pyx_v_coordlistdat;
@@ -5681,6 +5695,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   void *__pyx_v_bitmapdat;
   Py_ssize_t __pyx_v_buflen;
   unsigned char *__pyx_v_cgrib;
+  g2int __pyx_v_ibmap;
   PyObject *__pyx_v_msg = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -5695,7 +5710,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   __Pyx_RefNannySetupContext("grib2_addfield", 0);
   __Pyx_INCREF(__pyx_v_gribmsg);
 
-  /* "g2clib.pyx":736
+  /* "g2clib.pyx":754
  *     cdef Py_ssize_t buflen
  *     cdef unsigned char *cgrib
  *     ipdsnum = <g2int>PyInt_AsLong(pdsnum)             # <<<<<<<<<<<<<<
@@ -5704,7 +5719,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_ipdsnum = ((g2int)PyInt_AsLong(__pyx_v_pdsnum));
 
-  /* "g2clib.pyx":737
+  /* "g2clib.pyx":755
  *     cdef unsigned char *cgrib
  *     ipdsnum = <g2int>PyInt_AsLong(pdsnum)
  *     PyObject_AsReadBuffer(pdstmpl, &pdtmpldat, &buflen)             # <<<<<<<<<<<<<<
@@ -5713,7 +5728,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_pdstmpl, (&__pyx_v_pdtmpldat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":738
+  /* "g2clib.pyx":756
  *     ipdsnum = <g2int>PyInt_AsLong(pdsnum)
  *     PyObject_AsReadBuffer(pdstmpl, &pdtmpldat, &buflen)
  *     ipdstmpl = <g2int *>pdtmpldat             # <<<<<<<<<<<<<<
@@ -5722,7 +5737,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_ipdstmpl = ((g2int *)__pyx_v_pdtmpldat);
 
-  /* "g2clib.pyx":739
+  /* "g2clib.pyx":757
  *     PyObject_AsReadBuffer(pdstmpl, &pdtmpldat, &buflen)
  *     ipdstmpl = <g2int *>pdtmpldat
  *     idrsnum = <g2int>PyInt_AsLong(drsnum)             # <<<<<<<<<<<<<<
@@ -5731,7 +5746,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_idrsnum = ((g2int)PyInt_AsLong(__pyx_v_drsnum));
 
-  /* "g2clib.pyx":740
+  /* "g2clib.pyx":758
  *     ipdstmpl = <g2int *>pdtmpldat
  *     idrsnum = <g2int>PyInt_AsLong(drsnum)
  *     PyObject_AsReadBuffer(drstmpl, &drtmpldat, &buflen)             # <<<<<<<<<<<<<<
@@ -5740,7 +5755,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_drstmpl, (&__pyx_v_drtmpldat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":741
+  /* "g2clib.pyx":759
  *     idrsnum = <g2int>PyInt_AsLong(drsnum)
  *     PyObject_AsReadBuffer(drstmpl, &drtmpldat, &buflen)
  *     idrstmpl = <g2int *>drtmpldat             # <<<<<<<<<<<<<<
@@ -5749,7 +5764,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_idrstmpl = ((g2int *)__pyx_v_drtmpldat);
 
-  /* "g2clib.pyx":742
+  /* "g2clib.pyx":760
  *     PyObject_AsReadBuffer(drstmpl, &drtmpldat, &buflen)
  *     idrstmpl = <g2int *>drtmpldat
  *     if coordlist is not None:             # <<<<<<<<<<<<<<
@@ -5760,7 +5775,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "g2clib.pyx":743
+    /* "g2clib.pyx":761
  *     idrstmpl = <g2int *>drtmpldat
  *     if coordlist is not None:
  *         PyObject_AsReadBuffer(coordlist, &coordlistdat, &buflen)             # <<<<<<<<<<<<<<
@@ -5769,7 +5784,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
     (void)(PyObject_AsReadBuffer(__pyx_v_coordlist, (&__pyx_v_coordlistdat), (&__pyx_v_buflen)));
 
-    /* "g2clib.pyx":744
+    /* "g2clib.pyx":762
  *     if coordlist is not None:
  *         PyObject_AsReadBuffer(coordlist, &coordlistdat, &buflen)
  *         fcoordlist = <g2float *>coordlistdat             # <<<<<<<<<<<<<<
@@ -5778,17 +5793,17 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
     __pyx_v_fcoordlist = ((g2float *)__pyx_v_coordlistdat);
 
-    /* "g2clib.pyx":745
+    /* "g2clib.pyx":763
  *         PyObject_AsReadBuffer(coordlist, &coordlistdat, &buflen)
  *         fcoordlist = <g2float *>coordlistdat
  *         numcoord = len(coordlist)             # <<<<<<<<<<<<<<
  *     else:
  *         fcoordlist = NULL
  */
-    __pyx_t_3 = PyObject_Length(__pyx_v_coordlist); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 745, __pyx_L1_error)
+    __pyx_t_3 = PyObject_Length(__pyx_v_coordlist); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 763, __pyx_L1_error)
     __pyx_v_numcoord = __pyx_t_3;
 
-    /* "g2clib.pyx":742
+    /* "g2clib.pyx":760
  *     PyObject_AsReadBuffer(drstmpl, &drtmpldat, &buflen)
  *     idrstmpl = <g2int *>drtmpldat
  *     if coordlist is not None:             # <<<<<<<<<<<<<<
@@ -5798,7 +5813,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
     goto __pyx_L3;
   }
 
-  /* "g2clib.pyx":747
+  /* "g2clib.pyx":765
  *         numcoord = len(coordlist)
  *     else:
  *         fcoordlist = NULL             # <<<<<<<<<<<<<<
@@ -5808,7 +5823,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   /*else*/ {
     __pyx_v_fcoordlist = NULL;
 
-    /* "g2clib.pyx":748
+    /* "g2clib.pyx":766
  *     else:
  *         fcoordlist = NULL
  *         numcoord = 0             # <<<<<<<<<<<<<<
@@ -5819,7 +5834,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   }
   __pyx_L3:;
 
-  /* "g2clib.pyx":749
+  /* "g2clib.pyx":767
  *         fcoordlist = NULL
  *         numcoord = 0
  *     PyObject_AsReadBuffer(field, &fielddat, &buflen)             # <<<<<<<<<<<<<<
@@ -5828,7 +5843,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   (void)(PyObject_AsReadBuffer(__pyx_v_field, (&__pyx_v_fielddat), (&__pyx_v_buflen)));
 
-  /* "g2clib.pyx":750
+  /* "g2clib.pyx":768
  *         numcoord = 0
  *     PyObject_AsReadBuffer(field, &fielddat, &buflen)
  *     fld = <g2float *>fielddat             # <<<<<<<<<<<<<<
@@ -5837,7 +5852,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_fld = ((g2float *)__pyx_v_fielddat);
 
-  /* "g2clib.pyx":751
+  /* "g2clib.pyx":769
  *     PyObject_AsReadBuffer(field, &fielddat, &buflen)
  *     fld = <g2float *>fielddat
  *     ibmap = <g2int>PyInt_AsLong(ibitmap)             # <<<<<<<<<<<<<<
@@ -5846,41 +5861,41 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_ibmap = ((g2int)PyInt_AsLong(__pyx_v_ibitmap));
 
-  /* "g2clib.pyx":752
+  /* "g2clib.pyx":770
  *     fld = <g2float *>fielddat
  *     ibmap = <g2int>PyInt_AsLong(ibitmap)
  *     ngrdpts = len(field)             # <<<<<<<<<<<<<<
  *     if ibitmap == 0 or ibitmap == 254:
  *         PyObject_AsReadBuffer(bitmap, &bitmapdat, &buflen)
  */
-  __pyx_t_3 = PyObject_Length(__pyx_v_field); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 752, __pyx_L1_error)
+  __pyx_t_3 = PyObject_Length(__pyx_v_field); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 770, __pyx_L1_error)
   __pyx_v_ngrdpts = __pyx_t_3;
 
-  /* "g2clib.pyx":753
+  /* "g2clib.pyx":771
  *     ibmap = <g2int>PyInt_AsLong(ibitmap)
  *     ngrdpts = len(field)
  *     if ibitmap == 0 or ibitmap == 254:             # <<<<<<<<<<<<<<
  *         PyObject_AsReadBuffer(bitmap, &bitmapdat, &buflen)
  *         bmap  = <g2int *>bitmapdat
  */
-  __pyx_t_4 = __Pyx_PyInt_EqObjC(__pyx_v_ibitmap, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 753, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_EqObjC(__pyx_v_ibitmap, __pyx_int_0, 0, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 771, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 753, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 771, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   if (!__pyx_t_1) {
   } else {
     __pyx_t_2 = __pyx_t_1;
     goto __pyx_L5_bool_binop_done;
   }
-  __pyx_t_4 = __Pyx_PyInt_EqObjC(__pyx_v_ibitmap, __pyx_int_254, 0xFE, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 753, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyInt_EqObjC(__pyx_v_ibitmap, __pyx_int_254, 0xFE, 0); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 771, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 753, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_IsTrue(__pyx_t_4); if (unlikely(__pyx_t_1 < 0)) __PYX_ERR(0, 771, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_2 = __pyx_t_1;
   __pyx_L5_bool_binop_done:;
   if (__pyx_t_2) {
 
-    /* "g2clib.pyx":754
+    /* "g2clib.pyx":772
  *     ngrdpts = len(field)
  *     if ibitmap == 0 or ibitmap == 254:
  *         PyObject_AsReadBuffer(bitmap, &bitmapdat, &buflen)             # <<<<<<<<<<<<<<
@@ -5889,7 +5904,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
     (void)(PyObject_AsReadBuffer(__pyx_v_bitmap, (&__pyx_v_bitmapdat), (&__pyx_v_buflen)));
 
-    /* "g2clib.pyx":755
+    /* "g2clib.pyx":773
  *     if ibitmap == 0 or ibitmap == 254:
  *         PyObject_AsReadBuffer(bitmap, &bitmapdat, &buflen)
  *         bmap  = <g2int *>bitmapdat             # <<<<<<<<<<<<<<
@@ -5898,7 +5913,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
     __pyx_v_bmap = ((g2int *)__pyx_v_bitmapdat);
 
-    /* "g2clib.pyx":753
+    /* "g2clib.pyx":771
  *     ibmap = <g2int>PyInt_AsLong(ibitmap)
  *     ngrdpts = len(field)
  *     if ibitmap == 0 or ibitmap == 254:             # <<<<<<<<<<<<<<
@@ -5908,7 +5923,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
     goto __pyx_L4;
   }
 
-  /* "g2clib.pyx":757
+  /* "g2clib.pyx":775
  *         bmap  = <g2int *>bitmapdat
  *     else:
  *         bmap = NULL             # <<<<<<<<<<<<<<
@@ -5920,26 +5935,26 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   }
   __pyx_L4:;
 
-  /* "g2clib.pyx":758
+  /* "g2clib.pyx":776
  *     else:
  *         bmap = NULL
  *     gribmsg = gribmsg + 4*(len(drstmpl)+ngrdpts+4)*b" "             # <<<<<<<<<<<<<<
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
  */
-  __pyx_t_3 = PyObject_Length(__pyx_v_drstmpl); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 758, __pyx_L1_error)
-  __pyx_t_4 = PyInt_FromSsize_t((4 * ((__pyx_t_3 + __pyx_v_ngrdpts) + 4))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 758, __pyx_L1_error)
+  __pyx_t_3 = PyObject_Length(__pyx_v_drstmpl); if (unlikely(__pyx_t_3 == ((Py_ssize_t)-1))) __PYX_ERR(0, 776, __pyx_L1_error)
+  __pyx_t_4 = PyInt_FromSsize_t((4 * ((__pyx_t_3 + __pyx_v_ngrdpts) + 4))); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 776, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
-  __pyx_t_5 = PyNumber_Multiply(__pyx_t_4, __pyx_kp_b__4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 758, __pyx_L1_error)
+  __pyx_t_5 = PyNumber_Multiply(__pyx_t_4, __pyx_kp_b__4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 776, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __pyx_t_4 = PyNumber_Add(__pyx_v_gribmsg, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 758, __pyx_L1_error)
+  __pyx_t_4 = PyNumber_Add(__pyx_v_gribmsg, __pyx_t_5); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 776, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_4);
   __pyx_t_4 = 0;
 
-  /* "g2clib.pyx":759
+  /* "g2clib.pyx":777
  *         bmap = NULL
  *     gribmsg = gribmsg + 4*(len(drstmpl)+ngrdpts+4)*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
@@ -5948,7 +5963,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
 
-  /* "g2clib.pyx":760
+  /* "g2clib.pyx":778
  *     gribmsg = gribmsg + 4*(len(drstmpl)+ngrdpts+4)*b" "
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)             # <<<<<<<<<<<<<<
@@ -5957,7 +5972,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   __pyx_v_ierr = g2_addfield(__pyx_v_cgrib, __pyx_v_ipdsnum, __pyx_v_ipdstmpl, __pyx_v_fcoordlist, __pyx_v_numcoord, __pyx_v_idrsnum, __pyx_v_idrstmpl, __pyx_v_fld, __pyx_v_ngrdpts, __pyx_v_ibmap, __pyx_v_bmap);
 
-  /* "g2clib.pyx":761
+  /* "g2clib.pyx":779
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -5967,35 +5982,35 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   __pyx_t_2 = ((__pyx_v_ierr < 0) != 0);
   if (unlikely(__pyx_t_2)) {
 
-    /* "g2clib.pyx":762
+    /* "g2clib.pyx":780
  *     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
  *     if ierr < 0:
  *        msg = "error in grib2_addfield, error code = %i" % ierr             # <<<<<<<<<<<<<<
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  */
-    __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 762, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 780, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_addfield_error_co, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 762, __pyx_L1_error)
+    __pyx_t_5 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_addfield_error_co, __pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 780, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_v_msg = ((PyObject*)__pyx_t_5);
     __pyx_t_5 = 0;
 
-    /* "g2clib.pyx":763
+    /* "g2clib.pyx":781
  *     if ierr < 0:
  *        msg = "error in grib2_addfield, error code = %i" % ierr
  *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr
  */
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 763, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 781, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_Raise(__pyx_t_5, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __PYX_ERR(0, 763, __pyx_L1_error)
+    __PYX_ERR(0, 781, __pyx_L1_error)
 
-    /* "g2clib.pyx":761
+    /* "g2clib.pyx":779
  *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
  *     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
  *     if ierr < 0:             # <<<<<<<<<<<<<<
@@ -6004,26 +6019,29 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
  */
   }
 
-  /* "g2clib.pyx":764
+  /* "g2clib.pyx":782
  *        msg = "error in grib2_addfield, error code = %i" % ierr
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)             # <<<<<<<<<<<<<<
  *     return gribmsg, ierr
+ * 
  */
-  __pyx_t_5 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 764, __pyx_L1_error)
+  __pyx_t_5 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 782, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "g2clib.pyx":765
+  /* "g2clib.pyx":783
  *        raise RuntimeError(msg)
  *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
  *     return gribmsg, ierr             # <<<<<<<<<<<<<<
+ * 
+ * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 765, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 783, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 765, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 783, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_INCREF(__pyx_v_gribmsg);
   __Pyx_GIVEREF(__pyx_v_gribmsg);
@@ -6035,7 +6053,7 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   __pyx_t_4 = 0;
   goto __pyx_L0;
 
-  /* "g2clib.pyx":650
+  /* "g2clib.pyx":668
  * 
  * 
  * def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,             # <<<<<<<<<<<<<<
@@ -6048,6 +6066,253 @@ static PyObject *__pyx_pf_6g2clib_22grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_AddTraceback("g2clib.grib2_addfield", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XDECREF(__pyx_v_msg);
+  __Pyx_XDECREF(__pyx_v_gribmsg);
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "g2clib.pyx":786
+ * 
+ * 
+ * def grib2_addlocal(gribmsg,object sec2):             # <<<<<<<<<<<<<<
+ *     """
+ *     This routine adds a Local Use Section (Section 2) to
+ */
+
+/* Python wrapper */
+static PyObject *__pyx_pw_6g2clib_25grib2_addlocal(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_6g2clib_24grib2_addlocal[] = "\n    This routine adds a Local Use Section (Section 2) to\n    a GRIB2 message.  It is used with routines \"g2_create\",\n    \"g2_addgrid\", \"g2_addfield\",\n    and \"g2_gribend\" to create a complete GRIB2 message.\n    g2_create must be called first to initialize a new GRIB2 message.\n  \n    USAGE: int g2_addlocal(unsigned char *cgrib,unsigned char *csec2,\n                           g2int lcsec2)\n    INPUT ARGUMENTS:\n       cgrib    - Char array that contains the GRIB2 message to which section\n                  2 should be added.\n       csec2    - Character array containing information to be added in\n                  Section 2.\n       lcsec2   - Number of bytes of character array csec2 to be added to\n                  Section 2.\n  \n   OUTPUT ARGUMENT:\n       cgrib    - Char array to contain the updated GRIB2 message.\n                  Must be allocated large enough to store the entire\n                  GRIB2 message.\n  \n   RETURN VALUES:\n       ierr     - Return code.\n                > 0 = Current size of updated GRIB2 message\n                 -1 = GRIB message was not initialized.  Need to call\n                      routine gribcreate first.\n                 -2 = GRIB message already complete.  Cannot add new section.\n                 -3 = Sum of Section byte counts doesn't add to total byte count\n                 -4 = Previous Section was not 1 or 7.\n  \n    REMARKS: Note that the Local Use Section ( Section 2 ) can only follow\n             Section 1 or Section 7 in a GRIB2 message.\n    ";
+static PyMethodDef __pyx_mdef_6g2clib_25grib2_addlocal = {"grib2_addlocal", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_6g2clib_25grib2_addlocal, METH_VARARGS|METH_KEYWORDS, __pyx_doc_6g2clib_24grib2_addlocal};
+static PyObject *__pyx_pw_6g2clib_25grib2_addlocal(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyObject *__pyx_v_gribmsg = 0;
+  PyObject *__pyx_v_sec2 = 0;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("grib2_addlocal (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_gribmsg,&__pyx_n_s_sec2,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_gribmsg)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_sec2)) != 0)) kw_args--;
+        else {
+          __Pyx_RaiseArgtupleInvalid("grib2_addlocal", 1, 2, 2, 1); __PYX_ERR(0, 786, __pyx_L3_error)
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "grib2_addlocal") < 0)) __PYX_ERR(0, 786, __pyx_L3_error)
+      }
+    } else if (PyTuple_GET_SIZE(__pyx_args) != 2) {
+      goto __pyx_L5_argtuple_error;
+    } else {
+      values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+      values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+    }
+    __pyx_v_gribmsg = values[0];
+    __pyx_v_sec2 = values[1];
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("grib2_addlocal", 1, 2, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 786, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("g2clib.grib2_addlocal", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_6g2clib_24grib2_addlocal(__pyx_self, __pyx_v_gribmsg, __pyx_v_sec2);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_6g2clib_24grib2_addlocal(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_gribmsg, PyObject *__pyx_v_sec2) {
+  unsigned char *__pyx_v_cgrib;
+  unsigned char *__pyx_v_csec2;
+  g2int __pyx_v_lcsec2;
+  g2int __pyx_v_ierr;
+  PyObject *__pyx_v_msg = NULL;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  Py_ssize_t __pyx_t_1;
+  PyObject *__pyx_t_2 = NULL;
+  PyObject *__pyx_t_3 = NULL;
+  int __pyx_t_4;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("grib2_addlocal", 0);
+  __Pyx_INCREF(__pyx_v_gribmsg);
+
+  /* "g2clib.pyx":825
+ *     cdef g2int lcsec2
+ *     cdef g2int ierr
+ *     lcsec2 = len(sec2)             # <<<<<<<<<<<<<<
+ *     gribmsg = gribmsg + 4*(5+lcsec2)*b" "
+ *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
+ */
+  __pyx_t_1 = PyObject_Length(__pyx_v_sec2); if (unlikely(__pyx_t_1 == ((Py_ssize_t)-1))) __PYX_ERR(0, 825, __pyx_L1_error)
+  __pyx_v_lcsec2 = __pyx_t_1;
+
+  /* "g2clib.pyx":826
+ *     cdef g2int ierr
+ *     lcsec2 = len(sec2)
+ *     gribmsg = gribmsg + 4*(5+lcsec2)*b" "             # <<<<<<<<<<<<<<
+ *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)
+ */
+  __pyx_t_2 = __Pyx_PyInt_From_int32_t((4 * (5 + __pyx_v_lcsec2))); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 826, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __pyx_t_3 = PyNumber_Multiply(__pyx_t_2, __pyx_kp_b__4); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 826, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+  __pyx_t_2 = PyNumber_Add(__pyx_v_gribmsg, __pyx_t_3); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 826, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_2);
+  __pyx_t_2 = 0;
+
+  /* "g2clib.pyx":827
+ *     lcsec2 = len(sec2)
+ *     gribmsg = gribmsg + 4*(5+lcsec2)*b" "
+ *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)             # <<<<<<<<<<<<<<
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)
+ */
+  __pyx_v_cgrib = ((unsigned char *)PyBytes_AsString(__pyx_v_gribmsg));
+
+  /* "g2clib.pyx":828
+ *     gribmsg = gribmsg + 4*(5+lcsec2)*b" "
+ *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)             # <<<<<<<<<<<<<<
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)
+ *     if ierr < 0:
+ */
+  __pyx_v_csec2 = ((unsigned char *)PyBytes_AsString(__pyx_v_sec2));
+
+  /* "g2clib.pyx":829
+ *     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)             # <<<<<<<<<<<<<<
+ *     if ierr < 0:
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr
+ */
+  __pyx_v_ierr = g2_addlocal(__pyx_v_cgrib, __pyx_v_csec2, __pyx_v_lcsec2);
+
+  /* "g2clib.pyx":830
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)
+ *     if ierr < 0:             # <<<<<<<<<<<<<<
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr
+ *        raise RuntimeError(msg)
+ */
+  __pyx_t_4 = ((__pyx_v_ierr < 0) != 0);
+  if (unlikely(__pyx_t_4)) {
+
+    /* "g2clib.pyx":831
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)
+ *     if ierr < 0:
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr             # <<<<<<<<<<<<<<
+ *        raise RuntimeError(msg)
+ *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
+ */
+    __pyx_t_2 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 831, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = PyUnicode_Format(__pyx_kp_u_error_in_grib2_addlocal_error_co, __pyx_t_2); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 831, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_v_msg = ((PyObject*)__pyx_t_3);
+    __pyx_t_3 = 0;
+
+    /* "g2clib.pyx":832
+ *     if ierr < 0:
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr
+ *        raise RuntimeError(msg)             # <<<<<<<<<<<<<<
+ *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
+ *     return gribmsg, ierr
+ */
+    __pyx_t_3 = __Pyx_PyObject_CallOneArg(__pyx_builtin_RuntimeError, __pyx_v_msg); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 832, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_Raise(__pyx_t_3, 0, 0, 0);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __PYX_ERR(0, 832, __pyx_L1_error)
+
+    /* "g2clib.pyx":830
+ *     csec2 = <unsigned char *>PyBytes_AsString(sec2)
+ *     ierr = g2_addlocal(cgrib,csec2,lcsec2)
+ *     if ierr < 0:             # <<<<<<<<<<<<<<
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr
+ *        raise RuntimeError(msg)
+ */
+  }
+
+  /* "g2clib.pyx":833
+ *        msg = "error in grib2_addlocal, error code = %i" % ierr
+ *        raise RuntimeError(msg)
+ *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)             # <<<<<<<<<<<<<<
+ *     return gribmsg, ierr
+ */
+  __pyx_t_3 = PyBytes_FromStringAndSize(((char *)__pyx_v_cgrib), __pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 833, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF_SET(__pyx_v_gribmsg, __pyx_t_3);
+  __pyx_t_3 = 0;
+
+  /* "g2clib.pyx":834
+ *        raise RuntimeError(msg)
+ *     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
+ *     return gribmsg, ierr             # <<<<<<<<<<<<<<
+ */
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_3 = __Pyx_PyInt_From_int32_t(__pyx_v_ierr); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 834, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_t_2 = PyTuple_New(2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 834, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_2);
+  __Pyx_INCREF(__pyx_v_gribmsg);
+  __Pyx_GIVEREF(__pyx_v_gribmsg);
+  PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_v_gribmsg);
+  __Pyx_GIVEREF(__pyx_t_3);
+  PyTuple_SET_ITEM(__pyx_t_2, 1, __pyx_t_3);
+  __pyx_t_3 = 0;
+  __pyx_r = __pyx_t_2;
+  __pyx_t_2 = 0;
+  goto __pyx_L0;
+
+  /* "g2clib.pyx":786
+ * 
+ * 
+ * def grib2_addlocal(gribmsg,object sec2):             # <<<<<<<<<<<<<<
+ *     """
+ *     This routine adds a Local Use Section (Section 2) to
+ */
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_2);
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_AddTraceback("g2clib.grib2_addlocal", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_msg);
@@ -6075,7 +6340,7 @@ static PyModuleDef_Slot __pyx_moduledef_slots[] = {
 static struct PyModuleDef __pyx_moduledef = {
     PyModuleDef_HEAD_INIT,
     "g2clib",
-    __pyx_k_Pyrex_code_to_provide_python_int, /* m_doc */
+    __pyx_k_Cython_code_to_provide_python_i, /* m_doc */
   #if CYTHON_PEP489_MULTI_PHASE_INIT
     0, /* m_size */
   #else
@@ -6128,6 +6393,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_cline_in_traceback, __pyx_k_cline_in_traceback, sizeof(__pyx_k_cline_in_traceback), 0, 0, 1, 1},
   {&__pyx_n_s_coordlist, __pyx_k_coordlist, sizeof(__pyx_k_coordlist), 0, 0, 1, 1},
   {&__pyx_n_s_coordlistdat, __pyx_k_coordlistdat, sizeof(__pyx_k_coordlistdat), 0, 0, 1, 1},
+  {&__pyx_n_s_csec2, __pyx_k_csec2, sizeof(__pyx_k_csec2), 0, 0, 1, 1},
   {&__pyx_n_s_data, __pyx_k_data, sizeof(__pyx_k_data), 0, 0, 1, 1},
   {&__pyx_n_s_deflist, __pyx_k_deflist, sizeof(__pyx_k_deflist), 0, 0, 1, 1},
   {&__pyx_n_s_deflistdat, __pyx_k_deflistdat, sizeof(__pyx_k_deflistdat), 0, 0, 1, 1},
@@ -6145,6 +6411,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_u_error_getting_buffer_for_output_2, __pyx_k_error_getting_buffer_for_output_2, sizeof(__pyx_k_error_getting_buffer_for_output_2), 0, 1, 0, 0},
   {&__pyx_kp_u_error_in_grib2_addfield_error_co, __pyx_k_error_in_grib2_addfield_error_co, sizeof(__pyx_k_error_in_grib2_addfield_error_co), 0, 1, 0, 0},
   {&__pyx_kp_u_error_in_grib2_addgrid_error_cod, __pyx_k_error_in_grib2_addgrid_error_cod, sizeof(__pyx_k_error_in_grib2_addgrid_error_cod), 0, 1, 0, 0},
+  {&__pyx_kp_u_error_in_grib2_addlocal_error_co, __pyx_k_error_in_grib2_addlocal_error_co, sizeof(__pyx_k_error_in_grib2_addlocal_error_co), 0, 1, 0, 0},
   {&__pyx_kp_u_error_in_grib2_end_error_code_i, __pyx_k_error_in_grib2_end_error_code_i, sizeof(__pyx_k_error_in_grib2_end_error_code_i), 0, 1, 0, 0},
   {&__pyx_n_u_f4, __pyx_k_f4, sizeof(__pyx_k_f4), 0, 1, 0, 1},
   {&__pyx_n_s_fcoordlist, __pyx_k_fcoordlist, sizeof(__pyx_k_fcoordlist), 0, 0, 1, 1},
@@ -6167,6 +6434,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_gdtnum, __pyx_k_gdtnum, sizeof(__pyx_k_gdtnum), 0, 0, 1, 1},
   {&__pyx_n_s_grib2_addfield, __pyx_k_grib2_addfield, sizeof(__pyx_k_grib2_addfield), 0, 0, 1, 1},
   {&__pyx_n_s_grib2_addgrid, __pyx_k_grib2_addgrid, sizeof(__pyx_k_grib2_addgrid), 0, 0, 1, 1},
+  {&__pyx_n_s_grib2_addlocal, __pyx_k_grib2_addlocal, sizeof(__pyx_k_grib2_addlocal), 0, 0, 1, 1},
   {&__pyx_n_s_grib2_create, __pyx_k_grib2_create, sizeof(__pyx_k_grib2_create), 0, 0, 1, 1},
   {&__pyx_n_s_grib2_end, __pyx_k_grib2_end, sizeof(__pyx_k_grib2_end), 0, 0, 1, 1},
   {&__pyx_n_s_gribmsg, __pyx_k_gribmsg, sizeof(__pyx_k_gribmsg), 0, 0, 1, 1},
@@ -6176,6 +6444,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_iarr, __pyx_k_iarr, sizeof(__pyx_k_iarr), 0, 0, 1, 1},
   {&__pyx_n_s_ibitmap, __pyx_k_ibitmap, sizeof(__pyx_k_ibitmap), 0, 0, 1, 1},
   {&__pyx_n_s_ibmap, __pyx_k_ibmap, sizeof(__pyx_k_ibmap), 0, 0, 1, 1},
+  {&__pyx_n_s_ibmapyy, __pyx_k_ibmapyy, sizeof(__pyx_k_ibmapyy), 0, 0, 1, 1},
   {&__pyx_n_s_icoordlist, __pyx_k_icoordlist, sizeof(__pyx_k_icoordlist), 0, 0, 1, 1},
   {&__pyx_n_s_idat, __pyx_k_idat, sizeof(__pyx_k_idat), 0, 0, 1, 1},
   {&__pyx_n_s_idata, __pyx_k_idata, sizeof(__pyx_k_idata), 0, 0, 1, 1},
@@ -6200,6 +6469,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_isec0, __pyx_k_isec0, sizeof(__pyx_k_isec0), 0, 0, 1, 1},
   {&__pyx_n_s_isec1, __pyx_k_isec1, sizeof(__pyx_k_isec1), 0, 0, 1, 1},
   {&__pyx_n_s_itor_ieee, __pyx_k_itor_ieee, sizeof(__pyx_k_itor_ieee), 0, 0, 1, 1},
+  {&__pyx_n_s_lcsec2, __pyx_k_lcsec2, sizeof(__pyx_k_lcsec2), 0, 0, 1, 1},
   {&__pyx_n_s_lgrib, __pyx_k_lgrib, sizeof(__pyx_k_lgrib), 0, 0, 1, 1},
   {&__pyx_n_s_listsec0, __pyx_k_listsec0, sizeof(__pyx_k_listsec0), 0, 0, 1, 1},
   {&__pyx_n_s_listsec0dat, __pyx_k_listsec0dat, sizeof(__pyx_k_listsec0dat), 0, 0, 1, 1},
@@ -6236,6 +6506,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_rmax, __pyx_k_rmax, sizeof(__pyx_k_rmax), 0, 0, 1, 1},
   {&__pyx_n_s_rmin, __pyx_k_rmin, sizeof(__pyx_k_rmin), 0, 0, 1, 1},
   {&__pyx_n_s_rtoi_ieee, __pyx_k_rtoi_ieee, sizeof(__pyx_k_rtoi_ieee), 0, 0, 1, 1},
+  {&__pyx_n_s_sec2, __pyx_k_sec2, sizeof(__pyx_k_sec2), 0, 0, 1, 1},
   {&__pyx_n_s_storageorder, __pyx_k_storageorder, sizeof(__pyx_k_storageorder), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_array_type_s, __pyx_k_unknown_array_type_s, sizeof(__pyx_k_unknown_array_type_s), 0, 1, 0, 0},
@@ -6249,8 +6520,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(0, 67, __pyx_L1_error)
-  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 461, __pyx_L1_error)
+  __pyx_builtin_RuntimeError = __Pyx_GetBuiltinName(__pyx_n_s_RuntimeError); if (!__pyx_builtin_RuntimeError) __PYX_ERR(0, 79, __pyx_L1_error)
+  __pyx_builtin_print = __Pyx_GetBuiltinName(__pyx_n_s_print); if (!__pyx_builtin_print) __PYX_ERR(0, 477, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -6260,160 +6531,172 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "g2clib.pyx":238
+  /* "g2clib.pyx":250
  * 
  *     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))
  *     gds = _toarray(igds, zeros(5, 'i4'))             # <<<<<<<<<<<<<<
  *     deflist = _toarray(ideflist, zeros(idefnum, 'i4'))
  * 
  */
-  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_5, __pyx_n_u_i4); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 238, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_5, __pyx_n_u_i4); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 250, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "g2clib.pyx":55
- * # routines for convert to/from IEEE integers.
- * 
+  /* "g2clib.pyx":67
+ * # Routines for convert to/from IEEE integers.
+ * # ----------------------------------------------------------------------------------------
  * def rtoi_ieee(object rarr, object iarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts a float32 array into an int32 array of IEEE formatted values
  */
-  __pyx_tuple__6 = PyTuple_Pack(10, __pyx_n_s_rarr, __pyx_n_s_iarr, __pyx_n_s_rdat, __pyx_n_s_idat, __pyx_n_s_rdata, __pyx_n_s_r1, __pyx_n_s_idata, __pyx_n_s_i1, __pyx_n_s_bufleni, __pyx_n_s_buflenr); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_tuple__6 = PyTuple_Pack(10, __pyx_n_s_rarr, __pyx_n_s_iarr, __pyx_n_s_rdat, __pyx_n_s_idat, __pyx_n_s_rdata, __pyx_n_s_r1, __pyx_n_s_idata, __pyx_n_s_i1, __pyx_n_s_bufleni, __pyx_n_s_buflenr); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__6);
   __Pyx_GIVEREF(__pyx_tuple__6);
-  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_rtoi_ieee, 55, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(2, 0, 10, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_rtoi_ieee, 67, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 67, __pyx_L1_error)
 
-  /* "g2clib.pyx":76
+  /* "g2clib.pyx":88
  *     mkieee(rdata, idata, buflenr//4)
  * 
  * def itor_ieee(object iarr, object rarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts an int32 array of IEEE values into a float32 array.
  */
-  __pyx_tuple__8 = PyTuple_Pack(8, __pyx_n_s_iarr, __pyx_n_s_rarr, __pyx_n_s_rdat, __pyx_n_s_idat, __pyx_n_s_rdata, __pyx_n_s_idata, __pyx_n_s_bufleni, __pyx_n_s_buflenr); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_tuple__8 = PyTuple_Pack(8, __pyx_n_s_iarr, __pyx_n_s_rarr, __pyx_n_s_rdat, __pyx_n_s_idat, __pyx_n_s_rdata, __pyx_n_s_idata, __pyx_n_s_bufleni, __pyx_n_s_buflenr); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
-  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_itor_ieee, 76, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(2, 0, 8, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_itor_ieee, 88, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) __PYX_ERR(0, 88, __pyx_L1_error)
 
-  /* "g2clib.pyx":127
- * # routines for reading grib2 files.
- * 
+  /* "g2clib.pyx":140
+ * # Routine for reading GRIB2 files.
+ * # ----------------------------------------------------------------------------------------
  * def unpack1(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """              .      .    .                                       .
  *  Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__10 = PyTuple_Pack(11, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_i, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_idslen, __pyx_n_s_ids, __pyx_n_s_msg, __pyx_n_s_idsect); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_tuple__10 = PyTuple_Pack(11, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_i, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_idslen, __pyx_n_s_ids, __pyx_n_s_msg, __pyx_n_s_idsect); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 140, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__10);
   __Pyx_GIVEREF(__pyx_tuple__10);
-  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(3, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack1, 127, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(3, 0, 11, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack1, 140, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 140, __pyx_L1_error)
 
-  /* "g2clib.pyx":181
+  /* "g2clib.pyx":193
  * 
  * 
  * def unpack3(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 3 (Grid Definition Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__12 = PyTuple_Pack(15, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_igds, __pyx_n_s_igdstmpl, __pyx_n_s_ideflist, __pyx_n_s_mapgridlen, __pyx_n_s_iofst, __pyx_n_s_idefnum, __pyx_n_s_ierr, __pyx_n_s_msg, __pyx_n_s_gdtmpl, __pyx_n_s_gds, __pyx_n_s_deflist); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_tuple__12 = PyTuple_Pack(15, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_igds, __pyx_n_s_igdstmpl, __pyx_n_s_ideflist, __pyx_n_s_mapgridlen, __pyx_n_s_iofst, __pyx_n_s_idefnum, __pyx_n_s_ierr, __pyx_n_s_msg, __pyx_n_s_gdtmpl, __pyx_n_s_gds, __pyx_n_s_deflist); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__12);
   __Pyx_GIVEREF(__pyx_tuple__12);
-  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(3, 0, 15, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack3, 181, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_codeobj__13 = (PyObject*)__Pyx_PyCode_New(3, 0, 15, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__12, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack3, 193, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__13)) __PYX_ERR(0, 193, __pyx_L1_error)
 
-  /* "g2clib.pyx":243
- *     return gds,gdtmpl,deflist,iofst//8
+  /* "g2clib.pyx":256
+ * 
  * 
  * def unpack4(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__14 = PyTuple_Pack(14, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_ipdstmpl, __pyx_n_s_icoordlist, __pyx_n_s_mappdslen, __pyx_n_s_iofst, __pyx_n_s_ipdsnum, __pyx_n_s_ierr, __pyx_n_s_numcoord, __pyx_n_s_msg, __pyx_n_s_pdtmpl, __pyx_n_s_coordlist); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 243, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(14, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_ipdstmpl, __pyx_n_s_icoordlist, __pyx_n_s_mappdslen, __pyx_n_s_iofst, __pyx_n_s_ipdsnum, __pyx_n_s_ierr, __pyx_n_s_numcoord, __pyx_n_s_msg, __pyx_n_s_pdtmpl, __pyx_n_s_coordlist); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 256, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
-  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack4, 243, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 243, __pyx_L1_error)
+  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(3, 0, 14, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack4, 256, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 256, __pyx_L1_error)
 
-  /* "g2clib.pyx":293
- *     return pdtmpl,ipdsnum,coordlist,iofst//8
+  /* "g2clib.pyx":307
+ * 
  * 
  * def unpack5(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__16 = PyTuple_Pack(12, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_idrstmpl, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ndpts, __pyx_n_s_idrsnum, __pyx_n_s_mapdrslen, __pyx_n_s_msg, __pyx_n_s_drtmpl); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 293, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(12, __pyx_n_s_gribmsg, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_cgrib, __pyx_n_s_idrstmpl, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ndpts, __pyx_n_s_idrsnum, __pyx_n_s_mapdrslen, __pyx_n_s_msg, __pyx_n_s_drtmpl); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 307, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
-  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(3, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack5, 293, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 293, __pyx_L1_error)
+  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(3, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack5, 307, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 307, __pyx_L1_error)
 
-  /* "g2clib.pyx":337
- *     return drtmpl,idrsnum,ndpts,iofst//8
+  /* "g2clib.pyx":352
+ * 
  * 
  * def unpack6(gribmsg,ndpts,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__18 = PyTuple_Pack(12, __pyx_n_s_gribmsg, __pyx_n_s_ndpts, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_bitmap, __pyx_n_s_cgrib, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ngpts, __pyx_n_s_ibmap, __pyx_n_s_bmap, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 337, __pyx_L1_error)
+  __pyx_tuple__18 = PyTuple_Pack(12, __pyx_n_s_gribmsg, __pyx_n_s_ndpts, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_bitmap, __pyx_n_s_cgrib, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ngpts, __pyx_n_s_ibmap, __pyx_n_s_bmap, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(4, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack6, 337, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 337, __pyx_L1_error)
+  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(4, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack6, 352, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 352, __pyx_L1_error)
 
-  /* "g2clib.pyx":383
- *     return bitmap,ibmap
+  /* "g2clib.pyx":399
+ * 
  * 
  * def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
  */
-  __pyx_tuple__20 = PyTuple_Pack(33, __pyx_n_s_gribmsg, __pyx_n_s_gdtnum, __pyx_n_s_gdtmpl, __pyx_n_s_drtnum, __pyx_n_s_drtmpl, __pyx_n_s_ndpts, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_printminmax, __pyx_n_s_storageorder, __pyx_n_s_cgrib, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ngpts, __pyx_n_s_idrsnum, __pyx_n_s_igdsnum, __pyx_n_s_igdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_drtmpldat, __pyx_n_s_gdtmpldat, __pyx_n_s_rmin, __pyx_n_s_rmax, __pyx_n_s_n, __pyx_n_s_buflen, __pyx_n_s_msg, __pyx_n_s_fldmax, __pyx_n_s_fldmin, __pyx_n_s_bitsofprecision, __pyx_n_s_digitsofprecision, __pyx_n_s_format, __pyx_n_s_minmaxstring, __pyx_n_s_data); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_tuple__20 = PyTuple_Pack(33, __pyx_n_s_gribmsg, __pyx_n_s_gdtnum, __pyx_n_s_gdtmpl, __pyx_n_s_drtnum, __pyx_n_s_drtmpl, __pyx_n_s_ndpts, __pyx_n_s_ipos, __pyx_n_s_zeros, __pyx_n_s_printminmax, __pyx_n_s_storageorder, __pyx_n_s_cgrib, __pyx_n_s_iofst, __pyx_n_s_ierr, __pyx_n_s_ngpts, __pyx_n_s_idrsnum, __pyx_n_s_igdsnum, __pyx_n_s_igdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_drtmpldat, __pyx_n_s_gdtmpldat, __pyx_n_s_rmin, __pyx_n_s_rmax, __pyx_n_s_n, __pyx_n_s_buflen, __pyx_n_s_msg, __pyx_n_s_fldmax, __pyx_n_s_fldmin, __pyx_n_s_bitsofprecision, __pyx_n_s_digitsofprecision, __pyx_n_s_format, __pyx_n_s_minmaxstring, __pyx_n_s_data); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
-  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(10, 0, 33, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack7, 383, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_codeobj__21 = (PyObject*)__Pyx_PyCode_New(10, 0, 33, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__20, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_unpack7, 399, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__21)) __PYX_ERR(0, 399, __pyx_L1_error)
 
-  /* "g2clib.pyx":468
- * # routines for writing grib2 files.
- * 
+  /* "g2clib.pyx":485
+ * # Routines for writing grib2 files.
+ * # ----------------------------------------------------------------------------------------
  * def grib2_create(object listsec0, object listsec1):             # <<<<<<<<<<<<<<
  *     """
  *  Initializes a new GRIB2 message and packs
  */
-  __pyx_tuple__22 = PyTuple_Pack(12, __pyx_n_s_listsec0, __pyx_n_s_listsec1, __pyx_n_s_isec0, __pyx_n_s_isec1, __pyx_n_s_ierr, __pyx_n_s_listsec0dat, __pyx_n_s_listsec1dat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_lgrib, __pyx_n_s_gribmsg, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 468, __pyx_L1_error)
+  __pyx_tuple__22 = PyTuple_Pack(12, __pyx_n_s_listsec0, __pyx_n_s_listsec1, __pyx_n_s_isec0, __pyx_n_s_isec1, __pyx_n_s_ierr, __pyx_n_s_listsec0dat, __pyx_n_s_listsec1dat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_lgrib, __pyx_n_s_gribmsg, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__22)) __PYX_ERR(0, 485, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__22);
   __Pyx_GIVEREF(__pyx_tuple__22);
-  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(2, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_create, 468, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 468, __pyx_L1_error)
+  __pyx_codeobj__23 = (PyObject*)__Pyx_PyCode_New(2, 0, 12, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__22, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_create, 485, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__23)) __PYX_ERR(0, 485, __pyx_L1_error)
 
-  /* "g2clib.pyx":531
- *     return gribmsg, ierr
+  /* "g2clib.pyx":549
+ * 
  * 
  * def grib2_end(gribmsg):             # <<<<<<<<<<<<<<
  *     """
  * 
  */
-  __pyx_tuple__24 = PyTuple_Pack(4, __pyx_n_s_gribmsg, __pyx_n_s_ierr, __pyx_n_s_cgrib, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 531, __pyx_L1_error)
+  __pyx_tuple__24 = PyTuple_Pack(4, __pyx_n_s_gribmsg, __pyx_n_s_ierr, __pyx_n_s_cgrib, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__24)) __PYX_ERR(0, 549, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__24);
   __Pyx_GIVEREF(__pyx_tuple__24);
-  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_end, 531, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 531, __pyx_L1_error)
+  __pyx_codeobj__25 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__24, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_end, 549, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__25)) __PYX_ERR(0, 549, __pyx_L1_error)
 
-  /* "g2clib.pyx":573
+  /* "g2clib.pyx":591
  *     return gribmsg, ierr
  * 
  * def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):             # <<<<<<<<<<<<<<
  *     """
  *    Packs up a Grid Definition Section (Section 3)
  */
-  __pyx_tuple__26 = PyTuple_Pack(16, __pyx_n_s_gribmsg, __pyx_n_s_gds, __pyx_n_s_gdstmpl, __pyx_n_s_deflist, __pyx_n_s_defnum, __pyx_n_s_ierr, __pyx_n_s_idefnum, __pyx_n_s_igds, __pyx_n_s_igdstmpl, __pyx_n_s_ideflist, __pyx_n_s_cgrib, __pyx_n_s_gdsdat, __pyx_n_s_deflistdat, __pyx_n_s_gdstmpldat, __pyx_n_s_buflen, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 573, __pyx_L1_error)
+  __pyx_tuple__26 = PyTuple_Pack(16, __pyx_n_s_gribmsg, __pyx_n_s_gds, __pyx_n_s_gdstmpl, __pyx_n_s_deflist, __pyx_n_s_defnum, __pyx_n_s_ierr, __pyx_n_s_idefnum, __pyx_n_s_igds, __pyx_n_s_igdstmpl, __pyx_n_s_ideflist, __pyx_n_s_cgrib, __pyx_n_s_gdsdat, __pyx_n_s_deflistdat, __pyx_n_s_gdstmpldat, __pyx_n_s_buflen, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__26)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__26);
   __Pyx_GIVEREF(__pyx_tuple__26);
-  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(5, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addgrid, 573, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 573, __pyx_L1_error)
+  __pyx_codeobj__27 = (PyObject*)__Pyx_PyCode_New(5, 0, 16, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__26, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addgrid, 591, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__27)) __PYX_ERR(0, 591, __pyx_L1_error)
 
-  /* "g2clib.pyx":650
+  /* "g2clib.pyx":668
  * 
  * 
  * def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,             # <<<<<<<<<<<<<<
  *                    drsnum,object drstmpl,object field,
  *                    ibitmap,object bitmap):
  */
-  __pyx_tuple__28 = PyTuple_Pack(28, __pyx_n_s_gribmsg, __pyx_n_s_pdsnum, __pyx_n_s_pdstmpl, __pyx_n_s_coordlist, __pyx_n_s_drsnum, __pyx_n_s_drstmpl, __pyx_n_s_field, __pyx_n_s_ibitmap, __pyx_n_s_bitmap, __pyx_n_s_ierr, __pyx_n_s_ipdsnum, __pyx_n_s_numcoord, __pyx_n_s_idrsnum, __pyx_n_s_ipdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_fcoordlist, __pyx_n_s_bmap, __pyx_n_s_ngrdpts, __pyx_n_s_ibmap, __pyx_n_s_pdtmpldat, __pyx_n_s_drtmpldat, __pyx_n_s_coordlistdat, __pyx_n_s_fielddat, __pyx_n_s_bitmapdat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __pyx_tuple__28 = PyTuple_Pack(29, __pyx_n_s_gribmsg, __pyx_n_s_pdsnum, __pyx_n_s_pdstmpl, __pyx_n_s_coordlist, __pyx_n_s_drsnum, __pyx_n_s_drstmpl, __pyx_n_s_field, __pyx_n_s_ibitmap, __pyx_n_s_bitmap, __pyx_n_s_ierr, __pyx_n_s_ipdsnum, __pyx_n_s_numcoord, __pyx_n_s_idrsnum, __pyx_n_s_ipdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_fcoordlist, __pyx_n_s_bmap, __pyx_n_s_ngrdpts, __pyx_n_s_ibmapyy, __pyx_n_s_pdtmpldat, __pyx_n_s_drtmpldat, __pyx_n_s_coordlistdat, __pyx_n_s_fielddat, __pyx_n_s_bitmapdat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_ibmap, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 668, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__28);
   __Pyx_GIVEREF(__pyx_tuple__28);
-  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(9, 0, 28, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addfield, 650, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(9, 0, 29, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addfield, 668, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 668, __pyx_L1_error)
+
+  /* "g2clib.pyx":786
+ * 
+ * 
+ * def grib2_addlocal(gribmsg,object sec2):             # <<<<<<<<<<<<<<
+ *     """
+ *     This routine adds a Local Use Section (Section 2) to
+ */
+  __pyx_tuple__30 = PyTuple_Pack(7, __pyx_n_s_gribmsg, __pyx_n_s_sec2, __pyx_n_s_cgrib, __pyx_n_s_csec2, __pyx_n_s_lcsec2, __pyx_n_s_ierr, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__30)) __PYX_ERR(0, 786, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__30);
+  __Pyx_GIVEREF(__pyx_tuple__30);
+  __pyx_codeobj__31 = (PyObject*)__Pyx_PyCode_New(2, 0, 7, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__30, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addlocal, 786, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__31)) __PYX_ERR(0, 786, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -6654,7 +6937,7 @@ if (!__Pyx_RefNanny) {
   Py_INCREF(__pyx_m);
   #else
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("g2clib", __pyx_methods, __pyx_k_Pyrex_code_to_provide_python_int, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("g2clib", __pyx_methods, __pyx_k_Cython_code_to_provide_python_i, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -6700,166 +6983,178 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "g2clib.pyx":5
- * c-wrappers that Pyrex generates."""
+  /* "g2clib.pyx":7
+ * """
  * 
  * import math             # <<<<<<<<<<<<<<
  * 
- * # Some helper routines from the Python API
+ * # ----------------------------------------------------------------------------------------
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_math, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 5, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_math, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_math, __pyx_t_1) < 0) __PYX_ERR(0, 5, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_math, __pyx_t_1) < 0) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":55
- * # routines for convert to/from IEEE integers.
- * 
+  /* "g2clib.pyx":67
+ * # Routines for convert to/from IEEE integers.
+ * # ----------------------------------------------------------------------------------------
  * def rtoi_ieee(object rarr, object iarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts a float32 array into an int32 array of IEEE formatted values
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_1rtoi_ieee, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_1rtoi_ieee, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_rtoi_ieee, __pyx_t_1) < 0) __PYX_ERR(0, 55, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_rtoi_ieee, __pyx_t_1) < 0) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":76
+  /* "g2clib.pyx":88
  *     mkieee(rdata, idata, buflenr//4)
  * 
  * def itor_ieee(object iarr, object rarr):             # <<<<<<<<<<<<<<
  *     """
  *  Converts an int32 array of IEEE values into a float32 array.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_3itor_ieee, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_3itor_ieee, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_itor_ieee, __pyx_t_1) < 0) __PYX_ERR(0, 76, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_itor_ieee, __pyx_t_1) < 0) __PYX_ERR(0, 88, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":127
- * # routines for reading grib2 files.
- * 
+  /* "g2clib.pyx":140
+ * # Routine for reading GRIB2 files.
+ * # ----------------------------------------------------------------------------------------
  * def unpack1(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """              .      .    .                                       .
  *  Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_5unpack1, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_5unpack1, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 140, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack1, __pyx_t_1) < 0) __PYX_ERR(0, 127, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack1, __pyx_t_1) < 0) __PYX_ERR(0, 140, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":181
+  /* "g2clib.pyx":193
  * 
  * 
  * def unpack3(gribmsg, ipos, object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 3 (Grid Definition Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_7unpack3, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 181, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_7unpack3, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack3, __pyx_t_1) < 0) __PYX_ERR(0, 181, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack3, __pyx_t_1) < 0) __PYX_ERR(0, 193, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":243
- *     return gds,gdtmpl,deflist,iofst//8
+  /* "g2clib.pyx":256
+ * 
  * 
  * def unpack4(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_9unpack4, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 243, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_9unpack4, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 256, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack4, __pyx_t_1) < 0) __PYX_ERR(0, 243, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack4, __pyx_t_1) < 0) __PYX_ERR(0, 256, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":293
- *     return pdtmpl,ipdsnum,coordlist,iofst//8
+  /* "g2clib.pyx":307
+ * 
  * 
  * def unpack5(gribmsg,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_11unpack5, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 293, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_11unpack5, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 307, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack5, __pyx_t_1) < 0) __PYX_ERR(0, 293, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack5, __pyx_t_1) < 0) __PYX_ERR(0, 307, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":337
- *     return drtmpl,idrsnum,ndpts,iofst//8
+  /* "g2clib.pyx":352
+ * 
  * 
  * def unpack6(gribmsg,ndpts,ipos,object zeros):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_13unpack6, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 337, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_13unpack6, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack6, __pyx_t_1) < 0) __PYX_ERR(0, 337, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack6, __pyx_t_1) < 0) __PYX_ERR(0, 352, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":383
- *     return bitmap,ibmap
+  /* "g2clib.pyx":399
+ * 
  * 
  * def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):             # <<<<<<<<<<<<<<
  *     """
  *  Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_15unpack7, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 383, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_15unpack7, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack7, __pyx_t_1) < 0) __PYX_ERR(0, 383, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_unpack7, __pyx_t_1) < 0) __PYX_ERR(0, 399, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":468
- * # routines for writing grib2 files.
- * 
+  /* "g2clib.pyx":485
+ * # Routines for writing grib2 files.
+ * # ----------------------------------------------------------------------------------------
  * def grib2_create(object listsec0, object listsec1):             # <<<<<<<<<<<<<<
  *     """
  *  Initializes a new GRIB2 message and packs
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_17grib2_create, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 468, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_17grib2_create, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 485, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_create, __pyx_t_1) < 0) __PYX_ERR(0, 468, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_create, __pyx_t_1) < 0) __PYX_ERR(0, 485, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":531
- *     return gribmsg, ierr
+  /* "g2clib.pyx":549
+ * 
  * 
  * def grib2_end(gribmsg):             # <<<<<<<<<<<<<<
  *     """
  * 
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_19grib2_end, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 531, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_19grib2_end, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 549, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_end, __pyx_t_1) < 0) __PYX_ERR(0, 531, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_end, __pyx_t_1) < 0) __PYX_ERR(0, 549, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":573
+  /* "g2clib.pyx":591
  *     return gribmsg, ierr
  * 
  * def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):             # <<<<<<<<<<<<<<
  *     """
  *    Packs up a Grid Definition Section (Section 3)
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_21grib2_addgrid, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 573, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_21grib2_addgrid, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_addgrid, __pyx_t_1) < 0) __PYX_ERR(0, 573, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_addgrid, __pyx_t_1) < 0) __PYX_ERR(0, 591, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "g2clib.pyx":650
+  /* "g2clib.pyx":668
  * 
  * 
  * def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,             # <<<<<<<<<<<<<<
  *                    drsnum,object drstmpl,object field,
  *                    ibitmap,object bitmap):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_23grib2_addfield, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_23grib2_addfield, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 668, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_addfield, __pyx_t_1) < 0) __PYX_ERR(0, 650, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_addfield, __pyx_t_1) < 0) __PYX_ERR(0, 668, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+  /* "g2clib.pyx":786
+ * 
+ * 
+ * def grib2_addlocal(gribmsg,object sec2):             # <<<<<<<<<<<<<<
+ *     """
+ *     This routine adds a Local Use Section (Section 2) to
+ */
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6g2clib_25grib2_addlocal, NULL, __pyx_n_s_g2clib); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 786, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_grib2_addlocal, __pyx_t_1) < 0) __PYX_ERR(0, 786, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "g2clib.pyx":1
- * """Pyrex code to provide python interfaces to functions             # <<<<<<<<<<<<<<
- * in the NCEP grib2c library. Make changes to this file, not the
- * c-wrappers that Pyrex generates."""
+ * """             # <<<<<<<<<<<<<<
+ * Cython code to provide python interfaces to functions in the NCEP g2c library.
+ * 
  */
   __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);

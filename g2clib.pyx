@@ -1,10 +1,14 @@
-"""Pyrex code to provide python interfaces to functions
-in the NCEP grib2c library. Make changes to this file, not the
-c-wrappers that Pyrex generates."""
+"""
+Cython code to provide python interfaces to functions in the NCEP g2c library.
+
+IMPORTANT: Make changes to this file, not the C code that Cython generates.
+"""
 
 import math
 
+# ---------------------------------------------------------------------------------------- 
 # Some helper routines from the Python API
+# ---------------------------------------------------------------------------------------- 
 cdef extern from "Python.h":
     # To access integers
     object PyInt_FromLong(long)
@@ -22,11 +26,15 @@ cdef extern from "Python.h":
 cdef extern from "stdlib.h":
     void free(void *ptr)
 
-# get 32 bit integer type
+# ---------------------------------------------------------------------------------------- 
+# Get 32 bit integer type
+# ---------------------------------------------------------------------------------------- 
 cdef extern from "inttypes.h":
     ctypedef long int32_t
 
-# Functions from grib2c lib.
+# ---------------------------------------------------------------------------------------- 
+# Functions from g2c lib.
+# ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
     ctypedef int32_t g2int # for 64 bit machines, this should be int
     ctypedef float g2float
@@ -40,6 +48,7 @@ cdef extern from "grib2.h":
     g2int g2_unpack7(unsigned char *,g2int *,g2int ,g2int *,
                          g2int ,g2int *,g2int ,g2float **)
     g2int g2_create(unsigned char *,g2int *,g2int *)
+    g2int g2_addlocal(unsigned char *,unsigned char *,g2int )
     g2int g2_addgrid(unsigned char *,g2int *,g2int *,g2int *,g2int ) 
     g2int g2_addfield(unsigned char *,g2int ,g2int *,
                      g2float *,g2int ,g2int ,g2int *,
@@ -48,10 +57,13 @@ cdef extern from "grib2.h":
     void mkieee(g2float *,g2int *,g2int)
     void rdieee(g2int *,g2float *,g2int)
 
-# Python wrappers for grib2c functions.
+# ---------------------------------------------------------------------------------------- 
+# Python wrappers for g2c functions.
+# ---------------------------------------------------------------------------------------- 
 
-# routines for convert to/from IEEE integers.
-
+# ---------------------------------------------------------------------------------------- 
+# Routines for convert to/from IEEE integers.
+# ---------------------------------------------------------------------------------------- 
 def rtoi_ieee(object rarr, object iarr):
     """
  Converts a float32 array into an int32 array of IEEE formatted values
@@ -122,8 +134,9 @@ cdef _toarray(void *items, object a):
     return a
 
 
-# routines for reading grib2 files.
-
+# ---------------------------------------------------------------------------------------- 
+# Routine for reading GRIB2 files.
+# ---------------------------------------------------------------------------------------- 
 def unpack1(gribmsg, ipos, object zeros):
     """              .      .    .                                       .
  Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
@@ -175,7 +188,6 @@ def unpack1(gribmsg, ipos, object zeros):
 
     idsect = _toarray(ids, zeros(idslen, 'i4'))
     return idsect,iofst//8
-
 
 
 def unpack3(gribmsg, ipos, object zeros):
@@ -240,6 +252,7 @@ def unpack3(gribmsg, ipos, object zeros):
 
     return gds,gdtmpl,deflist,iofst//8
 
+
 def unpack4(gribmsg,ipos,object zeros):
     """
  Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
@@ -290,6 +303,7 @@ def unpack4(gribmsg,ipos,object zeros):
 
     return pdtmpl,ipdsnum,coordlist,iofst//8
     
+
 def unpack5(gribmsg,ipos,object zeros):
     """
  Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
@@ -334,6 +348,7 @@ def unpack5(gribmsg,ipos,object zeros):
     drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i4'))
     return drtmpl,idrsnum,ndpts,iofst//8
     
+
 def unpack6(gribmsg,ndpts,ipos,object zeros):
     """
  Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
@@ -380,6 +395,7 @@ def unpack6(gribmsg,ndpts,ipos,object zeros):
         free(bmap)
     return bitmap,ibmap
     
+
 def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder='C'):
     """
  Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
@@ -463,8 +479,9 @@ def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object 
     data = _toarray(fld, zeros(ngpts, 'f4', order=storageorder))
     return data
 
-# routines for writing grib2 files.
-
+# ---------------------------------------------------------------------------------------- 
+# Routines for writing grib2 files.
+# ---------------------------------------------------------------------------------------- 
 def grib2_create(object listsec0, object listsec1):
     """
  Initializes a new GRIB2 message and packs
@@ -527,6 +544,7 @@ def grib2_create(object listsec0, object listsec1):
        raise RuntimeError(msg)
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
     return gribmsg, ierr
+
 
 def grib2_end(gribmsg):
     """
@@ -725,7 +743,7 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
     cdef g2float *fld
     cdef g2float *fcoordlist
     cdef g2int *bmap
-    cdef g2int ngrdpts, ibmap
+    cdef g2int ngrdpts, ibmapyy
     cdef void *pdtmpldat
     cdef void *drtmpldat
     cdef void *coordlistdat
@@ -760,6 +778,57 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
     ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
     if ierr < 0:
        msg = "error in grib2_addfield, error code = %i" % ierr
+       raise RuntimeError(msg)
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
+    return gribmsg, ierr
+
+
+def grib2_addlocal(gribmsg,object sec2):
+    """
+    This routine adds a Local Use Section (Section 2) to
+    a GRIB2 message.  It is used with routines "g2_create",
+    "g2_addgrid", "g2_addfield",
+    and "g2_gribend" to create a complete GRIB2 message.
+    g2_create must be called first to initialize a new GRIB2 message.
+  
+    USAGE: int g2_addlocal(unsigned char *cgrib,unsigned char *csec2,
+                           g2int lcsec2)
+    INPUT ARGUMENTS:
+       cgrib    - Char array that contains the GRIB2 message to which section
+                  2 should be added.
+       csec2    - Character array containing information to be added in
+                  Section 2.
+       lcsec2   - Number of bytes of character array csec2 to be added to
+                  Section 2.
+  
+   OUTPUT ARGUMENT:
+       cgrib    - Char array to contain the updated GRIB2 message.
+                  Must be allocated large enough to store the entire
+                  GRIB2 message.
+  
+   RETURN VALUES:
+       ierr     - Return code.
+                > 0 = Current size of updated GRIB2 message
+                 -1 = GRIB message was not initialized.  Need to call
+                      routine gribcreate first.
+                 -2 = GRIB message already complete.  Cannot add new section.
+                 -3 = Sum of Section byte counts doesn't add to total byte count
+                 -4 = Previous Section was not 1 or 7.
+  
+    REMARKS: Note that the Local Use Section ( Section 2 ) can only follow
+             Section 1 or Section 7 in a GRIB2 message.
+    """ 
+    cdef unsigned char *cgrib
+    cdef unsigned char *csec2
+    cdef g2int lcsec2
+    cdef g2int ierr
+    lcsec2 = len(sec2)
+    gribmsg = gribmsg + 4*(5+lcsec2)*b" "
+    cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
+    csec2 = <unsigned char *>PyBytes_AsString(sec2)
+    ierr = g2_addlocal(cgrib,csec2,lcsec2)
+    if ierr < 0:
+       msg = "error in grib2_addlocal, error code = %i" % ierr
        raise RuntimeError(msg)
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
     return gribmsg, ierr
