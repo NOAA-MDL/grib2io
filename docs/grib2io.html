@@ -82,6 +82,9 @@
                                 <a class="function" href="#Grib2Message.grid">grid</a>
                         </li>
                         <li>
+                                <a class="function" href="#Grib2Message.addlocal">addlocal</a>
+                        </li>
+                        <li>
                                 <a class="function" href="#Grib2Message.addgrid">addgrid</a>
                         </li>
                         <li>
@@ -1873,6 +1876,22 @@ with optional <code>above ground</code> or <code>agl</code> [DEFAULT] or <code>b
         <span class="k">return</span> <span class="n">lats</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">),</span> <span class="n">lons</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;f&#39;</span><span class="p">)</span>
 
 
+    <span class="k">def</span> <span class="nf">addlocal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ludata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a Local Use Section [(Section 2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect2.shtml)</span>
+<span class="sd">        to the GRIB2 message.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        **`ludata : bytes`**: Local Use data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ludata</span><span class="p">,</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">g2clib</span><span class="o">.</span><span class="n">grib2_addlocal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">,</span><span class="n">ludata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+
+
     <span class="k">def</span> <span class="nf">addgrid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gdsinfo</span><span class="p">,</span> <span class="n">gdtmpl</span><span class="p">,</span> <span class="n">deflist</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a Grid Definition Section [(Section 3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_doc/grib2_sect3.shtml) </span>
@@ -3110,6 +3129,44 @@ space-view and azimuthal equidistant grids.</p>
 
 <p>Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
 longitudes in units of degrees.</p>
+</div>
+
+
+                            </div>
+                            <div id="Grib2Message.addlocal" class="classattr">
+                                        <div class="attr function"><a class="headerlink" href="#Grib2Message.addlocal">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">addlocal</span><span class="signature">(self, ludata)</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span>    <span class="k">def</span> <span class="nf">addlocal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ludata</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a Local Use Section [(Section 2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect2.shtml)</span>
+<span class="sd">        to the GRIB2 message.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+
+<span class="sd">        **`ludata : bytes`**: Local Use data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ludata</span><span class="p">,</span><span class="nb">bytes</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">_pos</span> <span class="o">=</span> <span class="n">g2clib</span><span class="o">.</span><span class="n">grib2_addlocal</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_msg</span><span class="p">,</span><span class="n">ludata</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hasLocalUseSection</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Add a Local Use Section <a href="https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect2.shtml">(Section 2)</a>
+to the GRIB2 message.</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>ludata : bytes</code></strong>: Local Use data.</p>
 </div>
 
 
