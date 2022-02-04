@@ -1382,6 +1382,22 @@ class Grib2Message:
         return lats.astype('f'), lons.astype('f')
 
 
+    def addlocal(self, ludata):
+        """
+        Add a Local Use Section [(Section 2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect2.shtml)
+        to the GRIB2 message.
+
+        Parameters
+        ----------
+
+        **`ludata : bytes`**: Local Use data.
+        """
+        assert isinstance(ludata,bytes)
+        self._msg,self._pos = g2clib.grib2_addlocal(self._msg,ludata)
+        self.hasLocalUseSection = True
+        self._sections.append(2)
+
+
     def addgrid(self, gdsinfo, gdtmpl, deflist=None):
         """
         Add a Grid Definition Section [(Section 3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_doc/grib2_sect3.shtml) 
