@@ -1319,7 +1319,7 @@ class Grib2Message:
                 self.projparams['lat_ts']=self.proj4_lat_ts
                 self.projparams['proj']=self.proj4_proj
                 self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(projparams)
+                pj = pyproj.Proj(self.projparams)
                 llcrnrx, llcrnry = pj(lon1,lat1)
                 x = llcrnrx+dx*np.arange(self.nx)
                 y = llcrnry+dy*np.arange(self.ny)
@@ -1330,7 +1330,7 @@ class Grib2Message:
                 self.projparams['proj']=self.proj4_proj
                 self.projparams['lat_0']=self.proj4_lat_0
                 self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(projparams)
+                pj = pyproj.Proj(self.projparams)
                 llcrnrx, llcrnry = pj(lon1,lat1)
                 x = llcrnrx+dx*np.arange(self.nx)
                 y = llcrnry+dy*np.arange(self.ny)
@@ -1341,7 +1341,7 @@ class Grib2Message:
                 self.projparams['lat_2']=self.proj4_lat_2
                 self.projparams['proj']=self.proj4_proj
                 self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(projparams)
+                pj = pyproj.Proj(self.projparams)
                 llcrnrx, llcrnry = pj(lon1,lat1)
                 x = llcrnrx+dx*np.arange(self.nx)
                 y = llcrnry+dy*np.arange(self.ny)
@@ -1351,7 +1351,7 @@ class Grib2Message:
                 self.projparams['proj']=self.proj4_proj
                 self.projparams['lat_0']=self.proj4_lat_0
                 self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(projparams)
+                pj = pyproj.Proj(self.projparams)
                 llcrnrx, llcrnry = pj(lon1,lat1)
                 x = llcrnrx+dx*np.arange(self.nx)
                 y = llcrnry+dy*np.arange(self.ny)
@@ -1365,7 +1365,7 @@ class Grib2Message:
             self.projparams['lon_0']=self.proj4_lon_0
             self.projparams['lat_0']=self.proj4_lat_0
             self.projparams['h']=self.proj4_h
-            pj = pyproj.Proj(projparams)
+            pj = pyproj.Proj(self.projparams)
             x = dx*np.indices((self.ny,self.nx),'f')[1,:,:]
             x -= 0.5*x.max()
             y = dy*np.indices((self.ny,self.nx),'f')[0,:,:]
