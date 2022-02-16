@@ -5,6 +5,7 @@ from .section4 import *
 from .section5 import *
 from .originating_centers import *
 
+
 def get_table(table, expand=False):
     """
     Return GRIB2 code table as a dictionary.
@@ -101,3 +102,51 @@ def get_varinfo_from_table(discipline,parmcat,parmnum):
         return locals()[tblname][parmnum]
     except(ImportError,KeyError):
         return ['Unknown','Unknown','Unknown']
+
+
+def get_wgrib2_level_string(type1,sfac1,sval1,type2,sfac2,sval2):
+    """
+    Return a string that describes the level or layer of the GRIB2 message. The
+    format and language of the string is an exact replica of how wgrib2 produces
+    the level/layer string in its inventory output.
+
+    Contents of wgrib2 source, [Level.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c),
+    were converted into a Python dictionary and stored in grib2io as table
+    'wgrib2_level_string'.
+
+    Parameters
+    ----------
+
+    **`type1`**: `int` type of first fixed surface.
+
+    **`sfac1`**: `int` scale factor of first fixed surface.
+
+    **`sval1`**: `int` scaled value of first fixed surface.
+
+    **`type2`**: `int` type of second fixed surface.
+
+    **`sfac2`**: `int` scale factor of second fixed surface.
+
+    **`sval2`**: `int` scaled value of second fixed surface.
+
+    Returns
+    -------
+
+    **`str`**: string containing wgrib2-formatted level/layer string.
+    """
+    lvlstr = ''
+    val1 = sval1/10**sfac1
+    if type1 in [100,108]: val1 *= 0.01
+    if type2 != 255:
+        # Layer
+        #assert type2 == type1, "Surface types are not equal: %g - %g" % (type1,type2)
+        val2 = sval2/10**sfac2
+        if type2 in [100,108]: val2 *= 0.01
+        lvlstr = get_value_from_table(type1,table='wgrib2_level_string')[1]
+        vals = (val1,val2)
+    else:
+        # Level
+        lvlstr = get_value_from_table(type1,table='wgrib2_level_string')[0]
+        vals = (val1)
+    if '%g' in lvlstr: lvlstr %= vals 
+    return lvlstr
