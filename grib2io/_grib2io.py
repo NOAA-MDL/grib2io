@@ -183,6 +183,7 @@ class open():
         self._index['duration'] = [None]
         self._index['shortName'] = [None]
         self._index['bitMap'] = [None]
+        self._index['levelString'] = [None]
 
         # Iterate
         while True:
@@ -275,6 +276,7 @@ class open():
                             self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
+                            self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
                             if _issubmessage:
                                 self._index['submessageOffset'].append(_submsgoffset)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
@@ -299,6 +301,7 @@ class open():
                             self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
+                            self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
                             continue
@@ -919,6 +922,7 @@ class Grib2Message:
             self.unitOfSecondFixedSurface = self.typeOfSecondFixedSurface.definition[1]
             self.scaledValueOfSecondFixedSurface = self.productDefinitionTemplate[14]
             self.valueOfSecondFixedSurface = self.scaledValueOfSecondFixedSurface/(10.**self.scaleFactorOfSecondFixedSurface)
+        self.level = tables.get_wgrib2_level_string(*self.productDefinitionTemplate[9:15])
 
         # Template 4.1 -
         if self.productDefinitionTemplateNumber == 1:
