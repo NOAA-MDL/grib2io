@@ -93,6 +93,8 @@ table_scale_time_hours = {
 '13': 3600.,
 '14-255': 1.}
 EOF
+echo "\t - wgrib2 Level/Layer String Table"
+cat table_wgrib2_level_string.txt >> section4.py
 
 # Discipline 0
 echo " -- Making section4_discipline0.py"
