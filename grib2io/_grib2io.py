@@ -60,10 +60,12 @@ class open():
     **`closed`** `True` is file handle is close; `False` otherwise.
 
     **`variables`**: Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
+
+    **`levels`**: Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
     def __init__(self, filename, mode='r'):
         """
-        Class Constructor
+        `open` Constructor
 
         Parameters
         ----------
@@ -90,6 +92,7 @@ class open():
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
             self.variables = tuple(sorted(set(filter(None,self._index['shortName']))))
+            self.levels = tuple(sorted(set(filter(None,self._index['levelString']))))
 
 
     def __delete__(self, instance):
@@ -318,45 +321,7 @@ class open():
     def _find_level(self,level):
         """
         """
-        # Determine level or layer....TBD
-        #
-        # IMPORTANT: Set idx_count to the number of searches.
-        if any(re.findall(r'ground|surface|sfc', level, re.IGNORECASE)):
-            # Ground/Surface - GRIB ID = 1
-            sfctypeid = 1
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
-            idxs = idx_type
-            idx_count = 1
-        elif any(re.findall(r'mb|pa|hpa', level, re.IGNORECASE)):
-            # Isobaric Surface (i.e. pressure level) - GRIB ID = 100
-            sfctypeid = 100
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
-            val = float(re.sub("[^\d\.]", "",level))
-            if any(re.findall(r'mb|hpa', level, re.IGNORECASE)): val *= 100
-            idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
-            idxs = np.concatenate((idx_type,idx_val))
-            idx_count = 2
-        elif any(re.findall(r'sig|sigma', level, re.IGNORECASE)):
-            # Sigma Level - GRIB ID = 104
-            sfctypeid = 104
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
-            val = float(re.sub("[^\d\.]", "",level))
-            idx_val = np.where(np.asarray([i[11]/(10**i[10]) if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
-            idxs = np.concatenate((idx_type,idx_val))
-            idx_count = 2
-        elif any(re.findall(r'm|meter', level, re.IGNORECASE)):
-            # Specified Height Level Above (GRIB ID = 103) or Below Ground (GRIB ID = 106) Level
-            sfctypeid = 103
-            if any(re.findall(r'above ground|agl', level, re.IGNORECASE)):
-                sfctypeid = 103
-            if any(re.findall(r'below ground|bgl', level, re.IGNORECASE)):
-                sfcid = 106
-            idx_type = np.where(np.asarray([i[9] if i is not None else None for i in self._index['productDefinitionTemplate']])==sfctypeid)[0]
-            val = float(re.sub("[^\d\.]", "",level))
-            idx_val = np.where(np.asarray([i[11] if i is not None else None for i in self._index['productDefinitionTemplate']])==val)[0]
-            idxs = np.concatenate((idx_type,idx_val))
-            idx_count = 2
-        return [i[0] for i in collections.Counter(idxs).most_common() if i[1] == idx_count]
+        return np.where(np.array([True if re.search(level,str(l)) is not None else False for l in self._index["levelString"]]))[0].tolist()
 
 
     def close(self):
