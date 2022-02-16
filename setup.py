@@ -30,6 +30,11 @@ except ImportError:
     g2clib_pyx  = 'g2clib.c'
 
 # ---------------------------------------------------------------------------------------- 
+# Default libraries
+# ---------------------------------------------------------------------------------------- 
+DEFAULT_LIBRARIES = ['openjp2','png','z']
+
+# ---------------------------------------------------------------------------------------- 
 # Read setup.cfg. Contents of setup.cfg will override env vars.
 # ---------------------------------------------------------------------------------------- 
 setup_cfg = environ.get('GRIB2IO_SETUP_CONFIG', 'setup.cfg')
@@ -70,9 +75,9 @@ zlib_incdir = config.getq('directories', 'zlib_incdir', environ.get('ZLIB_INCDIR
 # Define lists for build
 # ---------------------------------------------------------------------------------------- 
 libraries=[]
+incdirs=[]
 libdirs=[]
 macros=[]
-incdirs=[numpy.get_include()]
 
 # ---------------------------------------------------------------------------------------- 
 # Expand Jasper library and include paths.
@@ -146,6 +151,22 @@ else:
     incdirs.append(zlib_incdir)
 
 # ---------------------------------------------------------------------------------------- 
+# Check for empty library list.  If libraries is empty here, then a setup.cfg and/or
+# library-specific env var were not used.  In this scenario, lets find the appropriate
+# library and include paths for the DEFAULT_LIBRARIES.
+# ---------------------------------------------------------------------------------------- 
+if len(libraries) == 0:
+    from ctypes.util import find_library
+    for lib in DEFAULT_LIBRARIES:
+        libpath = os.path.dirname(find_library(lib))
+        if len(libpath) > 0:
+            libraries.append(lib)
+            libdirs.append(libpath)
+            incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+            if len(incpath) > 0:
+                incdirs.append(os.path.dirname(incpath[0]))
+
+# ---------------------------------------------------------------------------------------- 
 # Define g2c sources to compile.
 # ---------------------------------------------------------------------------------------- 
 g2clib_deps = glob.glob('NCEPLIBS-g2c/src/*.c')
@@ -161,7 +182,7 @@ if 'jasper' in libraries:
     macros.append(('USE_JPEG2000',1))
     # Using Jasper, remove OpenJPEG from source
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'decenc_openjpeg.c'))
-elif 'openjpeg' in libraries:
+elif 'openjp2' in libraries:
     macros.append(('USE_OPENJPEG',1))
     # Using OpenJPEG, remove Jasper from source
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'dec_jpeg2000.c'))
@@ -205,6 +226,7 @@ incdirs = [i for i in set(incdirs) if i is not None]
 # Define extensions
 # ---------------------------------------------------------------------------------------- 
 runtime_libdirs = libdirs if os.name != 'nt' else None
+incdirs.append(numpy.get_include())
 g2clibext = Extension('g2clib',g2clib_deps,include_dirs=incdirs,\
             library_dirs=libdirs,libraries=libraries,runtime_library_dirs=runtime_libdirs,
             define_macros=macros)
