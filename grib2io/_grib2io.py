@@ -318,10 +318,10 @@ class open():
         self._hasindex = True
 
 
-    def _find_level(self,level):
-        """
-        """
-        return np.where(np.array([True if re.search(level,str(l)) is not None else False for l in self._index["levelString"]]))[0].tolist()
+    #def _find_level(self,level):
+    #    """
+    #    """
+    #    return np.where(np.array([True if re.search(level,str(l)) is not None else False for l in self._index["levelString"]]))[0].tolist()
 
 
     def close(self):
@@ -426,7 +426,8 @@ class open():
             elif k == 'leadTime':
                 idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['leadTime']])==v)[0]
             elif k == 'level':
-                idxs[k] = self._find_level(v)
+                #idxs[k] = self._find_level(v)
+                idxs[k] = np.where(np.array(self._index['levelString'])==v)[0]
             elif k == 'refDate':
                 idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
             elif k == 'shortName':
