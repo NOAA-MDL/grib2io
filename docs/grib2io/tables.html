@@ -210,12 +210,12 @@
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`str`**: string containing wgrib2 level/layer string.</span>
+<span class="sd">    **`str`**: string containing wgrib2-formatted level/layer string.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
     <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
-    <span class="k">if</span> <span class="n">type2</span> <span class="o">==</span> <span class="mi">255</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
         <span class="c1"># Layer</span>
         <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
         <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
@@ -462,12 +462,12 @@ information if variable is not found.</p>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 
-<span class="sd">    **`str`**: string containing wgrib2 level/layer string.</span>
+<span class="sd">    **`str`**: string containing wgrib2-formatted level/layer string.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
     <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
     <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
-    <span class="k">if</span> <span class="n">type2</span> <span class="o">==</span> <span class="mi">255</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
         <span class="c1"># Layer</span>
         <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
         <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
@@ -508,7 +508,7 @@ were converted into a Python dictionary and stored in grib2io as table
 
 <h2 id="returns">Returns</h2>
 
-<p><strong><code>str</code></strong>: string containing wgrib2 level/layer string.</p>
+<p><strong><code>str</code></strong>: string containing wgrib2-formatted level/layer string.</p>
 </div>
 
 
