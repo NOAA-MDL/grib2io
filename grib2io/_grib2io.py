@@ -8,7 +8,7 @@ data. A physical file can contain one or more GRIB2 messages.  File IO is handle
 a binary string of the GRIB2 message which is then passed to the g2c library for decoding of GRIB2 metadata
 and unpacking of data values.
 """
-__version__ = '0.9.1'
+
 
 import g2clib
 import builtins
