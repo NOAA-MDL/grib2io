@@ -54,6 +54,9 @@
             <li>
                     <a class="function" href="#get_varinfo_from_table">get_varinfo_from_table</a>
             </li>
+            <li>
+                    <a class="function" href="#get_wgrib2_level_string">get_wgrib2_level_string</a>
+            </li>
     </ul>
 
 
@@ -79,6 +82,7 @@
 <span class="kn">from</span> <span class="nn">.section4</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.section5</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="kn">from</span> <span class="nn">.originating_centers</span> <span class="kn">import</span> <span class="o">*</span>
+
 
 <span class="k">def</span> <span class="nf">get_table</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">expand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -176,6 +180,54 @@
         <span class="k">return</span> <span class="nb">locals</span><span class="p">()[</span><span class="n">tblname</span><span class="p">][</span><span class="n">parmnum</span><span class="p">]</span>
     <span class="k">except</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">,</span><span class="ne">KeyError</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">sfac1</span><span class="p">,</span><span class="n">sval1</span><span class="p">,</span><span class="n">type2</span><span class="p">,</span><span class="n">sfac2</span><span class="p">,</span><span class="n">sval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a string that describes the level or layer of the GRIB2 message. The</span>
+<span class="sd">    format and language of the string is an exact replica of how wgrib2 produces</span>
+<span class="sd">    the level/layer string in its inventory output.</span>
+
+<span class="sd">    Contents of wgrib2 source, [Level.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c),</span>
+<span class="sd">    were converted into a Python dictionary and stored in grib2io as table</span>
+<span class="sd">    &#39;wgrib2_level_string&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`type1`**: `int` type of first fixed surface.</span>
+
+<span class="sd">    **`sfac1`**: `int` scale factor of first fixed surface.</span>
+
+<span class="sd">    **`sval1`**: `int` scaled value of first fixed surface.</span>
+
+<span class="sd">    **`type2`**: `int` type of second fixed surface.</span>
+
+<span class="sd">    **`sfac2`**: `int` scale factor of second fixed surface.</span>
+
+<span class="sd">    **`sval2`**: `int` scaled value of second fixed surface.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`str`**: string containing wgrib2-formatted level/layer string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
+    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
+    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
+        <span class="c1"># Layer</span>
+        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
+        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
+        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
+        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Level</span>
+        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span> 
+    <span class="k">return</span> <span class="n">lvlstr</span>
 </pre></div>
 
         </details>
@@ -368,6 +420,95 @@ information if variable is not found.</p>
 <li>list[1] = units</li>
 <li>list[2] = short name (abbreviated name)</li>
 </ul>
+</div>
+
+
+                </section>
+                <section id="get_wgrib2_level_string">
+                            <div class="attr function"><a class="headerlink" href="#get_wgrib2_level_string">#&nbsp;&nbsp</a>
+
+        
+            <span class="def">def</span>
+            <span class="name">get_wgrib2_level_string</span><span class="signature">(type1, sfac1, sval1, type2, sfac2, sval2)</span>:
+    </div>
+
+                <details>
+            <summary>View Source</summary>
+            <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">sfac1</span><span class="p">,</span><span class="n">sval1</span><span class="p">,</span><span class="n">type2</span><span class="p">,</span><span class="n">sfac2</span><span class="p">,</span><span class="n">sval2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a string that describes the level or layer of the GRIB2 message. The</span>
+<span class="sd">    format and language of the string is an exact replica of how wgrib2 produces</span>
+<span class="sd">    the level/layer string in its inventory output.</span>
+
+<span class="sd">    Contents of wgrib2 source, [Level.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c),</span>
+<span class="sd">    were converted into a Python dictionary and stored in grib2io as table</span>
+<span class="sd">    &#39;wgrib2_level_string&#39;.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    **`type1`**: `int` type of first fixed surface.</span>
+
+<span class="sd">    **`sfac1`**: `int` scale factor of first fixed surface.</span>
+
+<span class="sd">    **`sval1`**: `int` scaled value of first fixed surface.</span>
+
+<span class="sd">    **`type2`**: `int` type of second fixed surface.</span>
+
+<span class="sd">    **`sfac2`**: `int` scale factor of second fixed surface.</span>
+
+<span class="sd">    **`sval2`**: `int` scaled value of second fixed surface.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+
+<span class="sd">    **`str`**: string containing wgrib2-formatted level/layer string.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
+    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
+    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
+        <span class="c1"># Layer</span>
+        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
+        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
+        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
+        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Level</span>
+        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span> 
+    <span class="k">return</span> <span class="n">lvlstr</span>
+</pre></div>
+
+        </details>
+
+            <div class="docstring"><p>Return a string that describes the level or layer of the GRIB2 message. The
+format and language of the string is an exact replica of how wgrib2 produces
+the level/layer string in its inventory output.</p>
+
+<p>Contents of wgrib2 source, <a href="https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c">Level.c</a>,
+were converted into a Python dictionary and stored in grib2io as table
+'wgrib2_level_string'.</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>type1</code></strong>: <code>int</code> type of first fixed surface.</p>
+
+<p><strong><code>sfac1</code></strong>: <code>int</code> scale factor of first fixed surface.</p>
+
+<p><strong><code>sval1</code></strong>: <code>int</code> scaled value of first fixed surface.</p>
+
+<p><strong><code>type2</code></strong>: <code>int</code> type of second fixed surface.</p>
+
+<p><strong><code>sfac2</code></strong>: <code>int</code> scale factor of second fixed surface.</p>
+
+<p><strong><code>sval2</code></strong>: <code>int</code> scaled value of second fixed surface.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p><strong><code>str</code></strong>: string containing wgrib2-formatted level/layer string.</p>
 </div>
 
 

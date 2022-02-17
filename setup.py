@@ -4,7 +4,23 @@ import configparser
 import glob
 import numpy
 import os
+import platform
 import sys
+
+GRIB2IO_VERSION = '0.9.2'
+G2CLIB_VERSION = '1.6.2'
+
+# ---------------------------------------------------------------------------------------- 
+# Function to provide the absolute path for a shared object library,
+# ---------------------------------------------------------------------------------------- 
+def _find_library_linux(name):
+    import subprocess
+    result = subprocess.run(['ldconfig','-p'],stdout=subprocess.PIPE)
+    libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
+    try:
+        return [l for l in libs if name in l][0]
+    except IndexError:
+        return None
 
 # ---------------------------------------------------------------------------------------- 
 # Class to parse the setup.cfg
@@ -15,6 +31,15 @@ class _ConfigParser(configparser.ConfigParser):
             return self.get(s, k)
         except:
             return fallback
+
+# ---------------------------------------------------------------------------------------- 
+# Setup find_library functions according system.
+# ---------------------------------------------------------------------------------------- 
+system = platform.system()
+if system == 'Linux':
+    find_library = _find_library_linux
+elif system == 'Darwin':
+    from ctypes.util import find_library
 
 # ---------------------------------------------------------------------------------------- 
 # Build time dependancy
@@ -28,6 +53,11 @@ except ImportError:
     cmdclass = {}
     redtoreg_pyx = 'redtoreg.c'
     g2clib_pyx  = 'g2clib.c'
+
+# ---------------------------------------------------------------------------------------- 
+# Default libraries
+# ---------------------------------------------------------------------------------------- 
+DEFAULT_LIBRARIES = ['openjp2','png','z']
 
 # ---------------------------------------------------------------------------------------- 
 # Read setup.cfg. Contents of setup.cfg will override env vars.
@@ -70,9 +100,9 @@ zlib_incdir = config.getq('directories', 'zlib_incdir', environ.get('ZLIB_INCDIR
 # Define lists for build
 # ---------------------------------------------------------------------------------------- 
 libraries=[]
+incdirs=[]
 libdirs=[]
 macros=[]
-incdirs=[numpy.get_include()]
 
 # ---------------------------------------------------------------------------------------- 
 # Expand Jasper library and include paths.
@@ -146,6 +176,31 @@ else:
     incdirs.append(zlib_incdir)
 
 # ---------------------------------------------------------------------------------------- 
+# Check for empty library list.  If libraries is empty here, then a setup.cfg and/or
+# library-specific env var were not used.  In this scenario, lets find the appropriate
+# library and include paths for the DEFAULT_LIBRARIES.
+# ---------------------------------------------------------------------------------------- 
+if len(libraries) == 0:
+    for lib in DEFAULT_LIBRARIES:
+        libpath = os.path.dirname(os.path.realpath(find_library(lib)))
+        if len(libpath) > 0:
+            libraries.append(lib)
+            libdirs.append(libpath)
+            if system == 'Linux':
+                incpath = glob.glob(libpath.replace('/lib/x86_64-linux-gnu','/include').replace('/lib64','/include')+\
+                          '/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+            else:
+                if lib == 'openjp2':
+                    incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+                elif lib == 'png':
+                    incpath = glob.glob(libpath.replace('/lib','/include').replace('includepng','libpng')+'/**/*'+lib+'.h',recursive=True)
+                else:
+                    incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib+'.h',recursive=True)
+                print(lib,libpath,incpath)
+            if len(incpath) > 0:
+                incdirs.append(os.path.dirname(incpath[0]))
+
+# ---------------------------------------------------------------------------------------- 
 # Define g2c sources to compile.
 # ---------------------------------------------------------------------------------------- 
 g2clib_deps = glob.glob('NCEPLIBS-g2c/src/*.c')
@@ -161,7 +216,7 @@ if 'jasper' in libraries:
     macros.append(('USE_JPEG2000',1))
     # Using Jasper, remove OpenJPEG from source
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'decenc_openjpeg.c'))
-elif 'openjpeg' in libraries:
+elif 'openjp2' in libraries:
     macros.append(('USE_OPENJPEG',1))
     # Using OpenJPEG, remove Jasper from source
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'dec_jpeg2000.c'))
@@ -200,11 +255,16 @@ else:
 # ---------------------------------------------------------------------------------------- 
 libdirs = [l for l in set(libdirs) if l is not None]
 incdirs = [i for i in set(incdirs) if i is not None]
+runtime_libdirs = libdirs if os.name != 'nt' else None
+incdirs.append(numpy.get_include())
 
 # ---------------------------------------------------------------------------------------- 
 # Define extensions
 # ---------------------------------------------------------------------------------------- 
-runtime_libdirs = libdirs if os.name != 'nt' else None
+print('Libraries: ',libraries)
+print('libdirs: ',libdirs)
+print('incdirs: ',incdirs)
+print('macros: ',macros)
 g2clibext = Extension('g2clib',g2clib_deps,include_dirs=incdirs,\
             library_dirs=libdirs,libraries=libraries,runtime_library_dirs=runtime_libdirs,
             define_macros=macros)
@@ -223,6 +283,26 @@ install_ext_modules = [g2clibext,redtoregext]
 install_py_modules = []
 
 # ---------------------------------------------------------------------------------------- 
+# ---------------------------------------------------------------------------------------- 
+#version = '%(version)s'
+cnt = \
+"""# This file is generated by grib2io's setup.py
+# It contains configuration information when building this package.
+libraries = %(libraries)s
+grib2io_version = '%(grib2io_version)s'
+g2clib_version = '%(g2clib_version)s'
+"""
+a = open('grib2io/__config__.py','w')
+cfgdict = {}
+cfgdict['grib2io_version'] = GRIB2IO_VERSION
+cfgdict['g2clib_version'] = G2CLIB_VERSION
+cfgdict['libraries'] = libraries
+try:
+    a.write(cnt % cfgdict)
+finally:
+    a.close()
+
+# ---------------------------------------------------------------------------------------- 
 # Import README.md as PyPi long_description
 # ---------------------------------------------------------------------------------------- 
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -233,7 +313,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Run setup.py
 # ---------------------------------------------------------------------------------------- 
 setup(name = 'grib2io',
-      version = '0.9.1',
+      version = GRIB2IO_VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
       author            = 'Eric Engle',
       author_email      = 'eric.engle@mac.com',
