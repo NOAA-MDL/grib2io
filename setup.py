@@ -190,7 +190,13 @@ if len(libraries) == 0:
                 incpath = glob.glob(libpath.replace('/lib/x86_64-linux-gnu','/include').replace('/lib64','/include')+\
                           '/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
             else:
-                incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+                if lib == 'openjp2':
+                    incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+                elif lib == 'png':
+                    incpath = glob.glob(libpath.replace('/lib','/include').replace('includepng','libpng')+'/**/*'+lib+'.h',recursive=True)
+                else:
+                    incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib+'.h',recursive=True)
+                print(lib,libpath,incpath)
             if len(incpath) > 0:
                 incdirs.append(os.path.dirname(incpath[0]))
 
@@ -249,12 +255,16 @@ else:
 # ---------------------------------------------------------------------------------------- 
 libdirs = [l for l in set(libdirs) if l is not None]
 incdirs = [i for i in set(incdirs) if i is not None]
+runtime_libdirs = libdirs if os.name != 'nt' else None
+incdirs.append(numpy.get_include())
 
 # ---------------------------------------------------------------------------------------- 
 # Define extensions
 # ---------------------------------------------------------------------------------------- 
-runtime_libdirs = libdirs if os.name != 'nt' else None
-incdirs.append(numpy.get_include())
+print('Libraries: ',libraries)
+print('libdirs: ',libdirs)
+print('incdirs: ',incdirs)
+print('macros: ',macros)
 g2clibext = Extension('g2clib',g2clib_deps,include_dirs=incdirs,\
             library_dirs=libdirs,libraries=libraries,runtime_library_dirs=runtime_libdirs,
             define_macros=macros)
