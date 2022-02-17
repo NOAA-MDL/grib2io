@@ -182,11 +182,14 @@ else:
 # ---------------------------------------------------------------------------------------- 
 if len(libraries) == 0:
     for lib in DEFAULT_LIBRARIES:
-        libpath = os.path.dirname(find_library(lib))
+        libpath = os.path.dirname(os.path.realpath(find_library(lib)))
         if len(libpath) > 0:
             libraries.append(lib)
             libdirs.append(libpath)
-            incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+            if system == 'Linux':
+                incpath = glob.glob(libpath.replace('/lib/x86_64-linux-gnu','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+            else:
+                incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
             if len(incpath) > 0:
                 incdirs.append(os.path.dirname(incpath[0]))
 
