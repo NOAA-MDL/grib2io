@@ -4,10 +4,23 @@ import configparser
 import glob
 import numpy
 import os
+import platform
 import sys
 
 GRIB2IO_VERSION = '0.9.2'
 G2CLIB_VERSION = '1.6.2'
+
+# ---------------------------------------------------------------------------------------- 
+# Function to provide the absolute path for a shared object library,
+# ---------------------------------------------------------------------------------------- 
+def _find_library_linux(name):
+    import subprocess
+    result = subprocess.run(['ldconfig','-p'],stdout=subprocess.PIPE)
+    libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
+    try:
+        return [l for l in libs if name in l][0]
+    except IndexError:
+        return None
 
 # ---------------------------------------------------------------------------------------- 
 # Class to parse the setup.cfg
@@ -18,6 +31,15 @@ class _ConfigParser(configparser.ConfigParser):
             return self.get(s, k)
         except:
             return fallback
+
+# ---------------------------------------------------------------------------------------- 
+# Setup find_library functions according system.
+# ---------------------------------------------------------------------------------------- 
+system = platform.system()
+if system == 'Linux':
+    find_library = _find_library_linux
+elif system == 'Darwin':
+    from ctypes.util import find_library
 
 # ---------------------------------------------------------------------------------------- 
 # Build time dependancy
@@ -159,7 +181,6 @@ else:
 # library and include paths for the DEFAULT_LIBRARIES.
 # ---------------------------------------------------------------------------------------- 
 if len(libraries) == 0:
-    from ctypes.util import find_library
     for lib in DEFAULT_LIBRARIES:
         libpath = os.path.dirname(find_library(lib))
         if len(libpath) > 0:
