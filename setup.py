@@ -187,7 +187,8 @@ if len(libraries) == 0:
             libraries.append(lib)
             libdirs.append(libpath)
             if system == 'Linux':
-                incpath = glob.glob(libpath.replace('/lib/x86_64-linux-gnu','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
+                incpath = glob.glob(libpath.replace('/lib/x86_64-linux-gnu','/include').replace('/lib64','/include')+\
+                          '/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
             else:
                 incpath = glob.glob(libpath.replace('/lib','/include')+'/**/*'+lib.replace('jp2','jpeg')+'.h',recursive=True)
             if len(incpath) > 0:
