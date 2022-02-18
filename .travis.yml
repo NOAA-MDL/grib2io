@@ -43,4 +43,4 @@ install:
   - python setup.py install
 
 script:
-  - python -c "import grib2io; grib2io"
+  - python setup.py test
