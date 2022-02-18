@@ -27,7 +27,7 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 * PNG compression: [libpng](https://sourceforge.net/projects/libpng/)
 * Z compression: [zlib](https://zlib.net/)
 
-By default, grib2io will automatically attempt to identify compression library and include paths.  The default JPEG compression library is OpenJPEG.  The automatic searching has been testing on macOS and Linux (Fedora and Ubuntu).
+By default, grib2io will automatically attempt to identify compression library and include paths.  The default JPEG compression library is OpenJPEG.  The automatic searching has been testing on macOS 12 (Monterey) using [Homebrew](https://brew.sh) and Linux (RHEL/Fedora, openSUSE, and Debian/Ubuntu).
 
 ## Installation
 
