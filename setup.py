@@ -15,7 +15,7 @@ G2CLIB_VERSION = '1.6.2'
 # ---------------------------------------------------------------------------------------- 
 def _find_library_linux(name):
     import subprocess
-    result = subprocess.run(['ldconfig','-p'],stdout=subprocess.PIPE)
+    result = subprocess.run(['/sbin/ldconfig','-p'],stdout=subprocess.PIPE)
     libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
     try:
         return [l for l in libs if name in l][0]
