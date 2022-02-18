@@ -7,8 +7,7 @@ import os
 import platform
 import sys
 
-GRIB2IO_VERSION = '0.9.2'
-G2CLIB_VERSION = '1.6.2'
+VERSION = '0.9.2'
 
 # ---------------------------------------------------------------------------------------- 
 # Function to provide the absolute path for a shared object library,
@@ -290,12 +289,10 @@ cnt = \
 # It contains configuration information when building this package.
 libraries = %(libraries)s
 grib2io_version = '%(grib2io_version)s'
-g2clib_version = '%(g2clib_version)s'
 """
 a = open('grib2io/__config__.py','w')
 cfgdict = {}
-cfgdict['grib2io_version'] = GRIB2IO_VERSION
-cfgdict['g2clib_version'] = G2CLIB_VERSION
+cfgdict['grib2io_version'] = VERSION
 cfgdict['libraries'] = libraries
 try:
     a.write(cnt % cfgdict)
@@ -313,7 +310,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # Run setup.py
 # ---------------------------------------------------------------------------------------- 
 setup(name = 'grib2io',
-      version = GRIB2IO_VERSION,
+      version = VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
       author            = 'Eric Engle',
       author_email      = 'eric.engle@mac.com',
