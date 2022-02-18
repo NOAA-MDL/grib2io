@@ -36,6 +36,7 @@ cdef extern from "inttypes.h":
 # Functions from g2c lib.
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
+    cdef char *G2_VERSION
     ctypedef int32_t g2int # for 64 bit machines, this should be int
     ctypedef float g2float
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
@@ -56,6 +57,8 @@ cdef extern from "grib2.h":
     g2int g2_gribend(unsigned char *)
     void mkieee(g2float *,g2int *,g2int)
     void rdieee(g2int *,g2float *,g2int)
+
+__version__ = G2_VERSION.decode('utf-8')[-5:]
 
 # ---------------------------------------------------------------------------------------- 
 # Python wrappers for g2c functions.
