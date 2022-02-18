@@ -150,7 +150,7 @@
 #define _grib2_H
 #include<stdio.h>
 
-#define G2_VERSION "g2clib-1.6.0"
+#define G2_VERSION "g2clib-1.6.2"
 
 #ifdef __64BIT__
 typedef int g2int;
