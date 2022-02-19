@@ -41,7 +41,7 @@ pip3 install grib2io
 
 * Copy `setup.cfg.template` to `setup.cfg`, open in text editor, follow instructions in comments for editing **_OR_** in your shell environment, define the library-specific environment variables.
 
-* Build and install
+* Build and install.  Use `--user` to install into personal space (`$HOME/.local`).
 
 ```shell
 python3 setup.py build
