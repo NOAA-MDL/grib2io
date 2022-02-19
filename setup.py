@@ -311,7 +311,7 @@ class TestCommand(Command):
     def run(self):
         import sys, subprocess
         for f in glob.glob('./tests/*.py'):
-            raise SystemExit(subprocess.call([sys.executable,'./tests/'+f]))
+            raise SystemExit(subprocess.call([sys.executable,f]))
 cmdclass['test'] = TestCommand
 
 # ---------------------------------------------------------------------------------------- 
