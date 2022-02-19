@@ -310,7 +310,7 @@ class TestCommand(Command):
         pass
     def run(self):
         import sys, subprocess
-        for f in os.listdir('./tests/'):
+        for f in glob.glob('./tests/*.py'):
             raise SystemExit(subprocess.call([sys.executable,'./tests/'+f]))
 cmdclass['test'] = TestCommand
 
