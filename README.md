@@ -50,7 +50,7 @@ python3 setup.py build
 * Install
 
 ```shell
-[sudo] python3 setup.py install [--user | --prefix=PREFIX]
+python3 setup.py install
 ```
 
 ## Development
