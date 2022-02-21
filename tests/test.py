@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import glob
 import numpy as np
 import setuptools
 import sys
@@ -9,7 +10,8 @@ build_path = './build/lib.'+platform+'-'+str(sys.version_info.major)+'.'+str(sys
 sys.path.insert(0,build_path)
 
 import grib2io
-import glob
+
+grib2io.show_config()
 
 for f in sorted(glob.glob('./data/*.grib2')):
 
