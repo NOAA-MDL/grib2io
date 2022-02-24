@@ -31,8 +31,13 @@ By default, grib2io will automatically attempt to identify compression library a
 
 ## Installation
 
+For root or sudo installations:
 ```shell
-pip3 install grib2io
+sudo pip3 install grib2io
+```
+For user installations:
+```shell
+pip3 install grib2io --user
 ```
 
 ## Build and Install from Source
