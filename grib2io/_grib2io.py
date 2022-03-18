@@ -59,11 +59,14 @@ class open():
 
     **`closed`** `True` is file handle is close; `False` otherwise.
 
+    **`decode `**: If `True` [DEFAULT] automatically decode metadata from unpacked 
+    section data for Grib2Messages.
+
     **`variables`**: Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
 
     **`levels`**: Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
-    def __init__(self, filename, mode='r'):
+    def __init__(self, filename, mode='r', decode=True):
         """
         `open` Constructor
 
@@ -74,6 +77,9 @@ class open():
 
         **`mode `**: File access mode where `r` opens the files for reading only;
         `w` opens the file for writing.
+
+        **`decode `**: If `True` [DEFAULT] automatically decode metadata from 
+        unpacked section data for Grib2Messages.
         """
         if mode in ['a','r','w']:
             mode = mode+'b'
@@ -86,7 +92,7 @@ class open():
         self.current_message = 0
         self.size = os.path.getsize(self.name)
         self.closed = self._filehandle.closed
-        self.decode = True
+        self.decode = decode
         if 'r' in self.mode: self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
@@ -905,9 +911,15 @@ class Grib2Message:
         elif self.productDefinitionTemplateNumber == 5:
             self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
             self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-            self.typeOfProbability = Grib2Metadata(self.productDefinitionTemplate[16],table='4.9')
-            self.thresholdLowerLimit = self.productDefinitionTemplate[18]/(10.**self.productDefinitionTemplate[17])
-            self.thresholdUpperLimit = self.productDefinitionTemplate[20]/(10.**self.productDefinitionTemplate[19])
+            self.typeOfProbability = Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
+            self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
+            self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
+            self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
+            self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
+            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
+                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
+            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
+                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
 
         # Template 4.6 -
         elif self.productDefinitionTemplateNumber == 6:
@@ -935,6 +947,10 @@ class Grib2Message:
             self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
             self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
             self.typeOfProbability = Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
+            self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
+            self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
+            self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
+            self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
             self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
                                        self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
             self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
