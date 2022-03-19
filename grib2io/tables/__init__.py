@@ -132,7 +132,7 @@ def get_wgrib2_level_string(type1,sfac1,sval1,type2,sfac2,sval2):
     Returns
     -------
 
-    **`str`**: string containing wgrib2-formatted level/layer string.
+    **`str`**: wgrib2-formatted level/layer string.
     """
     lvlstr = ''
     val1 = sval1/10**sfac1
