@@ -302,3 +302,48 @@ def decode_ndfd_wx_strings(lus):
         wxstring += chr(int(b[i:i+nbits],2)+refvalue)
     # Return string as list, split by null character.
     return list(filter(None,wxstring.split('\0')))
+
+
+def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
+    """
+    Return a wgrib2-formatted string explaining probabilistic
+    threshold informaiton.  Logic from wgrib2 source, [Prob.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Prob.c),
+    is replicated here.
+
+    Parameters
+    ----------
+
+    **`probtype`**: `int` type of probability (Code Table 4.9).
+
+    **`sfacl`**: `int` scale factor of lower limit.
+
+    **`svall`**: `int` scaled value of lower limit.
+
+    **`sfacu`**: `int` scale factor of upper limit.
+
+    **`svalu`**: `int` scaled value of upper limit.
+
+    Returns
+    -------
+
+    **`str`**: wgrib2-formatted string of probability threshold.
+    """
+    probstr = ''
+    lower = svall/(10**sfacl)
+    upper = svalu/(10**sfacu)
+    if probtype == 0:
+        probstr = 'prob <%g' % (lower)
+    elif probtype == 1:
+        probstr = 'prob >%g' % (upper)
+    elif probtype == 2:
+        if lower == upper:
+            probstr = 'prob =%g' % (lower)
+        else:
+            probstr = 'prob >=%g <%g' % (lower,upper)
+    elif probtype == 3:
+        probstr = 'prob >%g' % (lower)
+    elif probtype == 4:
+        probstr = 'prob <%g' % (upper)
+    return probstr
+
+
