@@ -193,6 +193,7 @@ class open():
         self._index['shortName'] = [None]
         self._index['bitMap'] = [None]
         self._index['levelString'] = [None]
+        self._index['probString'] = [None]
 
         # Iterate
         while True:
@@ -286,6 +287,10 @@ class open():
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
+                            if _pdtnum in [5,9]:
+                                self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
+                            else:
+                                self._index['probString'].append('')
                             if _issubmessage:
                                 self._index['submessageOffset'].append(_submsgoffset)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
@@ -311,6 +316,10 @@ class open():
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
+                            if _pdtnum in [5,9]:
+                                self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
+                            else:
+                                self._index['probString'].append('')
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
                             continue
@@ -419,11 +428,15 @@ class open():
         `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`
         with optional `above ground` or `agl` [DEFAULT] or `below ground" or `bgl`.
 
+        **`percentile : int`** specify the percentile value.
+
         **`refDate : int`** specifying the reference date in `YYYYMMDDHH[MMSS]` format.
 
         **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.
+
+        **`threshold : str`** wgrib2-formatted probability threshold string.
         """
-        kwargs_allowed = ['duration','leadTime','level','refDate','shortName']
+        kwargs_allowed = ['duration','leadTime','level','percentile','refDate','shortName']
         idxs = {}
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
@@ -432,12 +445,18 @@ class open():
             elif k == 'leadTime':
                 idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['leadTime']])==v)[0]
             elif k == 'level':
-                #idxs[k] = self._find_level(v)
                 idxs[k] = np.where(np.array(self._index['levelString'])==v)[0]
+            elif k == 'percentile':
+                tmp1 = np.where(np.asarray(self._index["productDefinitionTemplateNumber"])==6)[0]
+                tmp2 = np.where(np.asarray(self._index["productDefinitionTemplateNumber"])==10)[0]
+                idxs[k] = [i for i in np.concatenate((tmp1,tmp2)) if self._index["productDefinitionTemplate"][i][15]==v]
+                del tmp1,tmp2
             elif k == 'refDate':
                 idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
             elif k == 'shortName':
                 idxs[k] = np.where(np.array(self._index['shortName'])==v)[0]
+            elif k == 'threshold':
+                idxs[k] = np.where(np.array(self._index['probString'])==v)[0]
         idxsarr = np.concatenate(tuple(idxs.values()))
         nidxs = len(idxs.keys())
         if nidxs == 1:
@@ -920,6 +939,7 @@ class Grib2Message:
                                        self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
             self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
                                        self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
 
         # Template 4.6 -
         elif self.productDefinitionTemplateNumber == 6:
@@ -955,6 +975,7 @@ class Grib2Message:
                                        self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
             self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
                                        self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
             self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
             self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[24]
