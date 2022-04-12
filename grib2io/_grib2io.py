@@ -436,7 +436,7 @@ class open():
 
         **`threshold : str`** wgrib2-formatted probability threshold string.
         """
-        kwargs_allowed = ['duration','leadTime','level','percentile','refDate','shortName']
+        kwargs_allowed = ['duration','leadTime','level','percentile','refDate','shortName','threshold']
         idxs = {}
         for k,v in kwargs.items():
             if k not in kwargs_allowed: continue
