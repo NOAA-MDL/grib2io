@@ -187,7 +187,7 @@ def getduration(pdtn,pdt):
     if pdtn == 8:
         dur = pdt[26]*(tables.get_value_from_table(pdt[25],'scale_time_hours'))
     elif pdtn == 9:
-        dur = pdt[32]*(tables.get_value_from_table(pdt[31],'scale_time_hours'))
+        dur = pdt[33]*(tables.get_value_from_table(pdt[32],'scale_time_hours'))
     elif pdtn == 10:
         dur = pdt[27]*(tables.get_value_from_table(pdt[26],'scale_time_hours'))
     elif pdtn == 11:
