@@ -26,7 +26,7 @@ def get_table(table, expand=False):
     if len(table) == 3 and table == '4.1':
         raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
     if len(table) == 3 and table.startswith('4.2'):
-        raise Exception('Use function get_varname_from_table() for GRIB2 Code Table 4.2')
+        raise Exception('Use function get_varinfo_from_table() for GRIB2 Code Table 4.2')
     try:
         tbl = globals()['table_'+table.replace('.','_')]
         if expand:
