@@ -1,10 +1,13 @@
 from ._grib2io import *
 from ._grib2io import __doc__
-from . import __config__
+
+try:
+    from . import __config__
+    __version__ = __config__.grib2io_version
+except(ImportError):
+    pass
 
 __all__ = ['open','Grib2Message','Grib2Metadata','show_config']
-
-__version__ = __config__.grib2io_version
 
 def show_config():
     """
