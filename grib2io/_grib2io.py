@@ -3,13 +3,13 @@ Introduction
 ============
 
 grib2io is a Python package that provides an interface to the [NCEP GRIB2 C (g2c)](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 
-library for the purpose of reading and writing WMO GRIdded Binary, Edition 2 (GRIB2) messages. A physical 
-file can contain one or more GRIB2 messages.
+library for the purpose of reading and writing WMO GRIdded Binary, Edition 2 (GRIB2) messages. A physical file can contain one 
+or more GRIB2 messages.
 
 GRIB2 file IO is performed directly in Python.  The unpacking/packing of GRIB2 integer, coded metadata and data sections is performed 
 by the g2c library functions via the g2clib Cython wrapper module.  The decoding/encoding of GRIB2 metadata is translated into more 
-descriptive, plain language metadata by looking up the integer code values against the appropriate GRIB2 code tables.  
-These code tables are a part of the grib2io module.
+descriptive, plain language metadata by looking up the integer code values against the appropriate GRIB2 code tables.  These code tables 
+are a part of the grib2io module.
 """
 
 
@@ -326,19 +326,11 @@ class open():
                             self._index['submessageBeginSection'].append(_submsgbegin)
                             continue
 
-                #print(len(self._index['offset']),self.messages)
-
             except(struct.error):
                 self._filehandle.seek(0)
                 break
 
         self._hasindex = True
-
-
-    #def _find_level(self,level):
-    #    """
-    #    """
-    #    return np.where(np.array([True if re.search(level,str(l)) is not None else False for l in self._index["levelString"]]))[0].tolist()
 
 
     def close(self):
@@ -476,10 +468,14 @@ class open():
 
         **`msg`**: instance of `Grib2Message`.
         """
-        self._filehandle.write(msg._msg)
-        self.size = os.path.getsize(self.name)
-        self.messages += 1
-        self.current_message += 1
+        if isinstance(msg,Grib2Message):
+            self._filehandle.write(msg._msg)
+            self.size = os.path.getsize(self.name)
+            self.messages += 1
+            self.current_message += 1
+        else:
+            raise TypeError("msg must be a Grib2Message object.")
+  
 
 class Grib2Message:
     def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None):
