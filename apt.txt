@@ -1,0 +1,5 @@
+python3-dev
+libopenjp2-7
+libopenjp2-7-dev
+libpng16-16
+libpng-dev

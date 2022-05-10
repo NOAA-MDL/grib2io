@@ -69,7 +69,7 @@ echo "\t - Parameter category tables"
 ./get-ncep-grib2-sect4-category-table.py > section4.py
 for table in 4.0 4.3 4.4 4.5 4.6 4.7 4.8 4.9 4.10 4.11 4.201 4.202 4.203 4.204 4.205 4.206 \
              4.207 4.208 4.209 4.210 4.211 4.212 4.213 4.215 4.216 4.217 4.218 4.222 \
-             4.223 4.224 4.227 4.243
+             4.223 4.224 4.227 4.228 4.243
 do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
@@ -93,6 +93,8 @@ table_scale_time_hours = {
 '13': 3600.,
 '14-255': 1.}
 EOF
+echo "\t - wgrib2 Level/Layer String Table"
+cat table_wgrib2_level_string.txt >> section4.py
 
 # Discipline 0
 echo " -- Making section4_discipline0.py"

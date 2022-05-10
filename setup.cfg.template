@@ -1,10 +1,12 @@
 # ---------------------------------------------------------------------------------------- 
 # setup.cfg.template for grib2io
-# ---------------------------------------------------------------------------------------- 
-
-# ---------------------------------------------------------------------------------------- 
-# IMPORTANT: Rename this file to setup.cfg to set grib2io build options. Follow 
-#            instructions below for editing.
+#
+# Notes:
+#
+# 1) Rename this file to setup.cfg to set grib2io build options. Follow instructions 
+#    below for editing.
+#
+# 2) For JPEG encoding/decoding, please define either Jasper or OpenJPEG vars
 # ---------------------------------------------------------------------------------------- 
 
 [directories]
@@ -18,6 +20,16 @@
 # jasper_dir = /usr/local
 # jasper_incdir =
 # jasper_libdir =
+
+# ----------------------------------------------------------------------------------------
+# Define paths for OpenJPEG Library
+#
+# Please set openjpeg_dir is include and library files are within the same location.
+# If not, please set openjpeg_incdir and openjpeg_libdir.
+# ----------------------------------------------------------------------------------------
+# openjpeg_dir = /usr/local
+# openjpeg_incdir =
+# openjpeg_libdir =
 
 # ---------------------------------------------------------------------------------------- 
 # Define paths for PNG Library

@@ -7,34 +7,24 @@ sudo: true
 addons:
   apt:
     packages:
-      - libeccodes0
-      - libeccodes-dev
+      - libopenjp2-7-dev
       - libpng-dev
 
 env:
   global:
     - DEPENDS="numpy pyproj"
-    - JASPER_LIBDIR="/usr/lib/x86_64-linux-gnu"
-    - JASPER_INCDIR="/usr/include"
-    - PNG_LIBDIR="/usr/lib/x86_64-linux-gnu"
-    - PNG_INCDIR="/usr/include"
-    - ZLIB_LIBDIR="/usr/lib/x86_64-linux-gnu"
-    - ZLIB_INCDIR="/usr/include"
 
 python:
   - "3.6"
   - "3.7"
   - "3.8"
   - "3.9"
+  - "3.10"
 
 notifications:
   email: false
 
 before_install:
-  - wget http://security.ubuntu.com/ubuntu/pool/main/j/jasper/libjasper-dev_1.900.1-debian1-2.4ubuntu1.3_amd64.deb
-  - wget http://security.ubuntu.com/ubuntu/pool/main/j/jasper/libjasper1_1.900.1-debian1-2.4ubuntu1.3_amd64.deb
-  - sudo dpkg --install libjasper1_1.900.1-debian1-2.4ubuntu1.3_amd64.deb
-  - sudo dpkg --install libjasper-dev_1.900.1-debian1-2.4ubuntu1.3_amd64.deb
   - pip install $DEPENDS
 
 install:
@@ -42,4 +32,4 @@ install:
   - python setup.py install
 
 script:
-  - python -c "import grib2io; grib2io"
+  - python setup.py test
