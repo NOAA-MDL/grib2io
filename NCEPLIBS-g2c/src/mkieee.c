@@ -13,22 +13,22 @@
  * @param a Input array of floating point values.
  * @param num Number of floating point values to convert.
  * @param rieee Output array of data values in 32-bit IEEE format
- * stored in g2int integer array. rieee must be allocated with at
+ * stored in g2int32 integer array. rieee must be allocated with at
  * least 4*num bytes of memory before calling this function.
  *
  * @author Stephen Gilbert @date 2002-10-29
  */
-void mkieee(g2float *a,g2int *rieee,g2int num)
+void mkieee(g2float *a,g2int32 *rieee,g2int32 num)
 {
 
-    g2int  j,n,ieee,iexp,imant;
+    g2int32  j,n,ieee,iexp,imant;
     double  alog2,atemp;
 
     static double  two23,two126;
-    static g2int test=0;
-    //g2intu msk1=0x80000000;        // 10000000000000000000000000000000 binary
-    //g2int msk2=0x7F800000;         // 01111111100000000000000000000000 binary
-    //g2int msk3=0x007FFFFF;         // 00000000011111111111111111111111 binary
+    static g2int32 test=0;
+    //g2int32u msk1=0x80000000;        // 10000000000000000000000000000000 binary
+    //g2int32 msk2=0x7F800000;         // 01111111100000000000000000000000 binary
+    //g2int32 msk3=0x007FFFFF;         // 00000000011111111111111111111111 binary
 
     if ( test == 0 ) {
         two23=(double)int_power(2.0,23);
@@ -74,7 +74,7 @@ void mkieee(g2float *a,g2int *rieee,g2int num)
                 n--;
             }
         }
-        //n=(g2int)floor(log(atemp)/alog2);
+        //n=(g2int32)floor(log(atemp)/alog2);
         iexp=n+127;
         if (n >  127) iexp=255;     // overflow
         if (n < -127) iexp=0;
@@ -89,7 +89,7 @@ void mkieee(g2float *a,g2int *rieee,g2int num)
                 atemp=(atemp/int_power(2.0,n))-1.0;
             else
                 atemp=atemp*two126;
-            imant=(g2int)rint(atemp*two23);
+            imant=(g2int32)rint(atemp*two23);
         }
         else {
             imant=0;

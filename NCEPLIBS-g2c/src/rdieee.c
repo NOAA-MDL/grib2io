@@ -9,7 +9,7 @@
  * This subroutine reads a list of real values in 32-bit IEEE floating
  * point format.
  *
- * @param rieee g2int array of floating point values in 32-bit IEEE
+ * @param rieee g2int32 array of floating point values in 32-bit IEEE
  * format.
  * @param num Number of floating point values to convert.
  * @param a float array of real values.  a must be allocated with at
@@ -17,18 +17,18 @@
  *
  * @author Stephen Gilbert @date 2002-10-25
  */
-void rdieee(g2int *rieee,g2float *a,g2int num)
+void rdieee(g2int32 *rieee,g2float *a,g2int32 num)
 {
 
-    g2int  j;
-    g2int  isign,iexp,imant;
+    g2int32  j;
+    g2int32  isign,iexp,imant;
 
     g2float  sign,temp;
     static g2float  two23,two126;
-    static g2int test=0;
-    g2intu msk1=0x80000000;        // 10000000000000000000000000000000 binary
-    g2int msk2=0x7F800000;         // 01111111100000000000000000000000 binary
-    g2int msk3=0x007FFFFF;         // 00000000011111111111111111111111 binary
+    static g2int32 test=0;
+    g2int32u msk1=0x80000000;        // 10000000000000000000000000000000 binary
+    g2int32 msk2=0x7F800000;         // 01111111100000000000000000000000 binary
+    g2int32 msk3=0x007FFFFF;         // 00000000011111111111111111111111 binary
 
     if ( test == 0 ) {
         two23=(g2float)int_power(2.0,-23);

@@ -154,6 +154,8 @@
 
 #define G2_VERSION "g2clib-1.6.4" /**< Current version of NCEPLIBS-g2c library. */
 
+typedef int g2int32; /**< Int integer type. */
+typedef unsigned int g2int32u; /**< Unsigned Int integer type. */
 typedef long g2int; /**< Long integer type. */
 typedef unsigned long g2intu; /**< Unsigned long integer type. */
 typedef float g2float; /**< Float type. */
@@ -234,8 +236,8 @@ g2int g2_gribend(unsigned char *);
 
 /*  Prototypes for supporting routines  */
 extern double int_power(double, g2int );
-extern void mkieee(g2float *,g2int *,g2int);
-void rdieee(g2int *,g2float *,g2int );
+extern void mkieee(g2float *,g2int32 *,g2int32);
+void rdieee(g2int32 *,g2float *,g2int32 );
 extern gtemplate *getpdstemplate(g2int);
 extern gtemplate *extpdstemplate(g2int,g2int *);
 extern gtemplate *getdrstemplate(g2int);
