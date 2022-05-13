@@ -1,7 +1,9 @@
 /** @file
+ * @brief Functions for dealing with PNG.
+ * @author Stephen Gilbert
  */
 #ifndef USE_PNG
- void dummy(void) {}
+void dummy(void) {}
 #else   /* USE_PNG */
 
 #include <stdio.h>
@@ -10,49 +12,75 @@
 #include <png.h>
 #include "grib2.h"
 
-
+/**
+ * Stuct for PNG stream.
+ */
 struct png_stream {
-   unsigned char *stream_ptr;     /*  location to write PNG stream  */
-   g2int stream_len;               /*  number of bytes written       */
+    unsigned char *stream_ptr; /**< Location to write PNG stream. */
+    g2int stream_len; /**< Number of bytes written. */
 };
-typedef struct png_stream png_stream;
+typedef struct png_stream png_stream; /**< Typedef for PNG stream. */
 
 void user_write_data(png_structp ,png_bytep , png_uint_32 );
 void user_flush_data(png_structp );
 
-void user_write_data(png_structp png_ptr,png_bytep data, png_uint_32 length)
-/*
-        Custom write function used to that libpng will write
-        to memory location instead of a file on disk
+/**
+ * Custom write function used to that libpng will write to memory
+ * location instead of a file on disk.
+ *
+ * @param png_ptr pointer
+ * @param data data
+ * @param length length
+ *
+ * @author Stephen Gilbert
 */
+void
+user_write_data(png_structp png_ptr, png_bytep data, png_uint_32 length)
 {
-     unsigned char *ptr;
-     g2int offset;
-     png_stream *mem;
+    unsigned char *ptr;
+    g2int offset;
+    png_stream *mem;
 
-     mem=(png_stream *)png_get_io_ptr(png_ptr);
-     ptr=mem->stream_ptr;
-     offset=mem->stream_len;
+    mem=(png_stream *)png_get_io_ptr(png_ptr);
+    ptr=mem->stream_ptr;
+    offset=mem->stream_len;
 /*     printf("SAGwr %ld %ld %x\n",offset,length,ptr);    */
-     /*for (j=offset,k=0;k<length;j++,k++) ptr[j]=data[k];*/
-     memcpy(ptr+offset,data,length);
-     mem->stream_len += length;
+    /*for (j=offset,k=0;k<length;j++,k++) ptr[j]=data[k];*/
+    memcpy(ptr+offset,data,length);
+    mem->stream_len += length;
 }
 
 
-void user_flush_data(png_structp png_ptr)
-/*
-        Dummy Custom flush function
+/**
+ * Dummy Custom flush function.
+ *
+ * @param png_ptr Pointer to PNG struct.
+ *
+ * @author Stephen Gilbert
 */
+void user_flush_data(png_structp png_ptr)
 {
-   int *do_nothing;
-   do_nothing=NULL;
+    int *do_nothing;
+    do_nothing=NULL;
 }
 
-
-int enc_png(char *data,g2int width,g2int height,g2int nbits,char *pngbuf)
+/**
+ * Encode PNG.
+ *
+ * @param data data.
+ * @param width width.
+ * @param height height.
+ * @param nbits number of bits.
+ * @param pngbuf PNG buffer.
+ *
+ * @return PNG length, or negative number for error.
+ *
+ * @author Stephen Gilbert
+*/
+int
+enc_png(char *data, g2int width, g2int height, g2int nbits, char *pngbuf)
 {
- 
+
     int color_type;
     g2int j,bytes,pnglen,bit_depth;
     png_structp png_ptr;
@@ -63,24 +91,24 @@ int enc_png(char *data,g2int width,g2int height,g2int nbits,char *pngbuf)
 
 /* create and initialize png_structs  */
 
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL, 
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
                                       NULL, NULL);
     if (!png_ptr)
-       return (-1);
+        return (-1);
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr)
     {
-       png_destroy_write_struct(&png_ptr,(png_infopp)NULL);
-       return (-2);
+        png_destroy_write_struct(&png_ptr,(png_infopp)NULL);
+        return (-2);
     }
 
 /*     Set Error callback   */
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-       png_destroy_write_struct(&png_ptr, &info_ptr);
-       return (-3);
+        png_destroy_write_struct(&png_ptr, &info_ptr);
+        return (-3);
     }
 
 /*    Initialize info for writing PNG stream to memory   */
@@ -91,7 +119,7 @@ int enc_png(char *data,g2int width,g2int height,g2int nbits,char *pngbuf)
 /*    Set new custom write functions    */
 
     png_set_write_fn(png_ptr,(png_voidp)&write_io_ptr,(png_rw_ptr)user_write_data,
-                    (png_flush_ptr)user_flush_data);
+                     (png_flush_ptr)user_flush_data);
 /*    png_init_io(png_ptr, fptr);   */
 /*    png_set_compression_level(png_ptr, Z_BEST_COMPRESSION);  */
 
@@ -109,8 +137,8 @@ int enc_png(char *data,g2int width,g2int height,g2int nbits,char *pngbuf)
         color_type=PNG_COLOR_TYPE_RGB_ALPHA;
     }
     png_set_IHDR(png_ptr, info_ptr, width, height,
-       bit_depth, color_type, PNG_INTERLACE_NONE,
-       PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
+                 bit_depth, color_type, PNG_INTERLACE_NONE,
+                 PNG_COMPRESSION_TYPE_DEFAULT, PNG_FILTER_TYPE_DEFAULT);
 
 /*     Put image data into the PNG info structure    */
 

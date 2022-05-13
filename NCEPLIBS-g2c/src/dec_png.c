@@ -1,7 +1,14 @@
 /** @file
+ * @brief PNG functions.
+ * @author Stephen Gilbert
  */
 #ifndef USE_PNG
- void dummy(void) {}
+/** 
+ * Dummy function used if USE_JPEG2000 is not defined.
+ *
+ * @author Stephen Gilbert
+*/
+void dummy(void) {}
 #else   /* USE_PNG */
 
 #include <stdio.h>
@@ -10,35 +17,53 @@
 #include <png.h>
 #include "grib2.h"
 
-
+/**
+ * Struct for PNG stream.
+ */
 struct png_stream {
-   unsigned char *stream_ptr;     /*  location to write PNG stream  */
-   g2int stream_len;               /*  number of bytes written       */
+    unsigned char *stream_ptr; /**<  location to write PNG stream. */
+    g2int stream_len; /**<  number of bytes written. */
 };
-typedef struct png_stream png_stream;
+typedef struct png_stream png_stream; /**<  Typedef for PNG stream. */
 
 void user_read_data(png_structp , png_bytep , png_uint_32 );
 
-void user_read_data(png_structp png_ptr,png_bytep data, png_uint_32 length)
-/*
-        Custom read function used so that libpng will read a PNG stream
-        from memory instead of a file on disk.
+/**
+ * Custom read function used so that libpng will read a PNG stream
+ * from memory instead of a file on disk.
+ * 
+ * @param png_ptr Pointer to PNG.
+ * @param data Pointer to data.
+ * @param length Length.
+ *
+ * @author Stephen Gilbert
 */
+void user_read_data(png_structp png_ptr,png_bytep data, png_uint_32 length)
 {
-     char *ptr;
-     g2int offset;
-     png_stream *mem;
+    char *ptr;
+    g2int offset;
+    png_stream *mem;
 
-     mem=(png_stream *)png_get_io_ptr(png_ptr);
-     ptr=(void *)mem->stream_ptr;
-     offset=mem->stream_len;
+    mem=(png_stream *)png_get_io_ptr(png_ptr);
+    ptr=(void *)mem->stream_ptr;
+    offset=mem->stream_len;
 /*     printf("SAGrd %ld %ld %x\n",offset,length,ptr);  */
-     memcpy(data,ptr+offset,length);
-     mem->stream_len += length;
+    memcpy(data,ptr+offset,length);
+    mem->stream_len += length;
 }
 
-
-
+/**
+ * Decode PNG.
+ * 
+ * @param pngbuf Pointer to PNG buffer.
+ * @param width Pointer to width.
+ * @param height Pointer to height.
+ * @param cout Output buffer.
+ *
+ * @return 0 for success, error code otherwise.
+ *
+ * @author Stephen Gilbert
+*/
 int dec_png(unsigned char *pngbuf,g2int *width,g2int *height,char *cout)
 {
     int interlace,color,compres,filter,bit_depth;
@@ -51,36 +76,36 @@ int dec_png(unsigned char *pngbuf,g2int *width,g2int *height,char *cout)
 
 /*  check if stream is a valid PNG format   */
 
-    if ( png_sig_cmp(pngbuf,0,8) != 0) 
-       return (-3);
+    if ( png_sig_cmp(pngbuf,0,8) != 0)
+        return (-3);
 
 /* create and initialize png_structs  */
 
-    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL, 
-                                      NULL, NULL);
+    png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, (png_voidp)NULL,
+                                     NULL, NULL);
     if (!png_ptr)
-       return (-1);
+        return (-1);
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr)
     {
-       png_destroy_read_struct(&png_ptr,(png_infopp)NULL,(png_infopp)NULL);
-       return (-2);
+        png_destroy_read_struct(&png_ptr,(png_infopp)NULL,(png_infopp)NULL);
+        return (-2);
     }
 
     end_info = png_create_info_struct(png_ptr);
     if (!end_info)
     {
-       png_destroy_read_struct(&png_ptr,(png_infopp)info_ptr,(png_infopp)NULL);
-       return (-2);
+        png_destroy_read_struct(&png_ptr,(png_infopp)info_ptr,(png_infopp)NULL);
+        return (-2);
     }
 
 /*     Set Error callback   */
 
     if (setjmp(png_jmpbuf(png_ptr)))
     {
-       png_destroy_read_struct(&png_ptr, &info_ptr,&end_info);
-       return (-3);
+        png_destroy_read_struct(&png_ptr, &info_ptr,&end_info);
+        return (-3);
     }
 
 /*    Initialize info for reading PNG stream from memory   */
@@ -106,7 +131,7 @@ int dec_png(unsigned char *pngbuf,g2int *width,g2int *height,char *cout)
     /*printf("SAGT:png %d %d %d\n",info_ptr->width,info_ptr->height,info_ptr->bit_depth);*/
     // (void)png_get_IHDR(png_ptr, info_ptr, (png_uint_32 *)width, (png_uint_32 *)height,
     (void)png_get_IHDR(png_ptr, info_ptr, &w32, &h32,
-               &bit_depth, &color, &interlace, &compres, &filter);
+                       &bit_depth, &color, &interlace, &compres, &filter);
 
     *height = h32;
     *width = w32;
@@ -114,15 +139,15 @@ int dec_png(unsigned char *pngbuf,g2int *width,g2int *height,char *cout)
 /*     Check if image was grayscale      */
 
 /*
-    if (color != PNG_COLOR_TYPE_GRAY ) {
-       fprintf(stderr,"dec_png: Grayscale image was expected. \n");
-    }
+  if (color != PNG_COLOR_TYPE_GRAY ) {
+  fprintf(stderr,"dec_png: Grayscale image was expected. \n");
+  }
 */
     if ( color == PNG_COLOR_TYPE_RGB ) {
-       bit_depth=24;
+        bit_depth=24;
     }
     else if ( color == PNG_COLOR_TYPE_RGB_ALPHA ) {
-       bit_depth=32;
+        bit_depth=32;
     }
 /*     Copy image data to output string   */
 
@@ -130,10 +155,10 @@ int dec_png(unsigned char *pngbuf,g2int *width,g2int *height,char *cout)
     bytes=bit_depth/8;
     clen=(*width)*bytes;
     for (j=0;j<*height;j++) {
-      for (k=0;k<clen;k++) {
-        cout[n]=*(row_pointers[j]+k);
-        n++;
-      }
+        for (k=0;k<clen;k++) {
+            cout[n]=*(row_pointers[j]+k);
+            n++;
+        }
     }
 
 /*      Clean up   */

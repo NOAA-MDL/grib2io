@@ -1,5 +1,5 @@
 /** @file
- *   PRGMMR: Gilbert         ORG: W/NP11    DATE: 2002-10-25
+ * @brief Header file for NCEPLIBS-g2c library.
  *
  * PROGRAM HISTORY LOG:
  * - 2002-10-25  Gilbert
@@ -123,10 +123,10 @@
  *        gfld->unpacked = logical value indicating whether the bitmap and
  *                        data values were unpacked.  If false,
  *                        gfld->bmap and gfld->fld pointers are nullified.
- *        gfld->expanded = Logical value indicating whether the data field 
- *                         was expanded to the grid in the case where a 
+ *        gfld->expanded = Logical value indicating whether the data field
+ *                         was expanded to the grid in the case where a
  *                         bit-map is present.  If true, the data points in
- *                         gfld->fld match the grid points and zeros were 
+ *                         gfld->fld match the grid points and zeros were
  *                         inserted at grid points where data was bit-mapped
  *                         out.  If false, the data values in gfld->fld were
  *                         not expanded to the grid and are just a consecutive
@@ -145,66 +145,71 @@
  *                     This element is a pointer to an array
  *                     that holds the data.
  *   </pre>
-*/
+ *
+ * @author Stephen Gilbert @date 2002-10-25
+ */
 #ifndef _grib2_H
 #define _grib2_H
-#include<stdio.h>
+#include <stdio.h>
 
-#define G2_VERSION "g2clib-1.6.2"
+#define G2_VERSION "g2clib-1.6.4" /**< Current version of NCEPLIBS-g2c library. */
 
-#ifdef __64BIT__
-typedef int g2int;
-typedef unsigned int g2intu;
-#else
-typedef long g2int;
-typedef unsigned long g2intu;
-#endif
-typedef float g2float;
+typedef int g2int32; /**< Int integer type. */
+typedef unsigned int g2int32u; /**< Unsigned Int integer type. */
+typedef long g2int; /**< Long integer type. */
+typedef unsigned long g2intu; /**< Unsigned long integer type. */
+typedef float g2float; /**< Float type. */
 
+/**
+ * Struct for GRIB template.
+ */
 struct gtemplate {
-   g2int type;           /* 3=Grid Defintion Template.                       */
-                         /* 4=Product Defintion Template.                    */
-                         /* 5=Data Representation Template.                  */
-   g2int num;            /* template number.                                 */
-   g2int maplen;         /* number of entries in the static part             */
-                         /*                    of the template.              */
-   g2int *map;           /* num of octets of each entry in the               */
-                         /*         static part of the template.             */
-   g2int needext;        /* indicates whether or not the template needs      */
-                         /*     to be extended.                              */
-   g2int extlen;         /* number of entries in the template extension.     */
-   g2int *ext;           /* num of octets of each entry in the extension     */
-                         /*                      part of the template.       */
+    g2int type; /**< 3=Grid Defintion Template. */
+    /**< 4=Product Defintion Template. */
+    /**< 5=Data Representation Template. */
+    g2int num;            /**< template number.                                 */
+    g2int maplen;         /**< number of entries in the static part             */
+    /**< of the template.              */
+    g2int *map;           /**< num of octets of each entry in the               */
+    /**< static part of the template.             */
+    g2int needext;        /**< indicates whether or not the template needs      */
+    /**< to be extended.                              */
+    g2int extlen; /**< number of entries in the template extension.     */
+    g2int *ext; /**< num of octets of each entry in the extension     */
+    /**< part of the template.       */
 };
 
-typedef struct gtemplate gtemplate;
+typedef struct gtemplate gtemplate; /**< Struct for GRIB template. */
 
+/**
+ * Struct for GRIB field.
+ */
 struct gribfield {
-   g2int   version,discipline;
-   g2int   *idsect;
-   g2int   idsectlen;
-   unsigned char *local;
-   g2int   locallen;
-   g2int   ifldnum;
-   g2int   griddef,ngrdpts;
-   g2int   numoct_opt,interp_opt,num_opt;
-   g2int   *list_opt;
-   g2int   igdtnum,igdtlen;
-   g2int   *igdtmpl;
-   g2int   ipdtnum,ipdtlen;
-   g2int   *ipdtmpl;
-   g2int   num_coord;
-   g2float *coord_list;
-   g2int   ndpts,idrtnum,idrtlen;
-   g2int   *idrtmpl;
-   g2int   unpacked;
-   g2int   expanded;
-   g2int   ibmap;
-   g2int   *bmap;
-   g2float *fld;
+    g2int   version,discipline;
+    g2int   *idsect;
+    g2int   idsectlen;
+    unsigned char *local;
+    g2int   locallen;
+    g2int   ifldnum;
+    g2int   griddef,ngrdpts;
+    g2int   numoct_opt,interp_opt,num_opt;
+    g2int   *list_opt;
+    g2int   igdtnum,igdtlen;
+    g2int   *igdtmpl;
+    g2int   ipdtnum,ipdtlen;
+    g2int   *ipdtmpl;
+    g2int   num_coord;
+    g2float *coord_list;
+    g2int   ndpts,idrtnum,idrtlen;
+    g2int   *idrtmpl;
+    g2int   unpacked;
+    g2int   expanded;
+    g2int   ibmap;
+    g2int   *bmap;
+    g2float *fld;
 };
 
-typedef struct gribfield gribfield;
+typedef struct gribfield gribfield; /**< Struct for GRIB field. */
 
 /*  Prototypes for unpacking sections API  */
 g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *);
@@ -223,16 +228,16 @@ void g2_free(gribfield *);
 /*  Prototypes for packing API  */
 g2int g2_create(unsigned char *,g2int *,g2int *);
 g2int g2_addlocal(unsigned char *,unsigned char *,g2int );
-g2int g2_addgrid(unsigned char *,g2int *,g2int *,g2int *,g2int ); 
+g2int g2_addgrid(unsigned char *,g2int *,g2int *,g2int *,g2int );
 g2int g2_addfield(unsigned char *,g2int ,g2int *,
-                       g2float *,g2int ,g2int ,g2int *,
-                       g2float *,g2int ,g2int ,g2int *);
+                  g2float *,g2int ,g2int ,g2int *,
+                  g2float *,g2int ,g2int ,g2int *);
 g2int g2_gribend(unsigned char *);
 
 /*  Prototypes for supporting routines  */
 extern double int_power(double, g2int );
-extern void mkieee(g2float *,g2int *,g2int);
-void rdieee(g2int *,g2float *,g2int );
+extern void mkieee(g2float *,g2int32 *,g2int32);
+void rdieee(g2int32 *,g2float *,g2int32 );
 extern gtemplate *getpdstemplate(g2int);
 extern gtemplate *extpdstemplate(g2int,g2int *);
 extern gtemplate *getdrstemplate(g2int);
@@ -254,4 +259,3 @@ int pack_gp(g2int *, g2int *, g2int *,
             g2int *, g2int *, g2int *);
 
 #endif  /*  _grib2_H  */
-

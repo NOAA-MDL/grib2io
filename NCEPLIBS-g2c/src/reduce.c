@@ -1,27 +1,90 @@
 /** @file
-    reduce.f -- translated by f2c (version 20031025).
-    You must link the resulting object file with libf2c:
-	on Microsoft Windows system, link with libf2c.lib;
-	on Linux or Unix systems, link with .../path/to/libf2c.a -lm
-	or, if you install libf2c.a in a standard place, with -lf2c -lm
-	-- in that order, at the end of the command line, as in
-<pre>
-		cc *.o -lf2c -lm
-</pre>
-	Source for libf2c is in /netlib/f2c/libf2c.zip, e.g.,
-		http://www.netlib.org/f2c/libf2c.zip
+ * @brief Determines whether the number of groups should be increased in
+ * order to reduce the size of the large groups, and to make that
+ * adjustment.
+ * @author Glahn @date November 2001 
 */
 
 /*#include "f2c.h"*/
 #include <stdlib.h>
 #include "grib2.h"
-typedef g2int integer;
-typedef g2float real;
+typedef g2int integer; /**< Integer type. */
+typedef g2float real; /**< Float type. */
 
-/* Subroutine */ int reduce(integer *kfildo, integer *jmin, integer *jmax, 
-	integer *lbit, integer *nov, integer *lx, integer *ndg, integer *ibit,
-	 integer *jbit, integer *kbit, integer *novref, integer *ibxx2, 
-	integer *ier)
+/**
+ * Determines whether the number of groups should be increased in
+ * order to reduce the size of the large groups, and to make that
+ * adjustment. By reducing the size of the large groups, less bits
+ * may be necessary for packing the group sizes and all the
+ * information about the groups.
+ *
+ * The reference for nov was removed in the calling routine so that
+ * kbit could be determined. This furnishes a starting point for the
+ * iterations in reduce. However, the reference must be considered.
+ *
+ * PROGRAM HISTORY LOG
+ * - November 2001 Glahn tdl grib2 
+ * - March 2002 Glahn comment ier = 715
+ * - March 2002 Glahn modified to accommodate lx=1 on entry
+ *
+ * DATA SET USE 
+ * - kfildo - unit number for output (print) file. (output) 
+ *
+ * @param kfildo unit number for output (print) file. (input)
+ * @param jmin the minimum of each group (j=1,lx). it is possible
+ * after splitting the groups, jmin( ) will not be the minimum of the
+ * new group.  this doesn't matter; jmin( ) is really the group
+ * reference and doesn't have to be the smallest value. (input/output)
+ * @param jmax the maximum of each group (j=1,lx). (input/output)
+ * @param lbit the number of bits necessary to pack each group
+ * (j=1,lx). (input/output)
+ * @param nov the number of values in each group (j=1,lx).
+ * (input/output)
+ * @param lx the number of groups. this will be increased if groups
+ * are split. (input/output)
+ * @param ndg the dimension of jmin( ), jmax( ), lbit( ), and nov(
+ * ). (input)
+ * @param ibit the number of bits necessary to pack the jmin(j)
+ * values, j=1,lx. (input)
+ * @param jbit the number of bits necessary to pack the lbit(j)
+ * values, j=1,lx. (input)
+ * @param kbit the number of bits necessary to pack the nov(j) values,
+ * j=1,lx. if the groups are split, kbit is reduced. (input/output)
+ * @param novref reference value for nov( ). (input) 
+ * @param ibxx2 2**j (j=0,30). (input) 
+ * @param ier error return. (output) 
+ * - 0 = good return. 
+ * - 714 = problem in algorithm. reduce aborted. 
+ * - 715 = ngp not large enough. reduce aborted. 
+ *
+ * @return always returns 0, see parameter ier for error code.
+ *
+ * <pre>
+ * ntotbt(j) = the total bits used for the packing bits j 
+ *                       (j=1,30). (internal) 
+ *  nboxj(j) = new boxes needed for the packing bits j 
+ *                       (j=1,30). (internal) 
+ *           newbox(l) = number of new boxes (groups) for each original 
+ *                       group (l=1,lx) for the current j. (automatic) 
+ *                       (internal) 
+ *          newboxp(l) = same as newbox( ) but for the previous j. 
+ *                       this eliminates recomputation. (automatic) 
+ *                       (internal) 
+ *               cfeed = contains the character representation 
+ *                       of a printer form feed. (character) (internal) 
+ *               ifeed = contains the integer value of a printer 
+ *                       form feed. (internal) 
+ *              iorigb = the original number of bits necessary 
+ *                       for the group values. (internal) 
+ * </pre>
+ *
+ * @author Glahn @date November 2001 
+ */
+int
+reduce(integer *kfildo, integer *jmin, integer *jmax,
+       integer *lbit, integer *nov, integer *lx, integer *ndg, integer *ibit,
+       integer *jbit, integer *kbit, integer *novref, integer *ibxx2,
+       integer *ier)
 {
     /* Initialized data */
 
@@ -36,82 +99,8 @@ typedef g2float real;
     static integer move, novl;
     static char cfeed[1];
     static integer nboxj[31], lxnkp, iorigb, ibxx2m1, movmin,
-	     ntotbt[31], ntotpr, newboxt;
+        ntotbt[31], ntotpr, newboxt;
     integer *newbox, *newboxp;
-
-
-/*        NOVEMBER 2001   GLAHN   TDL   GRIB2 */
-/*        MARCH    2002   GLAHN   COMMENT IER = 715 */
-/*        MARCH    2002   GLAHN   MODIFIED TO ACCOMMODATE LX=1 ON ENTRY */
-
-/*        PURPOSE */
-/*            DETERMINES WHETHER THE NUMBER OF GROUPS SHOULD BE */
-/*            INCREASED IN ORDER TO REDUCE THE SIZE OF THE LARGE */
-/*            GROUPS, AND TO MAKE THAT ADJUSTMENT.  BY REDUCING THE */
-/*            SIZE OF THE LARGE GROUPS, LESS BITS MAY BE NECESSARY */
-/*            FOR PACKING THE GROUP SIZES AND ALL THE INFORMATION */
-/*            ABOUT THE GROUPS. */
-
-/*            THE REFERENCE FOR NOV( ) WAS REMOVED IN THE CALLING */
-/*            ROUTINE SO THAT KBIT COULD BE DETERMINED.  THIS */
-/*            FURNISHES A STARTING POINT FOR THE ITERATIONS IN REDUCE. */
-/*            HOWEVER, THE REFERENCE MUST BE CONSIDERED. */
-
-/*        DATA SET USE */
-/*           KFILDO - UNIT NUMBER FOR OUTPUT (PRINT) FILE. (OUTPUT) */
-
-/*        VARIABLES IN CALL SEQUENCE */
-/*              KFILDO = UNIT NUMBER FOR OUTPUT (PRINT) FILE.  (INPUT) */
-/*             JMIN(J) = THE MINIMUM OF EACH GROUP (J=1,LX).  IT IS */
-/*                       POSSIBLE AFTER SPLITTING THE GROUPS, JMIN( ) */
-/*                       WILL NOT BE THE MINIMUM OF THE NEW GROUP. */
-/*                       THIS DOESN'T MATTER; JMIN( ) IS REALLY THE */
-/*                       GROUP REFERENCE AND DOESN'T HAVE TO BE THE */
-/*                       SMALLEST VALUE.  (INPUT/OUTPUT) */
-/*             JMAX(J) = THE MAXIMUM OF EACH GROUP (J=1,LX). */
-/*                       (INPUT/OUTPUT) */
-/*             LBIT(J) = THE NUMBER OF BITS NECESSARY TO PACK EACH GROUP */
-/*                       (J=1,LX).  (INPUT/OUTPUT) */
-/*              NOV(J) = THE NUMBER OF VALUES IN EACH GROUP (J=1,LX). */
-/*                       (INPUT/OUTPUT) */
-/*                  LX = THE NUMBER OF GROUPS.  THIS WILL BE INCREASED */
-/*                       IF GROUPS ARE SPLIT.  (INPUT/OUTPUT) */
-/*                 NDG = THE DIMENSION OF JMIN( ), JMAX( ), LBIT( ), AND */
-/*                       NOV( ).  (INPUT) */
-/*                IBIT = THE NUMBER OF BITS NECESSARY TO PACK THE JMIN(J) */
-/*                       VALUES, J=1,LX.  (INPUT) */
-/*                JBIT = THE NUMBER OF BITS NECESSARY TO PACK THE LBIT(J) */
-/*                       VALUES, J=1,LX.  (INPUT) */
-/*                KBIT = THE NUMBER OF BITS NECESSARY TO PACK THE NOV(J) */
-/*                       VALUES, J=1,LX.  IF THE GROUPS ARE SPLIT, KBIT */
-/*                       IS REDUCED.  (INPUT/OUTPUT) */
-/*              NOVREF = REFERENCE VALUE FOR NOV( ).  (INPUT) */
-/*            IBXX2(J) = 2**J (J=0,30).  (INPUT) */
-/*                 IER = ERROR RETURN.  (OUTPUT) */
-/*                         0 = GOOD RETURN. */
-/*                       714 = PROBLEM IN ALGORITHM.  REDUCE ABORTED. */
-/*                       715 = NGP NOT LARGE ENOUGH.  REDUCE ABORTED. */
-/*           NTOTBT(J) = THE TOTAL BITS USED FOR THE PACKING BITS J */
-/*                       (J=1,30).  (INTERNAL) */
-/*            NBOXJ(J) = NEW BOXES NEEDED FOR THE PACKING BITS J */
-/*                       (J=1,30).  (INTERNAL) */
-/*           NEWBOX(L) = NUMBER OF NEW BOXES (GROUPS) FOR EACH ORIGINAL */
-/*                       GROUP (L=1,LX) FOR THE CURRENT J.  (AUTOMATIC) */
-/*                       (INTERNAL) */
-/*          NEWBOXP(L) = SAME AS NEWBOX( ) BUT FOR THE PREVIOUS J. */
-/*                       THIS ELIMINATES RECOMPUTATION.  (AUTOMATIC) */
-/*                       (INTERNAL) */
-/*               CFEED = CONTAINS THE CHARACTER REPRESENTATION */
-/*                       OF A PRINTER FORM FEED.  (CHARACTER) (INTERNAL) */
-/*               IFEED = CONTAINS THE INTEGER VALUE OF A PRINTER */
-/*                       FORM FEED.  (INTERNAL) */
-/*              IORIGB = THE ORIGINAL NUMBER OF BITS NECESSARY */
-/*                       FOR THE GROUP VALUES.  (INTERNAL) */
-/*        1         2         3         4         5         6         7 X */
-
-/*        NON SYSTEM SUBROUTINES CALLED */
-/*           NONE */
-
 
 /*        NEWBOX( ) AND NEWBOXP( ) were AUTOMATIC ARRAYS. */
     newbox = (integer *)calloc(*ndg,sizeof(integer));
@@ -127,7 +116,7 @@ typedef g2float real;
 
     *ier = 0;
     if (*lx == 1) {
-	goto L410;
+        goto L410;
     }
 /*        IF THERE IS ONLY ONE GROUP, RETURN. */
 
@@ -137,15 +126,15 @@ typedef g2float real;
 
     i__1 = *lx;
     for (l = 1; l <= i__1; ++l) {
-	newbox[l - 1] = 0;
+        newbox[l - 1] = 0;
 /* L110: */
     }
 
 /*        INITIALIZE NUMBER OF TOTAL NEW BOXES PER J TO ZERO. */
 
     for (j = 1; j <= 31; ++j) {
-	ntotbt[j - 1] = 999999999;
-	nboxj[j - 1] = 0;
+        ntotbt[j - 1] = 999999999;
+        nboxj[j - 1] = 0;
 /* L112: */
     }
 
@@ -177,69 +166,69 @@ typedef g2float real;
 /*           BITS START INCREASING WITH DECREASING J, STOP.  ALSO, THE */
 /*           NUMBER OF BITS REQUIRED IS KNOWN FOR KBITS = NTOTBT(KBIT). */
 
-	newboxt = 0;
+        newboxt = 0;
 
-	i__1 = *lx;
-	for (l = 1; l <= i__1; ++l) {
+        i__1 = *lx;
+        for (l = 1; l <= i__1; ++l) {
 
-	    if (nov[l] < ibxx2[j]) {
-		newbox[l - 1] = 0;
+            if (nov[l] < ibxx2[j]) {
+                newbox[l - 1] = 0;
 /*                 NO SPLITS OR NEW BOXES. */
-		goto L190;
-	    } else {
-		novl = nov[l];
+                goto L190;
+            } else {
+                novl = nov[l];
 
-		m = (nov[l] - 1) / (ibxx2[j] - 1) + 1;
+                m = (nov[l] - 1) / (ibxx2[j] - 1) + 1;
 /*                 M IS FOUND BY SOLVING THE EQUATION BELOW FOR M: */
 /*                 (NOV(L)+M-1)/M LT IBXX2(J) */
 /*                 M GT (NOV(L)-1)/(IBXX2(J)-1) */
 /*                 SET M = (NOV(L)-1)/(IBXX2(J)-1)+1 */
-L130:
-		novl = (nov[l] + m - 1) / m;
+            L130:
+                novl = (nov[l] + m - 1) / m;
 /*                 THE +M-1 IS NECESSARY.  FOR INSTANCE, 15 WILL FIT */
 /*                 INTO A BOX 4 BITS WIDE, BUT WON'T DIVIDE INTO */
 /*                 TWO BOXES 3 BITS WIDE EACH. */
 
-		if (novl < ibxx2[j]) {
-		    goto L185;
-		} else {
-		    ++m;
+                if (novl < ibxx2[j]) {
+                    goto L185;
+                } else {
+                    ++m;
 /* ***                  WRITE(KFILDO,135)L,NOV(L),NOVL,M,J,IBXX2(J) */
 /* *** 135              FORMAT(/' AT 135--L,NOV(L),NOVL,M,J,IBXX2(J)',6I10) */
-		    goto L130;
-		}
+                    goto L130;
+                }
 
 /*                 THE ABOVE DO LOOP WILL NEVER COMPLETE. */
-	    }
+            }
 
-L185:
-	    newbox[l - 1] = m - 1;
-	    newboxt = newboxt + m - 1;
-L190:
-	    ;
-	}
+        L185:
+            newbox[l - 1] = m - 1;
+            newboxt = newboxt + m - 1;
+        L190:
+            ;
+        }
 
-	nboxj[j - 1] = newboxt;
-	ntotpr = ntotbt[j];
-	ntotbt[j - 1] = (*ibit + *jbit) * (*lx + newboxt) + j * (*lx + 
-		newboxt);
+        nboxj[j - 1] = newboxt;
+        ntotpr = ntotbt[j];
+        ntotbt[j - 1] = (*ibit + *jbit) * (*lx + newboxt) + j * (*lx +
+                                                                 newboxt);
 
-	if (ntotbt[j - 1] >= ntotpr) {
-	    jj = j + 1;
+        if (ntotbt[j - 1] >= ntotpr) {
+            jj = j + 1;
 /*              THE PLUS IS USED BECAUSE J DECREASES PER ITERATION. */
-	    goto L250;
-	} else {
+            goto L250;
+        } else {
 
 /*              SAVE THE TOTAL NEW BOXES AND NEWBOX( ) IN CASE THIS */
 /*              IS THE J TO USE. */
 
-	    newboxtp = newboxt;
+            newboxtp = newboxt;
 
-	    i__1 = *lx;
-	    for (l = 1; l <= i__1; ++l) {
-		newboxp[l - 1] = newbox[l - 1];
+            i__1 = *lx;
+            for (l = 1; l <= i__1; ++l) {
+                newboxp[l - 1] = newbox[l - 1];
 /* L195: */
-	    }
+            }
 
 /*           WRITE(KFILDO,197)NEWBOXT,IBXX2(J) */
 /* 197        FORMAT(/' *****************************************' */
@@ -248,7 +237,7 @@ L190:
 /*    3             /' *****************************************') */
 /*           WRITE(KFILDO,198) (NEWBOX(L),L=1,LX) */
 /* 198        FORMAT(/' '20I6/(' '20I6)) */
-	}
+        }
 
 /* 205     WRITE(KFILDO,209)KBIT,IORIGB */
 /* 209     FORMAT(/' ORIGINAL BITS WITH KBIT OF',I5,' =',I10) */
@@ -289,10 +278,10 @@ L250:
 /*           GROUP HAS A MIN (OR REFERENCE) THAT IS NOT ZERO. */
 /*           THIS SHOULD NOT MATTER TO THE UNPACKER. */
 
-	lxnkp = *lx + newboxtp;
+        lxnkp = *lx + newboxtp;
 /*           LXNKP = THE NEW NUMBER OF BOXES */
 
-	if (lxnkp > *ndg) {
+        if (lxnkp > *ndg) {
 /*              DIMENSIONS NOT LARGE ENOUGH.  PROBABLY AN ERROR */
 /*              OF SOME SORT.  ABORT. */
 /*           WRITE(KFILDO,257)NDG,LXNPK */
@@ -300,91 +289,91 @@ L250:
 /* 257        FORMAT(/' DIMENSIONS OF JMIN, ETC. IN REDUCE =',I8, */
 /*    1              ' NOT LARGE ENOUGH FOR THE EXPANDED NUMBER OF', */
 /*    2              ' GROUPS =',I8,'.  ABORT REDUCE.') */
-	    *ier = 715;
-	    goto L410;
+            *ier = 715;
+            goto L410;
 /*              AN ABORT CAUSES THE CALLING PROGRAM TO REEXECUTE */
 /*              WITHOUT CALLING REDUCE. */
-	}
+        }
 
-	lxn = lxnkp;
+        lxn = lxnkp;
 /*           LXN IS THE NUMBER OF THE BOX IN THE NEW SERIES BEING */
 /*           FILLED.  IT DECREASES PER ITERATION. */
-	ibxx2m1 = ibxx2[jj] - 1;
+        ibxx2m1 = ibxx2[jj] - 1;
 /*           IBXX2M1 IS THE MAXIMUM NUMBER OF VALUES PER GROUP. */
 
-	for (l = *lx; l >= 1; --l) {
+        for (l = *lx; l >= 1; --l) {
 
 /*              THE VALUES IS NOV( ) REPRESENT THOSE VALUES + NOVREF. */
 /*              WHEN VALUES ARE MOVED TO ANOTHER BOX, EACH VALUE */
 /*              MOVED TO A NEW BOX REPRESENTS THAT VALUE + NOVREF. */
 /*              THIS HAS TO BE CONSIDERED IN MOVING VALUES. */
 
-	    if (newboxp[l - 1] * (ibxx2m1 + *novref) + *novref > nov[l] + *
-		    novref) {
+            if (newboxp[l - 1] * (ibxx2m1 + *novref) + *novref > nov[l] + *
+                novref) {
 /*                 IF THE ABOVE TEST IS MET, THEN MOVING IBXX2M1 VALUES */
 /*                 FOR ALL NEW BOXES WILL LEAVE A NEGATIVE NUMBER FOR */
 /*                 THE LAST BOX.  NOT A TOLERABLE SITUATION. */
-		movmin = (nov[l] - newboxp[l - 1] * *novref) / newboxp[l - 1];
-		left = nov[l];
+                movmin = (nov[l] - newboxp[l - 1] * *novref) / newboxp[l - 1];
+                left = nov[l];
 /*                 LEFT = THE NUMBER OF VALUES TO MOVE FROM THE ORIGINAL */
 /*                 BOX TO EACH NEW BOX EXCEPT THE LAST.  LEFT IS THE */
 /*                 NUMBER LEFT TO MOVE. */
-	    } else {
-		movmin = ibxx2m1;
+            } else {
+                movmin = ibxx2m1;
 /*                 MOVMIN VALUES CAN BE MOVED FOR EACH NEW BOX. */
-		left = nov[l];
+                left = nov[l];
 /*                 LEFT IS THE NUMBER OF VALUES LEFT TO MOVE. */
-	    }
+            }
 
-	    if (newboxp[l - 1] > 0) {
-		if ((movmin + *novref) * newboxp[l - 1] + *novref <= nov[l] + 
-			*novref && (movmin + *novref) * (newboxp[l - 1] + 1) 
-			>= nov[l] + *novref) {
-		    goto L288;
-		} else {
+            if (newboxp[l - 1] > 0) {
+                if ((movmin + *novref) * newboxp[l - 1] + *novref <= nov[l] +
+                    *novref && (movmin + *novref) * (newboxp[l - 1] + 1)
+                    >= nov[l] + *novref) {
+                    goto L288;
+                } else {
 /* ***D                 WRITE(KFILDO,287)L,MOVMIN,NOVREF,NEWBOXP(L),NOV(L) */
 /* ***D287              FORMAT(/' AT 287 IN REDUCE--L,MOVMIN,NOVREF,', */
 /* ***D    1                    'NEWBOXP(L),NOV(L)',5I12 */
 /* ***D    2                    ' REDUCE ABORTED.') */
 /*              WRITE(KFILDO,2870) */
 /* 2870          FORMAT(/' AN ERROR IN REDUCE ALGORITHM.  ABORT REDUCE.') */
-		    *ier = 714;
-		    goto L410;
+                    *ier = 714;
+                    goto L410;
 /*                 AN ABORT CAUSES THE CALLING PROGRAM TO REEXECUTE */
 /*                 WITHOUT CALLING REDUCE. */
-		}
+                }
 
-	    }
+            }
 
-L288:
-	    i__1 = newboxp[l - 1] + 1;
-	    for (j = 1; j <= i__1; ++j) {
-		/*move = min(movmin,left);*/
-		move = (movmin < left) ? movmin : left;
-		jmin[lxn] = jmin[l];
-		jmax[lxn] = jmax[l];
-		lbit[lxn] = lbit[l];
-		nov[lxn] = move;
-		--lxn;
-		left -= move + *novref;
+        L288:
+            i__1 = newboxp[l - 1] + 1;
+            for (j = 1; j <= i__1; ++j) {
+                /*move = min(movmin,left);*/
+                move = (movmin < left) ? movmin : left;
+                jmin[lxn] = jmin[l];
+                jmax[lxn] = jmax[l];
+                lbit[lxn] = lbit[l];
+                nov[lxn] = move;
+                --lxn;
+                left -= move + *novref;
 /*                 THE MOVE OF MOVE VALUES REALLY REPRESENTS A MOVE OF */
 /*                 MOVE + NOVREF VALUES. */
 /* L290: */
-	    }
+            }
 
-	    if (left != -(*novref)) {
+            if (left != -(*novref)) {
 /* ***               WRITE(KFILDO,292)L,LXN,MOVE,LXNKP,IBXX2(JJ),LEFT,NOV(L), */
 /* ***     1                          MOVMIN */
 /* *** 292           FORMAT(' AT 292 IN REDUCE--L,LXN,MOVE,LXNKP,', */
 /* ***     1                'IBXX2(JJ),LEFT,NOV(L),MOVMIN'/8I12) */
-	    }
+            }
 
 /* L300: */
-	}
+        }
 
-	*lx = lxnkp;
+        *lx = lxnkp;
 /*           LX IS NOW THE NEW NUMBER OF GROUPS. */
-	*kbit = jj;
+        *kbit = jj;
 /*           KBIT IS NOW THE NEW NUMBER OF BITS REQUIRED FOR PACKING */
 /*           GROUP LENGHTS. */
     }
@@ -409,4 +398,3 @@ L410:
     if ( newboxp != 0 ) free(newboxp);
     return 0;
 } /* reduce_ */
-

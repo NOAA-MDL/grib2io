@@ -246,14 +246,6 @@ else:
     g2clib_deps.remove(os.path.join('NCEPLIBS-g2c/src', 'pngunpack.c'))
 
 # ---------------------------------------------------------------------------------------- 
-# Add 64-bit macro
-# ---------------------------------------------------------------------------------------- 
-if hasattr(sys,'maxsize'):
-    if sys.maxsize > 2**31-1: macros.append(('__64BIT__',1))
-else:
-    if sys.maxint > 2**31-1: macros.append(('__64BIT__',1))
-
-# ---------------------------------------------------------------------------------------- 
 # Cleanup library and include path lists to remove duplicates and None.
 # ---------------------------------------------------------------------------------------- 
 libdirs = [l for l in set(libdirs) if l is not None]

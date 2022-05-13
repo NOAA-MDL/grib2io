@@ -33,6 +33,7 @@ from . import utils
 
 
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
+DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 ONE_MB = 1048576 # 1 MB in units of bytes
 
@@ -535,8 +536,8 @@ class Grib2Message:
         self.isNDFD = False
         if discipline is not None and idsect is not None:
             # New message
-            self._msg,self._pos = g2clib.grib2_create(np.array([discipline,GRIB2_EDITION_NUMBER],np.int32),
-                                                      np.array(idsect,np.int32))
+            self._msg,self._pos = g2clib.grib2_create(np.array([discipline,GRIB2_EDITION_NUMBER],DEFAULT_NUMPY_INT),
+                                                      np.array(idsect,DEFAULT_NUMPY_INT))
             self._sections += [0,1]
         else:
             # Existing message
@@ -1186,9 +1187,9 @@ class Grib2Message:
             else:
                 order = 1
         drtnum = self.dataRepresentationTemplateNumber.value
-        drtmpl = np.asarray(self.dataRepresentationTemplate,dtype=np.int32)
+        drtmpl = np.asarray(self.dataRepresentationTemplate,dtype=DEFAULT_NUMPY_INT)
         gdtnum = self.gridDefinitionTemplateNumber.value
-        gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=np.int32)
+        gdtmpl = np.asarray(self.gridDefinitionTemplate,dtype=DEFAULT_NUMPY_INT)
         ndpts = self.numberOfDataPoints
         gds = self.gridDefinitionSection
         ngrdpts = gds[1]
@@ -1440,7 +1441,7 @@ class Grib2Message:
         if 3 in self._sections:
             raise ValueError('GRIB2 Message already contains Grid Definition Section.')
         if deflist is not None:
-            _deflist = np.array(deflist,dtype=np.int32)
+            _deflist = np.array(deflist,dtype=DEFAULT_NUMPY_INT)
         else:
             _deflist = None
         gdtnum = gdsinfo[4]
@@ -1465,8 +1466,8 @@ class Grib2Message:
         elif gdtnum in [1000,1100]:
             self.scanModeFlags = utils.int2bin(gdtmpl[12],output=list)[0:4]
         self._msg,self._pos = g2clib.grib2_addgrid(self._msg,
-                                                   np.array(gdsinfo,dtype=np.int32),
-                                                   np.array(gdtmpl,dtype=np.int32),
+                                                   np.array(gdsinfo,dtype=DEFAULT_NUMPY_INT),
+                                                   np.array(gdtmpl,dtype=DEFAULT_NUMPY_INT),
                                                    _deflist)
         self._sections.append(3)
 
@@ -1508,8 +1509,9 @@ class Grib2Message:
                 fieldsave = field.astype('f') # Casting makes a copy
                 field[1::2,:] = fieldsave[1::2,::-1]
         fld = field.astype('f')
+        print(ma.isMA(field))
         if ma.isMA(field):
-            bmap = 1-np.ravel(field.mask.astype('i'))
+            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
             bitmapflag = 0
         else:
             bitmapflag = 255
@@ -1522,10 +1524,10 @@ class Grib2Message:
         _drtnum = drtnum.value if isinstance(drtnum,Grib2Metadata) else drtnum
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,
                                                     _pdtnum,
-                                                    np.array(pdtmpl,dtype=np.int32),
+                                                    np.array(pdtmpl,dtype=DEFAULT_NUMPY_INT),
                                                     crdlist,
                                                     _drtnum,
-                                                    np.array(drtmpl,dtype=np.int32),
+                                                    np.array(drtmpl,dtype=DEFAULT_NUMPY_INT),
                                                     np.ravel(fld),
                                                     bitmapflag,
                                                     bmap)
