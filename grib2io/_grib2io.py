@@ -1509,10 +1509,9 @@ class Grib2Message:
                 fieldsave = field.astype('f') # Casting makes a copy
                 field[1::2,:] = fieldsave[1::2,::-1]
         fld = field.astype('f')
-        print(ma.isMA(field))
-        if ma.isMA(field):
-            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
+        if ma.isMA(field) and ma.count_masked(field) > 0:
             bitmapflag = 0
+            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
         else:
             bitmapflag = 255
             bmap = None
