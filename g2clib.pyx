@@ -27,18 +27,13 @@ cdef extern from "stdlib.h":
     void free(void *ptr)
 
 # ---------------------------------------------------------------------------------------- 
-# Get 32 bit integer type
-# ---------------------------------------------------------------------------------------- 
-cdef extern from "inttypes.h":
-    ctypedef long int32_t
-
-# ---------------------------------------------------------------------------------------- 
 # Functions from g2c lib.
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
     cdef char *G2_VERSION
-    ctypedef int32_t g2int # for 64 bit machines, this should be int
-    ctypedef float g2float
+    ctypedef int g2int32     # 32-bit signed integer
+    ctypedef long g2int      # 64-bit signed integer
+    ctypedef float g2float   # 32-bit floating-point
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
     g2int g2_unpack3(unsigned char *,g2int *,g2int **,g2int **, 
                          g2int *,g2int **,g2int *)
@@ -55,8 +50,8 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *,
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
-    void mkieee(g2float *,g2int *,g2int)
-    void rdieee(g2int *,g2float *,g2int)
+    void mkieee(g2float *,g2int32 *,g2int32)
+    void rdieee(g2int32 *,g2float *,g2int32)
 
 __version__ = G2_VERSION.decode('utf-8')[-5:]
 
@@ -75,8 +70,8 @@ def rtoi_ieee(object rarr, object iarr):
     cdef void *idat
     cdef g2float *rdata
     cdef g2float r1
-    cdef g2int *idata
-    cdef g2int i1
+    cdef g2int32 *idata
+    cdef g2int32 i1
     cdef Py_ssize_t bufleni, buflenr
     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
         raise RuntimeError, 'error getting buffer for input real array'
@@ -85,7 +80,7 @@ def rtoi_ieee(object rarr, object iarr):
     if bufleni < buflenr:
         raise RuntimeError, 'integer output array must be as least as long a real input array'
     rdata = <g2float *>rdat
-    idata = <g2int *>idat
+    idata = <g2int32 *>idat
     mkieee(rdata, idata, buflenr//4)
 
 def itor_ieee(object iarr, object rarr):
@@ -95,7 +90,7 @@ def itor_ieee(object iarr, object rarr):
     cdef void *rdat
     cdef void *idat
     cdef g2float *rdata
-    cdef g2int *idata
+    cdef g2int32 *idata
     cdef Py_ssize_t bufleni, buflenr
     if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
         raise RuntimeError, 'error getting buffer for output real array'
@@ -104,7 +99,7 @@ def itor_ieee(object iarr, object rarr):
     if buflenr < bufleni:
         raise RuntimeError, 'real output array must be as least as long a integerinput array'
     rdata = <g2float *>rdat
-    idata = <g2int *>idat
+    idata = <g2int32 *>idat
     rdieee(idata, rdata, bufleni//4)
 
 cdef _toarray(void *items, object a):
@@ -114,12 +109,18 @@ cdef _toarray(void *items, object a):
     cdef void *abuf
     cdef Py_ssize_t buflen
     cdef g2int *idata
+    cdef g2int32 *idata32
     cdef g2float *fdata
 
     # get pointer to data buffer.
     PyObject_AsWriteBuffer(a, &abuf, &buflen)
 
     if str(a.dtype) == 'int32':
+      idata32 = <g2int32 *>abuf
+      # fill buffer.
+      for i from 0 <= i < len(a):
+        idata32[i] = (<g2int32 *>items)[i]
+    elif str(a.dtype) == 'int64':
       idata = <g2int *>abuf
       # fill buffer.
       for i from 0 <= i < len(a):
@@ -189,7 +190,7 @@ def unpack1(gribmsg, ipos, object zeros):
        msg = "Error unpacking section 1 - error code = %i" % ierr
        raise RuntimeError(msg)
 
-    idsect = _toarray(ids, zeros(idslen, 'i4'))
+    idsect = _toarray(ids, zeros(idslen, 'i8'))
     return idsect,iofst//8
 
 
@@ -249,9 +250,9 @@ def unpack3(gribmsg, ipos, object zeros):
        msg = "Error unpacking section 3 - error code = %i" % ierr
        raise RuntimeError(msg)
 
-    gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i4'))
-    gds = _toarray(igds, zeros(5, 'i4'))
-    deflist = _toarray(ideflist, zeros(idefnum, 'i4'))
+    gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, 'i8'))
+    gds = _toarray(igds, zeros(5, 'i8'))
+    deflist = _toarray(ideflist, zeros(idefnum, 'i8'))
 
     return gds,gdtmpl,deflist,iofst//8
 
@@ -301,7 +302,7 @@ def unpack4(gribmsg,ipos,object zeros):
        msg = "Error unpacking section 4 - error code = %i" % ierr
        raise RuntimeError(msg)
 
-    pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, 'i4'))
+    pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, 'i8'))
     coordlist = _toarray(icoordlist, zeros(numcoord, 'f4'))
 
     return pdtmpl,ipdsnum,coordlist,iofst//8
@@ -348,7 +349,7 @@ def unpack5(gribmsg,ipos,object zeros):
        msg = "Error unpacking section 5 - error code = %i" % ierr
        raise RuntimeError(msg)
 
-    drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i4'))
+    drtmpl = _toarray(idrstmpl, zeros(mapdrslen, 'i8'))
     return drtmpl,idrsnum,ndpts,iofst//8
     
 
@@ -392,7 +393,7 @@ def unpack6(gribmsg,ndpts,ipos,object zeros):
         msg = "Error unpacking section 6 - error code = %i" % ierr
         raise RuntimeError(msg)
     if ibmap == 0:
-        bitmap = _toarray(bmap, zeros(ngpts, 'i4'))
+        bitmap = _toarray(bmap, zeros(ngpts, 'i8'))
     else:
         bitmap = None
         free(bmap)
