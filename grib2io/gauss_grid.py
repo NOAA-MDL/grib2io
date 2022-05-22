@@ -30,7 +30,7 @@ def gaussian_latitudes(nlat):
 
     Args:
 
-    * n:
+    * nlat:
         The number of latitudes in the Gaussian grid.
     Returns:
         A length `nlat` array of latitudes (in degrees)
