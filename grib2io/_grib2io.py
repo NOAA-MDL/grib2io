@@ -30,7 +30,6 @@ import pyproj
 
 from . import tables
 from . import utils
-from .gauss_grid import gaussian_latitudes
 
 
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
@@ -1305,6 +1304,13 @@ class Grib2Message:
             self.projparams['proj'] = 'cyl'
             lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
         elif gdtnum == 40: # gaussian grid (only works for global!)
+            try:
+                from pygrib import gaulats
+            except:
+                from .gauss_grid import gaussian_latitudes as gaulats
+                warnings.warn(
+                    "Failed to load pygrib to compute Gaussian latitudes\n"
+                    "Using gauss_grids.gaussian_latitudes instead.")
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             nlats = self.ny
@@ -1316,7 +1322,7 @@ class Grib2Message:
                 dlon = self.gridlengthXDirection
             lons = np.arange(lon1,lon2+dlon,dlon)
             # Compute gaussian lats (north to south)
-            lats = gaussian_latitudes(int(nlats/2))
+            lats = gaulats(nlats)
             if lat1 < lat2:  # reverse them if necessary
                 lats = lats[::-1]
             # flip if scan mode says to.

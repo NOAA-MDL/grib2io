@@ -25,20 +25,18 @@ def __single_arg_fast_cache(func):
 
 
 @__single_arg_fast_cache
-def gaussian_latitudes(n):
+def gaussian_latitudes(nlat):
     """Construct latitudes for a Gaussian grid.
 
     Args:
 
     * n:
-        The Gaussian grid number (half the number of latitudes in the
-        grid.
+        The number of latitudes in the Gaussian grid.
     Returns:
-        A length `n` array of latitudes (in degrees)
+        A length `nlat` array of latitudes (in degrees)
     """
-    if abs(int(n)) != n:
-        raise ValueError('n must be a non-negative integer')
-    nlat = 2 * n
+    if abs(int(nlat)) != nlat:
+        raise ValueError('nlat must be a non-negative integer')
     # Create the coefficients of the Legendre polynomial and construct the
     # companion matrix:
     cs = np.array([0] * nlat + [1], dtype=int)
