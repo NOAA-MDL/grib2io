@@ -57,4 +57,6 @@ def gaussian_latitudes(nlat):
     # Convert the roots from the interval [-1, 1] to latitude values on the
     # interval [-90, 90] degrees:
     latitudes = np.rad2deg(np.arcsin(roots))
+    # Flip latitudes such that it is oriented from North to South [90, -90]
+    latitudes = np.flip(latitudes)
     return latitudes
