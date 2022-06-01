@@ -1156,11 +1156,10 @@ class Grib2Message:
         **`masked_array`**: If `True` [DEFAULT], return masked array if there is bitmap for missing 
         or masked data.
 
-        **`expand`**: If `True` [DEFAULT], ECMWF 'reduced' gaussian grids are expanded to regular 
-        gaussian grids.
+        **`expand`**: If `True` [DEFAULT], Reduced Gaussian grids are expanded to regular Gaussian grids.
 
         **`order`**: If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing 
-        or bitmapped values. If 1, linear interpolation is used for expanding reduced gaussian grids.
+        or bitmapped values. If 1, linear interpolation is used for expanding reduced Gaussian grids.
 
         **`map_keys`**: If `True`, data values will be mapped to the string-based keys that are stored
         in the Local Use Section (section 2) of the GRIB2 Message or in a code table as specified in the
@@ -1216,7 +1215,7 @@ class Grib2Message:
             else:
                 fld = np.reshape(fld,(self.ny,self.nx))
         else:
-            if gds[2] and gdtnum == 40: # ECMWF 'reduced' global gaussian grid.
+            if gds[2] and gdtnum == 40: # Reduced global Gaussian grid.
                 if expand:
                     from redtoreg import _redtoreg
                     self.nx = 2*self.ny
@@ -1271,7 +1270,7 @@ class Grib2Message:
     def grid(self):
         """
         Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon, 
-        global gaussian, mercator, stereographic, lambert conformal, albers equal-area, 
+        global Gaussian, mercator, stereographic, lambert conformal, albers equal-area, 
         space-view and azimuthal equidistant grids.
 
         Returns
@@ -1303,26 +1302,20 @@ class Grib2Message:
             #    lats = lats[::-1]
             self.projparams['proj'] = 'cyl'
             lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
-        elif gdtnum == 40: # gaussian grid (only works for global!)
-            try:
-                from pygrib import gaulats
-            except:
-                from .gauss_grid import gaussian_latitudes as gaulats
-                warnings.warn(
-                    "Failed to load pygrib to compute Gaussian latitudes\n"
-                    "Using gauss_grids.gaussian_latitudes instead.")
+        elif gdtnum == 40: # Gaussian grid (only works for global!)
+            from utils.gauss_grids import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             nlats = self.ny
-            if not reggrid: # ECMWF 'reduced' gaussian grid.
+            if not reggrid: # Reduced Gaussian grid.
                 nlons = 2*nlats
                 dlon = 360./nlons
             else:
                 nlons = self.nx
                 dlon = self.gridlengthXDirection
             lons = np.arange(lon1,lon2+dlon,dlon)
-            # Compute gaussian lats (north to south)
-            lats = gaulats(nlats)
+            # Compute Gaussian lats (north to south)
+            lats = gaussian_latitudes(nlats)
             if lat1 < lat2:  # reverse them if necessary
                 lats = lats[::-1]
             # flip if scan mode says to.
