@@ -1047,6 +1047,12 @@ class Grib2Message:
             self.unitOfTimeRangeOfSuccessiveFields = Grib2Metadata(self.productDefinitionTemplate[29],table='4.4')
             self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
 
+        # Template 4.15 -
+        elif self.productDefinitionTemplateNumber == 15:
+            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[15],table='4.10')
+            self.typeOfSpatialProcessing = Grib2Metadata(self.productDefinitionTemplate[16],table='4.15')
+            self.numberOfDataPointsForSpatialProcessing = self.productDefinitionTemplate[17]
+
         else:
             if self.productDefinitionTemplateNumber != 0:
                 errmsg = 'Unsupported Product Definition Template Number - 4.%i' % self.productDefinitionTemplateNumber.value
