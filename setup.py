@@ -260,10 +260,10 @@ print('Libraries: ',libraries)
 print('libdirs: ',libdirs)
 print('incdirs: ',incdirs)
 print('macros: ',macros)
-g2clibext = Extension('g2clib',g2clib_deps,include_dirs=incdirs,\
+g2clibext = Extension('grib2io.g2clib',g2clib_deps,include_dirs=incdirs,\
             library_dirs=libdirs,libraries=libraries,runtime_library_dirs=runtime_libdirs,
             define_macros=macros)
-redtoregext = Extension('redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])
+redtoregext = Extension('grib2io.redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])
 
 # ---------------------------------------------------------------------------------------- 
 # Data files to install
