@@ -12,8 +12,6 @@ descriptive, plain language metadata by looking up the integer code values again
 are a part of the grib2io module.
 """
 
-
-import g2clib
 import builtins
 import collections
 import copy
@@ -28,10 +26,11 @@ from numpy import ma
 import numpy as np
 import pyproj
 
+from . import g2clib
 from . import tables
 from . import utils
 
-
+DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
@@ -1223,17 +1222,17 @@ class Grib2Message:
         else:
             if gds[2] and gdtnum == 40: # Reduced global Gaussian grid.
                 if expand:
-                    from redtoreg import _redtoreg
+                    from . import redtoreg
                     self.nx = 2*self.ny
                     lonsperlat = self.defList
                     if ma.isMA(fld):
                         fld = ma.filled(fld)
-                        fld = _redtoreg(self.nx,lonsperlat.astype(np.long),\
-                                fld.astype(np.double),fill_value)
+                        fld = redtoreg._redtoreg(self.nx,lonsperlat.astype(np.long),
+                                                 fld.astype(np.double),fill_value)
                         fld = ma.masked_values(fld,fill_value)
                     else:
-                        fld = _redtoreg(self.nx,lonsperlat.astype(np.long),\
-                                fld.astype(np.double),fill_value)
+                        fld = redtoreg._redtoreg(self.nx,lonsperlat.astype(np.long),
+                                                 fld.astype(np.double),fill_value)
         # Check scan modes for rect grids.
         if self.nx is not None and self.ny is not None:
             if self.scanModeFlags[3]:
@@ -1474,7 +1473,7 @@ class Grib2Message:
         self._sections.append(3)
 
 
-    def addfield(self, pdtnum, pdtmpl, drtnum, drtmpl, field, coordlist=None):
+    def addfield(self, field, pdtnum, pdtmpl, coordlist=None, packing="complex-spdiff", **packing_opts): 
         """
         Add a Product Definition, Data Representation, Bitmap, and Data Sections 
         to `Grib2Message` instance (i.e. Sections 4-7).  Must be called after the grid 
@@ -1483,28 +1482,44 @@ class Grib2Message:
         Parameters
         ----------
 
+        **`field`**: Numpy array of data values to pack.  If field is a masked array, then 
+        a bitmap is created from the mask.
+
         **`pdtnum`**: integer Product Definition Template Number - [Code Table 4.0](http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)
 
         **`pdtmpl`**: Sequence with the data values for the specified Product Definition 
         Template (N=pdtnum).  Each element of this integer array contains an entry (in 
         the order specified) of Product Definition Template 4.N.
 
-        **`drtnum`**: integer Data Representation Template Number - [Code Table 5.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-0.shtml)
-
-        **`drtmpl`**: Sequence with the data values for the specified Data Representation
-        Template (N=drtnum).  Each element of this integer array contains an entry (in 
-        the order specified) of Data Representation Template 5.N.  Note that some values 
-        in this template (eg. reference values, number of bits, etc...) may be changed by the
-        data packing algorithms.  Use this to specify scaling factors and order of spatial 
-        differencing, if desired.
-
-        **`field`**: Numpy array of data points to pack.  If field is a masked array, then 
-        a bitmap is created from the mask.
-
         **`coordlist`**: Sequence containing floating point values intended to document the 
         vertical discretization with model data on hybrid coordinate vertical levels. Default is `None`.
+
+        **`packing`**: String to specify the type of packing. Valid options are the following:
+
+        | Packing Scheme | Description |
+        | :---:          | :---:       |
+        | 'simple'         | [Simple packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-0.shtml) | 
+        | 'complex'        | [Complex packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-2.shtml) | 
+        | 'complex-spdiff' | [Complex packing with Spatial Differencing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-3.shtml) | 
+        | 'jpeg'           | [JPEG compression](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-40.shtml) | 
+        | 'png'            | [PNG compression](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-41.shtml) | 
+        | 'spectral-simple'| [Spectral Data - Simple packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml) | 
+        | 'spectral-complex'| [Spectral Data - Complex packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-51.shtml) | 
+
+        **`**packing_opts`**: Packing keyword arguments. The keywords are the same as Grib2Message attribute names for
+        the Data Representation Template (Section 5) metadata. Valid keywords per packing scheme are the following:
+
+        | Packing Scheme | Keyword Arguments |
+        | :---:          | :---:                      |
+        | 'simple'     | `binScaleFactor`, `decScaleFactor` |
+        | 'complex'     | `binScaleFactor`, `decScaleFactor`, `priMissingValue`, [`secMissingValue`] |
+        | 'complex-spdiff'     | `binScaleFactor`, `decScaleFactor`, `spatialDifferenceOrder`, `priMissingValue`, [`secMissingValue`] |
+        | 'jpeg'     | `binScaleFactor`, `decScaleFactor` |
+        | 'png'     | `binScaleFactor`, `decScaleFactor` |
+        | 'spectral-simple'     | `binScaleFactor`, `decScaleFactor` |
+        | 'spectral-complex'     | `binScaleFactor`, `decScaleFactor` |
         """
-        if not hasattr(self,'scanModeFlags'):
+        if self._sections[-1] != 3:
             raise ValueError('addgrid() must be called before addfield()')
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
@@ -1521,14 +1536,57 @@ class Grib2Message:
             crdlist = np.array(coordlist,'f')
         else:
             crdlist = None
-        _pdtnum = pdtnum.value if isinstance(pdtnum,Grib2Metadata) else pdtnum
-        _drtnum = drtnum.value if isinstance(drtnum,Grib2Metadata) else drtnum
+
+        # Set data representation template number and template values
+        drtnum = -1
+        drtmpl = np.zeros((DEFAULT_DRT_LEN),dtype=DEFAULT_NUMPY_INT)
+        if packing == "simple":
+            drtnum = 0
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+        elif packing == "complex" or packing == "complex-spdiff":
+            if packing == "complex":
+                drtnum = 2
+            if packing == "complex-spdiff":
+                drtnum = 3
+                drtmpl[16] = packing_opts['spatialDifferenceOrder']
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+            if set(("priMissingValue","secMissingValue")).issubset(kwargs):
+                drtmpl[6] = 2
+                drtmpl[7] = utils.putieeeint(kwargs["priMissingValue"])
+                drtmpl[8] = utils.putieeeint(kwargs["secMissingValue"])
+            else:
+                if "priMissingValue" in packing_opts.keys():
+                    drtmpl[6] = 1
+                    drtmpl[7] = utils.putieeeint(kwargs["priMissingValue"])
+                else:
+                    drtmpl[6] = 0
+        elif packing == "jpeg":
+            drtnum = 40
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+        elif packing == "png":
+            drtnum = 41
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+        elif packing == "spectral-simple":
+            drtnum = 50
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+        elif packing == "spectral-complex":
+            drtnum = 51
+            drtmpl[1] = packing_opts["binScaleFactor"]
+            drtmpl[2] = packing_opts["decScaleFactor"]
+
+        pdtnum = pdtnum.value if isinstance(pdtnum,Grib2Metadata) else pdtnum
+
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,
-                                                    _pdtnum,
+                                                    pdtnum,
                                                     np.array(pdtmpl,dtype=DEFAULT_NUMPY_INT),
                                                     crdlist,
-                                                    _drtnum,
-                                                    np.array(drtmpl,dtype=DEFAULT_NUMPY_INT),
+                                                    drtnum,
+                                                    drtmpl,
                                                     np.ravel(fld),
                                                     bitmapflag,
                                                     bmap)
