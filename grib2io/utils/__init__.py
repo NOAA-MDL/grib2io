@@ -40,7 +40,17 @@ def int2bin(i,nbits=8,output=str):
 
 def putieeeint(r):
     """
-    Convert a float to a IEEE format 32 bit integer
+    Convert an IEEE 32-bit float to a 32-bit integer.
+
+    Parameters
+    ----------
+
+    **`r`**: Float value.
+
+    Returns
+    -------
+
+    Integer representation of an IEEE 32-bit float.
     """
     ra = np.array([r],'f')
     ia = np.empty(1,'i')
@@ -50,7 +60,17 @@ def putieeeint(r):
 
 def getieeeint(i):
     """
-    Convert an IEEE format 32 bit integer to a float
+    Convert a 32-bit integer to an IEEE 32-bit float.
+
+    Parameters
+    ----------
+
+    **`i`**: Integer value.
+
+    Returns
+    -------
+
+    IEEE 32-bit float.
     """
     ia = np.array([i],'i')
     ra = np.empty(1,'f')
