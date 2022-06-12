@@ -1,3 +1,7 @@
+"""
+Functions for retreiving data from NCEP GRIB2 Tables.
+"""
+
 from .section0 import *
 from .section1 import *
 from .section3 import *
