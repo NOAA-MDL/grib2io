@@ -480,17 +480,11 @@ class open():
 class Grib2Message:
     def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None):
         """
-        Class Constructor
-
-        Usage
-        -----
-
-        The instantiation of this class can handle a GRIB2 message from an existing file or the
-        creation of new GRIB2 message.
-
-        To create a new GRIB2 message, provide the appropriate values to the arguments
-        `discipline` and `idsect`.  When these 2 arguments are not `None`, then a new GRIB2 message is
-        created. NOTE: All other keyword arguments are ignored when a new message is created.
+        Class Constructor. Instantiation of this class can handle a GRIB2 message from an existing 
+        file or the creation of new GRIB2 message.  To create a new GRIB2 message, provide the 
+        appropriate values to the arguments `discipline` and `idsect`.  When these 2 arguments 
+        are not `None`, then a new GRIB2 message is created. NOTE: All other keyword arguments 
+        are ignored when a new message is created.
 
         ...
 
@@ -511,19 +505,22 @@ class Grib2Message:
         **`discipline`**: integer GRIB2 Discipline [GRIB2 Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)
 
         **`idsect`**: Sequence containing GRIB1 Identification Section values (Section 1).
-        - idsect[0] = Id of orginating centre - [ON388 - Table 0](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
-        - idsect[1] = Id of orginating sub-centre - [ON388 - Table C](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)
-        - idsect[2] = GRIB Master Tables Version Number - [Code Table 1.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)
-        - idsect[3] = GRIB Local Tables Version Number - [Code Table 1.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)
-        - idsect[4] = Significance of Reference Time - [Code Table 1.2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)
-        - idsect[5] = Reference Time - Year (4 digits)
-        - idsect[6] = Reference Time - Month
-        - idsect[7] = Reference Time - Day
-        - idsect[8] = Reference Time - Hour
-        - idsect[9] = Reference Time - Minute
-        - idsect[10] = Reference Time - Second
-        - idsect[11] = Production status of data - [Code Table 1.3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)
-        - idsect[12]= Type of processed data - [Code Table 1.4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)
+
+        | Index | Description |
+        | :---: | :---        |
+        | idsect[0] | Id of orginating centre - [ON388 - Table 0](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)|
+        | idsect[1] | Id of orginating sub-centre - [ON388 - Table C](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)|
+        | idsect[2] | GRIB Master Tables Version Number - [Code Table 1.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)|
+        | idsect[3] | GRIB Local Tables Version Number - [Code Table 1.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)|
+        | idsect[4] | Significance of Reference Time - [Code Table 1.2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)|
+        | idsect[5] | Reference Time - Year (4 digits)|
+        | idsect[6] | Reference Time - Month|
+        | idsect[7] | Reference Time - Day|
+        | idsect[8] | Reference Time - Hour|
+        | idsect[9] | Reference Time - Minute|
+        | idsect[10] | Reference Time - Second|
+        | idsect[11] | Production status of data - [Code Table 1.3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)|
+        | idsect[12] | Type of processed data - [Code Table 1.4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)|
         """
         self._source = source
         self._msgnum = num
@@ -1426,11 +1423,14 @@ class Grib2Message:
         ----------
 
         **`gdsinfo`**: Sequence containing information needed for the grid definition section.
-        - gdsinfo[0] = Source of grid definition - [Code Table 3.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml)
-        - gdsinfo[1] = Number of data points
-        - gdsinfo[2] = Number of octets for optional list of numbers defining number of points
-        - gdsinfo[3] = Interpetation of list of numbers defining number of points - [Code Table 3.11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-11.shtml)
-        - gdsinfo[4] = Grid Definition Template Number - [Code Table 3.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)
+
+        | Index | Description |
+        | :---: | :---        |
+        | gdsinfo[0] | Source of grid definition - [Code Table 3.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml)|
+        | gdsinfo[1] | Number of data points|
+        | gdsinfo[2] | Number of octets for optional list of numbers defining number of points|
+        | gdsinfo[3] | Interpetation of list of numbers defining number of points - [Code Table 3.11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-11.shtml)|
+        | gdsinfo[4] | Grid Definition Template Number - [Code Table 3.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)|
 
         **`gdtmpl`**: Sequence of values for the specified Grid Definition Template. Each 
         element of this integer array contains an entry (in the order specified) of Grid
