@@ -418,9 +418,7 @@ class open():
 
         **`leadTime : int`** specifying ending lead time (in units of hours) of a GRIB2 Message.
 
-        **`level : str`** string of value and units of the level of interest. For pressure level, use either:
-        `mb`, `pa`, or `hpa`.  For sigma levels, use `sig` or `sigma`.  For geometric height level, use `m` or `meter`
-        with optional `above ground` or `agl` [DEFAULT] or `below ground" or `bgl`.
+        **`level : str`** wgrib2-formatted layer/level string.
 
         **`percentile : int`** specify the percentile value.
 
