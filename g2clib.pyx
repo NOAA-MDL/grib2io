@@ -112,22 +112,22 @@ cdef _toarray(void *items, object a):
     cdef g2int32 *idata32
     cdef g2float *fdata
 
-    # get pointer to data buffer.
+    # Get pointer to data buffer.
     PyObject_AsWriteBuffer(a, &abuf, &buflen)
 
     if str(a.dtype) == "int32":
       idata32 = <g2int32 *>abuf
-      # fill buffer.
+      # Fill buffer.
       for i from 0 <= i < len(a):
         idata32[i] = (<g2int32 *>items)[i]
     elif str(a.dtype) == "int64":
       idata = <g2int *>abuf
-      # fill buffer.
+      # Fill buffer.
       for i from 0 <= i < len(a):
         idata[i] = (<g2int *>items)[i]
     elif str(a.dtype) == "float32":
       fdata = <g2float *>abuf
-      # fill buffer.
+      # Fill buffer.
       for i from 0 <= i < len(a):
         fdata[i] = (<g2float *>items)[i]
     else:
@@ -241,6 +241,14 @@ def unpack3(gribmsg, ipos, object zeros):
     gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, "i8"))
     gds = _toarray(igds, zeros(5, "i8"))
     deflist = _toarray(ideflist, zeros(idefnum, "i8"))
+
+    # IMPORTANT: Needed for g2c v1.6.4 and newer...
+    # For Regular and Gaussian Lat/Lon grids, need to check the value at 
+    # index 10.  It should be -1, but could be 2^32-1 = 4,294,967,295. This 
+    # is because -1 encoded as a 32-bit integer, turns on all bits, which 
+    # are then placed into a 64-bit integer. 
+    if gds[4] in [0,1,2,3,4,5,40,41,42,43] and gdtmpl[10] == 4294967295:
+        gdtmpl[10] = -1
 
     return gds,gdtmpl,deflist,iofst//8
 
