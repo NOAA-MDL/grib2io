@@ -728,6 +728,8 @@ class Grib2Message:
         if self.gridDefinitionTemplateNumber.value in [0,1,203,205,32768,32769]:
             # Regular or Rotated Lat/Lon Grid
             scalefact = float(self.gridDefinitionTemplate[9])
+            if self.gridDefinitionTemplate[10] == 4294967295:
+                self.gridDefinitionTemplate[10] = -1
             divisor = float(self.gridDefinitionTemplate[10])
             if scalefact == 0: scalefact = 1.
             if divisor <= 0: divisor = 1.e6
@@ -802,6 +804,8 @@ class Grib2Message:
         elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41:
             # Gaussian Grid
             scalefact = float(self.gridDefinitionTemplate[9])
+            if self.gridDefinitionTemplate[10] == 4294967295:
+                self.gridDefinitionTemplate[10] = -1
             divisor = float(self.gridDefinitionTemplate[10])
             if scalefact == 0: scalefact = 1.
             if divisor <= 0: divisor = 1.e6
