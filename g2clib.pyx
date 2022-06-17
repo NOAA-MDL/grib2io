@@ -242,14 +242,6 @@ def unpack3(gribmsg, ipos, object zeros):
     gds = _toarray(igds, zeros(5, "i8"))
     deflist = _toarray(ideflist, zeros(idefnum, "i8"))
 
-    # IMPORTANT: Needed for g2c v1.6.4 and newer...
-    # For Regular and Gaussian Lat/Lon grids, need to check the value at 
-    # index 10.  It should be -1, but could be 2^32-1 = 4,294,967,295. This 
-    # is because -1 encoded as a 32-bit integer, turns on all bits, which 
-    # are then placed into a 64-bit integer. 
-    if gds[4] in [0,1,2,3,4,5,40,41,42,43] and gdtmpl[10] == 4294967295:
-        gdtmpl[10] = -1
-
     return gds,gdtmpl,deflist,iofst//8
 
 
