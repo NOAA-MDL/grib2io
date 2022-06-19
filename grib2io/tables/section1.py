@@ -39,7 +39,8 @@ table_1_2 = {
 '1':'Start of Forecast',
 '2':'Verifying Time of Forecast',
 '3':'Observation Time',
-'4-191':'Reserved',
+'4':'Local Time',
+'5-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
@@ -55,7 +56,9 @@ table_1_3 = {
 '7':'S2S Test Products',
 '8':'Uncertainties in ensembles of regional reanalysis project (UERRA)',
 '9':'Uncertainties in ensembles of regional reanalysis project (UERRA) Test',
-'10-191':'Reserved',
+'10':'Copernicus Regional Reanalysis',
+'11':'Copernicus Regional Reanalysis Test',
+'12-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
