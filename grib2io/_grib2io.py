@@ -1554,14 +1554,14 @@ class Grib2Message:
                 drtmpl[16] = packing_opts['spatialDifferenceOrder']
             drtmpl[1] = packing_opts["binScaleFactor"]
             drtmpl[2] = packing_opts["decScaleFactor"]
-            if set(("priMissingValue","secMissingValue")).issubset(kwargs):
+            if set(("priMissingValue","secMissingValue")).issubset(packing_opts):
                 drtmpl[6] = 2
-                drtmpl[7] = utils.putieeeint(kwargs["priMissingValue"])
-                drtmpl[8] = utils.putieeeint(kwargs["secMissingValue"])
+                drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
+                drtmpl[8] = utils.putieeeint(packing_opts["secMissingValue"])
             else:
                 if "priMissingValue" in packing_opts.keys():
                     drtmpl[6] = 1
-                    drtmpl[7] = utils.putieeeint(kwargs["priMissingValue"])
+                    drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
                 else:
                     drtmpl[6] = 0
         elif packing == "jpeg":
