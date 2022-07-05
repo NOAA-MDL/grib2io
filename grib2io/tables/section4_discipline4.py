@@ -29,8 +29,11 @@ table_4_2_4_2  = {
 '7':['Spread F','m','SPRDF'],
 '8':['hF','m','HPRIMF'],
 '9':['Critical Frequency','Hz','CRTFRQ'],
-'10':['Scintillation','Numeric','SCINT'],
-'11-191':['Reserved','unknown','unknown'],
+'10':['Maximal Usable Frequency (MUF)','Hz','MAXUFZ'],
+'11':['Peak Height (hm)','m','PEAKH'],
+'12':['Peak Density','m-3','PEAKDEN'],
+'13':['Equivalent Slab Thickness (tau)','km','EQSLABT'],
+'14-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
@@ -60,7 +63,11 @@ table_4_2_4_4  = {
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_4_5  = {
-'0-191':['Reserved','unknown','unknown'],
+'0':['Amplitude','rad','AMPL'],
+'1':['Phase','rad','PHASE'],
+'2':['Frequency','Hz','FREQ'],
+'3':['Wavelength','m','WAVELGTH'],
+'4-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }
