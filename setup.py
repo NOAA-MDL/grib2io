@@ -7,7 +7,7 @@ import os
 import platform
 import sys
 
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 # ---------------------------------------------------------------------------------------- 
 # Function to provide the absolute path for a shared object library,
