@@ -1248,7 +1248,8 @@ class Grib2Message:
                self.identificationSection[1] == 14 and \
                self.shortName == 'PWTHER':
                 # MDL Predominant Weather Grid
-                keys = utils.decode_mdl_wx_strings(self._lus)
+                #keys = utils.decode_mdl_wx_strings(self._lus)
+                keys = utils.decode_ndfd_wx_strings(self._lus)
                 for n,k in enumerate(keys):
                     fld = np.where(fld==str(n+1),k,fld)
             elif self.identificationSection[0] == 8 and \
