@@ -1251,14 +1251,14 @@ class Grib2Message:
                 #keys = utils.decode_mdl_wx_strings(self._lus)
                 keys = utils.decode_ndfd_wx_strings(self._lus)
                 for n,k in enumerate(keys):
-                    fld = np.where(fld==str(n+1),k,fld)
+                    fld = np.where(fld==str(n),k,fld)
             elif self.identificationSection[0] == 8 and \
                  self.identificationSection[1] == 65535 and \
                  self.shortName == 'CRAIN':
                 # NDFD Predominant Weather Grid
                 keys = utils.decode_ndfd_wx_strings(self._lus)
                 for n,k in enumerate(keys):
-                    fld = np.where(fld==str(n+1),k,fld)
+                    fld = np.where(fld==str(n),k,fld)
             else:
                 # For data whose units are defined in a code table
                 tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
