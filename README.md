@@ -56,15 +56,3 @@ python3 setup.py install
 ## Development
 
 The intention of grib2io is to become the offical Python interface for the NCEP g2c library.  Therefore, the development evolution of grib2io will mainly focus on how best to serve that purpose and its primary user's -- mainly meteorologist, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS) and National Centers for Environmental Prediction (NCEP).
-
-### GitPod
-For an even easier way to begin developing with grib2io, you can use the included Gitpod configuration file.
-You can quickly get started by doing one of the following:
-- Fork the repository and open it as a new project in the [Gitpod](https://gitpod.io/) dashboard.
-- Or...open the repo directly by adding the Gitpod url prefix `gitpod.io/#` to the beginning of the project URL like so: [gitpod.io/#https://github.com/eengl/grib2io](gitpod.io/#https://github.com/eengl/grib2io).
-
-Gitpod will spin up a new throw-away containerized development environment just for you with all of required dependencies already installed, then launch Visual Studio Code in your browser...You're Ready to Code!
-
-Best of all, Gitpod is **free** for up to 50hrs per month!
-
-Learn more about Gitpod [here](https://gitpod.io) or take a look at their [FAQ](https://community.gitpod.io/faq)
