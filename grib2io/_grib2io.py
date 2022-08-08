@@ -344,7 +344,8 @@ class open():
 
     def read(self, num=1):
         """    
-        Read num GRIB2 messages from the current position
+        Read num GRIB2 messages from the current position. If num > total number of
+        remaining messages in the file, then only those GRIB2 messages will be returned.
 
         Parameters
         ----------
@@ -358,20 +359,23 @@ class open():
         """
         msgs = []
         if self.tell() >= self.messages: return msgs
-        if num > 0:
-            if num == 1:
-                msgrange = [self.tell()+1]
-            else:
-                beg = self.tell()+1
-                end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
-                msgrange = range(beg,end+1)
-            for n in msgrange:
-                self._filehandle.seek(self._index['offset'][n])
-                msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
-                                         source=self,
-                                         num=self._index['messageNumber'][n],
-                                         decode=self.decode))
-                self.current_message += 1
+        try:
+            if num > 0:
+                if num == 1:
+                    msgrange = [self.tell()+1]
+                else:
+                    beg = self.tell()+1
+                    end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
+                    msgrange = range(beg,end+1)
+                for n in msgrange:
+                    self._filehandle.seek(self._index['offset'][n])
+                    msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
+                                             source=self,
+                                             num=self._index['messageNumber'][n],
+                                             decode=self.decode))
+                    self.current_message += 1
+        except(IndexError):
+            pass
         return msgs
 
 
@@ -384,7 +388,9 @@ class open():
 
     def seek(self, pos):
         """
-        Set the position within the file in units of GRIB2 messages.
+        Set the position within the file in units of GRIB2 messages. The value of
+        `pos` sets the position to that GRIB2 message, so the next record read will
+        be `pos + 1`.
 
         Parameters
         ----------
@@ -396,7 +402,7 @@ class open():
                 self._filehandle.seek(pos)
                 self.current_message = pos
             elif pos > 0:
-                self._filehandle.seek(self._index['offset'][pos-1])
+                self._filehandle.seek(self._index['offset'][pos])
                 self.current_message = pos
 
 
@@ -1077,7 +1083,7 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-            self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
+            self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
 
         # Template 5.2 - Complex Packing
         elif self.dataRepresentationTemplateNumber == 2:
@@ -1239,7 +1245,7 @@ class Grib2Message:
                 fld[1::2,:] = fldsave[1::2,::-1]
 
         # Set data to integer according to GRIB metadata
-        if self.typeOfValues == "Integer": fld = fld.astype(np.int32)
+        if self.typeOfValues == 1: fld = fld.astype(np.int32)
 
         # Map the data values to their respective definitions.
         if map_keys:
