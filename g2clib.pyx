@@ -50,58 +50,12 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *,
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
-    void mkieee(g2float *,g2int32 *,g2int32)
-    void rdieee(g2int32 *,g2float *,g2int32)
 
 __version__ = G2_VERSION.decode("utf-8")[-5:]
 
 # ---------------------------------------------------------------------------------------- 
 # Python wrappers for g2c functions.
 # ---------------------------------------------------------------------------------------- 
-
-# ---------------------------------------------------------------------------------------- 
-# Routines for convert to/from IEEE integers.
-# ---------------------------------------------------------------------------------------- 
-def rtoi_ieee(object rarr, object iarr):
-    """
-    Converts a float32 array into an int32 array of IEEE formatted values
-    """
-    cdef void *rdat
-    cdef void *idat
-    cdef g2float *rdata
-    cdef g2float r1
-    cdef g2int32 *idata
-    cdef g2int32 i1
-    cdef Py_ssize_t bufleni, buflenr
-    if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
-        raise RuntimeError, "error getting buffer for input real array"
-    if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
-        raise RuntimeError, "error getting buffer for output integer array"
-    if bufleni < buflenr:
-        raise RuntimeError, "integer output array must be as least as long a real input array"
-    rdata = <g2float *>rdat
-    idata = <g2int32 *>idat
-    mkieee(rdata, idata, buflenr//4)
-
-def itor_ieee(object iarr, object rarr):
-    """
-    Converts an int32 array of IEEE values into a float32 array.
-    """
-    cdef void *rdat
-    cdef void *idat
-    cdef g2float *rdata
-    cdef g2int32 *idata
-    cdef Py_ssize_t bufleni, buflenr
-    if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
-        raise RuntimeError, "error getting buffer for output real array"
-    if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
-        raise RuntimeError, "error getting buffer for input integer array"
-    if buflenr < bufleni:
-        raise RuntimeError, "real output array must be as least as long a integerinput array"
-    rdata = <g2float *>rdat
-    idata = <g2int32 *>idat
-    rdieee(idata, rdata, bufleni//4)
-
 cdef _toarray(void *items, object a):
     """
     Fill a numpy array from the grib2 file.  Note that this free()s the items argument!
