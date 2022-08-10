@@ -161,7 +161,9 @@ class open():
                 beg, end, inc = key.indices(self.messages)
             return [self[i][0] for i in range(beg,end,inc)]
         elif isinstance(key,int):
-            if key == 0: return None
+            if key == 0:
+                warnings.warn("GRIB2 Message number 0 does not exist.")
+                return None
             self._filehandle.seek(self._index['offset'][key])
             return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
