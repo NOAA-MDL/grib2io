@@ -7,7 +7,7 @@ IMPORTANT: Make changes to this file, not the C code that Cython generates.
 import math
 
 # ---------------------------------------------------------------------------------------- 
-# Some helper routines from the Python API
+# Some helper definitions from the Python API
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "Python.h":
     # To access integers
@@ -23,15 +23,17 @@ cdef extern from "Python.h":
     int PyObject_AsReadBuffer(object, void **rbuf, Py_ssize_t *len)
     int PyObject_CheckReadBuffer(object)
 
+# ---------------------------------------------------------------------------------------- 
+# Definitions from std C libraries
+# ---------------------------------------------------------------------------------------- 
 cdef extern from "stdlib.h":
     void free(void *ptr)
 
 # ---------------------------------------------------------------------------------------- 
-# Functions from g2c lib.
+# Definitions from g2c lib.
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
     cdef char *G2_VERSION
-    ctypedef int g2int32     # 32-bit signed integer
     ctypedef long g2int      # 64-bit signed integer
     ctypedef float g2float   # 32-bit floating-point
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
@@ -52,6 +54,8 @@ cdef extern from "grib2.h":
     g2int g2_gribend(unsigned char *)
 
 __version__ = G2_VERSION.decode("utf-8")[-5:]
+#_has_png = G2_PNG_ENABLED
+#_has_jpeg = G2_JPEG2000_ENABLED
 
 # ---------------------------------------------------------------------------------------- 
 # Python wrappers for g2c functions.
@@ -63,17 +67,17 @@ cdef _toarray(void *items, object a):
     cdef void *abuf
     cdef Py_ssize_t buflen
     cdef g2int *idata
-    cdef g2int32 *idata32
+    cdef int *idata32
     cdef g2float *fdata
 
     # Get pointer to data buffer.
     PyObject_AsWriteBuffer(a, &abuf, &buflen)
 
     if str(a.dtype) == "int32":
-      idata32 = <g2int32 *>abuf
+      idata32 = <int *>abuf
       # Fill buffer.
       for i from 0 <= i < len(a):
-        idata32[i] = (<g2int32 *>items)[i]
+        idata32[i] = (<int *>items)[i]
     elif str(a.dtype) == "int64":
       idata = <g2int *>abuf
       # Fill buffer.
