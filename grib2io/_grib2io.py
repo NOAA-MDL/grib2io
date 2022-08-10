@@ -1081,7 +1081,7 @@ class Grib2Message:
 
         # Template 5.0 - Simple Packing
         if self.dataRepresentationTemplateNumber == 0:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1089,15 +1089,15 @@ class Grib2Message:
 
         # Template 5.2 - Complex Packing
         elif self.dataRepresentationTemplateNumber == 2:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1108,15 +1108,15 @@ class Grib2Message:
 
         # Template 5.3 - Complex Packing and Spatial Differencing
         elif self.dataRepresentationTemplateNumber == 3:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
             self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1133,7 +1133,7 @@ class Grib2Message:
 
         # Template 5.40 - JPEG2000 Compression
         elif self.dataRepresentationTemplateNumber == 40:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1143,7 +1143,7 @@ class Grib2Message:
 
         # Template 5.41 - PNG Compression
         elif self.dataRepresentationTemplateNumber == 41:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1564,12 +1564,12 @@ class Grib2Message:
             drtmpl[2] = packing_opts["decScaleFactor"]
             if set(("priMissingValue","secMissingValue")).issubset(packing_opts):
                 drtmpl[6] = 2
-                drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
-                drtmpl[8] = utils.putieeeint(packing_opts["secMissingValue"])
+                drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
+                drtmpl[8] = utils.ieee_float_to_int(packing_opts["secMissingValue"])
             else:
                 if "priMissingValue" in packing_opts.keys():
                     drtmpl[6] = 1
-                    drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
+                    drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
                 else:
                     drtmpl[6] = 0
         elif packing == "jpeg":
