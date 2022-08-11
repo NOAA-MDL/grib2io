@@ -192,6 +192,7 @@ class open():
         self._index['productDefinitionTemplate'] = [None]
         self._index['typeOfFirstFixedSurface'] = [None]
         self._index['valueOfFirstFixedSurface'] = [None]
+        self._index['typeOfGeneratingProcess'] = [None]
         self._index['level'] = [None]
         self._index['leadTime'] = [None]
         self._index['duration'] = [None]
@@ -296,6 +297,7 @@ class open():
                             scaleFactorOfFirstFixedSurface = _pdt[10]
                             scaledValueOfFirstFixedSurface = _pdt[11]
                             valueOfFirstFixedSurface = scaledValueOfFirstFixedSurface/(10.**scaleFactorOfFirstFixedSurface)
+                            self._index['typeOfGeneratingProcess'].append(_pdt[2])
                             self._index['valueOfFirstFixedSurface'].append(valueOfFirstFixedSurface)
                             self._index['level'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
                             self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))

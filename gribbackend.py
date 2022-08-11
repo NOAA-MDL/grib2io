@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-# TdlpackBackend is a backend entrypoint for decoding sequential tdlpack files with xarray engine 'grib'
-# TdlpackBackend is pre-release and the API is subject to change without backward compatability
+# gribbackend is a backend entrypoint for decoding grib files with xarray engine 'grib'
+# gribbackend is pre-release and the API is subject to change without backward compatability
 from pathlib import Path
 import shutil
 import datetime
@@ -24,8 +24,6 @@ from xarray.core import indexing
 from xarray.backends.locks import SerializableLock
 import grib2io
 from grib2io import Grib2Message
-import pytdlpack
-import TdlpackIO
 
 logger = logging.getLogger(__name__)
 
@@ -55,27 +53,39 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
         # read and parse metadata from grib file
         f = grib2io.open(filename)
-        file_index = pd.DataFrame(f._index)
+        file_index = pd.DataFrame(f._index)[1:]  # first line is all None
 
         initial_filters = copy(filters)
 
         # apply common filters(to all definition templates) to reduce dataset to single cube
 
-        # apply product definition template number filter
-        if 'productDefinitionTemplateNumber' in filters:
-            if not isinstance(filters['productDefinitionTemplateNumber'], int):
-                raise TypeError('productDefinitionTemplateNumber filter must be of type int')
-            file_index = file_index.loc[file_index['productDefinitionTemplateNumber'] == filters['productDefinitionTemplateNumber']]
-        if len(file_index.productDefinitionTemplateNumber.unique()) != 1:
-            raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {file_index.productDefinitionTemplateNumber.unique()}')
+#       # apply product definition template number filter
+#       if 'productDefinitionTemplateNumber' in filters:
+#           if not isinstance(filters['productDefinitionTemplateNumber'], int):
+#               raise TypeError('productDefinitionTemplateNumber filter must be of type int')
+#           file_index = file_index.loc[file_index['productDefinitionTemplateNumber'] == filters['productDefinitionTemplateNumber']]
+#       unique_pdtn = file_index.productDefinitionTemplateNumber.unique()
+#       if len(file_index.productDefinitionTemplateNumber.unique()) != 1:
+#           raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {file_index.productDefinitionTemplateNumber.unique()}')
+#       pdtn = unique_pdtn[0]
 
-        # apply type of first fixed surface filter
-        if 'typeOfFirstFixedSurface' in filters:
-            if not isinstance(filters['typeOfFirstFixedSurface'], str):
-                raise TypeError('typeOfFirstFixedSurface filter must be of type str')
-            file_index = file_index.loc[file_index['typeOfFirstFixedSurface'] == filters['typeOfFirstFixedSurface']]
-        if len(file_index.typeOfFirstFixedSurface.unique()) != 1:
-            raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {file_index.typeOfFirstFixedSurface.unique()}')
+#       # apply type of generating process filter
+#       field = 'typeOfGeneratingProcess'
+#       if field in filters:
+#           if not isinstance(filters[field], int):
+#               raise TypeError(f'{field} filter must be of type int')
+#           file_index = file_index.loc[file_index[field] == filters[field]]
+#       unique = file_index[field].unique()
+#       if len(unique) != 1:
+#           raise ValueError(f'filter to a single {field}; found: {unique}')
+
+#       # apply type of first fixed surface filter
+#       if 'typeOfFirstFixedSurface' in filters:
+#           if not isinstance(filters['typeOfFirstFixedSurface'], str):
+#               raise TypeError('typeOfFirstFixedSurface filter must be of type str')
+#           file_index = file_index.loc[file_index['typeOfFirstFixedSurface'] == filters['typeOfFirstFixedSurface']]
+#       if len(file_index.typeOfFirstFixedSurface.unique()) != 1:
+#           raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {file_index.typeOfFirstFixedSurface.unique()}')
 
 
         file_index, non_geo_dims = parse_grib_index(file_index, filters)
@@ -214,10 +224,11 @@ class Cube:
         keys.remove('y')
         coords = dict()
         for k in keys:
-            if k is not None and len(self[k]) > 1:
-                coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k))
-            elif k is not None and len(self[k]) == 1:
-                coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(tdlp_name=k))
+            if k is not None:
+                if len(self[k]) > 1:
+                    coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k))
+                elif len(self[k]) == 1:
+                    coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(tdlp_name=k))
         #coords = {k: xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k)) for k in keys if self[k] is not None and}
         return coords
 
@@ -237,9 +248,7 @@ class OnDiskArray:
         self.geo_shape = geo_shape
         self.geo_ndim = len(geo_shape)
 
-        #print(self.index.index.name)
-        if self.index.index.name is None:
-            #self.shape = (len(self.index),) + geo_shape
+        if len(self.index) == 1:
             self.shape = geo_shape
         else:
             if self.index.index.nlevels == 1:
@@ -351,32 +360,92 @@ def filter_index(index, k, v):
 
 	return index
 
+def threshold_lower_limit(pdt):
+    if pdt[19] == 255:
+        return None
+    else:
+        return pdt[19]/(10.**pdt[18])
 
-def parse_grib_index(df, filters):
+def threshold_upper_limit(pdt):
+    if pdt[21] == 255:
+        return None
+    else:
+        return pdt[21]/(10.**pdt[20])
+
+def percentile_value(pdt):
+    return pdt[15]
+
+def parse_grib_index(index, filters):
     '''
-    from product definition template number, evaluate what dimesnions are possible and parse each out
+    Apply filters; evaluate what dimesnions are possible (based on pdtn) and parse each out
     '''
-    df['refDate'] = pd.to_datetime(df['refDate'], format='%Y%m%d%H')
-    df['leadTime'] = pd.to_timedelta(df['leadTime'], unit='hour')
+    # apply common filters(to all definition templates) to reduce dataset to single cube
+
+    # apply product definition template number filter
+    if 'productDefinitionTemplateNumber' in filters:
+        if not isinstance(filters['productDefinitionTemplateNumber'], int):
+            raise TypeError('productDefinitionTemplateNumber filter must be of type int')
+        index = index.loc[index['productDefinitionTemplateNumber'] == filters['productDefinitionTemplateNumber']]
+    unique_pdtn = index.productDefinitionTemplateNumber.unique()
+    if len(index.productDefinitionTemplateNumber.unique()) != 1:
+        raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {index.productDefinitionTemplateNumber.unique()}')
+    pdtn = unique_pdtn[0]
+
+    # apply type of generating process filter
+    field = 'typeOfGeneratingProcess'
+    if field in filters:
+        if not isinstance(filters[field], int):
+            raise TypeError(f'{field} filter must be of type int')
+        index = index.loc[index[field] == filters[field]]
+    unique = index[field].unique()
+    if len(unique) != 1:
+        raise ValueError(f'filter to a single {field}; found: {unique}')
+
+    # apply type of first fixed surface filter
+    if 'typeOfFirstFixedSurface' in filters:
+        if not isinstance(filters['typeOfFirstFixedSurface'], str):
+            raise TypeError('typeOfFirstFixedSurface filter must be of type str')
+        index = index.loc[index['typeOfFirstFixedSurface'] == filters['typeOfFirstFixedSurface']]
+    if len(index.typeOfFirstFixedSurface.unique()) != 1:
+        raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {index.typeOfFirstFixedSurface.unique()}')
+
+    refdate = pd.to_datetime(index['refDate'], format='%Y%m%d%H')
+    index = index.assign(refDate=refdate)
+    leadtime = pd.to_timedelta(index['leadTime'], unit='hour')
+    index = index.assign(leadTime=leadtime)
 
     # by this point the index is filtered down to a single typeOfFirstFixedSurface and productDefinitionTemplateNumber
     non_geo_dims = list()
 
+    # refDate always added for now (could add only based on typOfGeneratingProcess)
     @dataclass(init=False)
     class RefDateDim:
         refDate: pd.Index = PdIndex()
     non_geo_dims.append(RefDateDim)
 
+    # leadTime always added for now (could add only based on typOfGeneratingProcess)
     @dataclass(init=False)
     class LeadTimeDim:
         leadTime: pd.Index = PdIndex()
     non_geo_dims.append(LeadTimeDim)
 
+    # duration added if multiple durations or if not instant
+    unique_durations = index.duration.unique()
+
+    @dataclass(init=False)
+    class Duration:
+        duration: pd.Index = PdIndex()
+    if len(unique_durations) > 1:
+        non_geo_dims.append(Duration)
+    elif len(unique_durations) == 1 and 0 not in unique_durations and not np.isnan(unique_durations).any():
+        non_geo_dims.append(Duration)
+
+
     if 'valueOfFirstFixedSurface' in filters:
-        df = filter_index(df, 'valueOfFirstFixedSurface', filters['valueOfFirstFixedSurface'])
+        index = filter_index(index, 'valueOfFirstFixedSurface', filters['valueOfFirstFixedSurface'])
         del filters['valueOfFirstFixedSurface']
 
-    if len(df['valueOfFirstFixedSurface'].unique()) > 1:
+    if len(index['valueOfFirstFixedSurface'].unique()) > 1:
         # we have multiple levels
         @dataclass(init=False)
         class ValueOfFirstFixedSurfaceDim:
@@ -384,8 +453,33 @@ def parse_grib_index(df, filters):
         non_geo_dims.append(ValueOfFirstFixedSurfaceDim)
 
     # logic for parsing possible dims from product definition section
+    if pdtn == 9:
+        lower = index.productDefinitionTemplate.apply(threshold_lower_limit)
+        index = index.assign(thresholdLowerLimit=lower.values)
+        upper = index.productDefinitionTemplate.apply(threshold_upper_limit)
+        index = index.assign(thresholdUpperLimit=upper.values)
 
-    return df, non_geo_dims
+        if index['thresholdLowerLimit'].nunique() > 1:
+            @dataclass(init=False)
+            class ThresholdLowerLimitDim:
+                thresholdLowerLimit: pd.Index = PdIndex()
+            non_geo_dims.append(ThresholdLowerLimitDim)
+        if index['thresholdUpperLimit'].nunique() > 1:
+            @dataclass(init=False)
+            class ThresholdUpperLimitDim:
+                thresholdUpperLimit: pd.Index = PdIndex()
+            non_geo_dims.append(ThresholdUpperLimitDim)
+
+    elif pdtn == 10:
+        value = index.productDefinitionTemplate.apply(percentile_value)
+        index = index.assign(percentileValue=value)
+
+        @dataclass(init=False)
+        class PercentileValueDim:
+            percentileValue: pd.Index = PdIndex()
+        non_geo_dims.append(PercentileValueDim)
+
+    return index, non_geo_dims
 
 
 def build_da_without_coords(index, cube, file) -> xr.DataArray:
@@ -506,20 +600,17 @@ def make_variables(index, filters, f, non_geo_dims):
         c = DimCube()
         #for colname in frame.columns:
         for colname in ordered_meta[:-2]:
-            if len(frame[colname].unique()) > 1:
-                c[colname] = frame[colname].sort_values().unique()
+            uniques = pd.Index(frame[colname]).unique()
+            if len(uniques) > 1:
+                c[colname] = uniques.sort_values()
+            else:
+                c[colname] = [uniques[0]]
 
-        if c.refDate is None:
-            # case where only one date; use date as unit dimesnion
-            c['refDate'] = [frame.refDate.iloc[0]]
-            #setattr(cube, 'date', [frame.date.iloc[0]])
+        dims = [k for k in ordered_meta if k not in {'y','x'} and len(c[k]) > 1]
 
-        if c.leadTime is None:
-            # case where only one lead; use lead as unit dimesnion
-            c['leadTime'] = [frame.leadTime.iloc[0]]
-
-
-        dims = [k for k in ordered_meta if c[k] is not None and len(c[k]) > 1]
+        for dim in dims:
+            if frame[dim].value_counts().nunique() > 1:
+                raise ValueError(f'un-even numer of grib msgs associated with dimension: {dim}')
 
         if len(dims) >= 1: # dims may be empty if no extra dims on top of x,y
             frame = frame.sort_values(dims)
