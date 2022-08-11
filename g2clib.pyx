@@ -33,7 +33,17 @@ cdef extern from "stdlib.h":
 # Definitions from g2c lib.
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
+    """
+    #ifndef G2_PNG_ENABLED
+        #define G2_PNG_ENABLED 0
+    #endif
+    #ifndef G2_JPEG2000_ENABLED
+        #define G2_JPEG2000_ENABLED 0
+    #endif
+    """
     cdef char *G2_VERSION
+    cdef int G2_PNG_ENABLED
+    cdef int G2_JPEG2000_ENABLED
     ctypedef long g2int      # 64-bit signed integer
     ctypedef float g2float   # 32-bit floating-point
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
@@ -54,8 +64,9 @@ cdef extern from "grib2.h":
     g2int g2_gribend(unsigned char *)
 
 __version__ = G2_VERSION.decode("utf-8")[-5:]
-#_has_png = G2_PNG_ENABLED
-#_has_jpeg = G2_JPEG2000_ENABLED
+
+_has_png = G2_PNG_ENABLED
+_has_jpeg = G2_JPEG2000_ENABLED
 
 # ---------------------------------------------------------------------------------------- 
 # Python wrappers for g2c functions.
