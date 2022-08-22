@@ -52,7 +52,7 @@ def ieee_float_to_int(f):
 
     Numpy Int32 representation of an IEEE 32-bit float.
     """
-    i = struct.unpack('>i',struct.pack('>f',f))[0]
+    i = struct.unpack('>i',struct.pack('>f',np.float32(f)))[0]
     return np.int32(i)
 
 
@@ -71,7 +71,7 @@ def ieee_int_to_float(i):
 
     Numpy float32
     """
-    f = struct.unpack('>f',struct.pack('>i',i))[0]
+    f = struct.unpack('>f',struct.pack('>i',np.int32(i)))[0]
     return np.float32(f)
 
 
