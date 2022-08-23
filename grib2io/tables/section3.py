@@ -71,7 +71,7 @@ table_3_2 = {
 '7':'Earth assumed oblate spheroid with major and minor axes  specified (in m) by data producer',
 '8':'Earth model assumed spherical with radius 6,371,200 m,  but the horizontal datum of the resulting Latitude/Longitude field is  the WGS84 reference frame',
 '9':'Earth represented by the OSGB 1936 Datum,  using the Airy_1830 Spheroid, the Greenwich meridian as 0 Longitude, the Newlyn datum as mean sea  level, 0 height.',
-'10':'Earth model assumed WGS84 with corrected geomagnetic coordinates (latitude and longitude) defined by Gustafsson et al., 1992". (see Note 1)',
+'10':'Earth model assumed WGS84 with corrected geomagnetic coordinates (latitude and longitude) defined by Gustafsson et al., 1992".',
 '11':'Sun assumed spherical with radius = 695 990 000 m (Allen, C.W., Astrophysical Quantities, 3rd ed.; Athlone: London, 1976) and Stonyhurst latitude and longitude system with origin at the intersection of the solar central meridian (as seen from Earth) and the solar equator (Thompson, W., Coordinate systems for solar image data, Astron. Astrophys. 2006, 449, 791-803)',
 '12-191':'Reserved',
 '192-254':'Reserved for Local Use',
