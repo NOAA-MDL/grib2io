@@ -105,6 +105,8 @@ do
 done
 sed 's/Pblackomiunknownt/Predominant/g' section4_discipline0.py > junk
 mv -v junk section4_discipline0.py
+cat section4_discipline0.py table_ndfd_parameters_definitions.txt > junk
+mv -v junk section4_discipline0.py
 
 # Discipline 1
 echo " -- Making section4_discipline1.py"
