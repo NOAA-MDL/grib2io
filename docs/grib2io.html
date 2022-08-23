@@ -110,6 +110,15 @@
                         <li>
                                 <a class="function" href="#Grib2Metadata.__init__">Grib2Metadata</a>
                         </li>
+                        <li>
+                                <a class="variable" href="#Grib2Metadata.value">value</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Grib2Metadata.table">table</a>
+                        </li>
+                        <li>
+                                <a class="variable" href="#Grib2Metadata.definition">definition</a>
+                        </li>
                 </ul>
 
             </li>
@@ -3853,31 +3862,32 @@ returns None. If False, message is output as is.</p>
 </span><span id="Grib2Metadata-1666"><a href="#Grib2Metadata-1666"><span class="linenos">1666</span></a>
 </span><span id="Grib2Metadata-1667"><a href="#Grib2Metadata-1667"><span class="linenos">1667</span></a><span class="sd">    GRIB2 table to lookup the `value`. Default is None.</span>
 </span><span id="Grib2Metadata-1668"><a href="#Grib2Metadata-1668"><span class="linenos">1668</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="Grib2Metadata-1669"><a href="#Grib2Metadata-1669"><span class="linenos">1669</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1670"><a href="#Grib2Metadata-1670"><span class="linenos">1670</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
-</span><span id="Grib2Metadata-1671"><a href="#Grib2Metadata-1671"><span class="linenos">1671</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
-</span><span id="Grib2Metadata-1672"><a href="#Grib2Metadata-1672"><span class="linenos">1672</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Grib2Metadata-1673"><a href="#Grib2Metadata-1673"><span class="linenos">1673</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="Grib2Metadata-1674"><a href="#Grib2Metadata-1674"><span class="linenos">1674</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2Metadata-1675"><a href="#Grib2Metadata-1675"><span class="linenos">1675</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
-</span><span id="Grib2Metadata-1676"><a href="#Grib2Metadata-1676"><span class="linenos">1676</span></a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1677"><a href="#Grib2Metadata-1677"><span class="linenos">1677</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
-</span><span id="Grib2Metadata-1678"><a href="#Grib2Metadata-1678"><span class="linenos">1678</span></a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1679"><a href="#Grib2Metadata-1679"><span class="linenos">1679</span></a>        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, table = </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
-</span><span id="Grib2Metadata-1680"><a href="#Grib2Metadata-1680"><span class="linenos">1680</span></a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1681"><a href="#Grib2Metadata-1681"><span class="linenos">1681</span></a>        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">)</span>
-</span><span id="Grib2Metadata-1682"><a href="#Grib2Metadata-1682"><span class="linenos">1682</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1683"><a href="#Grib2Metadata-1683"><span class="linenos">1683</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
-</span><span id="Grib2Metadata-1684"><a href="#Grib2Metadata-1684"><span class="linenos">1684</span></a>    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1685"><a href="#Grib2Metadata-1685"><span class="linenos">1685</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
-</span><span id="Grib2Metadata-1686"><a href="#Grib2Metadata-1686"><span class="linenos">1686</span></a>    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1687"><a href="#Grib2Metadata-1687"><span class="linenos">1687</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
-</span><span id="Grib2Metadata-1688"><a href="#Grib2Metadata-1688"><span class="linenos">1688</span></a>    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1689"><a href="#Grib2Metadata-1689"><span class="linenos">1689</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
-</span><span id="Grib2Metadata-1690"><a href="#Grib2Metadata-1690"><span class="linenos">1690</span></a>    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1691"><a href="#Grib2Metadata-1691"><span class="linenos">1691</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
-</span><span id="Grib2Metadata-1692"><a href="#Grib2Metadata-1692"><span class="linenos">1692</span></a>    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
-</span><span id="Grib2Metadata-1693"><a href="#Grib2Metadata-1693"><span class="linenos">1693</span></a>        <span class="k">return</span> <span class="n">other</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span>
+</span><span id="Grib2Metadata-1669"><a href="#Grib2Metadata-1669"><span class="linenos">1669</span></a>    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;definition&#39;</span><span class="p">,</span><span class="s1">&#39;table&#39;</span><span class="p">,</span><span class="s1">&#39;value&#39;</span><span class="p">)</span>
+</span><span id="Grib2Metadata-1670"><a href="#Grib2Metadata-1670"><span class="linenos">1670</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1671"><a href="#Grib2Metadata-1671"><span class="linenos">1671</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="Grib2Metadata-1672"><a href="#Grib2Metadata-1672"><span class="linenos">1672</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+</span><span id="Grib2Metadata-1673"><a href="#Grib2Metadata-1673"><span class="linenos">1673</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Grib2Metadata-1674"><a href="#Grib2Metadata-1674"><span class="linenos">1674</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="Grib2Metadata-1675"><a href="#Grib2Metadata-1675"><span class="linenos">1675</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2Metadata-1676"><a href="#Grib2Metadata-1676"><span class="linenos">1676</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+</span><span id="Grib2Metadata-1677"><a href="#Grib2Metadata-1677"><span class="linenos">1677</span></a>    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1678"><a href="#Grib2Metadata-1678"><span class="linenos">1678</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
+</span><span id="Grib2Metadata-1679"><a href="#Grib2Metadata-1679"><span class="linenos">1679</span></a>    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1680"><a href="#Grib2Metadata-1680"><span class="linenos">1680</span></a>        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">(</span><span class="si">%d</span><span class="s1">, table = </span><span class="si">%s</span><span class="s1">)&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+</span><span id="Grib2Metadata-1681"><a href="#Grib2Metadata-1681"><span class="linenos">1681</span></a>    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1682"><a href="#Grib2Metadata-1682"><span class="linenos">1682</span></a>        <span class="k">return</span> <span class="s1">&#39;</span><span class="si">%d</span><span class="s1"> - </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">definition</span><span class="p">)</span>
+</span><span id="Grib2Metadata-1683"><a href="#Grib2Metadata-1683"><span class="linenos">1683</span></a>    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1684"><a href="#Grib2Metadata-1684"><span class="linenos">1684</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="n">other</span>
+</span><span id="Grib2Metadata-1685"><a href="#Grib2Metadata-1685"><span class="linenos">1685</span></a>    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1686"><a href="#Grib2Metadata-1686"><span class="linenos">1686</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;</span> <span class="n">other</span>
+</span><span id="Grib2Metadata-1687"><a href="#Grib2Metadata-1687"><span class="linenos">1687</span></a>    <span class="k">def</span> <span class="fm">__ge__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1688"><a href="#Grib2Metadata-1688"><span class="linenos">1688</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&gt;=</span> <span class="n">other</span>
+</span><span id="Grib2Metadata-1689"><a href="#Grib2Metadata-1689"><span class="linenos">1689</span></a>    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1690"><a href="#Grib2Metadata-1690"><span class="linenos">1690</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;</span> <span class="n">other</span>
+</span><span id="Grib2Metadata-1691"><a href="#Grib2Metadata-1691"><span class="linenos">1691</span></a>    <span class="k">def</span> <span class="fm">__le__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1692"><a href="#Grib2Metadata-1692"><span class="linenos">1692</span></a>        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">&lt;=</span> <span class="n">other</span>
+</span><span id="Grib2Metadata-1693"><a href="#Grib2Metadata-1693"><span class="linenos">1693</span></a>    <span class="k">def</span> <span class="fm">__contains__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+</span><span id="Grib2Metadata-1694"><a href="#Grib2Metadata-1694"><span class="linenos">1694</span></a>        <span class="k">return</span> <span class="n">other</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">definition</span>
 </span></pre></div>
 
 
@@ -3890,7 +3900,7 @@ GRIB2 and its plain langauge definition.</p>
 
 <p><strong><code>table : str, optional</code></strong></p>
 
-<p>GRIB2 table to lookup the <code>value</code>. Default is None.</p>
+<p>GRIB2 table to lookup the <code><a href="#Grib2Metadata.value">value</a></code>. Default is None.</p>
 </div>
 
 
@@ -3904,16 +3914,49 @@ GRIB2 and its plain langauge definition.</p>
 
     </div>
     <a class="headerlink" href="#Grib2Metadata.__init__"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Grib2Metadata.__init__-1669"><a href="#Grib2Metadata.__init__-1669"><span class="linenos">1669</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-</span><span id="Grib2Metadata.__init__-1670"><a href="#Grib2Metadata.__init__-1670"><span class="linenos">1670</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
-</span><span id="Grib2Metadata.__init__-1671"><a href="#Grib2Metadata.__init__-1671"><span class="linenos">1671</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
-</span><span id="Grib2Metadata.__init__-1672"><a href="#Grib2Metadata.__init__-1672"><span class="linenos">1672</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="Grib2Metadata.__init__-1673"><a href="#Grib2Metadata.__init__-1673"><span class="linenos">1673</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="Grib2Metadata.__init__-1674"><a href="#Grib2Metadata.__init__-1674"><span class="linenos">1674</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2Metadata.__init__-1675"><a href="#Grib2Metadata.__init__-1675"><span class="linenos">1675</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Grib2Metadata.__init__-1670"><a href="#Grib2Metadata.__init__-1670"><span class="linenos">1670</span></a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="Grib2Metadata.__init__-1671"><a href="#Grib2Metadata.__init__-1671"><span class="linenos">1671</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+</span><span id="Grib2Metadata.__init__-1672"><a href="#Grib2Metadata.__init__-1672"><span class="linenos">1672</span></a>        <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="n">table</span>
+</span><span id="Grib2Metadata.__init__-1673"><a href="#Grib2Metadata.__init__-1673"><span class="linenos">1673</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="Grib2Metadata.__init__-1674"><a href="#Grib2Metadata.__init__-1674"><span class="linenos">1674</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="Grib2Metadata.__init__-1675"><a href="#Grib2Metadata.__init__-1675"><span class="linenos">1675</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2Metadata.__init__-1676"><a href="#Grib2Metadata.__init__-1676"><span class="linenos">1676</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">definition</span> <span class="o">=</span> <span class="n">tables</span><span class="o">.</span><span class="n">get_value_from_table</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">)</span>
 </span></pre></div>
 
 
+    
+
+                            </div>
+                            <div id="Grib2Metadata.value" class="classattr">
+                                <div class="attr variable">
+            <span class="name">value</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Grib2Metadata.value"></a>
+    
+    
+
+                            </div>
+                            <div id="Grib2Metadata.table" class="classattr">
+                                <div class="attr variable">
+            <span class="name">table</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Grib2Metadata.table"></a>
+    
+    
+
+                            </div>
+                            <div id="Grib2Metadata.definition" class="classattr">
+                                <div class="attr variable">
+            <span class="name">definition</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Grib2Metadata.definition"></a>
+    
     
 
                             </div>
