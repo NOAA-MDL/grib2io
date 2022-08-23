@@ -940,10 +940,16 @@ class Grib2Message:
             self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
             self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
             self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
-                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
-            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
-                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            if self.scaleFactorOfThresholdLowerLimit == -127 and \
+               self.scaledValueOfThresholdLowerLimit == 255:
+                self.thresholdLowerLimit = 0.0
+            else:
+                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+            if self.scaleFactorOfThresholdUpperLimit == -127 and \
+               self.scaledValueOfThresholdUpperLimit == 255:
+                self.thresholdUpperLimit = 0.0
+            else:
+                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
             self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
 
         # Template 4.6 -
@@ -976,10 +982,16 @@ class Grib2Message:
             self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
             self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
             self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
-                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
-            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
-                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            if self.scaleFactorOfThresholdLowerLimit == -127 and \
+               self.scaledValueOfThresholdLowerLimit == 255:
+                self.thresholdLowerLimit = 0.0
+            else:
+                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+            if self.scaleFactorOfThresholdUpperLimit == -127 and \
+               self.scaledValueOfThresholdUpperLimit == 255:
+                self.thresholdUpperLimit = 0.0
+            else:
+                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
             self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
             self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
