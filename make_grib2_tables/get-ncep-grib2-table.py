@@ -55,6 +55,12 @@ for idx,row in df.iterrows():
     if tblin in ['0.0','1.6']:
         center = center.split('(')[0].strip()
 
+    # For 3.1, Remove text of "(See template....".
+    if tblin == '3.1':
+        num = center.find('(See')
+        if num > 0:
+            center = center[:num-1]
+
     # For 4.5, format the dictionary key/value pair according to its contents.
     if tblin == '4.5':
         units = row['Units']
