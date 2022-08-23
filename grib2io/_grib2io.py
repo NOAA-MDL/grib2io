@@ -911,6 +911,7 @@ class Grib2Message:
             self.typeOfSecondFixedSurface = None
             self.scaleFactorOfSecondFixedSurface = None
             self.unitOfSecondFixedSurface = None
+            self.scaledValueOfSecondFixedSurface = None
             self.valueOfSecondFixedSurface = None
         else:
             self.typeOfSecondFixedSurface = Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
