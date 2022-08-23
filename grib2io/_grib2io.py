@@ -1665,6 +1665,7 @@ class Grib2Metadata():
 
     GRIB2 table to lookup the `value`. Default is None.
     """
+    __slots__ = ('definition','table','value')
     def __init__(self, value, table=None):
         self.value = value
         self.table = table
