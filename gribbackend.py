@@ -260,7 +260,6 @@ class OnDiskArray:
 
     def __getitem__(self, item) -> np.array:
         # dimensions not in index are internal to tdlpack records; 2 dims for grids; 1 dim for stations
-        filehandle = open(self.file_name, mode='rb', buffering=ONE_MB)
 
         index_slicer = item[:-self.geo_ndim]
         index_slicer = tuple([[i] if isinstance(i, int) else i for i in index_slicer]) # maintain all multindex levels
@@ -292,27 +291,27 @@ class OnDiskArray:
             for key, row in index.iterrows():
                 t2 = datetime.datetime.now()
                 filehandle.seek(int(row['offset']))
+
                 t3 = datetime.datetime.now()
                 msg = Grib2Message(msg=filehandle.read(int(row['size'])),
                     source='grib file',
                     num=row['messageNumber'],
                     decode=False,
                     )
-                #print(f'msg create took: {datetime.datetime.now() - t3}')
 
                 # data method sometimes returns masked array and sometimes ndarray
                 # convert to ndarray with nan values where masked
                 a = msg.data()
-                if isinstance(a, np.ndarray):
+                try:
+                    values = a.filled(fill_value=np.nan)
+                except AttributeError:
                     values = a
-                else:
-                    values = a.filled(np.nan)
+
 
                 if len(index_slicer_inclusive) >= 1:
                     array_field[row.miloc] = values
                 else:
                     array_field = values
-                #print(f'msg load took: {datetime.datetime.now() - t2}')
 
         # handle geo dim slicing
         #print(f'data load took: {datetime.datetime.now() - t1}')
