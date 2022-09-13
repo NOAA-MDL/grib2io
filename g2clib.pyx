@@ -7,7 +7,7 @@ IMPORTANT: Make changes to this file, not the C code that Cython generates.
 import math
 
 # ---------------------------------------------------------------------------------------- 
-# Some helper routines from the Python API
+# Some helper definitions from the Python API
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "Python.h":
     # To access integers
@@ -23,15 +23,27 @@ cdef extern from "Python.h":
     int PyObject_AsReadBuffer(object, void **rbuf, Py_ssize_t *len)
     int PyObject_CheckReadBuffer(object)
 
+# ---------------------------------------------------------------------------------------- 
+# Definitions from std C libraries
+# ---------------------------------------------------------------------------------------- 
 cdef extern from "stdlib.h":
     void free(void *ptr)
 
 # ---------------------------------------------------------------------------------------- 
-# Functions from g2c lib.
+# Definitions from g2c lib.
 # ---------------------------------------------------------------------------------------- 
 cdef extern from "grib2.h":
+    """
+    #ifndef G2_PNG_ENABLED
+        #define G2_PNG_ENABLED 0
+    #endif
+    #ifndef G2_JPEG2000_ENABLED
+        #define G2_JPEG2000_ENABLED 0
+    #endif
+    """
     cdef char *G2_VERSION
-    ctypedef int g2int32     # 32-bit signed integer
+    cdef int G2_PNG_ENABLED
+    cdef int G2_JPEG2000_ENABLED
     ctypedef long g2int      # 64-bit signed integer
     ctypedef float g2float   # 32-bit floating-point
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
@@ -50,58 +62,15 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *,
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
-    void mkieee(g2float *,g2int32 *,g2int32)
-    void rdieee(g2int32 *,g2float *,g2int32)
 
 __version__ = G2_VERSION.decode("utf-8")[-5:]
+
+_has_png = G2_PNG_ENABLED
+_has_jpeg = G2_JPEG2000_ENABLED
 
 # ---------------------------------------------------------------------------------------- 
 # Python wrappers for g2c functions.
 # ---------------------------------------------------------------------------------------- 
-
-# ---------------------------------------------------------------------------------------- 
-# Routines for convert to/from IEEE integers.
-# ---------------------------------------------------------------------------------------- 
-def rtoi_ieee(object rarr, object iarr):
-    """
-    Converts a float32 array into an int32 array of IEEE formatted values
-    """
-    cdef void *rdat
-    cdef void *idat
-    cdef g2float *rdata
-    cdef g2float r1
-    cdef g2int32 *idata
-    cdef g2int32 i1
-    cdef Py_ssize_t bufleni, buflenr
-    if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
-        raise RuntimeError, "error getting buffer for input real array"
-    if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
-        raise RuntimeError, "error getting buffer for output integer array"
-    if bufleni < buflenr:
-        raise RuntimeError, "integer output array must be as least as long a real input array"
-    rdata = <g2float *>rdat
-    idata = <g2int32 *>idat
-    mkieee(rdata, idata, buflenr//4)
-
-def itor_ieee(object iarr, object rarr):
-    """
-    Converts an int32 array of IEEE values into a float32 array.
-    """
-    cdef void *rdat
-    cdef void *idat
-    cdef g2float *rdata
-    cdef g2int32 *idata
-    cdef Py_ssize_t bufleni, buflenr
-    if PyObject_AsReadBuffer(rarr, &rdat, &buflenr) <> 0:
-        raise RuntimeError, "error getting buffer for output real array"
-    if PyObject_AsWriteBuffer(iarr, &idat, &bufleni)  <> 0 :
-        raise RuntimeError, "error getting buffer for input integer array"
-    if buflenr < bufleni:
-        raise RuntimeError, "real output array must be as least as long a integerinput array"
-    rdata = <g2float *>rdat
-    idata = <g2int32 *>idat
-    rdieee(idata, rdata, bufleni//4)
-
 cdef _toarray(void *items, object a):
     """
     Fill a numpy array from the grib2 file.  Note that this free()s the items argument!
@@ -109,17 +78,17 @@ cdef _toarray(void *items, object a):
     cdef void *abuf
     cdef Py_ssize_t buflen
     cdef g2int *idata
-    cdef g2int32 *idata32
+    cdef int *idata32
     cdef g2float *fdata
 
     # Get pointer to data buffer.
     PyObject_AsWriteBuffer(a, &abuf, &buflen)
 
     if str(a.dtype) == "int32":
-      idata32 = <g2int32 *>abuf
+      idata32 = <int *>abuf
       # Fill buffer.
       for i from 0 <= i < len(a):
-        idata32[i] = (<g2int32 *>items)[i]
+        idata32[i] = (<int *>items)[i]
     elif str(a.dtype) == "int64":
       idata = <g2int *>abuf
       # Fill buffer.

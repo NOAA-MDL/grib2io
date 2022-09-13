@@ -6,42 +6,17 @@
 # 1) Rename this file to setup.cfg to set grib2io build options. Follow instructions 
 #    below for editing.
 #
-# 2) For JPEG encoding/decoding, please define either Jasper or OpenJPEG vars
+# 2) Define the locations for the g2c library.
 # ---------------------------------------------------------------------------------------- 
 
 [directories]
 
 # ---------------------------------------------------------------------------------------- 
-# Define paths for Jasper Library
+# Define paths for g2c Library
 #
-# Please set jasper_dir is include and library files are within the same location.
-# If not, please set jasper_incdir and jasper_libdir.
+# Please set g2c_dir is include and library files are within the same location.
+# If not, please set g2c_incdir and g2c_libdir.
 # ---------------------------------------------------------------------------------------- 
-# jasper_dir = /usr/local
-# jasper_incdir =
-# jasper_libdir =
-
-# ----------------------------------------------------------------------------------------
-# Define paths for OpenJPEG Library
-#
-# Please set openjpeg_dir is include and library files are within the same location.
-# If not, please set openjpeg_incdir and openjpeg_libdir.
-# ----------------------------------------------------------------------------------------
-# openjpeg_dir = /usr/local
-# openjpeg_incdir =
-# openjpeg_libdir =
-
-# ---------------------------------------------------------------------------------------- 
-# Define paths for PNG Library
-#
-# Please set png_dir is include and library files are within the same location..
-# If not, please set png_incdir and png_libdir.
-# ---------------------------------------------------------------------------------------- 
-# png_dir = /usr/local
-# png_incdir = 
-# png_libdir =
-
-# ---------------------------------------------------------------------------------------- 
-# Define paths for Z Library
-# ---------------------------------------------------------------------------------------- 
-# zlib_dir = /usr
+# g2c_dir = /usr/local
+# g2c_incdir =
+# g2c_libdir =

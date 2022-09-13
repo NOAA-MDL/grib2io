@@ -38,27 +38,26 @@ def int2bin(i,nbits=8,output=str):
         return [int(b) for b in bitstr]
 
 
-def putieeeint(r):
+def ieee_float_to_int(f):
     """
     Convert an IEEE 32-bit float to a 32-bit integer.
 
     Parameters
     ----------
 
-    **`r`**: Float value.
+    **`f`**: Float value.
 
     Returns
     -------
 
-    Integer representation of an IEEE 32-bit float.
+    Numpy Int32 representation of an IEEE 32-bit float.
     """
-    ra = np.array([r],'f')
-    ia = np.empty(1,'i')
-    g2clib.rtoi_ieee(ra,ia)
-    return ia[0]
+    i = struct.unpack('>i',struct.pack('>f',np.float32(f)))[0]
+    return np.int32(i)
 
 
-def getieeeint(i):
+
+def ieee_int_to_float(i):
     """
     Convert a 32-bit integer to an IEEE 32-bit float.
 
@@ -70,12 +69,11 @@ def getieeeint(i):
     Returns
     -------
 
-    IEEE 32-bit float.
+    Numpy float32
     """
-    ia = np.array([i],'i')
-    ra = np.empty(1,'f')
-    g2clib.itor_ieee(ia,ra)
-    return ra[0]
+    f = struct.unpack('>f',struct.pack('>i',np.int32(i)))[0]
+    return np.float32(f)
+
 
 
 def getmd5str(a):
@@ -246,9 +244,9 @@ def decode_mdl_wx_strings(lus):
     nbits = lus[13]
     datatype = lus[14]
     if datatype == 0: # Floating point
-        refvalue = np.float32(getieeeint(refvalue)*10**-dsf)
+        refvalue = np.float32(ieee_int_to_float(refvalue)*10**-dsf)
     elif datatype == 1: # Integer
-        refvalue = np.int32(getieeeint(refvalue)*10**-dsf)
+        refvalue = np.int32(ieee_int_to_float(refvalue)*10**-dsf)
     #print("TEST:",ngroups,nvalues,refvalue,dsf,nbits,datatype)
     # Store the "data" part of the packed weather strings as
     # a binary string.
@@ -297,9 +295,9 @@ def decode_ndfd_wx_strings(lus):
     nbits = lus[13]
     datatype = lus[14]
     if datatype == 0: # Floating point
-        refvalue = np.float32(getieeeint(refvalue)*10**-dsf)
+        refvalue = np.float32(ieee_int_to_float(refvalue)*10**-dsf)
     elif datatype == 1: # Integer
-        refvalue = np.int32(getieeeint(refvalue)*10**-dsf)
+        refvalue = np.int32(ieee_int_to_float(refvalue)*10**-dsf)
     # Iterate over the data of section 2 in 4-byte (32-bit)
     # words OR 2-byte word at the end. Each word is unpacked
     # as an unsigned integer. Then convert the integer word

@@ -161,7 +161,9 @@ class open():
                 beg, end, inc = key.indices(self.messages)
             return [self[i][0] for i in range(beg,end,inc)]
         elif isinstance(key,int):
-            if key == 0: return None
+            if key == 0:
+                warnings.warn("GRIB2 Message number 0 does not exist.")
+                return None
             self._filehandle.seek(self._index['offset'][key])
             return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
@@ -236,6 +238,7 @@ class open():
                     _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     _grbsec1 = _grbsec1.tolist()
                     _refdate = utils.getdate(_grbsec1[5],_grbsec1[6],_grbsec1[7],_grbsec1[8])
+                    _isndfd = True if _grbsec1[0:2] == [8,65535] else False
                     secrange = range(2,8)
                     while 1:
                         for num in secrange:
@@ -258,7 +261,7 @@ class open():
                                     # Unpack Section 4
                                     _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
-                                    _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1])
+                                    _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)
                                 elif secnum == 6:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
@@ -632,6 +635,8 @@ class Grib2Message:
                 strings.append('%s = %d\n'%(k,v))
             elif isinstance(v,float):
                 strings.append('%s = %f\n'%(k,v))
+            elif isinstance(v,bool):
+                strings.append('%s = %s\n'%(k,v))
             else:
                 strings.append('%s = %s\n'%(k,v))
         return ''.join(strings)
@@ -968,7 +973,8 @@ class Grib2Message:
         self.parameterNumber = self.productDefinitionTemplate[1]
         self.fullName,self.units,self.shortName = tables.get_varinfo_from_table(self.discipline.value,
                                                                                 self.parameterCategory,
-                                                                                self.parameterNumber)
+                                                                                self.parameterNumber,
+                                                                                isNDFD=self.isNDFD)
         self.typeOfGeneratingProcess = Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
         self.backgroundGeneratingProcessIdentifier = self.productDefinitionTemplate[3]
         self.generatingProcess = Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
@@ -984,6 +990,7 @@ class Grib2Message:
             self.typeOfSecondFixedSurface = None
             self.scaleFactorOfSecondFixedSurface = None
             self.unitOfSecondFixedSurface = None
+            self.scaledValueOfSecondFixedSurface = None
             self.valueOfSecondFixedSurface = None
         else:
             self.typeOfSecondFixedSurface = Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
@@ -1013,10 +1020,16 @@ class Grib2Message:
             self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
             self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
             self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
-                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
-            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
-                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            if self.scaleFactorOfThresholdLowerLimit == -127 and \
+               self.scaledValueOfThresholdLowerLimit == 255:
+                self.thresholdLowerLimit = 0.0
+            else:
+                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+            if self.scaleFactorOfThresholdUpperLimit == -127 and \
+               self.scaledValueOfThresholdUpperLimit == 255:
+                self.thresholdUpperLimit = 0.0
+            else:
+                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
             self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
 
         # Template 4.6 -
@@ -1049,10 +1062,16 @@ class Grib2Message:
             self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
             self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
             self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            self.thresholdLowerLimit = 0.0 if self.productDefinitionTemplate[19] == 255 else \
-                                       self.productDefinitionTemplate[19]/(10.**self.productDefinitionTemplate[18])
-            self.thresholdUpperLimit = 0.0 if self.productDefinitionTemplate[21] == 255 else \
-                                       self.productDefinitionTemplate[21]/(10.**self.productDefinitionTemplate[20])
+            if self.scaleFactorOfThresholdLowerLimit == -127 and \
+               self.scaledValueOfThresholdLowerLimit == 255:
+                self.thresholdLowerLimit = 0.0
+            else:
+                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+            if self.scaleFactorOfThresholdUpperLimit == -127 and \
+               self.scaledValueOfThresholdUpperLimit == 255:
+                self.thresholdUpperLimit = 0.0
+            else:
+                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
             self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
             self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
             self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
@@ -1154,7 +1173,7 @@ class Grib2Message:
 
         # Template 5.0 - Simple Packing
         if self.dataRepresentationTemplateNumber == 0:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1162,15 +1181,15 @@ class Grib2Message:
 
         # Template 5.2 - Complex Packing
         elif self.dataRepresentationTemplateNumber == 2:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
        #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1181,15 +1200,15 @@ class Grib2Message:
 
         # Template 5.3 - Complex Packing and Spatial Differencing
         elif self.dataRepresentationTemplateNumber == 3:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
        #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.getieeeint(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.getieeeint(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1206,7 +1225,7 @@ class Grib2Message:
 
         # Template 5.40 - JPEG2000 Compression
         elif self.dataRepresentationTemplateNumber == 40:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1216,7 +1235,7 @@ class Grib2Message:
 
         # Template 5.41 - PNG Compression
         elif self.dataRepresentationTemplateNumber == 41:
-            self.refValue = utils.getieeeint(self.dataRepresentationTemplate[0])
+            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
@@ -1649,12 +1668,12 @@ class Grib2Message:
             drtmpl[2] = packing_opts["decScaleFactor"]
             if set(("priMissingValue","secMissingValue")).issubset(packing_opts):
                 drtmpl[6] = 2
-                drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
-                drtmpl[8] = utils.putieeeint(packing_opts["secMissingValue"])
+                drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
+                drtmpl[8] = utils.ieee_float_to_int(packing_opts["secMissingValue"])
             else:
                 if "priMissingValue" in packing_opts.keys():
                     drtmpl[6] = 1
-                    drtmpl[7] = utils.putieeeint(packing_opts["priMissingValue"])
+                    drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
                 else:
                     drtmpl[6] = 0
         elif packing == "jpeg":
@@ -1737,6 +1756,7 @@ class Grib2Metadata():
 
     GRIB2 table to lookup the `value`. Default is None.
     """
+    __slots__ = ('definition','table','value')
     def __init__(self, value, table=None):
         self.value = value
         self.table = table

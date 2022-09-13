@@ -72,7 +72,7 @@ def get_value_from_table(value, table):
         return None
 
 
-def get_varinfo_from_table(discipline,parmcat,parmnum):
+def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
     """
     Return the GRIB2 variable information given values of `discipline`,
     `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments
@@ -87,6 +87,9 @@ def get_varinfo_from_table(discipline,parmcat,parmnum):
 
     **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.
 
+    **`isNDFD`**: If `True`, signals function to try to get variable information
+    from the supplemental NDFD tables.
+
     Returns
     -------
 
@@ -99,6 +102,15 @@ def get_varinfo_from_table(discipline,parmcat,parmnum):
     if isinstance(discipline,int): discipline = str(discipline)
     if isinstance(parmcat,int): parmcat = str(parmcat)
     if isinstance(parmnum,int): parmnum = str(parmnum)
+    if isNDFD:
+        try:
+            tblname = 'table_4_2_'+discipline+'_'+parmcat+'_ndfd'
+            modname = '.section4_discipline'+discipline
+            exec('from '+modname+' import *')
+            return locals()[tblname][parmnum]
+        except(ImportError,KeyError):
+            pass
+            #return ['Unknown','Unknown','Unknown']
     try:
         tblname = 'table_4_2_'+discipline+'_'+parmcat
         modname = '.section4_discipline'+discipline

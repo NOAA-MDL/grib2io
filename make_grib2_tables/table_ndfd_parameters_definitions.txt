@@ -1,0 +1,26 @@
+
+# ---------------------------------------------------------------------------------------- 
+# Source: https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/NDFD_gribtab.dat
+# ---------------------------------------------------------------------------------------- 
+table_4_2_0_0_ndfd = {
+'193':['Apparent Temperature','K','APPT'],
+}
+table_4_2_0_1_ndfd = {
+'192':['Weather Information','WxInfo','WX'],
+}
+table_4_2_0_19_ndfd = {
+'194':['Convective Hazard Outlook','categorical','CONVOUTLOOK'],
+'197':['Probability of Tornado','%','PTORNADO'],
+'198':['Probability of Hail','%','PHAIL'],
+'199':['Probability of Damaging Wind','%','PWIND'],
+'200':['Probability of Extreme Tornado','%','PXTRMTORN'],
+'201':['Probability of Extreme Hail','%','PXTRMHAIL'],
+'202':['Probability of Extreme Wind','%','PXTRMWIND'],
+'215':['Total Probability of Severe Thunderstorms','%','TOTALSVRPROB'],
+'216':['Total Probability of Extreme Severe Thunderstorms','%','TOTALXTRMPROB'],
+'217':['Watch Warning Advisory','WxInfo','WWA'],
+}
+table_4_2_0_192_ndfd = {
+'192':['Critical Fire Weather','','FIREWX'],
+'194':['Dry Lightning','','DRYLIGHTNING'],
+}
