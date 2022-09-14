@@ -112,7 +112,7 @@ data_files = None
 # ----------------------------------------------------------------------------------------
 install_scripts = []
 install_ext_modules = [g2clibext,redtoregext]
-install_py_modules = ['gribbackend']
+install_py_modules = []
 
 # ----------------------------------------------------------------------------------------
 # Create __config__.py
@@ -176,7 +176,7 @@ setup(name = 'grib2io',
       scripts           = install_scripts,
       ext_modules       = install_ext_modules,
       py_modules        = install_py_modules,
-      entry_points     = {'xarray.backends': 'grib = gribbackend:GribBackendEntrypoint'},
+      entry_points     = {'xarray.backends':'grib2io=grib2io.xarray_backend:GribBackendEntrypoint'},
       packages          = find_packages(),
       data_files        = data_files,
       install_requires  = ['setuptools>=34.0','numpy>=1.12.0','pyproj>=1.9.5'],
