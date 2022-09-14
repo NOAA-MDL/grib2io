@@ -458,7 +458,7 @@ table_4_2_0_4  = {
 '14':['Diffuse Short Wave Radiation Flux','W m-2','DIFSWRF'],
 '15-49':['Reserved','unknown','unknown'],
 '50':['UV Index (Under Clear Sky)','Numeric','UVIUCS'],
-'51':['UV Index','W m-2','UVI'],
+'51':['UV Index','Numeric','UVI'],
 '52':['Downward Short-Wave Radiation Flux, Clear Sky','W m-2','DSWRFCS'],
 '53':['Upward Short-Wave Radiation Flux, Clear Sky','W m-2','USWRFCS'],
 '54':['Direct normal short-wave radiation flux,(see Note 3)','W m-2','DSWRFLX'],
