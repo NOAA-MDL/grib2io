@@ -1188,8 +1188,14 @@ class Grib2Message:
        #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            if self.typeOfValues == 0:
+                # Floating Point
+                self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+                self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            elif self.typeOfValues == 1:
+                # Integer
+                self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
+                self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1207,8 +1213,14 @@ class Grib2Message:
        #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
             self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
             self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-            self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            if self.typeOfValues == 0:
+                # Floating Point
+                self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+                self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+            elif self.typeOfValues == 1:
+                # Integer
+                self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
+                self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
             self.nGroups = self.dataRepresentationTemplate[9]
             self.refGroupWidth = self.dataRepresentationTemplate[10]
             self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
@@ -1355,18 +1367,13 @@ class Grib2Message:
         # Map the data values to their respective definitions.
         if map_keys:
             fld = fld.astype(np.int32).astype(str)
-            if self.identificationSection[0] == 7 and \
-               self.identificationSection[1] == 14 and \
-               self.shortName == 'PWTHER':
-                # MDL Predominant Weather Grid
-                keys = utils.decode_mdl_wx_strings(self._lus)
-                for n,k in enumerate(keys):
-                    fld = np.where(fld==str(n+1),k,fld)
-            elif self.identificationSection[0] == 8 and \
-                 self.identificationSection[1] == 65535 and \
-                 self.shortName == 'CRAIN':
-                # NDFD Predominant Weather Grid
-                keys = utils.decode_ndfd_wx_strings(self._lus)
+            if (self.identificationSection[0] == 7 and \
+                self.identificationSection[1] == 14 and \
+                self.shortName == 'PWTHER') or \
+               (self.identificationSection[0] == 8 and \
+                self.identificationSection[1] == 65535 and \
+                self.shortName == 'WX'):
+                keys = utils.decode_wx_strings(self._lus)
                 for n,k in enumerate(keys):
                     fld = np.where(fld==str(n+1),k,fld)
             else:
