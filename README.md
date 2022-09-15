@@ -30,7 +30,7 @@ Beginning with grib2io v1.1.0, the [NCEP g2c](https://github.com/NOAA-EMC/NCEPLI
 
 ## Installation
 
-For root or sudo installations:
+For system installations:
 ```shell
 sudo pip install grib2io
 ```
