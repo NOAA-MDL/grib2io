@@ -22,12 +22,14 @@ import struct
 import math
 import warnings
 
+from dataclasses import dataclass, field
 from numpy import ma
 import numpy as np
 import pyproj
 
 from . import g2clib
 from . import tables
+from . import templates
 from . import utils
 
 DEFAULT_DRT_LEN = 20
@@ -68,6 +70,9 @@ class open():
 
     **`levels`**: Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
+    __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
+                 'current_message','size','closed','decode','variables','levels',
+                 '_pos')
     def __init__(self, filename, mode='r', decode=True):
         """
         `open` Constructor
@@ -142,10 +147,10 @@ class open():
         """
         """
         strings = []
-        keys = self.__dict__.keys()
-        for k in keys:
-            if not k.startswith('_'):
-                strings.append('%s = %s\n'%(k,self.__dict__[k]))
+        #keys = self.__dict__.keys()
+        for k in self.__slots__:
+            if k.startswith('_'): continue
+            strings.append('%s = %s\n'%(k,eval('self.'+k)))
         return ''.join(strings)
 
 
@@ -165,7 +170,8 @@ class open():
                 warnings.warn("GRIB2 Message number 0 does not exist.")
                 return None
             self._filehandle.seek(self._index['offset'][key])
-            return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
+            #return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
+            return [grib2_message_creator(self._index['gridDefinitionTemplateNumber'][key])(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
                                  num=self._index['messageNumber'][key],
                                  decode=self.decode)]
@@ -181,6 +187,7 @@ class open():
         """
         # Initialize index dictionary
         self._index['offset'] = [None]
+        self._index['dataOffset'] = [None]
         self._index['discipline'] = [None]
         self._index['edition'] = [None]
         self._index['size'] = [None]
@@ -190,6 +197,7 @@ class open():
         self._index['messageNumber'] = [None]
         self._index['identificationSection'] = [None]
         self._index['refDate'] = [None]
+        self._index['gridDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplateNumber'] = [None]
         self._index['productDefinitionTemplate'] = [None]
         self._index['typeOfFirstFixedSurface'] = [None]
@@ -204,6 +212,7 @@ class open():
         self._index['probString'] = [None]
         self._index['ny'] = [None]
         self._index['nx'] = [None]
+        self._index['dataRepresentationTemplateNumber'] = [None]
 
         # Iterate
         while True:
@@ -250,10 +259,9 @@ class open():
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
                                     # Unpack Section 3
-                                    _gds,_gdtn,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
-                                    gdt = _gdtn.tolist()
-                                    self._index['nx'].append(int(gdt[7]))
-                                    self._index['ny'].append(int(gdt[8]))
+                                    _gds,_gdt,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
+                                    _gds = _gds.tolist()
+                                    _gdt = _gdt.tolist()
                                 elif secnum == 4:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
@@ -262,6 +270,12 @@ class open():
                                     _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
                                     _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)
+                                elif secnum == 5:
+                                    self._filehandle.seek(self._filehandle.tell()-5)
+                                    _grbmsg = self._filehandle.read(secsize)
+                                    _grbpos = 0
+                                    # Unpack Section 5
+                                    _drt,_drtn,_npts,self._pos = g2clib.unpack5(_grbmsg,_grbpos,np.empty)
                                 elif secnum == 6:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
@@ -272,6 +286,10 @@ class open():
                                         _bmap_save = copy.deepcopy(_bmap)
                                     elif _bmapflag == 254:
                                         _bmap = copy.deepcopy(_bmap_save)
+                                elif secnum == 7:
+                                    # Unpack Section 7. No need to read it, just index the position in file.
+                                    _datapos = self._filehandle.tell()-5
+                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
                                 else:
                                     self._filehandle.seek(self._filehandle.tell()+secsize-5)
                             else:
@@ -287,6 +305,7 @@ class open():
                         if trailer == '7777':
                             self.messages += 1
                             self._index['offset'].append(pos)
+                            self._index['dataOffset'].append(_datapos)
                             self._index['discipline'].append(discipline)
                             self._index['edition'].append(edition)
                             self._index['size'].append(size)
@@ -294,6 +313,9 @@ class open():
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['refDate'].append(_refdate)
+                            self._index['gridDefinitionTemplateNumber'].append(_gds[-1])
+                            self._index['nx'].append(int(_gdt[7]))
+                            self._index['ny'].append(int(_gdt[8]))
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
                             self._index['typeOfFirstFixedSurface'].append(Grib2Metadata(_pdt[9],table='4.5').definition[0])
@@ -318,11 +340,13 @@ class open():
                             else:
                                 self._index['submessageOffset'].append(0)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
+                            self._index['dataRepresentationTemplateNumber'].append(_drtn)
                             break
                         else:
                             self._filehandle.seek(self._filehandle.tell()-4)
                             self.messages += 1
                             self._index['offset'].append(pos)
+                            self._index['dataOffset'].append(_datapos)
                             self._index['discipline'].append(discipline)
                             self._index['edition'].append(edition)
                             self._index['size'].append(size)
@@ -330,6 +354,9 @@ class open():
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
                             self._index['refDate'].append(_refdate)
+                            self._index['gridDefinitionTemplateNumber'].append(_gds[-1])
+                            self._index['nx'].append(int(_gdt[7]))
+                            self._index['ny'].append(int(_gdt[8]))
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
                             self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
@@ -343,6 +370,7 @@ class open():
                                 self._index['probString'].append('')
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
+                            self._index['dataRepresentationTemplateNumber'].append(_drtn)
                             continue
 
             except(struct.error):
@@ -386,7 +414,8 @@ class open():
                 msgrange = range(beg,end+1)
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
-                msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
+                #msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
+                msgs.append(grib2_message_creator(self._index['gridDefinitionTemplateNumber'][n])(msg=self._filehandle.read(self._index['size'][n]),
                                          source=self,
                                          num=self._index['messageNumber'][n],
                                          decode=self.decode))
@@ -493,73 +522,56 @@ class open():
         else:
             raise TypeError("msg must be a Grib2Message object.")
 
-class GridDefinitionTemplateNumber:
-    def __get__(self, obj, objtype=None):
-        return Grib2Metadata(int(obj.gridDefinitionSection[4]),table='3.1')
 
-#SCAN_MODE_LOC_IN_GDT_BY_GTDN = {
-#        0:18,
-#        1:18,
-#        10:15,
-#        20:17,
-#        30:17,
-#        31:17,
-#        40:18,
-#        41:18,
-#        50:ValueError,
-#        90:16,
-#        203:18,
-#        204:18,
-#        205:18,
-#        32768:18,
-#        32769:18,
-#        }
-
-
-class ScanModeFlags:
-    def __get__(self, obj, objtype=None):
-#       loc = SCAN_MODE_LOC_IN_GDT_BY_GTDN[obj.gridDefinitionTemplateNumber.value]
-#       return utils.int2bin(obj.gridDefinitionTemplate[loc],output=list)[0:4]
-
-        gridDefinitionTemplateNumber_value = obj.gridDefinitionSection[4] # direct access gridDefinitionTemplateNumber.value
-        if gridDefinitionTemplateNumber_value in {0,1,40,41,203,204,205,32768,32769}:
-            return utils.int2bin(obj.gridDefinitionTemplate[18],output=list)[0:4]
-        elif gridDefinitionTemplateNumber_value in {10,110}:
-            return utils.int2bin(obj.gridDefinitionTemplate[15],output=list)[0:4]
-        elif gridDefinitionTemplateNumber_value in {20,30,31}:
-            return utils.int2bin(obj.gridDefinitionTemplate[17],output=list)[0:4]
-        elif gridDefinitionTemplateNumber_value == 50:
-            return [None, None, None, None]
-        elif gridDefinitionTemplateNumber_value == 90:
-            return utils.int2bin(obj.gridDefinitionTemplate[16],output=list)[0:4]
-        else:
-            raise ValueError
-
-class Nx:
-    def __get__(self, obj, objtype=None):
-        gridDefinitionTemplateNumber_value = obj.gridDefinitionSection[4] # direct access gridDefinitionTemplateNumber.value
-        if gridDefinitionTemplateNumber_value not in {50,51,52,53,100,120,1000,1200}:
-            return obj.gridDefinitionTemplate[7]
-        else:
-            raise ValueError
-class Ny:
-    def __get__(self, obj, objtype=None):
-        return obj.gridDefinitionTemplate[8]
-
-class TypeOfValues:
-    def __get__(self, obj, objtype=None):
-        if obj.dataRepresentationTemplateNumber == 0:
-            # Template 5.0 - Simple Packing
-            return Grib2Metadata(obj.dataRepresentationTemplate[3],table='5.1')
-        else:
-            return Grib2Metadata(obj.dataRepresentationTemplate[4],table='5.1')
-
+@dataclass
 class Grib2Message:
-    gridDefinitionTemplateNumber = GridDefinitionTemplateNumber()
-    scanModeFlags = ScanModeFlags()
-    ny = Ny()
-    nx = Nx()
-    typeOfValues = TypeOfValues()
+    section0: list = field(init=False,repr=True,default=templates.Grib2Section())
+    section1: list = field(init=False,repr=True,default=templates.Grib2Section())
+    #section2: list = field(init=False,repr=True,default=templates.Grib2Section())
+    #section3: list = field(init=False,repr=True,default=templates.Grib2Section())
+
+    discipline = templates.Discipline()
+
+    originatingCenter = templates.OriginatingCenter()
+    originatingSubCenter = templates.OriginatingSubCenter()
+    masterTableInfo = templates.MasterTableInfo()
+    localTableInfo = templates.LocalTableInfo()
+    significanceOfReferenceTime = templates.SignificanceOfReferenceTime()
+    year = templates.Year()
+    month = templates.Month()
+    day = templates.Day()
+    hour = templates.Hour()
+    minute = templates.Minute()
+    second = templates.Second()
+    refDate = templates.RefDate()
+    productionStatus = templates.ProductionStatus()
+    typeOfData = templates.TypeOfData()
+
+    gridDefinitionSection: list = field(init=False,repr=True,default=templates.Grib2Section())
+    gridDefinitionTemplateNumber = templates.GridDefinitionTemplateNumber()
+    gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
+
+    shapeOfEarth = templates.ShapeOfEarth()
+    earthRadius = templates.EarthRadius()
+    earthMajorAxis = templates.EarthMajorAxis()
+    earthMinorAxis = templates.EarthMinorAxis()
+
+    resolutionAndComponentFlags = templates.ResolutionAndComponentFlags()
+    ny = templates.Ny()
+    nx = templates.Nx()
+    scanModeFlags = templates.ScanModeFlags()
+    typeOfValues = templates.TypeOfValues()
+
+#    def __new__(cls, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None, sectemplates=None):
+#        """
+#        """
+#        if sectemplates is not None:
+#            if sectemplates[0] == 0:
+#                msg = templates.add_grid_definition_template_0(cls)
+#        return msg
+
+
+#    def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None, sectemplates=None):
     def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None):
         """
         Class Constructor. Instantiation of this class can handle a GRIB2 message from an existing
@@ -655,11 +667,13 @@ class Grib2Message:
         self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
         self._pos = 16
         self._sections.append(0)
+        self._section0 = self.indicatorSection #NEW
         #self.md5[0] = _getmd5str(self.indicatorSection)
 
         # Section 1 - Identification Section via g2clib.unpack1()
         self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
         self.identificationSection = self.identificationSection.tolist()
+        self._section1 = self.identificationSection #NEW
         self._sections.append(1)
         if self.identificationSection[0:2] == [8,65535]: self.isNDFD = True
 
@@ -696,9 +710,27 @@ class Grib2Message:
             # Section 3 - Grid Definition Section.
             elif sectnum == 3:
                 _gds,_gdt,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
-                self.gridDefinitionSection = _gds.tolist()
+                #self.gridDefinitionSection = _gds.tolist()
+                self._gridDefinitionSection = _gds.tolist() #NEW
           #     self.gridDefinitionTemplateNumber = Grib2Metadata(int(_gds[4]),table='3.1')
-                self.gridDefinitionTemplate = _gdt.tolist()
+                #self.gridDefinitionTemplate = _gdt.tolist()
+                self._gridDefinitionTemplate = _gdt.tolist() #NEW
+                if self._gridDefinitionSection[4] in [50,51,52,1200]:
+                    self._earthparams = None
+                else:
+                    self._earthparams = tables.earth_params[str(self._gridDefinitionTemplate[0])]
+                if self._gridDefinitionSection[4] in [0,1,203,205,32768,32769]:
+                    self._llscalefactor = float(self._gridDefinitionTemplate[9])
+                    if self._gridDefinitionTemplate[10] == 4294967295:
+                        self._gridDefinitionTemplate[10] = -1
+                    self._lldivisor = float(self._gridDefinitionTemplate[10])
+                    if self._llscalefactor == 0: self._llscalefactor = 1.
+                    if self._lldivisor <= 0: self._lldivisor = 1.e6
+                    self._xydivisor = self._lldivisor
+                else:
+                    self._lldivisor = 1.e6
+                    self._xydivisor = 1.e3
+                    self._llscalefactor = 1.
                 self.defList = _deflist.tolist()
                 self._sections.append(3)
                 #self.md5[3] = _getmd5str([self.gridDefinitionTemplateNumber]+self.gridDefinitionTemplate)
@@ -755,211 +787,221 @@ class Grib2Message:
         """
 
         # Section 0 - Indictator Section
-        self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
+        #self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
 
         # Section 1 - Indentification Section.
-        self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
-        self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
-        self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
-        self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
-        self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
-        self.year = self.identificationSection[5]
-        self.month = self.identificationSection[6]
-        self.day = self.identificationSection[7]
-        self.hour = self.identificationSection[8]
-        self.minute = self.identificationSection[9]
-        self.second = self.identificationSection[10]
-        self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
-        self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
-                                                 hour=self.hour,minute=self.minute,
-                                                 second=self.second)
-        self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
-        self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
+        #self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
+        #self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
+        #self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
+        #self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
+        #self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
+        #self.year = self.identificationSection[5]
+        #self.month = self.identificationSection[6]
+        #self.day = self.identificationSection[7]
+        #self.hour = self.identificationSection[8]
+        #self.minute = self.identificationSection[9]
+        #self.second = self.identificationSection[10]
+        #self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
+        #self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
+        #                                         hour=self.hour,minute=self.minute,
+        #                                         second=self.second)
+        #self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
+        #self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
 
         # ----------------------------
         # Section 3 -- Grid Definition
         # ----------------------------
 
         # Set shape of the Earth parameters
-        if self.gridDefinitionTemplateNumber.value in [50,51,52,1200]:
-            earthparams = None
-        else:
-            earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
-        if earthparams['shape'] == 'spherical':
-            if earthparams['radius'] is None:
-                self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
-                self.earthMajorAxis = None
-                self.earthMinorAxis = None
-            else:
-                self.earthRadius = earthparams['radius']
-                self.earthMajorAxis = None
-                self.earthMinorAxis = None
-        elif earthparams['shape'] == 'oblateSpheroid':
-            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
-                self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
-                self.earthMajorAxis = self.gridDefinitionTemplate[4]/(10.**self.gridDefinitionTemplate[3])
-                self.earthMinorAxis = self.gridDefinitionTemplate[6]/(10.**self.gridDefinitionTemplate[5])
-            else:
-                self.earthRadius = earthparams['radius']
-                self.earthMajorAxis = earthparams['major_axis']
-                self.earthMinorAxis = earthparams['minor_axis']
+        #if self.gridDefinitionTemplateNumber.value in [50,51,52,1200]:
+        #    earthparams = None
+        #else:
+        #    earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
+        #if earthparams['shape'] == 'spherical':
+        #    if earthparams['radius'] is None:
+        #        self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+        #        self.earthMajorAxis = None
+        #        self.earthMinorAxis = None
+        #    else:
+        #        self.earthRadius = earthparams['radius']
+        #        self.earthMajorAxis = None
+        #        self.earthMinorAxis = None
+        #elif earthparams['shape'] == 'oblateSpheroid':
+        #    if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+        #        self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
+        #        self.earthMajorAxis = self.gridDefinitionTemplate[4]/(10.**self.gridDefinitionTemplate[3])
+        #        self.earthMinorAxis = self.gridDefinitionTemplate[6]/(10.**self.gridDefinitionTemplate[5])
+        #    else:
+        #        self.earthRadius = earthparams['radius']
+        #        self.earthMajorAxis = earthparams['major_axis']
+        #        self.earthMinorAxis = earthparams['minor_axis']
 
-        reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
+        #reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
        #if reggrid and self.gridDefinitionTemplateNumber.value not in [50,51,52,53,100,120,1000,1200]:
        #    self.nx = self.gridDefinitionTemplate[7]
        #    self.ny = self.gridDefinitionTemplate[8]
-        if not reggrid and self.gridDefinitionTemplateNumber == 40:
-            # Reduced Gaussian Grid
-            self.ny = self.gridDefinitionTemplate[8]
+        #if not reggrid and self.gridDefinitionTemplateNumber == 40:
+        #    # Reduced Gaussian Grid
+        #    self.ny = self.gridDefinitionTemplate[8]
         if self.gridDefinitionTemplateNumber.value in [0,1,203,205,32768,32769]:
-            # Regular or Rotated Lat/Lon Grid
-            scalefact = float(self.gridDefinitionTemplate[9])
-            if self.gridDefinitionTemplate[10] == 4294967295:
-                self.gridDefinitionTemplate[10] = -1
-            divisor = float(self.gridDefinitionTemplate[10])
-            if scalefact == 0: scalefact = 1.
-            if divisor <= 0: divisor = 1.e6
-            self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
-            self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
-            self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
-            self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
-            self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
-            self.gridlengthYDirection = scalefact*self.gridDefinitionTemplate[17]/divisor
-            if self.latitudeFirstGridpoint > self.latitudeLastGridpoint:
-                self.gridlengthYDirection = -self.gridlengthYDirection
-            if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
-                self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
-            if self.gridDefinitionTemplateNumber == 1:
-                self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
-                self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
-                self.anglePoleRotation = self.gridDefinitionTemplate[21]
+        #    # Regular or Rotated Lat/Lon Grid
+        #    scalefact = float(self.gridDefinitionTemplate[9])
+        #    if self.gridDefinitionTemplate[10] == 4294967295:
+        #        self.gridDefinitionTemplate[10] = -1
+        #    divisor = float(self.gridDefinitionTemplate[10])
+        #    if scalefact == 0: scalefact = 1.
+        #    if divisor <= 0: divisor = 1.e6
+        #    #self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
+        #    self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
+        #    self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
+        #    self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
+        #    self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
+        #    self.gridlengthYDirection = scalefact*self.gridDefinitionTemplate[17]/divisor
+        #    if self.latitudeFirstGridpoint > self.latitudeLastGridpoint:
+        #        self.gridlengthYDirection = -self.gridlengthYDirection
+        #    if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
+        #        self.gridlengthXDirection = -self.gridlengthXDirection
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        #    if self.gridDefinitionTemplateNumber == 1:
+        #        self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
+        #        self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
+        #        self.anglePoleRotation = self.gridDefinitionTemplate[21]
+            pass
         elif self.gridDefinitionTemplateNumber == 10:
-            # Mercator
-            self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-            self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-            self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
-            self.longitudeLastGridpoint = self.gridDefinitionTemplate[14]/1.e6
-            self.gridlengthXDirection = self.gridDefinitionTemplate[17]/1.e3
-            self.gridlengthYDirection= self.gridDefinitionTemplate[18]/1.e3
-            self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
-            self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
-            self.proj4_proj = 'merc'
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+        #    # Mercator
+        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        #    self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
+        #    self.longitudeLastGridpoint = self.gridDefinitionTemplate[14]/1.e6
+        #    self.gridlengthXDirection = self.gridDefinitionTemplate[17]/1.e3
+        #    self.gridlengthYDirection= self.gridDefinitionTemplate[18]/1.e3
+        #    self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
+        #    self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
+        #    self.proj4_proj = 'merc'
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 20:
-            # Stereographic
-            projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
-            self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-            self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-            self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
-            if projflag == 0:
-                self.proj4_lat_0 = 90
-            elif projflag == 1:
-                self.proj4_lat_0 = -90
-            else:
-                raise ValueError('Invalid projection center flag = %s'%projflag)
-            self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-            self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-            self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-            self.proj4_proj = 'stere'
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        #    # Stereographic
+        #    projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
+        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        #    self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
+        #    if projflag == 0:
+        #        self.proj4_lat_0 = 90
+        #    elif projflag == 1:
+        #        self.proj4_lat_0 = -90
+        #    else:
+        #        raise ValueError('Invalid projection center flag = %s'%projflag)
+        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        #    self.proj4_proj = 'stere'
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 30:
-            # Lambert Conformal
-            self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-            self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-            self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-            self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-            self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
-            self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
-            self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
-            self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-            self.proj4_proj = 'lcc'
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        #    # Lambert Conformal
+        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        #    self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
+        #    self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
+        #    self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
+        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        #    self.proj4_proj = 'lcc'
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 31:
-            # Albers Equal Area
-            self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-            self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-            self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-            self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-            self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
-            self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
-            self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
-            self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-            self.proj4_proj = 'aea'
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+        #    # Albers Equal Area
+        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
+        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
+        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
+        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
+        #    self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
+        #    self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
+        #    self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
+        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
+        #    self.proj4_proj = 'aea'
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41:
-            # Gaussian Grid
-            scalefact = float(self.gridDefinitionTemplate[9])
-            if self.gridDefinitionTemplate[10] == 4294967295:
-                self.gridDefinitionTemplate[10] = -1
-            divisor = float(self.gridDefinitionTemplate[10])
-            if scalefact == 0: scalefact = 1.
-            if divisor <= 0: divisor = 1.e6
-            self.pointsBetweenPoleAndEquator = self.gridDefinitionTemplate[17]
-            self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
-            self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
-            self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
-            self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
-            if reggrid:
-                self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
-                if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
-                    self.gridlengthXDirection = -self.gridlengthXDirection
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
-            if self.gridDefinitionTemplateNumber == 41:
-                self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
-                self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
-                self.anglePoleRotation = self.gridDefinitionTemplate[21]
+        #    # Gaussian Grid
+        #    scalefact = float(self.gridDefinitionTemplate[9])
+        #    if self.gridDefinitionTemplate[10] == 4294967295:
+        #        self.gridDefinitionTemplate[10] = -1
+        #    divisor = float(self.gridDefinitionTemplate[10])
+        #    if scalefact == 0: scalefact = 1.
+        #    if divisor <= 0: divisor = 1.e6
+        #    self.pointsBetweenPoleAndEquator = self.gridDefinitionTemplate[17]
+        #    self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
+        #    self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
+        #    self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
+        #    self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
+        #    if reggrid:
+        #        self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
+        #        if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
+        #            self.gridlengthXDirection = -self.gridlengthXDirection
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        #    if self.gridDefinitionTemplateNumber == 41:
+        #        self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
+        #        self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
+        #        self.anglePoleRotation = self.gridDefinitionTemplate[21]
+            pass
         elif self.gridDefinitionTemplateNumber == 50:
-            # Spectral Coefficients
-            self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
-            self.scanModeFlags = [None,None,None,None]
+        #    # Spectral Coefficients
+        #    self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
+        #    self.scanModeFlags = [None,None,None,None]
+            pass
         elif self.gridDefinitionTemplateNumber == 90:
-            # Near-sided Vertical Perspective Satellite Projection
-            self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
-            self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
-            self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
-            dx = self.gridDefinitionTemplate[12]
-            dy = self.gridDefinitionTemplate[13]
-            # if lat_0 is equator, it's a geostationary view.
-            if self.proj4_lat_0 == 0.: # if lat_0 is equator, it's a
-                self.proj4_proj = 'geos'
-            # general case of 'near-side perspective projection' (untested)
-            else:
-                self.proj4_proj = 'nsper'
-                msg = 'Only geostationary perspective is supported. Lat/Lon values returned by grid method may be incorrect.'
-                warnings.warn(msg)
-            # latitude of horizon on central meridian
-            lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
-            # longitude of horizon on equator
-            latmax = 90.-(180./np.pi)*np.arcsin(self.earthMinorAxis/self.proj4_h)
-            # truncate to nearest thousandth of a degree (to make sure
-            # they aren't slightly over the horizon)
-            latmax = int(1000*latmax)/1000.
-            lonmax = int(1000*lonmax)/1000.
-            # h is measured from surface of earth at equator.
-            self.proj4_h = self.proj4_h - self.earthMajorAxis
-            # width and height of visible projection
-            P = pyproj.Proj(proj=self.proj4_proj,\
-                            a=self.earthMajorAxis,b=self.earthMinorAxis,\
-                            lat_0=0,lon_0=0,h=self.proj4_h)
-            x1,y1 = P(0.,latmax)
-            x2,y2 = P(lonmax,0.)
-            width = 2*x2
-            height = 2*y1
-            self.gridlengthXDirection = width/dx
-            self.gridlengthYDirection = height/dy
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+        #    # Near-sided Vertical Perspective Satellite Projection
+        #    self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
+        #    self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
+        #    self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
+        #    dx = self.gridDefinitionTemplate[12]
+        #    dy = self.gridDefinitionTemplate[13]
+        #    # if lat_0 is equator, it's a geostationary view.
+        #    if self.proj4_lat_0 == 0.: # if lat_0 is equator, it's a
+        #        self.proj4_proj = 'geos'
+        #    # general case of 'near-side perspective projection' (untested)
+        #    else:
+        #        self.proj4_proj = 'nsper'
+        #        msg = 'Only geostationary perspective is supported. Lat/Lon values returned by grid method may be incorrect.'
+        #        warnings.warn(msg)
+        #    # latitude of horizon on central meridian
+        #    lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
+        #    # longitude of horizon on equator
+        #    latmax = 90.-(180./np.pi)*np.arcsin(self.earthMinorAxis/self.proj4_h)
+        #    # truncate to nearest thousandth of a degree (to make sure
+        #    # they aren't slightly over the horizon)
+        #    latmax = int(1000*latmax)/1000.
+        #    lonmax = int(1000*lonmax)/1000.
+        #    # h is measured from surface of earth at equator.
+        #    self.proj4_h = self.proj4_h - self.earthMajorAxis
+        #    # width and height of visible projection
+        #    P = pyproj.Proj(proj=self.proj4_proj,\
+        #                    a=self.earthMajorAxis,b=self.earthMinorAxis,\
+        #                    lat_0=0,lon_0=0,h=self.proj4_h)
+        #    x1,y1 = P(0.,latmax)
+        #    x2,y2 = P(lonmax,0.)
+        #    width = 2*x2
+        #    height = 2*y1
+        #    self.gridlengthXDirection = width/dx
+        #    self.gridlengthYDirection = height/dy
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 110:
-            # Azimuthal Equidistant
-            self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
-            self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
-            self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
-            self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
-            self.proj4_proj = 'aeqd'
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+        #    # Azimuthal Equidistant
+        #    self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
+        #    self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
+        #    self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
+        #    self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
+        #    self.proj4_proj = 'aeqd'
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
+            pass
         elif self.gridDefinitionTemplateNumber == 204:
-            # Curvilinear Orthogonal
-            self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+        #    # Curvilinear Orthogonal
+        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
+            pass
         else:
             errmsg = 'Unsupported Grid Definition Template Number - 3.%i' % self.gridDefinitionTemplateNumber.value
             raise ValueError(errmsg)
@@ -1789,3 +1831,29 @@ class Grib2Metadata():
         return self.value <= other
     def __contains__(self,other):
         return other in self.definition
+
+
+def grib2_message_creator(gdtn): #,pdtn,drtn):
+    """
+    Dynamically create Grib2Message class inheriting from supported
+    grid definition, product definition, and data representation
+    templates.  Each template is a dataclass with class variable
+    definitions for each attribute related to that template.
+
+    Parameters
+    ----------
+
+    **`gdtn : int`**:
+
+    Grid Definition Template Number.
+
+    **`pdtn : int`**:
+
+    Product Definition Template Number.
+
+    **`drtn : int`**:
+
+    Data Representation Template Number.
+    """
+    msg = templates.add_grid_definition_template(Grib2Message,gdtn)
+    return msg
