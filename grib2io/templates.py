@@ -34,6 +34,8 @@ class Discipline:
         return _grib2io.Grib2Metadata(obj._section0[2],table='0.0')
     def __set__(self, obj, value):
         obj._section0[2] = value
+        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+                                                     obj._productDefinitionTemplate[1],isNDFD=obj.isNDFD)
 
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 1 metadata.
@@ -555,6 +557,159 @@ def add_grid_definition_template(cls,gdtn):
     else:
         errmsg = 'Unsupported Grid Definition Template Number - 3.%i' % (gdtn)
         raise ValueError(errmsg)
+
+# ---------------------------------------------------------------------------------------- 
+# Descriptor Classes for Section 4 metadata.
+# ---------------------------------------------------------------------------------------- 
+class ProductDefinitionTemplateNumber:
+    def __get__(self, obj, objtype=None):
+        return _grib2io.Grib2Metadata(obj._productDefinitionTemplateNumber,table='4.0')
+    def __set__(self, obj, value):
+        #obj._productDefinitionTemplateNumber = value
+        pass
+
+class ProductDefinitionTemplate:
+    """ This has __get__ and __set__ and therefore implements the descriptor protocol """
+    def __set_name__(self, owner, name):
+        self.private_name = f'_{name}'
+    def __get__(self, obj, objtype=None):
+        return getattr(obj, self.private_name)
+    def __set__(self, obj, value):
+        setattr(obj, self.private_name, value)
+
+class ParameterCategory:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[0]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[0] = value
+        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+                                                     obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+
+class ParameterNumber:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[1]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[1] = value
+        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+                                                     obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+
+class FullName:
+    def __get__(self, obj, objtype=None):
+        return obj._varinfo[0]
+    def __set__(self, obj, value):
+        #obj._varinfo[0] = value
+        pass
+
+class Units:
+    def __get__(self, obj, objtype=None):
+        return obj._varinfo[1]
+    def __set__(self, obj, value):
+        #obj._varinfo[1] = value
+        pass
+
+class ShortName:
+    def __get__(self, obj, objtype=None):
+        return obj._varinfo[2]
+    def __set__(self, obj, value):
+        #obj._varinfo[2] = value
+        pass
+
+class TypeOfGeneratingProcess:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._productDefinitionTemplate[2],table='4.3')
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[2] = value
+        
+class BackgroundGeneratingProcessIdentifier:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[3]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[3] = value
+
+class GeneratingProcess:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._productDefinitionTemplate[4],table='generating_process')
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[4] = value
+
+class UnitOfTimeRange:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._productDefinitionTemplate[7],table='4.4')
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[7] = value
+
+class LeadTime:
+    def __get__(self, obj, objtype=None):
+        return utils.getleadtime(obj._section1,obj._productDefinitionTemplateNumber,
+                                 obj._productDefinitionTemplate)
+    def __set__(self, obj, value):
+        pass
+
+class TypeOfFirstFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return _grib2io.Grib2Metadata(obj._productDefinitionTemplate[9],table='4.5')
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[9] = value
+
+class ScaleFactorOfFirstFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[10]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[10] = value
+
+class ScaledValueOfFirstFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[11]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[11] = value
+
+class UnitOfFirstFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._fixedsfc1info[1]
+    def __set__(self, obj, value):
+        pass
+
+class ValueOfFirstFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[11]/(10.**obj._productDefinitionTemplate[10])
+    def __set__(self, obj, value):
+        pass
+
+class TypeOfSecondFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return _grib2io.Grib2Metadata(obj._productDefinitionTemplate[12],table='4.5')
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[12] = value
+
+class ScaleFactorOfSecondFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[13]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[13] = value
+
+class ScaledValueOfSecondFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[14]
+    def __set__(self, obj, value):
+        obj._productDefinitionTemplate[14] = value
+
+class UnitOfSecondFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._fixedsfc2info[1]
+    def __set__(self, obj, value):
+        pass
+
+class ValueOfSecondFixedSurface:
+    def __get__(self, obj, objtype=None):
+        return obj._productDefinitionTemplate[14]/(10.**obj._productDefinitionTemplate[13])
+    def __set__(self, obj, value):
+        pass
+
+class Level:
+    def __get__(self, obj, objtype=None):
+        return tables.get_wgrib2_level_string(*obj._productDefinitionTemplate[9:15])
+    def __set__(self, obj, value):
+        pass
 
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 5 metadata.

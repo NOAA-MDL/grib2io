@@ -556,6 +556,30 @@ class Grib2Message:
     earthMajorAxis = templates.EarthMajorAxis()
     earthMinorAxis = templates.EarthMinorAxis()
 
+    productDefinitionTemplateNumber = templates.ProductDefinitionTemplateNumber()
+    productDefinitionTemplate: list = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
+    parameterCategory = templates.ParameterCategory()
+    parameterNumber = templates.ParameterNumber()
+    fullName = templates.FullName()
+    units = templates.Units()
+    shortName = templates.ShortName()
+    typeOfGeneratingProcess = templates.TypeOfGeneratingProcess()
+    backgroundGeneratingProcessIdentifier = templates.BackgroundGeneratingProcessIdentifier()
+    generatingProcess = templates.GeneratingProcess()
+    unitOfTimeRange = templates.UnitOfTimeRange()
+    leadTime = templates.LeadTime()
+    typeOfFirstFixedSurface = templates.TypeOfFirstFixedSurface()
+    scaleFactorOfFirstFixedSurface = templates.ScaleFactorOfFirstFixedSurface()
+    unitOfFirstFixedSurface = templates.UnitOfFirstFixedSurface()
+    scaledValueOfFirstFixedSurface = templates.ScaledValueOfFirstFixedSurface()
+    valueOfFirstFixedSurface = templates.ValueOfFirstFixedSurface()
+    typeOfSecondFixedSurface = templates.TypeOfSecondFixedSurface()
+    scaleFactorOfSecondFixedSurface = templates.ScaleFactorOfSecondFixedSurface()
+    unitOfSecondFixedSurface = templates.UnitOfSecondFixedSurface()
+    scaledValueOfSecondFixedSurface = templates.ScaledValueOfSecondFixedSurface()
+    valueOfSecondFixedSurface = templates.ValueOfSecondFixedSurface()
+    level = templates.Level()
+
     resolutionAndComponentFlags = templates.ResolutionAndComponentFlags()
     ny = templates.Ny()
     nx = templates.Nx()
@@ -738,9 +762,17 @@ class Grib2Message:
             # Section 4 - Product Definition Section.
             elif sectnum == 4:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
-                self.productDefinitionTemplate = _pdt.tolist()
-                self.productDefinitionTemplateNumber = Grib2Metadata(int(_pdtn),table='4.0')
+                #self.productDefinitionTemplate = _pdt.tolist()
+                self._productDefinitionTemplate = _pdt.tolist() # NEW
+                #self.productDefinitionTemplateNumber = Grib2Metadata(int(_pdtn),table='4.0')
+                self._productDefinitionTemplateNumber = int(_pdtn) # NEW
                 self.coordinateList = _coordlst.tolist()
+                self._varinfo = tables.get_varinfo_from_table(self._section0[2],self._productDefinitionTemplate[0],
+                                                              self._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+                self._fixedsfc1info = [None, None] if self._productDefinitionTemplate[9] == 255 else \
+                                      tables.get_value_from_table(self._productDefinitionTemplate[9],'4.5')
+                self._fixedsfc2info = [None, None] if self._productDefinitionTemplate[12] == 255 else \
+                                      tables.get_value_from_table(self._productDefinitionTemplate[12],'4.5')
                 self._sections.append(4)
                 #self.md5[4] = _getmd5str([self.productDefinitionTemplateNumber]+self.productDefinitionTemplate)
 
@@ -1011,36 +1043,36 @@ class Grib2Message:
         # -------------------------------
 
         # Template 4.0 - NOTE: That is these attributes apply to other templates.
-        self.parameterCategory = self.productDefinitionTemplate[0]
-        self.parameterNumber = self.productDefinitionTemplate[1]
-        self.fullName,self.units,self.shortName = tables.get_varinfo_from_table(self.discipline.value,
-                                                                                self.parameterCategory,
-                                                                                self.parameterNumber,
-                                                                                isNDFD=self.isNDFD)
-        self.typeOfGeneratingProcess = Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
-        self.backgroundGeneratingProcessIdentifier = self.productDefinitionTemplate[3]
-        self.generatingProcess = Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
-        self.unitOfTimeRange = Grib2Metadata(self.productDefinitionTemplate[7],table='4.4')
-        self.leadTime = self.productDefinitionTemplate[8]
-        self.typeOfFirstFixedSurface = Grib2Metadata(self.productDefinitionTemplate[9],table='4.5')
-        self.scaleFactorOfFirstFixedSurface = self.productDefinitionTemplate[10]
-        self.unitOfFirstFixedSurface = self.typeOfFirstFixedSurface.definition[1]
-        self.scaledValueOfFirstFixedSurface = self.productDefinitionTemplate[11]
-        self.valueOfFirstFixedSurface = self.scaledValueOfFirstFixedSurface/(10.**self.scaleFactorOfFirstFixedSurface)
-        temp = tables.get_value_from_table(self.productDefinitionTemplate[12],'4.5')
-        if temp[0] == 'Missing' and temp[1] == 'unknown':
-            self.typeOfSecondFixedSurface = None
-            self.scaleFactorOfSecondFixedSurface = None
-            self.unitOfSecondFixedSurface = None
-            self.scaledValueOfSecondFixedSurface = None
-            self.valueOfSecondFixedSurface = None
-        else:
-            self.typeOfSecondFixedSurface = Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
-            self.scaleFactorOfSecondFixedSurface = self.productDefinitionTemplate[13]
-            self.unitOfSecondFixedSurface = self.typeOfSecondFixedSurface.definition[1]
-            self.scaledValueOfSecondFixedSurface = self.productDefinitionTemplate[14]
-            self.valueOfSecondFixedSurface = self.scaledValueOfSecondFixedSurface/(10.**self.scaleFactorOfSecondFixedSurface)
-        self.level = tables.get_wgrib2_level_string(*self.productDefinitionTemplate[9:15])
+        #self.parameterCategory = self.productDefinitionTemplate[0]
+        #self.parameterNumber = self.productDefinitionTemplate[1]
+        #self.fullName,self.units,self.shortName = tables.get_varinfo_from_table(self.discipline.value,
+        #                                                                        self.parameterCategory,
+        #                                                                        self.parameterNumber,
+        #                                                                        isNDFD=self.isNDFD)
+        #self.typeOfGeneratingProcess = Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
+        #self.backgroundGeneratingProcessIdentifier = self.productDefinitionTemplate[3]
+        #self.generatingProcess = Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
+        #self.unitOfTimeRange = Grib2Metadata(self.productDefinitionTemplate[7],table='4.4')
+        #self.leadTime = self.productDefinitionTemplate[8]
+        #self.typeOfFirstFixedSurface = Grib2Metadata(self.productDefinitionTemplate[9],table='4.5')
+        #self.scaleFactorOfFirstFixedSurface = self.productDefinitionTemplate[10]
+        #self.unitOfFirstFixedSurface = self.typeOfFirstFixedSurface.definition[1]
+        #self.scaledValueOfFirstFixedSurface = self.productDefinitionTemplate[11]
+        #self.valueOfFirstFixedSurface = self.scaledValueOfFirstFixedSurface/(10.**self.scaleFactorOfFirstFixedSurface)
+        #temp = tables.get_value_from_table(self.productDefinitionTemplate[12],'4.5')
+        #if temp[0] == 'Missing' and temp[1] == 'unknown':
+        #    self.typeOfSecondFixedSurface = None
+        #    self.scaleFactorOfSecondFixedSurface = None
+        #    self.unitOfSecondFixedSurface = None
+        #    self.scaledValueOfSecondFixedSurface = None
+        #    self.valueOfSecondFixedSurface = None
+        #else:
+        #    self.typeOfSecondFixedSurface = Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
+        #    self.scaleFactorOfSecondFixedSurface = self.productDefinitionTemplate[13]
+        #    self.unitOfSecondFixedSurface = self.typeOfSecondFixedSurface.definition[1]
+        #    self.scaledValueOfSecondFixedSurface = self.productDefinitionTemplate[14]
+        #    self.valueOfSecondFixedSurface = self.scaledValueOfSecondFixedSurface/(10.**self.scaleFactorOfSecondFixedSurface)
+        #self.level = tables.get_wgrib2_level_string(*self._productDefinitionTemplate[9:15])
 
         # Template 4.1 -
         if self.productDefinitionTemplateNumber == 1:
@@ -1199,9 +1231,9 @@ class Grib2Message:
                 raise ValueError(errmsg)
 
 
-        self.leadTime = utils.getleadtime(self.identificationSection,
-                                          self.productDefinitionTemplateNumber.value,
-                                          self.productDefinitionTemplate)
+        #self.leadTime = utils.getleadtime(self.identificationSection,
+        #                                  self.productDefinitionTemplateNumber.value,
+        #                                  self.productDefinitionTemplate)
 
         if self.productDefinitionTemplateNumber.value in [8,9,10,11,12]:
             self.dtEndOfTimePeriod = datetime.datetime(self.yearOfEndOfTimePeriod,self.monthOfEndOfTimePeriod,
@@ -1833,7 +1865,7 @@ class Grib2Metadata():
         return other in self.definition
 
 
-def grib2_message_creator(gdtn): #,pdtn,drtn):
+def grib2_message_creator(gdtn): #,pdtn) #,drtn):
     """
     Dynamically create Grib2Message class inheriting from supported
     grid definition, product definition, and data representation
@@ -1856,4 +1888,5 @@ def grib2_message_creator(gdtn): #,pdtn,drtn):
     Data Representation Template Number.
     """
     msg = templates.add_grid_definition_template(Grib2Message,gdtn)
+    #msg = templates.add_product_definition_template(msg,pdtn)
     return msg
