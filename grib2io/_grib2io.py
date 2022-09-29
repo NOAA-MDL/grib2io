@@ -171,7 +171,9 @@ class open():
                 return None
             self._filehandle.seek(self._index['offset'][key])
             #return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
-            return [grib2_message_creator(self._index['gridDefinitionTemplateNumber'][key])(msg=self._filehandle.read(self._index['size'][key]),
+            gdtn = self._index['gridDefinitionTemplateNumber'][key]
+            pdtn = self._index['productDefinitionTemplateNumber'][key]
+            return [grib2_message_creator(gdtn,pdtn)(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
                                  num=self._index['messageNumber'][key],
                                  decode=self.decode)]
@@ -318,7 +320,7 @@ class open():
                             self._index['ny'].append(int(_gdt[8]))
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
-                            self._index['typeOfFirstFixedSurface'].append(Grib2Metadata(_pdt[9],table='4.5').definition[0])
+                            self._index['typeOfFirstFixedSurface'].append(templates.Grib2Metadata(_pdt[9],table='4.5').definition[0])
                             scaleFactorOfFirstFixedSurface = _pdt[10]
                             scaledValueOfFirstFixedSurface = _pdt[11]
                             valueOfFirstFixedSurface = scaledValueOfFirstFixedSurface/(10.**scaleFactorOfFirstFixedSurface)
@@ -415,7 +417,9 @@ class open():
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
                 #msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
-                msgs.append(grib2_message_creator(self._index['gridDefinitionTemplateNumber'][n])(msg=self._filehandle.read(self._index['size'][n]),
+                gdtn = self._index['gridDefinitionTemplateNumber'][n]
+                pdtn = self._index['productDefinitionTemplateNumber'][n]
+                msgs.append(grib2_message_creator(gdtn,pdtn)(msg=self._filehandle.read(self._index['size'][n]),
                                          source=self,
                                          num=self._index['messageNumber'][n],
                                          decode=self.decode))
@@ -524,7 +528,7 @@ class open():
 
 
 @dataclass
-class Grib2Message:
+class Grib2MessageBase:
     section0: list = field(init=False,repr=True,default=templates.Grib2Section())
     section1: list = field(init=False,repr=True,default=templates.Grib2Section())
     #section2: list = field(init=False,repr=True,default=templates.Grib2Section())
@@ -736,7 +740,7 @@ class Grib2Message:
                 _gds,_gdt,_deflist,self._pos = g2clib.unpack3(self._msg,self._pos,np.empty)
                 #self.gridDefinitionSection = _gds.tolist()
                 self._gridDefinitionSection = _gds.tolist() #NEW
-          #     self.gridDefinitionTemplateNumber = Grib2Metadata(int(_gds[4]),table='3.1')
+          #     self.gridDefinitionTemplateNumber = templates.Grib2Metadata(int(_gds[4]),table='3.1')
                 #self.gridDefinitionTemplate = _gdt.tolist()
                 self._gridDefinitionTemplate = _gdt.tolist() #NEW
                 if self._gridDefinitionSection[4] in [50,51,52,1200]:
@@ -764,7 +768,7 @@ class Grib2Message:
                 _pdt,_pdtn,_coordlst,self._pos = g2clib.unpack4(self._msg,self._pos,np.empty)
                 #self.productDefinitionTemplate = _pdt.tolist()
                 self._productDefinitionTemplate = _pdt.tolist() # NEW
-                #self.productDefinitionTemplateNumber = Grib2Metadata(int(_pdtn),table='4.0')
+                #self.productDefinitionTemplateNumber = templates.Grib2Metadata(int(_pdtn),table='4.0')
                 self._productDefinitionTemplateNumber = int(_pdtn) # NEW
                 self.coordinateList = _coordlst.tolist()
                 self._varinfo = tables.get_varinfo_from_table(self._section0[2],self._productDefinitionTemplate[0],
@@ -780,7 +784,7 @@ class Grib2Message:
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
                 self.dataRepresentationTemplate = _drt.tolist()
-                self.dataRepresentationTemplateNumber = Grib2Metadata(int(_drtn),table='5.0')
+                self.dataRepresentationTemplateNumber = templates.Grib2Metadata(int(_drtn),table='5.0')
                 self.numberOfDataPoints = _npts
                 self._sections.append(5)
                 #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
@@ -819,14 +823,14 @@ class Grib2Message:
         """
 
         # Section 0 - Indictator Section
-        #self.discipline = Grib2Metadata(self.indicatorSection[2],table='0.0')
+        #self.discipline = templates.Grib2Metadata(self.indicatorSection[2],table='0.0')
 
         # Section 1 - Indentification Section.
-        #self.originatingCenter = Grib2Metadata(self.identificationSection[0],table='originating_centers')
-        #self.originatingSubCenter = Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
-        #self.masterTableInfo = Grib2Metadata(self.identificationSection[2],table='1.0')
-        #self.localTableInfo = Grib2Metadata(self.identificationSection[3],table='1.1')
-        #self.significanceOfReferenceTime = Grib2Metadata(self.identificationSection[4],table='1.2')
+        #self.originatingCenter = templates.Grib2Metadata(self.identificationSection[0],table='originating_centers')
+        #self.originatingSubCenter = templates.Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
+        #self.masterTableInfo = templates.Grib2Metadata(self.identificationSection[2],table='1.0')
+        #self.localTableInfo = templates.Grib2Metadata(self.identificationSection[3],table='1.1')
+        #self.significanceOfReferenceTime = templates.Grib2Metadata(self.identificationSection[4],table='1.2')
         #self.year = self.identificationSection[5]
         #self.month = self.identificationSection[6]
         #self.day = self.identificationSection[7]
@@ -837,8 +841,8 @@ class Grib2Message:
         #self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
         #                                         hour=self.hour,minute=self.minute,
         #                                         second=self.second)
-        #self.productionStatus = Grib2Metadata(self.identificationSection[11],table='1.3')
-        #self.typeOfData = Grib2Metadata(self.identificationSection[12],table='1.4')
+        #self.productionStatus = templates.Grib2Metadata(self.identificationSection[11],table='1.3')
+        #self.typeOfData = templates.Grib2Metadata(self.identificationSection[12],table='1.4')
 
         # ----------------------------
         # Section 3 -- Grid Definition
@@ -1049,12 +1053,12 @@ class Grib2Message:
         #                                                                        self.parameterCategory,
         #                                                                        self.parameterNumber,
         #                                                                        isNDFD=self.isNDFD)
-        #self.typeOfGeneratingProcess = Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
+        #self.typeOfGeneratingProcess = templates.Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
         #self.backgroundGeneratingProcessIdentifier = self.productDefinitionTemplate[3]
-        #self.generatingProcess = Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
-        #self.unitOfTimeRange = Grib2Metadata(self.productDefinitionTemplate[7],table='4.4')
+        #self.generatingProcess = templates.Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
+        #self.unitOfTimeRange = templates.Grib2Metadata(self.productDefinitionTemplate[7],table='4.4')
         #self.leadTime = self.productDefinitionTemplate[8]
-        #self.typeOfFirstFixedSurface = Grib2Metadata(self.productDefinitionTemplate[9],table='4.5')
+        #self.typeOfFirstFixedSurface = templates.Grib2Metadata(self.productDefinitionTemplate[9],table='4.5')
         #self.scaleFactorOfFirstFixedSurface = self.productDefinitionTemplate[10]
         #self.unitOfFirstFixedSurface = self.typeOfFirstFixedSurface.definition[1]
         #self.scaledValueOfFirstFixedSurface = self.productDefinitionTemplate[11]
@@ -1067,7 +1071,7 @@ class Grib2Message:
         #    self.scaledValueOfSecondFixedSurface = None
         #    self.valueOfSecondFixedSurface = None
         #else:
-        #    self.typeOfSecondFixedSurface = Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
+        #    self.typeOfSecondFixedSurface = templates.Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
         #    self.scaleFactorOfSecondFixedSurface = self.productDefinitionTemplate[13]
         #    self.unitOfSecondFixedSurface = self.typeOfSecondFixedSurface.definition[1]
         #    self.scaledValueOfSecondFixedSurface = self.productDefinitionTemplate[14]
@@ -1076,155 +1080,155 @@ class Grib2Message:
 
         # Template 4.1 -
         if self.productDefinitionTemplateNumber == 1:
-            self.typeOfEnsembleForecast = Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
-            self.perturbationNumber = self.productDefinitionTemplate[16]
-            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
-
+        #    self.typeOfEnsembleForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
+        #    self.perturbationNumber = self.productDefinitionTemplate[16]
+        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+            pass
         # Template 4.2 -
         elif self.productDefinitionTemplateNumber == 2:
-            self.typeOfDerivedForecast = Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
-            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
-
+        #    self.typeOfDerivedForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
+        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+            pass
         # Template 4.5 -
         elif self.productDefinitionTemplateNumber == 5:
-            self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
-            self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-            self.typeOfProbability = Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
-            self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
-            self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
-            self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
-            self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            if self.scaleFactorOfThresholdLowerLimit == -127 and \
-               self.scaledValueOfThresholdLowerLimit == 255:
-                self.thresholdLowerLimit = 0.0
-            else:
-                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
-            if self.scaleFactorOfThresholdUpperLimit == -127 and \
-               self.scaledValueOfThresholdUpperLimit == 255:
-                self.thresholdUpperLimit = 0.0
-            else:
-                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
-            self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
-
+        #    self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+        #    self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+        #    self.typeOfProbability = templates.Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
+        #    self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
+        #    self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
+        #    self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
+        #    self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
+        #    if self.scaleFactorOfThresholdLowerLimit == -127 and \
+        #       self.scaledValueOfThresholdLowerLimit == 255:
+        #        self.thresholdLowerLimit = 0.0
+        #    else:
+        #        self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+        #    if self.scaleFactorOfThresholdUpperLimit == -127 and \
+        #       self.scaledValueOfThresholdUpperLimit == 255:
+        #        self.thresholdUpperLimit = 0.0
+        #    else:
+        #        self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
+        #    self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
+            pass
         # Template 4.6 -
         elif self.productDefinitionTemplateNumber == 6:
-            self.percentileValue = self.productDefinitionTemplate[15]
-
+        #    self.percentileValue = self.productDefinitionTemplate[15]
+            pass
         # Template 4.8 -
         elif self.productDefinitionTemplateNumber == 8:
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[21]
-            self.numberOfMissingValues = self.productDefinitionTemplate[22]
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[23],table='4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[24],table='4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[25],table='4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[26]
-            self.unitOfTimeRangeOfSuccessiveFields = Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[28]
-
+        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
+        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        #    self.numberOfTimeRanges = self.productDefinitionTemplate[21]
+        #    self.numberOfMissingValues = self.productDefinitionTemplate[22]
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[23],table='4.10')
+        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[24],table='4.11')
+        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.4')
+        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[26]
+        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
+        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[28]
+            pass
         # Template 4.9 -
         elif self.productDefinitionTemplateNumber == 9:
-            self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
-            self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-            self.typeOfProbability = Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
-            self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
-            self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
-            self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
-            self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-            if self.scaleFactorOfThresholdLowerLimit == -127 and \
-               self.scaledValueOfThresholdLowerLimit == 255:
-                self.thresholdLowerLimit = 0.0
-            else:
-                self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
-            if self.scaleFactorOfThresholdUpperLimit == -127 and \
-               self.scaledValueOfThresholdUpperLimit == 255:
-                self.thresholdUpperLimit = 0.0
-            else:
-                self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
-            self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[24]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[25]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[26]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[27]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[28]
-            self.numberOfMissingValues = self.productDefinitionTemplate[29]
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[30],table='4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[31],table='4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[32],table='4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[33]
-            self.unitOfTimeRangeOfSuccessiveFields = Grib2Metadata(self.productDefinitionTemplate[34],table='4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[35]
-
+        #    self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
+        #    self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
+        #    self.typeOfProbability = templates.Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
+        #    self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
+        #    self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
+        #    self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
+        #    self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
+        #    if self.scaleFactorOfThresholdLowerLimit == -127 and \
+        #       self.scaledValueOfThresholdLowerLimit == 255:
+        #        self.thresholdLowerLimit = 0.0
+        #    else:
+        #        self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
+        #    if self.scaleFactorOfThresholdUpperLimit == -127 and \
+        #       self.scaledValueOfThresholdUpperLimit == 255:
+        #        self.thresholdUpperLimit = 0.0
+        #    else:
+        #        self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
+        #    self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
+        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[24]
+        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[25]
+        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[26]
+        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[27]
+        #    self.numberOfTimeRanges = self.productDefinitionTemplate[28]
+        #    self.numberOfMissingValues = self.productDefinitionTemplate[29]
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[30],table='4.10')
+        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[31],table='4.11')
+        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[32],table='4.4')
+        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[33]
+        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[34],table='4.4')
+        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[35]
+            pass
         # Template 4.10 -
         elif self.productDefinitionTemplateNumber == 10:
-            self.percentileValue = self.productDefinitionTemplate[15]
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[22]
-            self.numberOfMissingValues = self.productDefinitionTemplate[23]
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[24],table='4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[25],table='4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[26],table='4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[27]
-            self.unitOfTimeRangeOfSuccessiveFields = Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[29]
-
+        #    self.percentileValue = self.productDefinitionTemplate[15]
+        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
+        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        #    self.numberOfTimeRanges = self.productDefinitionTemplate[22]
+        #    self.numberOfMissingValues = self.productDefinitionTemplate[23]
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[24],table='4.10')
+        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.11')
+        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.4')
+        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[27]
+        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
+        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[29]
+            pass
         # Template 4.11 -
         elif self.productDefinitionTemplateNumber == 11:
-            self.typeOfEnsembleForecast = Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
-            self.perturbationNumber = self.productDefinitionTemplate[16]
-            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[23]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[24]
-            self.numberOfMissingValues = self.productDefinitionTemplate[25]
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[26],table='4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[27],table='4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[29]
-            self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[30],table='4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[31]
-
+        #    self.typeOfEnsembleForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
+        #    self.perturbationNumber = self.productDefinitionTemplate[16]
+        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
+        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[23]
+        #    self.numberOfTimeRanges = self.productDefinitionTemplate[24]
+        #    self.numberOfMissingValues = self.productDefinitionTemplate[25]
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.10')
+        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.11')
+        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
+        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[29]
+        #    self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[30],table='4.4')
+        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[31]
+            pass
         # Template 4.12 -
         elif self.productDefinitionTemplateNumber == 12:
-            self.typeOfDerivedForecast = Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
-            self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
-            self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-            self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-            self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-            self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-            self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-            self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-            self.numberOfTimeRanges = self.productDefinitionTemplate[23]
-            self.numberOfMissingValues = self.productDefinitionTemplate[24]
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[25],table='4.10')
-            self.typeOfTimeIncrementOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[26],table='4.11')
-            self.unitOfTimeRangeOfStatisticalProcess = Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
-            self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
-            self.unitOfTimeRangeOfSuccessiveFields = Grib2Metadata(self.productDefinitionTemplate[29],table='4.4')
-            self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
-
+        #    self.typeOfDerivedForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
+        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
+        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[17]
+        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[18]
+        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[19]
+        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[20]
+        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[21]
+        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[22]
+        #    self.numberOfTimeRanges = self.productDefinitionTemplate[23]
+        #    self.numberOfMissingValues = self.productDefinitionTemplate[24]
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.10')
+        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.11')
+        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
+        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
+        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[29],table='4.4')
+        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
+            pass
         # Template 4.15 -
         elif self.productDefinitionTemplateNumber == 15:
-            self.statisticalProcess = Grib2Metadata(self.productDefinitionTemplate[15],table='4.10')
-            self.typeOfSpatialProcessing = Grib2Metadata(self.productDefinitionTemplate[16],table='4.15')
-            self.numberOfDataPointsForSpatialProcessing = self.productDefinitionTemplate[17]
-
+        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.10')
+        #    self.typeOfSpatialProcessing = templates.Grib2Metadata(self.productDefinitionTemplate[16],table='4.15')
+        #    self.numberOfDataPointsForSpatialProcessing = self.productDefinitionTemplate[17]
+            pass
         else:
             if self.productDefinitionTemplateNumber != 0:
                 errmsg = 'Unsupported Product Definition Template Number - 4.%i' % self.productDefinitionTemplateNumber.value
@@ -1251,7 +1255,7 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
+       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
 
         # Template 5.2 - Complex Packing
         elif self.dataRepresentationTemplateNumber == 2:
@@ -1259,9 +1263,9 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-            self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
+       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+            self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
+            self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
             if self.typeOfValues == 0:
                 # Floating Point
                 self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
@@ -1284,9 +1288,9 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.groupSplitMethod = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-            self.typeOfMissingValue = Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
+       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+            self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
+            self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
             if self.typeOfValues == 0:
                 # Floating Point
                 self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
@@ -1302,12 +1306,12 @@ class Grib2Message:
             self.groupLengthIncrement = self.dataRepresentationTemplate[13]
             self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
             self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
-            self.spatialDifferenceOrder = Grib2Metadata(self.dataRepresentationTemplate[16],table='5.6')
+            self.spatialDifferenceOrder = templates.Grib2Metadata(self.dataRepresentationTemplate[16],table='5.6')
             self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
 
         # Template 5.4 - IEEE Floating Point Data
         elif self.dataRepresentationTemplateNumber == 4:
-            self.precision = Grib2Metadata(self.dataRepresentationTemplate[0],table='5.7')
+            self.precision = templates.Grib2Metadata(self.dataRepresentationTemplate[0],table='5.7')
 
         # Template 5.40 - JPEG2000 Compression
         elif self.dataRepresentationTemplateNumber == 40:
@@ -1315,8 +1319,8 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.typeOfCompression = Grib2Metadata(self.dataRepresentationTemplate[5],table='5.40')
+       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+            self.typeOfCompression = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.40')
             self.targetCompressionRatio = self.dataRepresentationTemplate[6]
 
         # Template 5.41 - PNG Compression
@@ -1325,7 +1329,7 @@ class Grib2Message:
             self.binScaleFactor = self.dataRepresentationTemplate[1]
             self.decScaleFactor = self.dataRepresentationTemplate[2]
             self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
 
         else:
             errmsg = 'Unsupported Data Representation Definition Template Number - 5.%i' % self.dataRepresentationTemplateNumber.value
@@ -1824,48 +1828,7 @@ class Grib2Message:
             return self._msg
 
 
-class Grib2Metadata():
-    """
-    Class to hold GRIB2 metadata both as numeric code value as stored in
-    GRIB2 and its plain langauge definition.
-
-    **`value : int`**
-
-    GRIB2 metadata integer code value.
-
-    **`table : str, optional`**
-
-    GRIB2 table to lookup the `value`. Default is None.
-    """
-    __slots__ = ('definition','table','value')
-    def __init__(self, value, table=None):
-        self.value = value
-        self.table = table
-        if self.table is None:
-            self.definition = None
-        else:
-            self.definition = tables.get_value_from_table(self.value,self.table)
-    def __call__(self):
-        return self.value
-    def __repr__(self):
-        return '%s(%d, table = %s)' % (self.__class__.__name__,self.value,self.table)
-    def __str__(self):
-        return '%d - %s' % (self.value,self.definition)
-    def __eq__(self,other):
-        return self.value == other
-    def __gt__(self,other):
-        return self.value > other
-    def __ge__(self,other):
-        return self.value >= other
-    def __lt__(self,other):
-        return self.value < other
-    def __le__(self,other):
-        return self.value <= other
-    def __contains__(self,other):
-        return other in self.definition
-
-
-def grib2_message_creator(gdtn): #,pdtn) #,drtn):
+def grib2_message_creator(gdtn,pdtn): #,drtn):
     """
     Dynamically create Grib2Message class inheriting from supported
     grid definition, product definition, and data representation
@@ -1887,6 +1850,10 @@ def grib2_message_creator(gdtn): #,pdtn) #,drtn):
 
     Data Representation Template Number.
     """
-    msg = templates.add_grid_definition_template(Grib2Message,gdtn)
+    #msg = templates.add_grid_definition_template(Grib2Message,gdtn)
     #msg = templates.add_product_definition_template(msg,pdtn)
-    return msg
+    Gdt = templates.gdt_class_by_gdtn(gdtn)
+    Pdt = templates.pdt_class_by_pdtn(pdtn)
+    class Grib2Message(Grib2MessageBase, Gdt, Pdt):
+        pass
+    return Grib2Message
