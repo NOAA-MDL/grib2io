@@ -242,7 +242,7 @@ class Ny:
         pass
 
 class ScanModeFlags:
-    _key = {0:18, 1:18, 10:15, 20:17, 30:17, 31:17, 40:18, 41:18, 90:16, 110:15, 203:18, 204:18, 205:18, 32768:18, 32769:18}:
+    _key = {0:18, 1:18, 10:15, 20:17, 30:17, 31:17, 40:18, 41:18, 90:16, 110:15, 203:18, 204:18, 205:18, 32768:18, 32769:18}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         if gdtn == 50:
@@ -253,7 +253,7 @@ class ScanModeFlags:
         pass
 
 class ResolutionAndComponentFlags:
-    _key = {0:13, 1:13, 10:11, 20:11, 30:11, 31:11, 40:13, 41:13, 90:11, 110:11, 203:13, 204:13, 205:13, 32768:13, 32769:13}:
+    _key = {0:13, 1:13, 10:11, 20:11, 30:11, 31:11, 40:13, 41:13, 90:11, 110:11, 203:13, 204:13, 205:13, 32768:13, 32769:13}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         if gdtn == 50:
@@ -264,7 +264,7 @@ class ResolutionAndComponentFlags:
         pass
 
 class LatitudeFirstGridpoint:
-    _key = {0:11, 1:11, 10:9, 20:9, 30:9, 31:9, 40:11, 41:11, 110:9, 203:11, 204:11, 205:11, 32768:11, 32769:11}:
+    _key = {0:11, 1:11, 10:9, 20:9, 30:9, 31:9, 40:11, 41:11, 110:9, 203:11, 204:11, 205:11, 32768:11, 32769:11}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
@@ -273,7 +273,7 @@ class LatitudeFirstGridpoint:
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeFirstGridpoint:
-    _key = {0:12, 1:12, 10:10, 20:10, 30:10, 31:10, 40:12, 41:12, 110:10, 203:12, 204:12, 205:12, 32768:12, 32769:12}:
+    _key = {0:12, 1:12, 10:10, 20:10, 30:10, 31:10, 40:12, 41:12, 110:10, 203:12, 204:12, 205:12, 32768:12, 32769:12}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
@@ -282,7 +282,7 @@ class LongitudeFirstGridpoint:
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LatitudeLastGridpoint:
-    _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}:
+    _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
@@ -291,7 +291,7 @@ class LatitudeLastGridpoint:
         obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeLastGridpoint:
-    _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}:
+    _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
@@ -300,7 +300,7 @@ class LongitudeLastGridpoint:
         obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class GridLengthXDirection:
-    _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}:
+    _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor
@@ -309,7 +309,7 @@ class GridLengthXDirection:
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class GridLengthYDirection:
-    _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}:
+    _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor
@@ -318,7 +318,7 @@ class GridLengthYDirection:
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class LatitudeSouthernPole:
-    _key = {1:19, 30:20, 31:20, 41:19}:
+    _key = {1:19, 30:20, 31:20, 41:19}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
@@ -327,7 +327,7 @@ class LatitudeSouthernPole:
         obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeSouthernPole:
-    _key = {1:20, 30:21, 31:21, 41:20}:
+    _key = {1:20, 30:21, 31:21, 41:20}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
         return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
