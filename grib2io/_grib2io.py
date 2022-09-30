@@ -132,6 +132,11 @@ class open():
         """
         return self
 
+    def __len__(self):
+        """
+        """
+        return self.messages
+
 
     def __next__(self):
         """
@@ -173,7 +178,8 @@ class open():
             #return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
             gdtn = self._index['gridDefinitionTemplateNumber'][key]
             pdtn = self._index['productDefinitionTemplateNumber'][key]
-            return [grib2_message_creator(gdtn,pdtn)(msg=self._filehandle.read(self._index['size'][key]),
+            drtn = self._index['dataRepresentationTemplateNumber'][key]
+            return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][key]),
                                  source=self,
                                  num=self._index['messageNumber'][key],
                                  decode=self.decode)]
@@ -419,7 +425,8 @@ class open():
                 #msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
                 gdtn = self._index['gridDefinitionTemplateNumber'][n]
                 pdtn = self._index['productDefinitionTemplateNumber'][n]
-                msgs.append(grib2_message_creator(gdtn,pdtn)(msg=self._filehandle.read(self._index['size'][n]),
+                drtn = self._index['dataRepresentationTemplateNumber'][key]
+                msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][n]),
                                          source=self,
                                          num=self._index['messageNumber'][n],
                                          decode=self.decode))
@@ -559,6 +566,10 @@ class Grib2MessageBase:
     earthRadius = templates.EarthRadius()
     earthMajorAxis = templates.EarthMajorAxis()
     earthMinorAxis = templates.EarthMinorAxis()
+    resolutionAndComponentFlags = templates.ResolutionAndComponentFlags()
+    ny = templates.Ny()
+    nx = templates.Nx()
+    scanModeFlags = templates.ScanModeFlags()
 
     productDefinitionTemplateNumber = templates.ProductDefinitionTemplateNumber()
     productDefinitionTemplate: list = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
@@ -584,10 +595,9 @@ class Grib2MessageBase:
     valueOfSecondFixedSurface = templates.ValueOfSecondFixedSurface()
     level = templates.Level()
 
-    resolutionAndComponentFlags = templates.ResolutionAndComponentFlags()
-    ny = templates.Ny()
-    nx = templates.Nx()
-    scanModeFlags = templates.ScanModeFlags()
+    numberOfDataPoints = templates.NumberOfDataPoints()
+    dataRepresentationTemplateNumber = templates.DataRepresentationTemplateNumber()
+    dataRepresentationTemplate: list = field(init=False,repr=True,default=templates.DataRepresentationTemplate())
     typeOfValues = templates.TypeOfValues()
 
 #    def __new__(cls, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None, sectemplates=None):
@@ -743,6 +753,8 @@ class Grib2MessageBase:
           #     self.gridDefinitionTemplateNumber = templates.Grib2Metadata(int(_gds[4]),table='3.1')
                 #self.gridDefinitionTemplate = _gdt.tolist()
                 self._gridDefinitionTemplate = _gdt.tolist() #NEW
+                self._dxsign = 1.0
+                self._dysign = 1.0
                 if self._gridDefinitionSection[4] in [50,51,52,1200]:
                     self._earthparams = None
                 else:
@@ -755,6 +767,10 @@ class Grib2MessageBase:
                     if self._llscalefactor == 0: self._llscalefactor = 1.
                     if self._lldivisor <= 0: self._lldivisor = 1.e6
                     self._xydivisor = self._lldivisor
+                    if self._gridDefinitionTemplate[11] > self._gridDefinitionTemplate[14]:
+                        self._dysign = -1.0
+                    if self._gridDefinitionTemplate[12] > self._gridDefinitionTemplate[15]:
+                        self._dxsign = -1.0
                 else:
                     self._lldivisor = 1.e6
                     self._xydivisor = 1.e3
@@ -783,9 +799,9 @@ class Grib2MessageBase:
             # Section 5 - Data Representation Section.
             elif sectnum == 5:
                 _drt,_drtn,_npts,self._pos = g2clib.unpack5(self._msg,self._pos,np.empty)
-                self.dataRepresentationTemplate = _drt.tolist()
-                self.dataRepresentationTemplateNumber = templates.Grib2Metadata(int(_drtn),table='5.0')
-                self.numberOfDataPoints = _npts
+                self._dataRepresentationTemplate = _drt.tolist()
+                self._dataRepresentationTemplateNumber = int(_drtn)
+                self._numberOfDataPoints = _npts
                 self._sections.append(5)
                 #self.md5[5] = _getmd5str([self.dataRepresentationTemplateNumber]+self.dataRepresentationTemplate)
 
@@ -1251,86 +1267,86 @@ class Grib2MessageBase:
 
         # Template 5.0 - Simple Packing
         if self.dataRepresentationTemplateNumber == 0:
-            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-            self.binScaleFactor = self.dataRepresentationTemplate[1]
-            self.decScaleFactor = self.dataRepresentationTemplate[2]
-            self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
-
+        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
+        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
+        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
+        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
+        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
+            pass
         # Template 5.2 - Complex Packing
         elif self.dataRepresentationTemplateNumber == 2:
-            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-            self.binScaleFactor = self.dataRepresentationTemplate[1]
-            self.decScaleFactor = self.dataRepresentationTemplate[2]
-            self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-            self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            if self.typeOfValues == 0:
-                # Floating Point
-                self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-                self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
-            elif self.typeOfValues == 1:
-                # Integer
-                self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
-                self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
-            self.nGroups = self.dataRepresentationTemplate[9]
-            self.refGroupWidth = self.dataRepresentationTemplate[10]
-            self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
-            self.refGroupLength = self.dataRepresentationTemplate[12]
-            self.groupLengthIncrement = self.dataRepresentationTemplate[13]
-            self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
-            self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
-
+        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
+        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
+        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
+        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
+        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+        #    self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
+        #    self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
+        #    if self.typeOfValues == 0:
+        #        # Floating Point
+        #        self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        #        self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+        #    elif self.typeOfValues == 1:
+        #        # Integer
+        #        self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
+        #        self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
+        #    self.nGroups = self.dataRepresentationTemplate[9]
+        #    self.refGroupWidth = self.dataRepresentationTemplate[10]
+        #    self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+        #    self.refGroupLength = self.dataRepresentationTemplate[12]
+        #    self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+        #    self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+        #    self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+            pass
         # Template 5.3 - Complex Packing and Spatial Differencing
         elif self.dataRepresentationTemplateNumber == 3:
-            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-            self.binScaleFactor = self.dataRepresentationTemplate[1]
-            self.decScaleFactor = self.dataRepresentationTemplate[2]
-            self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-            self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-            if self.typeOfValues == 0:
-                # Floating Point
-                self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-                self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
-            elif self.typeOfValues == 1:
-                # Integer
-                self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
-                self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
-            self.nGroups = self.dataRepresentationTemplate[9]
-            self.refGroupWidth = self.dataRepresentationTemplate[10]
-            self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
-            self.refGroupLength = self.dataRepresentationTemplate[12]
-            self.groupLengthIncrement = self.dataRepresentationTemplate[13]
-            self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
-            self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
-            self.spatialDifferenceOrder = templates.Grib2Metadata(self.dataRepresentationTemplate[16],table='5.6')
-            self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
-
+        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
+        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
+        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
+        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
+        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+        #    self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
+        #    self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
+        #    if self.typeOfValues == 0:
+        #        # Floating Point
+        #        self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
+        #        self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
+        #    elif self.typeOfValues == 1:
+        #        # Integer
+        #        self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
+        #        self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
+        #    self.nGroups = self.dataRepresentationTemplate[9]
+        #    self.refGroupWidth = self.dataRepresentationTemplate[10]
+        #    self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
+        #    self.refGroupLength = self.dataRepresentationTemplate[12]
+        #    self.groupLengthIncrement = self.dataRepresentationTemplate[13]
+        #    self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
+        #    self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
+        #    self.spatialDifferenceOrder = templates.Grib2Metadata(self.dataRepresentationTemplate[16],table='5.6')
+        #    self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
+            pass
         # Template 5.4 - IEEE Floating Point Data
         elif self.dataRepresentationTemplateNumber == 4:
-            self.precision = templates.Grib2Metadata(self.dataRepresentationTemplate[0],table='5.7')
-
+        #    self.precision = templates.Grib2Metadata(self.dataRepresentationTemplate[0],table='5.7')
+            pass
         # Template 5.40 - JPEG2000 Compression
         elif self.dataRepresentationTemplateNumber == 40:
-            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-            self.binScaleFactor = self.dataRepresentationTemplate[1]
-            self.decScaleFactor = self.dataRepresentationTemplate[2]
-            self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            self.typeOfCompression = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.40')
-            self.targetCompressionRatio = self.dataRepresentationTemplate[6]
-
+        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
+        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
+        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
+        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
+        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+        #    self.typeOfCompression = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.40')
+        #    self.targetCompressionRatio = self.dataRepresentationTemplate[6]
+            pass
         # Template 5.41 - PNG Compression
         elif self.dataRepresentationTemplateNumber == 41:
-            self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-            self.binScaleFactor = self.dataRepresentationTemplate[1]
-            self.decScaleFactor = self.dataRepresentationTemplate[2]
-            self.nBitsPacking = self.dataRepresentationTemplate[3]
-       #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-
+        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
+        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
+        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
+        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
+        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
+            pass
         else:
             errmsg = 'Unsupported Data Representation Definition Template Number - 5.%i' % self.dataRepresentationTemplateNumber.value
             raise ValueError(errmsg)
@@ -1482,13 +1498,12 @@ class Grib2MessageBase:
         Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
         longitudes in units of degrees.
         """
-        gdtnum = self.gridDefinitionTemplateNumber
+        gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
-        self.projparams = {}
-        if self.earthMajorAxis is not None: self.projparams['a']=self.earthMajorAxis
-        if self.earthMajorAxis is not None: self.projparams['b']=self.earthMinorAxis
-        if gdtnum == 0:
+        if self.earthMajorAxis is not None: self.projParameters['a']=self.earthMajorAxis
+        if self.earthMajorAxis is not None: self.projParameters['b']=self.earthMinorAxis
+        if gdtn == 0:
             # Regular lat/lon grid
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
@@ -1501,9 +1516,8 @@ class Grib2MessageBase:
             #    lons = lons[::-1]
             #if not self.scanModeFlags[1]:
             #    lats = lats[::-1]
-            self.projparams['proj'] = 'cyl'
             lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
-        elif gdtnum == 40: # Gaussian grid (only works for global!)
+        elif gdtn == 40: # Gaussian grid (only works for global!)
             from utils.gauss_grids import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
@@ -1524,63 +1538,26 @@ class Grib2MessageBase:
             #    lons = lons[::-1]
             #if not self.scanModeFlags[1]:
             #    lats = lats[::-1]
-            self.projparams['proj'] = 'cyl'
-            lons,lats = np.meshgrid(lons,lats) # make 2-d arrays
-        elif gdtnum in [10,20,30,31,110]:
+            lons,lats = np.meshgrid(lons,lats)
+        elif gdtn in [10,20,30,31,110]:
             # Mercator, Lambert Conformal, Stereographic, Albers Equal Area, Azimuthal Equidistant
             dx,dy = self.gridlengthXDirection, self.gridlengthYDirection
             lon1,lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
-            if gdtnum == 10: # Mercator.
-                self.projparams['lat_ts']=self.proj4_lat_ts
-                self.projparams['proj']=self.proj4_proj
-                self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(self.projparams)
-                llcrnrx, llcrnry = pj(lon1,lat1)
-                x = llcrnrx+dx*np.arange(self.nx)
-                y = llcrnry+dy*np.arange(self.ny)
-                x,y = np.meshgrid(x, y)
-                lons,lats = pj(x, y, inverse=True)
-            elif gdtnum == 20:  # Stereographic
-                self.projparams['lat_ts']=self.proj4_lat_ts
-                self.projparams['proj']=self.proj4_proj
-                self.projparams['lat_0']=self.proj4_lat_0
-                self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(self.projparams)
-                llcrnrx, llcrnry = pj(lon1,lat1)
-                x = llcrnrx+dx*np.arange(self.nx)
-                y = llcrnry+dy*np.arange(self.ny)
-                x,y = np.meshgrid(x, y)
-                lons,lats = pj(x, y, inverse=True)
-            elif gdtnum in [30,31]: # Lambert, Albers
-                self.projparams['lat_1']=self.proj4_lat_1
-                self.projparams['lat_2']=self.proj4_lat_2
-                self.projparams['proj']=self.proj4_proj
-                self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(self.projparams)
-                llcrnrx, llcrnry = pj(lon1,lat1)
-                x = llcrnrx+dx*np.arange(self.nx)
-                y = llcrnry+dy*np.arange(self.ny)
-                x,y = np.meshgrid(x, y)
-                lons,lats = pj(x, y, inverse=True)
-            elif gdtnum == 110: # Azimuthal Equidistant
-                self.projparams['proj']=self.proj4_proj
-                self.projparams['lat_0']=self.proj4_lat_0
-                self.projparams['lon_0']=self.proj4_lon_0
-                pj = pyproj.Proj(self.projparams)
-                llcrnrx, llcrnry = pj(lon1,lat1)
-                x = llcrnrx+dx*np.arange(self.nx)
-                y = llcrnry+dy*np.arange(self.ny)
-                x,y = np.meshgrid(x, y)
-                lons,lats = pj(x, y, inverse=True)
-        elif gdtnum == 90:
+            pj = pyproj.Proj(self.projParameters)
+            llcrnrx, llcrnry = pj(lon1,lat1)
+            x = llcrnrx+dx*np.arange(self.nx)
+            y = llcrnry+dy*np.arange(self.ny)
+            x,y = np.meshgrid(x, y)
+            lons,lats = pj(x, y, inverse=True)
+        elif gdtn == 90:
             # Satellite Projection
             dx = self.gridlengthXDirection
             dy = self.gridlengthYDirection
-            self.projparams['proj']=self.proj4_proj
-            self.projparams['lon_0']=self.proj4_lon_0
-            self.projparams['lat_0']=self.proj4_lat_0
-            self.projparams['h']=self.proj4_h
-            pj = pyproj.Proj(self.projparams)
+            #self.projParameters['proj']=self.proj4_proj
+            #self.projParameters['lon_0']=self.proj4_lon_0
+            #self.projParameters['lat_0']=self.proj4_lat_0
+            #self.projParameters['h']=self.proj4_h
+            pj = pyproj.Proj(self.projParameters)
             x = dx*np.indices((self.ny,self.nx),'f')[1,:,:]
             x -= 0.5*x.max()
             y = dy*np.indices((self.ny,self.nx),'f')[0,:,:]
@@ -1828,7 +1805,7 @@ class Grib2MessageBase:
             return self._msg
 
 
-def grib2_message_creator(gdtn,pdtn): #,drtn):
+def grib2_message_creator(gdtn,pdtn,drtn):
     """
     Dynamically create Grib2Message class inheriting from supported
     grid definition, product definition, and data representation
@@ -1850,10 +1827,9 @@ def grib2_message_creator(gdtn,pdtn): #,drtn):
 
     Data Representation Template Number.
     """
-    #msg = templates.add_grid_definition_template(Grib2Message,gdtn)
-    #msg = templates.add_product_definition_template(msg,pdtn)
     Gdt = templates.gdt_class_by_gdtn(gdtn)
     Pdt = templates.pdt_class_by_pdtn(pdtn)
-    class Grib2Message(Grib2MessageBase, Gdt, Pdt):
+    Drt = templates.drt_class_by_drtn(drtn)
+    class Grib2Message(Grib2MessageBase, Gdt, Pdt, Drt):
         pass
     return Grib2Message
