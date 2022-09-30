@@ -1166,7 +1166,7 @@ class PriMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj._dataRepresentationTemplate[7]) if obj._dataRepresentationTemplate[6] in [1,2] else None
-        elif self.typeOfValues == 1:
+        elif obj.typeOfValues == 1:
             return obj._dataRepresentationTemplate[7] if obj._dataRepresentationTemplate[6] in [1,2] else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
@@ -1179,7 +1179,7 @@ class SecMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj._dataRepresentationTemplate[8]) if obj._dataRepresentationTemplate[6] in [1,2] else None
-        elif self.typeOfValues == 1:
+        elif obj.typeOfValues == 1:
             return obj._dataRepresentationTemplate[8] if obj._dataRepresentationTemplate[6] in [1,2] else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
