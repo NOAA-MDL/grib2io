@@ -285,34 +285,34 @@ class LatitudeLastGridpoint:
     _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
+        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeLastGridpoint:
     _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
+        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
-class GridLengthXDirection:
+class GridlengthXDirection:
     _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor
+        return (obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dxsign
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
 
-class GridLengthYDirection:
+class GridlengthYDirection:
     _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor
+        return (obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dysign
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
         obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
@@ -321,19 +321,19 @@ class LatitudeSouthernPole:
     _key = {1:19, 30:20, 31:20, 41:19}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
+        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeSouthernPole:
     _key = {1:20, 30:21, 31:21, 41:20}
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[l]/obj._lldivisor
+        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
         gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[l] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class AnglePoleRotation:
     _key = {1:21, 41:21}
@@ -399,22 +399,26 @@ class SpectralFunctionParameters:
 class ProjParameters:
     def __get__(self, obj, objtype=None):
         gdtn = obj._gridDefinitionSection[-1]
+        if gdtn == 0:
+            return {'proj':'eqc'}
         if gdtn == 10:
-            return dict({'proj':'merc','lat_ts':obj.latitudeTrueScale,
-                         'lon_0':0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)})
+            return {'proj':'merc','lat_ts':obj.latitudeTrueScale,
+                    'lon_0':0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)}
         elif gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
             elif obj.projectionCenterFlag == 1:
                 lat0 = -90.0
-            return dict({'proj':'stere','lat_ts':obj.latitudeTrueScale,
-                         'lat_0':lat0,'lon_0':obj.gridOrientation})
+            return {'proj':'stere','lat_ts':obj.latitudeTrueScale,
+                    'lat_0':lat0,'lon_0':obj.gridOrientation}
         elif gdtn == 30:
-            return dict({'proj':'lcc','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                         'lat_0':obj.latitudeTrueScale,'lon_0':gridOrientation})
+            return {'proj':'lcc','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
+                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation}
         elif gdtn == 31:
-            return dict({'proj':'aea','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                         'lat_0':obj.latitudeTrueScale,'lon_0':gridOrientation})
+            return {'proj':'aea','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
+                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation}
+        elif gdtn == 40:
+            return {'proj':'eqc'}
     def __set__(self, obj, value):
         pass
 
@@ -424,8 +428,8 @@ class GridDefinitionTemplate0():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
 
 @dataclass(init=False)
 class GridDefinitionTemplate1():
@@ -433,8 +437,8 @@ class GridDefinitionTemplate1():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
@@ -447,8 +451,8 @@ class GridDefinitionTemplate10():
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
     gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projParameters: dict = field(init=False, repr=True, default=ProjParameters())
 
 @dataclass(init=False)
@@ -457,8 +461,8 @@ class GridDefinitionTemplate20():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
     gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
     projParameters: dict = field(init=False, repr=True, default=ProjParameters())
 
@@ -468,8 +472,8 @@ class GridDefinitionTemplate30():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
     gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
     standardLatitude1: float = field(init=False, repr=True, default=StandardLatitude1())
     standardLatitude2: float = field(init=False, repr=True, default=StandardLatitude2())
@@ -483,8 +487,8 @@ class GridDefinitionTemplate31():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
     gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
     standardLatitude1: float = field(init=False, repr=True, default=StandardLatitude1())
     standardLatitude2: float = field(init=False, repr=True, default=StandardLatitude2())
@@ -497,8 +501,8 @@ class GridDefinitionTemplate40():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
 
 @dataclass(init=False)
 class GridDefinitionTemplate41():
@@ -506,8 +510,8 @@ class GridDefinitionTemplate41():
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridLengthXDirection: float = field(init=False, repr=True, default=GridLengthXDirection())
-    gridLengthYDirection: float = field(init=False, repr=True, default=GridLengthYDirection())
+    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
@@ -1094,10 +1098,239 @@ def pdt_class_by_pdtn(pdtn):
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 5 metadata.
 # ---------------------------------------------------------------------------------------- 
+class NumberOfDataPoints:
+    def __get__(self, obj, objtype=None):
+        return obj._numberOfDataPoints
+    def __set__(self, obj, value):
+        pass
+
+class DataRepresentationTemplateNumber:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplateNumber,table='5.0')
+    def __set__(self, obj, value):
+        #obj._dataRepresentationTemplateNumber = value
+        pass
+
+class DataRepresentationTemplate:
+    """ This has __get__ and __set__ and therefore implements the descriptor protocol """
+    def __set_name__(self, owner, name):
+        self.private_name = f'_{name}'
+    def __get__(self, obj, objtype=None):
+        return getattr(obj, self.private_name)
+    def __set__(self, obj, value):
+        setattr(obj, self.private_name, value)
+
+class RefValue:
+    def __get__(self, obj, objtype=None):
+        return utils.ieee_int_to_float(obj._dataRepresentationTemplate[0])
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[0] = utils.ieee_float_to_int(float(value))
+
+class BinScaleFactor:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[1]
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[1] = value
+
+class DecScaleFactor:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[2]
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[2] = value
+
+class NBitsPacking:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[3]
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[3] = value
+
 class TypeOfValues:
     def __get__(self, obj, objtype=None):
-        if obj.dataRepresentationTemplateNumber == 0:
-            # Template 5.0 - Simple Packing
-            return Grib2Metadata(obj.dataRepresentationTemplate[3],table='5.1')
-        else:
-            return Grib2Metadata(obj.dataRepresentationTemplate[4],table='5.1')
+        return Grib2Metadata(obj.dataRepresentationTemplate[4],table='5.1')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[4] = value
+
+class GroupSplitMethod:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplate[5],table='5.4')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[5] = value
+
+class TypeOfMissingValue:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplate[6],table='5.5')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[5] = value
+
+class PriMissingValue:
+    def __get__(self, obj, objtype=None):
+        if obj.typeOfValues == 0:
+            return utils.ieee_int_to_float(obj._dataRepresentationTemplate[7]) if obj._dataRepresentationTemplate[6] in [1,2] else None
+        elif self.typeOfValues == 1:
+            return obj._dataRepresentationTemplate[7] if obj._dataRepresentationTemplate[6] in [1,2] else None
+    def __set__(self, obj, value):
+        if obj.typeOfValues == 0:
+            obj._dataRepresentationTemplate[7] = utils.ieee_float_to_int(value)
+        elif self.typeOfValues == 1:
+            obj._dataRepresentationTemplate[7] = int(value)
+        obj._dataRepresentationTemplate[6] = 1
+
+class SecMissingValue:
+    def __get__(self, obj, objtype=None):
+        if obj.typeOfValues == 0:
+            return utils.ieee_int_to_float(obj._dataRepresentationTemplate[8]) if obj._dataRepresentationTemplate[6] in [1,2] else None
+        elif self.typeOfValues == 1:
+            return obj._dataRepresentationTemplate[8] if obj._dataRepresentationTemplate[6] in [1,2] else None
+    def __set__(self, obj, value):
+        if obj.typeOfValues == 0:
+            obj._dataRepresentationTemplate[8] = utils.ieee_float_to_int(value)
+        elif self.typeOfValues == 1:
+            obj._dataRepresentationTemplate[8] = int(value)
+        obj._dataRepresentationTemplate[6] = 2
+
+class NGroups:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[9]
+    def __set__(self, obj, value):
+        pass
+
+class RefGroupWidth:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[10]
+    def __set__(self, obj, value):
+        pass
+
+class NBitsGroupWidth:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[11]
+    def __set__(self, obj, value):
+        pass
+
+class RefGroupLength:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[12]
+    def __set__(self, obj, value):
+        pass
+
+class GroupLengthIncrement:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[13]
+    def __set__(self, obj, value):
+        pass
+
+class LengthOfLastGroup:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[14]
+    def __set__(self, obj, value):
+        pass
+
+class NBitsScaledGroupLength:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[15]
+    def __set__(self, obj, value):
+        pass
+
+class SpatialDifferenceOrder:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplate[16],table='5.6')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[16] = value
+
+class NBytesSpatialDifference:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[17]
+    def __set__(self, obj, value):
+        pass
+
+class Precision:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplate[0],table='5.7')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[0] = value
+
+class TypeOfCompression:
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj._dataRepresentationTemplate[5],table='5.40')
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[5] = value
+
+class TargetCompressionRatio:
+    def __get__(self, obj, objtype=None):
+        return obj._dataRepresentationTemplate[6]
+    def __set__(self, obj, value):
+        pass
+
+@dataclass(init=False)
+class DataRepresentationTemplate0():
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+
+@dataclass(init=False)
+class DataRepresentationTemplate2():
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    typeOfMissingValue: Grib2Metadata = field(init=False, repr=True, default=TypeOfMissingValue())
+    priMissingValue: [float, int] = field(init=False, repr=True, default=PriMissingValue())
+    secMissingValue: [float, int] = field(init=False, repr=True, default=SecMissingValue())
+    nGroups: int = field(init=False, repr=True, default=NGroups())
+    refGroupWidth: int = field(init=False, repr=True, default=RefGroupWidth())
+    nBitsGroupWidth: int = field(init=False, repr=True, default=NBitsGroupWidth())
+    refGroupLength: int = field(init=False, repr=True, default=RefGroupLength())
+    groupLengthIncrement: int = field(init=False, repr=True, default=GroupLengthIncrement())
+    lengthOfLastGroup: int = field(init=False, repr=True, default=LengthOfLastGroup())
+    nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
+
+@dataclass(init=False)
+class DataRepresentationTemplate3():
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    typeOfMissingValue: Grib2Metadata = field(init=False, repr=True, default=TypeOfMissingValue())
+    priMissingValue: [float, int] = field(init=False, repr=True, default=PriMissingValue())
+    secMissingValue: [float, int] = field(init=False, repr=True, default=SecMissingValue())
+    nGroups: int = field(init=False, repr=True, default=NGroups())
+    refGroupWidth: int = field(init=False, repr=True, default=RefGroupWidth())
+    nBitsGroupWidth: int = field(init=False, repr=True, default=NBitsGroupWidth())
+    refGroupLength: int = field(init=False, repr=True, default=RefGroupLength())
+    groupLengthIncrement: int = field(init=False, repr=True, default=GroupLengthIncrement())
+    lengthOfLastGroup: int = field(init=False, repr=True, default=LengthOfLastGroup())
+    nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
+    spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=True, default=SpatialDifferenceOrder())
+    nBytesSpatialDifference: int = field(init=False, repr=True, default=NBytesSpatialDifference())
+
+@dataclass(init=False)
+class DataRepresentationTemplate4():
+    precision: Grib2Metadata = field(init=False, repr=True, default=Precision())
+
+@dataclass(init=False)
+class DataRepresentationTemplate40():
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    typeOfCompression: Grib2Metadata = field(init=False, repr=True, default=TypeOfCompression())
+    targetCompressionRatio: int = field(init=False, repr=True, default=TargetCompressionRatio())
+
+@dataclass(init=False)
+class DataRepresentationTemplate41():
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+
+_drt_by_drtn = {
+    0: DataRepresentationTemplate0,
+    2: DataRepresentationTemplate2,
+    3: DataRepresentationTemplate3,
+    4: DataRepresentationTemplate4,
+    40: DataRepresentationTemplate40,
+    41: DataRepresentationTemplate41,
+    }
+
+def drt_class_by_drtn(drtn):
+    return _drt_by_drtn[drtn]
