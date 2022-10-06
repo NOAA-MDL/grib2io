@@ -179,7 +179,9 @@ class open():
             gdtn = self._index['gridDefinitionTemplateNumber'][key]
             pdtn = self._index['productDefinitionTemplateNumber'][key]
             drtn = self._index['dataRepresentationTemplateNumber'][key]
-            return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][key]),
+            msgsize = self._index['dataOffset'][key]-self._index['offset'][key]
+            #return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][key]),
+            return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
                                  source=self,
                                  num=self._index['messageNumber'][key],
                                  decode=self.decode)]
@@ -254,7 +256,7 @@ class open():
                     _grbpos = 0
                     _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     _grbsec1 = _grbsec1.tolist()
-                    _refdate = utils.getdate(_grbsec1[5],_grbsec1[6],_grbsec1[7],_grbsec1[8])
+                    _refdate = datetime.datetime(*_grbsec1[5:11])
                     _isndfd = True if _grbsec1[0:2] == [8,65535] else False
                     secrange = range(2,8)
                     while 1:
@@ -425,8 +427,10 @@ class open():
                 #msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
                 gdtn = self._index['gridDefinitionTemplateNumber'][n]
                 pdtn = self._index['productDefinitionTemplateNumber'][n]
-                drtn = self._index['dataRepresentationTemplateNumber'][key]
-                msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][n]),
+                drtn = self._index['dataRepresentationTemplateNumber'][n]
+                msgsize = self._index['dataOffset'][n]-self._index['offset'][n]
+                #msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][n]),
+                msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
                                          source=self,
                                          num=self._index['messageNumber'][n],
                                          decode=self.decode))
@@ -475,13 +479,13 @@ class open():
         **`duration : int`** specifiying the time duration (in unit of hours) of a GRIB2 Message that is
         determined from a period of time.
 
-        **`leadTime : int`** specifying ending lead time (in units of hours) of a GRIB2 Message.
+        **`leadTime : datetime.timedelta`** object representing the lead time.
 
         **`level : str`** wgrib2-formatted layer/level string.
 
         **`percentile : int`** specify the percentile value.
 
-        **`refDate : int`** specifying the reference date in `YYYYMMDDHH[MMSS]` format.
+        **`refDate : datetime.datetime`** object representing then reference date.
 
         **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.
 
@@ -498,9 +502,9 @@ class open():
             elif k == 'level':
                 idxs[k] = np.where(np.array(self._index['levelString'])==v)[0]
             elif k == 'percentile':
-                tmp1 = np.where(np.asarray(self._index["productDefinitionTemplateNumber"])==6)[0]
-                tmp2 = np.where(np.asarray(self._index["productDefinitionTemplateNumber"])==10)[0]
-                idxs[k] = [i for i in np.concatenate((tmp1,tmp2)) if self._index["productDefinitionTemplate"][i][15]==v]
+                tmp1 = np.where(np.asarray(self._index['productDefinitionTemplateNumber'])==6)[0]
+                tmp2 = np.where(np.asarray(self._index['productDefinitionTemplateNumber'])==10)[0]
+                idxs[k] = [i for i in np.concatenate((tmp1,tmp2)) if self._index['productDefinitionTemplate'][i][15]==v]
                 del tmp1,tmp2
             elif k == 'refDate':
                 idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
@@ -555,6 +559,7 @@ class Grib2MessageBase:
     minute = templates.Minute()
     second = templates.Second()
     refDate = templates.RefDate()
+    validDate = templates.ValidDate()
     productionStatus = templates.ProductionStatus()
     typeOfData = templates.TypeOfData()
 
@@ -594,6 +599,7 @@ class Grib2MessageBase:
     scaledValueOfSecondFixedSurface = templates.ScaledValueOfSecondFixedSurface()
     valueOfSecondFixedSurface = templates.ValueOfSecondFixedSurface()
     level = templates.Level()
+    duration = templates.Duration()
 
     numberOfDataPoints = templates.NumberOfDataPoints()
     dataRepresentationTemplateNumber = templates.DataRepresentationTemplateNumber()
@@ -722,6 +728,10 @@ class Grib2MessageBase:
             if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777':
                 break
 
+            #print(self._pos,len(self._msg))
+            if self._pos == len(self._msg):
+                break
+
             # Read the length and section number.
             sectlen = struct.unpack('>i',self._msg[self._pos:self._pos+4])[0]
             prevsectnum = sectnum
@@ -831,525 +841,17 @@ class Grib2MessageBase:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg)
 
-        if self._decode: self.decode()
+        #if self._decode: self.decode()
 
     def decode(self):
         """
         Decode the unpacked GRIB2 integer-coded metadata in human-readable form and linked to GRIB2 tables.
         """
-
-        # Section 0 - Indictator Section
-        #self.discipline = templates.Grib2Metadata(self.indicatorSection[2],table='0.0')
-
-        # Section 1 - Indentification Section.
-        #self.originatingCenter = templates.Grib2Metadata(self.identificationSection[0],table='originating_centers')
-        #self.originatingSubCenter = templates.Grib2Metadata(self.identificationSection[1],table='originating_subcenters')
-        #self.masterTableInfo = templates.Grib2Metadata(self.identificationSection[2],table='1.0')
-        #self.localTableInfo = templates.Grib2Metadata(self.identificationSection[3],table='1.1')
-        #self.significanceOfReferenceTime = templates.Grib2Metadata(self.identificationSection[4],table='1.2')
-        #self.year = self.identificationSection[5]
-        #self.month = self.identificationSection[6]
-        #self.day = self.identificationSection[7]
-        #self.hour = self.identificationSection[8]
-        #self.minute = self.identificationSection[9]
-        #self.second = self.identificationSection[10]
-        #self.refDate = (self.year*1000000)+(self.month*10000)+(self.day*100)+self.hour
-        #self.dtReferenceDate = datetime.datetime(self.year,self.month,self.day,
-        #                                         hour=self.hour,minute=self.minute,
-        #                                         second=self.second)
-        #self.productionStatus = templates.Grib2Metadata(self.identificationSection[11],table='1.3')
-        #self.typeOfData = templates.Grib2Metadata(self.identificationSection[12],table='1.4')
-
-        # ----------------------------
-        # Section 3 -- Grid Definition
-        # ----------------------------
-
-        # Set shape of the Earth parameters
-        #if self.gridDefinitionTemplateNumber.value in [50,51,52,1200]:
-        #    earthparams = None
-        #else:
-        #    earthparams = tables.earth_params[str(self.gridDefinitionTemplate[0])]
-        #if earthparams['shape'] == 'spherical':
-        #    if earthparams['radius'] is None:
-        #        self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
-        #        self.earthMajorAxis = None
-        #        self.earthMinorAxis = None
-        #    else:
-        #        self.earthRadius = earthparams['radius']
-        #        self.earthMajorAxis = None
-        #        self.earthMinorAxis = None
-        #elif earthparams['shape'] == 'oblateSpheroid':
-        #    if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
-        #        self.earthRadius = self.gridDefinitionTemplate[2]/(10.**self.gridDefinitionTemplate[1])
-        #        self.earthMajorAxis = self.gridDefinitionTemplate[4]/(10.**self.gridDefinitionTemplate[3])
-        #        self.earthMinorAxis = self.gridDefinitionTemplate[6]/(10.**self.gridDefinitionTemplate[5])
-        #    else:
-        #        self.earthRadius = earthparams['radius']
-        #        self.earthMajorAxis = earthparams['major_axis']
-        #        self.earthMinorAxis = earthparams['minor_axis']
-
-        #reggrid = self.gridDefinitionSection[2] == 0 # self.gridDefinitionSection[2]=0 means regular 2-d grid
-       #if reggrid and self.gridDefinitionTemplateNumber.value not in [50,51,52,53,100,120,1000,1200]:
-       #    self.nx = self.gridDefinitionTemplate[7]
-       #    self.ny = self.gridDefinitionTemplate[8]
-        #if not reggrid and self.gridDefinitionTemplateNumber == 40:
-        #    # Reduced Gaussian Grid
-        #    self.ny = self.gridDefinitionTemplate[8]
-        if self.gridDefinitionTemplateNumber.value in [0,1,203,205,32768,32769]:
-        #    # Regular or Rotated Lat/Lon Grid
-        #    scalefact = float(self.gridDefinitionTemplate[9])
-        #    if self.gridDefinitionTemplate[10] == 4294967295:
-        #        self.gridDefinitionTemplate[10] = -1
-        #    divisor = float(self.gridDefinitionTemplate[10])
-        #    if scalefact == 0: scalefact = 1.
-        #    if divisor <= 0: divisor = 1.e6
-        #    #self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
-        #    self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
-        #    self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
-        #    self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
-        #    self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
-        #    self.gridlengthYDirection = scalefact*self.gridDefinitionTemplate[17]/divisor
-        #    if self.latitudeFirstGridpoint > self.latitudeLastGridpoint:
-        #        self.gridlengthYDirection = -self.gridlengthYDirection
-        #    if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
-        #        self.gridlengthXDirection = -self.gridlengthXDirection
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
-        #    if self.gridDefinitionTemplateNumber == 1:
-        #        self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
-        #        self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
-        #        self.anglePoleRotation = self.gridDefinitionTemplate[21]
-            pass
-        elif self.gridDefinitionTemplateNumber == 10:
-        #    # Mercator
-        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-        #    self.latitudeLastGridpoint = self.gridDefinitionTemplate[13]/1.e6
-        #    self.longitudeLastGridpoint = self.gridDefinitionTemplate[14]/1.e6
-        #    self.gridlengthXDirection = self.gridDefinitionTemplate[17]/1.e3
-        #    self.gridlengthYDirection= self.gridDefinitionTemplate[18]/1.e3
-        #    self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
-        #    self.proj4_lon_0 = 0.5*(self.longitudeFirstGridpoint+self.longitudeLastGridpoint)
-        #    self.proj4_proj = 'merc'
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 20:
-        #    # Stereographic
-        #    projflag = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0]
-        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-        #    self.proj4_lat_ts = self.gridDefinitionTemplate[12]/1.e6
-        #    if projflag == 0:
-        #        self.proj4_lat_0 = 90
-        #    elif projflag == 1:
-        #        self.proj4_lat_0 = -90
-        #    else:
-        #        raise ValueError('Invalid projection center flag = %s'%projflag)
-        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-        #    self.proj4_proj = 'stere'
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 30:
-        #    # Lambert Conformal
-        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-        #    self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
-        #    self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
-        #    self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
-        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-        #    self.proj4_proj = 'lcc'
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 31:
-        #    # Albers Equal Area
-        #    self.latitudeFirstGridpoint = self.gridDefinitionTemplate[9]/1.e6
-        #    self.longitudeFirstGridpoint = self.gridDefinitionTemplate[10]/1.e6
-        #    self.gridlengthXDirection = self.gridDefinitionTemplate[14]/1000.
-        #    self.gridlengthYDirection = self.gridDefinitionTemplate[15]/1000.
-        #    self.proj4_lat_1 = self.gridDefinitionTemplate[18]/1.e6
-        #    self.proj4_lat_2 = self.gridDefinitionTemplate[19]/1.e6
-        #    self.proj4_lat_0 = self.gridDefinitionTemplate[12]/1.e6
-        #    self.proj4_lon_0 = self.gridDefinitionTemplate[13]/1.e6
-        #    self.proj4_proj = 'aea'
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[17],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 40 or self.gridDefinitionTemplateNumber == 41:
-        #    # Gaussian Grid
-        #    scalefact = float(self.gridDefinitionTemplate[9])
-        #    if self.gridDefinitionTemplate[10] == 4294967295:
-        #        self.gridDefinitionTemplate[10] = -1
-        #    divisor = float(self.gridDefinitionTemplate[10])
-        #    if scalefact == 0: scalefact = 1.
-        #    if divisor <= 0: divisor = 1.e6
-        #    self.pointsBetweenPoleAndEquator = self.gridDefinitionTemplate[17]
-        #    self.latitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[11]/divisor
-        #    self.longitudeFirstGridpoint = scalefact*self.gridDefinitionTemplate[12]/divisor
-        #    self.latitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[14]/divisor
-        #    self.longitudeLastGridpoint = scalefact*self.gridDefinitionTemplate[15]/divisor
-        #    if reggrid:
-        #        self.gridlengthXDirection = scalefact*self.gridDefinitionTemplate[16]/divisor
-        #        if self.longitudeFirstGridpoint > self.longitudeLastGridpoint:
-        #            self.gridlengthXDirection = -self.gridlengthXDirection
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
-        #    if self.gridDefinitionTemplateNumber == 41:
-        #        self.latitudeSouthernPole = scalefact*self.gridDefinitionTemplate[19]/divisor
-        #        self.longitudeSouthernPole = scalefact*self.gridDefinitionTemplate[20]/divisor
-        #        self.anglePoleRotation = self.gridDefinitionTemplate[21]
-            pass
-        elif self.gridDefinitionTemplateNumber == 50:
-        #    # Spectral Coefficients
-        #    self.spectralFunctionParameters = (self.gridDefinitionTemplate[0],self.gridDefinitionTemplate[1],self.gridDefinitionTemplate[2])
-        #    self.scanModeFlags = [None,None,None,None]
-            pass
-        elif self.gridDefinitionTemplateNumber == 90:
-        #    # Near-sided Vertical Perspective Satellite Projection
-        #    self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
-        #    self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
-        #    self.proj4_h = self.earthMajorAxis * (self.gridDefinitionTemplate[18]/1.e6)
-        #    dx = self.gridDefinitionTemplate[12]
-        #    dy = self.gridDefinitionTemplate[13]
-        #    # if lat_0 is equator, it's a geostationary view.
-        #    if self.proj4_lat_0 == 0.: # if lat_0 is equator, it's a
-        #        self.proj4_proj = 'geos'
-        #    # general case of 'near-side perspective projection' (untested)
-        #    else:
-        #        self.proj4_proj = 'nsper'
-        #        msg = 'Only geostationary perspective is supported. Lat/Lon values returned by grid method may be incorrect.'
-        #        warnings.warn(msg)
-        #    # latitude of horizon on central meridian
-        #    lonmax = 90.-(180./np.pi)*np.arcsin(self.earthMajorAxis/self.proj4_h)
-        #    # longitude of horizon on equator
-        #    latmax = 90.-(180./np.pi)*np.arcsin(self.earthMinorAxis/self.proj4_h)
-        #    # truncate to nearest thousandth of a degree (to make sure
-        #    # they aren't slightly over the horizon)
-        #    latmax = int(1000*latmax)/1000.
-        #    lonmax = int(1000*lonmax)/1000.
-        #    # h is measured from surface of earth at equator.
-        #    self.proj4_h = self.proj4_h - self.earthMajorAxis
-        #    # width and height of visible projection
-        #    P = pyproj.Proj(proj=self.proj4_proj,\
-        #                    a=self.earthMajorAxis,b=self.earthMinorAxis,\
-        #                    lat_0=0,lon_0=0,h=self.proj4_h)
-        #    x1,y1 = P(0.,latmax)
-        #    x2,y2 = P(lonmax,0.)
-        #    width = 2*x2
-        #    height = 2*y1
-        #    self.gridlengthXDirection = width/dx
-        #    self.gridlengthYDirection = height/dy
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[16],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 110:
-        #    # Azimuthal Equidistant
-        #    self.proj4_lat_0 = self.gridDefinitionTemplate[9]/1.e6
-        #    self.proj4_lon_0 = self.gridDefinitionTemplate[10]/1.e6
-        #    self.gridlengthXDirection = self.gridDefinitionTemplate[12]/1000.
-        #    self.gridlengthYDirection = self.gridDefinitionTemplate[13]/1000.
-        #    self.proj4_proj = 'aeqd'
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[15],output=list)[0:4]
-            pass
-        elif self.gridDefinitionTemplateNumber == 204:
-        #    # Curvilinear Orthogonal
-        #    self.scanModeFlags = utils.int2bin(self.gridDefinitionTemplate[18],output=list)[0:4]
-            pass
-        else:
-            errmsg = 'Unsupported Grid Definition Template Number - 3.%i' % self.gridDefinitionTemplateNumber.value
-            raise ValueError(errmsg)
-
-        # -------------------------------
-        # Section 4 -- Product Definition
-        # -------------------------------
-
-        # Template 4.0 - NOTE: That is these attributes apply to other templates.
-        #self.parameterCategory = self.productDefinitionTemplate[0]
-        #self.parameterNumber = self.productDefinitionTemplate[1]
-        #self.fullName,self.units,self.shortName = tables.get_varinfo_from_table(self.discipline.value,
-        #                                                                        self.parameterCategory,
-        #                                                                        self.parameterNumber,
-        #                                                                        isNDFD=self.isNDFD)
-        #self.typeOfGeneratingProcess = templates.Grib2Metadata(self.productDefinitionTemplate[2],table='4.3')
-        #self.backgroundGeneratingProcessIdentifier = self.productDefinitionTemplate[3]
-        #self.generatingProcess = templates.Grib2Metadata(self.productDefinitionTemplate[4],table='generating_process')
-        #self.unitOfTimeRange = templates.Grib2Metadata(self.productDefinitionTemplate[7],table='4.4')
-        #self.leadTime = self.productDefinitionTemplate[8]
-        #self.typeOfFirstFixedSurface = templates.Grib2Metadata(self.productDefinitionTemplate[9],table='4.5')
-        #self.scaleFactorOfFirstFixedSurface = self.productDefinitionTemplate[10]
-        #self.unitOfFirstFixedSurface = self.typeOfFirstFixedSurface.definition[1]
-        #self.scaledValueOfFirstFixedSurface = self.productDefinitionTemplate[11]
-        #self.valueOfFirstFixedSurface = self.scaledValueOfFirstFixedSurface/(10.**self.scaleFactorOfFirstFixedSurface)
-        #temp = tables.get_value_from_table(self.productDefinitionTemplate[12],'4.5')
-        #if temp[0] == 'Missing' and temp[1] == 'unknown':
-        #    self.typeOfSecondFixedSurface = None
-        #    self.scaleFactorOfSecondFixedSurface = None
-        #    self.unitOfSecondFixedSurface = None
-        #    self.scaledValueOfSecondFixedSurface = None
-        #    self.valueOfSecondFixedSurface = None
-        #else:
-        #    self.typeOfSecondFixedSurface = templates.Grib2Metadata(self.productDefinitionTemplate[12],table='4.5')
-        #    self.scaleFactorOfSecondFixedSurface = self.productDefinitionTemplate[13]
-        #    self.unitOfSecondFixedSurface = self.typeOfSecondFixedSurface.definition[1]
-        #    self.scaledValueOfSecondFixedSurface = self.productDefinitionTemplate[14]
-        #    self.valueOfSecondFixedSurface = self.scaledValueOfSecondFixedSurface/(10.**self.scaleFactorOfSecondFixedSurface)
-        #self.level = tables.get_wgrib2_level_string(*self._productDefinitionTemplate[9:15])
-
-        # Template 4.1 -
-        if self.productDefinitionTemplateNumber == 1:
-        #    self.typeOfEnsembleForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
-        #    self.perturbationNumber = self.productDefinitionTemplate[16]
-        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
-            pass
-        # Template 4.2 -
-        elif self.productDefinitionTemplateNumber == 2:
-        #    self.typeOfDerivedForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
-        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
-            pass
-        # Template 4.5 -
-        elif self.productDefinitionTemplateNumber == 5:
-        #    self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
-        #    self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-        #    self.typeOfProbability = templates.Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
-        #    self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
-        #    self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
-        #    self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
-        #    self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-        #    if self.scaleFactorOfThresholdLowerLimit == -127 and \
-        #       self.scaledValueOfThresholdLowerLimit == 255:
-        #        self.thresholdLowerLimit = 0.0
-        #    else:
-        #        self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
-        #    if self.scaleFactorOfThresholdUpperLimit == -127 and \
-        #       self.scaledValueOfThresholdUpperLimit == 255:
-        #        self.thresholdUpperLimit = 0.0
-        #    else:
-        #        self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
-        #    self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
-            pass
-        # Template 4.6 -
-        elif self.productDefinitionTemplateNumber == 6:
-        #    self.percentileValue = self.productDefinitionTemplate[15]
-            pass
-        # Template 4.8 -
-        elif self.productDefinitionTemplateNumber == 8:
-        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[15]
-        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[16]
-        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-        #    self.numberOfTimeRanges = self.productDefinitionTemplate[21]
-        #    self.numberOfMissingValues = self.productDefinitionTemplate[22]
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[23],table='4.10')
-        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[24],table='4.11')
-        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.4')
-        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[26]
-        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
-        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[28]
-            pass
-        # Template 4.9 -
-        elif self.productDefinitionTemplateNumber == 9:
-        #    self.forecastProbabilityNumber = self.productDefinitionTemplate[15]
-        #    self.totalNumberOfForecastProbabilities = self.productDefinitionTemplate[16]
-        #    self.typeOfProbability = templates.Grib2Metadata(self.productDefinitionTemplate[17],table='4.9')
-        #    self.scaleFactorOfThresholdLowerLimit = self.productDefinitionTemplate[18]
-        #    self.scaledValueOfThresholdLowerLimit = self.productDefinitionTemplate[19]
-        #    self.scaleFactorOfThresholdUpperLimit = self.productDefinitionTemplate[20]
-        #    self.scaledValueOfThresholdUpperLimit = self.productDefinitionTemplate[21]
-        #    if self.scaleFactorOfThresholdLowerLimit == -127 and \
-        #       self.scaledValueOfThresholdLowerLimit == 255:
-        #        self.thresholdLowerLimit = 0.0
-        #    else:
-        #        self.thresholdLowerLimit =self.scaledValueOfThresholdLowerLimit/(10.**self.scaleFactorOfThresholdLowerLimit)
-        #    if self.scaleFactorOfThresholdUpperLimit == -127 and \
-        #       self.scaledValueOfThresholdUpperLimit == 255:
-        #        self.thresholdUpperLimit = 0.0
-        #    else:
-        #        self.thresholdUpperLimit = self.scaledValueOfThresholdUpperLimit/(10.**self.scaleFactorOfThresholdUpperLimit)
-        #    self.threshold = utils.get_wgrib2_prob_string(*self.productDefinitionTemplate[17:22])
-        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[23]
-        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[24]
-        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[25]
-        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[26]
-        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[27]
-        #    self.numberOfTimeRanges = self.productDefinitionTemplate[28]
-        #    self.numberOfMissingValues = self.productDefinitionTemplate[29]
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[30],table='4.10')
-        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[31],table='4.11')
-        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[32],table='4.4')
-        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[33]
-        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[34],table='4.4')
-        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[35]
-            pass
-        # Template 4.10 -
-        elif self.productDefinitionTemplateNumber == 10:
-        #    self.percentileValue = self.productDefinitionTemplate[15]
-        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[16]
-        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-        #    self.numberOfTimeRanges = self.productDefinitionTemplate[22]
-        #    self.numberOfMissingValues = self.productDefinitionTemplate[23]
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[24],table='4.10')
-        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.11')
-        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.4')
-        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[27]
-        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
-        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[29]
-            pass
-        # Template 4.11 -
-        elif self.productDefinitionTemplateNumber == 11:
-        #    self.typeOfEnsembleForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.6')
-        #    self.perturbationNumber = self.productDefinitionTemplate[16]
-        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[17]
-        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[23]
-        #    self.numberOfTimeRanges = self.productDefinitionTemplate[24]
-        #    self.numberOfMissingValues = self.productDefinitionTemplate[25]
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.10')
-        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.11')
-        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[28],table='4.4')
-        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[29]
-        #    self.unitOfTimeRangeOfSuccessiveFields = tables.get_value_from_table(self.productDefinitionTemplate[30],table='4.4')
-        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[31]
-            pass
-        # Template 4.12 -
-        elif self.productDefinitionTemplateNumber == 12:
-        #    self.typeOfDerivedForecast = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.7')
-        #    self.numberOfEnsembleForecasts = self.productDefinitionTemplate[16]
-        #    self.yearOfEndOfTimePeriod = self.productDefinitionTemplate[17]
-        #    self.monthOfEndOfTimePeriod = self.productDefinitionTemplate[18]
-        #    self.dayOfEndOfTimePeriod = self.productDefinitionTemplate[19]
-        #    self.hourOfEndOfTimePeriod = self.productDefinitionTemplate[20]
-        #    self.minuteOfEndOfTimePeriod = self.productDefinitionTemplate[21]
-        #    self.secondOfEndOfTimePeriod = self.productDefinitionTemplate[22]
-        #    self.numberOfTimeRanges = self.productDefinitionTemplate[23]
-        #    self.numberOfMissingValues = self.productDefinitionTemplate[24]
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[25],table='4.10')
-        #    self.typeOfTimeIncrementOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[26],table='4.11')
-        #    self.unitOfTimeRangeOfStatisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[27],table='4.4')
-        #    self.timeRangeOfStatisticalProcess = self.productDefinitionTemplate[28]
-        #    self.unitOfTimeRangeOfSuccessiveFields = templates.Grib2Metadata(self.productDefinitionTemplate[29],table='4.4')
-        #    self.timeIncrementOfSuccessiveFields = self.productDefinitionTemplate[30]
-            pass
-        # Template 4.15 -
-        elif self.productDefinitionTemplateNumber == 15:
-        #    self.statisticalProcess = templates.Grib2Metadata(self.productDefinitionTemplate[15],table='4.10')
-        #    self.typeOfSpatialProcessing = templates.Grib2Metadata(self.productDefinitionTemplate[16],table='4.15')
-        #    self.numberOfDataPointsForSpatialProcessing = self.productDefinitionTemplate[17]
-            pass
-        else:
-            if self.productDefinitionTemplateNumber != 0:
-                errmsg = 'Unsupported Product Definition Template Number - 4.%i' % self.productDefinitionTemplateNumber.value
-                raise ValueError(errmsg)
-
-
-        #self.leadTime = utils.getleadtime(self.identificationSection,
-        #                                  self.productDefinitionTemplateNumber.value,
-        #                                  self.productDefinitionTemplate)
-
         if self.productDefinitionTemplateNumber.value in [8,9,10,11,12]:
             self.dtEndOfTimePeriod = datetime.datetime(self.yearOfEndOfTimePeriod,self.monthOfEndOfTimePeriod,
                                      self.dayOfEndOfTimePeriod,hour=self.hourOfEndOfTimePeriod,
                                      minute=self.minuteOfEndOfTimePeriod,
                                      second=self.secondOfEndOfTimePeriod)
-
-        # --------------------------------
-        # Section 5 -- Data Representation
-        # --------------------------------
-
-        # Template 5.0 - Simple Packing
-        if self.dataRepresentationTemplateNumber == 0:
-        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
-        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
-        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
-        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[3],table='5.1')
-            pass
-        # Template 5.2 - Complex Packing
-        elif self.dataRepresentationTemplateNumber == 2:
-        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
-        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
-        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
-        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-        #    self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-        #    self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-        #    if self.typeOfValues == 0:
-        #        # Floating Point
-        #        self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-        #        self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
-        #    elif self.typeOfValues == 1:
-        #        # Integer
-        #        self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
-        #        self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
-        #    self.nGroups = self.dataRepresentationTemplate[9]
-        #    self.refGroupWidth = self.dataRepresentationTemplate[10]
-        #    self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
-        #    self.refGroupLength = self.dataRepresentationTemplate[12]
-        #    self.groupLengthIncrement = self.dataRepresentationTemplate[13]
-        #    self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
-        #    self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
-            pass
-        # Template 5.3 - Complex Packing and Spatial Differencing
-        elif self.dataRepresentationTemplateNumber == 3:
-        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
-        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
-        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
-        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-        #    self.groupSplitMethod = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.4')
-        #    self.typeOfMissingValue = templates.Grib2Metadata(self.dataRepresentationTemplate[6],table='5.5')
-        #    if self.typeOfValues == 0:
-        #        # Floating Point
-        #        self.priMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[7]) if self.dataRepresentationTemplate[6] in [1,2] else None
-        #        self.secMissingValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[8]) if self.dataRepresentationTemplate[6] == 2 else None
-        #    elif self.typeOfValues == 1:
-        #        # Integer
-        #        self.priMissingValue = self.dataRepresentationTemplate[7] if self.dataRepresentationTemplate[6] in [1,2] else None
-        #        self.secMissingValue = self.dataRepresentationTemplate[8] if self.dataRepresentationTemplate[6] == 2 else None
-        #    self.nGroups = self.dataRepresentationTemplate[9]
-        #    self.refGroupWidth = self.dataRepresentationTemplate[10]
-        #    self.nBitsGroupWidth = self.dataRepresentationTemplate[11]
-        #    self.refGroupLength = self.dataRepresentationTemplate[12]
-        #    self.groupLengthIncrement = self.dataRepresentationTemplate[13]
-        #    self.lengthOfLastGroup = self.dataRepresentationTemplate[14]
-        #    self.nBitsScaledGroupLength = self.dataRepresentationTemplate[15]
-        #    self.spatialDifferenceOrder = templates.Grib2Metadata(self.dataRepresentationTemplate[16],table='5.6')
-        #    self.nBytesSpatialDifference = self.dataRepresentationTemplate[17]
-            pass
-        # Template 5.4 - IEEE Floating Point Data
-        elif self.dataRepresentationTemplateNumber == 4:
-        #    self.precision = templates.Grib2Metadata(self.dataRepresentationTemplate[0],table='5.7')
-            pass
-        # Template 5.40 - JPEG2000 Compression
-        elif self.dataRepresentationTemplateNumber == 40:
-        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
-        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
-        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
-        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-        #    self.typeOfCompression = templates.Grib2Metadata(self.dataRepresentationTemplate[5],table='5.40')
-        #    self.targetCompressionRatio = self.dataRepresentationTemplate[6]
-            pass
-        # Template 5.41 - PNG Compression
-        elif self.dataRepresentationTemplateNumber == 41:
-        #    self.refValue = utils.ieee_int_to_float(self.dataRepresentationTemplate[0])
-        #    self.binScaleFactor = self.dataRepresentationTemplate[1]
-        #    self.decScaleFactor = self.dataRepresentationTemplate[2]
-        #    self.nBitsPacking = self.dataRepresentationTemplate[3]
-        #    self.typeOfValues = templates.Grib2Metadata(self.dataRepresentationTemplate[4],table='5.1')
-            pass
-        else:
-            errmsg = 'Unsupported Data Representation Definition Template Number - 5.%i' % self.dataRepresentationTemplateNumber.value
-            raise ValueError(errmsg)
 
 
     def data(self, fill_value=DEFAULT_FILL_VALUE, masked_array=True, expand=True, order=None,
@@ -1407,12 +909,21 @@ class Grib2MessageBase:
         ndpts = self.numberOfDataPoints
         gds = self.gridDefinitionSection
         ngrdpts = gds[1]
-        ipos = self._datapos
-        #print(f'before array unpack took: {datetime.datetime.now() - t1}')
-        t1 = datetime.datetime.now()
-        fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
-        #print(f'array unpack took: {datetime.datetime.now() - t1}')
-        t1 = datetime.datetime.now()
+        # TEST
+        #ipos = self._datapos
+        ##print(f'before array unpack took: {datetime.datetime.now() - t1}')
+        #t1 = datetime.datetime.now()
+        #fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
+        ##print(f'array unpack took: {datetime.datetime.now() - t1}')
+        #t1 = datetime.datetime.now()
+        # TEST
+        # NEW
+        self._source._filehandle.seek(self._source._index['dataOffset'][self._msgnum]) # Position file pointer to the beginning of data section.
+        ipos = 0
+        datasize = (self._source._index['size'][self._msgnum]+self._source._index['offset'][self._msgnum]) - \
+                   self._source._index['dataOffset'][self._msgnum]
+        fld1 = g2clib.unpack7(self._source._filehandle.read(datasize),gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
+        # NEW
         # Apply bitmap.
         if self.bitMapFlag == 0:
             fld = fill_value*np.ones(ngrdpts,'f')
