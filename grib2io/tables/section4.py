@@ -853,6 +853,60 @@ table_4_243 = {
 '255':'Missing',
 }
 
+table_4_246 = {
+'0':'No thunderstorm occurrence',
+'1':'Weak thunderstorm',
+'2':'Moderate thunderstorm',
+'3':'Severe thunderstorm',
+'4-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_247 = {
+'0':'No precipitation occurrence',
+'1':'Light precipitation',
+'2':'Moderate precipitation',
+'3':'Heavy precipitation',
+'4-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_248 = {
+'0':'Nearest forecast or analysis time to specified local time',
+'1':'Interpolated to be valid at the specified local time',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_249 = {
+'0':'None',
+'1':'Showers',
+'2':'Intermittent',
+'3':'Continuous',
+'4-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_250 = {
+'0':'Reserved',
+'1':'South-West',
+'2':'South',
+'3':'South-East',
+'4':'West',
+'5':'No direction',
+'6':'East',
+'7':'North-West',
+'8':'North',
+'9':'North-East',
+'10-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
 table_scale_time_hours = {
 '0': 60.,
 '1': 1.,
