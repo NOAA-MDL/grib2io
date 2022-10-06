@@ -63,17 +63,13 @@ class open():
 
     **`closed`** `True` is file handle is close; `False` otherwise.
 
-    **`decode `**: If `True` [DEFAULT] automatically decode metadata from unpacked
-    section data for Grib2Messages.
-
     **`variables`**: Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
 
     **`levels`**: Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
-                 'current_message','size','closed','decode','variables','levels',
-                 '_pos')
-    def __init__(self, filename, mode='r', decode=True):
+                 'current_message','size','closed','variables','levels','_pos')
+    def __init__(self, filename, mode='r'):
         """
         `open` Constructor
 
@@ -85,8 +81,6 @@ class open():
         **`mode `**: File access mode where `r` opens the files for reading only;
         `w` opens the file for writing.
 
-        **`decode `**: If `True` [DEFAULT] automatically decode metadata from
-        unpacked section data for Grib2Messages.
         """
         if mode in ['a','r','w']:
             mode = mode+'b'
@@ -99,7 +93,6 @@ class open():
         self.current_message = 0
         self.size = os.path.getsize(self.name)
         self.closed = self._filehandle.closed
-        self.decode = decode
         if 'r' in self.mode: self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
@@ -183,8 +176,7 @@ class open():
             #return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][key]),
             return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
                                  source=self,
-                                 num=self._index['messageNumber'][key],
-                                 decode=self.decode)]
+                                 num=self._index['messageNumber'][key])]
         elif isinstance(key,str):
             return self.select(shortName=key)
         else:
@@ -432,8 +424,7 @@ class open():
                 #msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][n]),
                 msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
                                          source=self,
-                                         num=self._index['messageNumber'][n],
-                                         decode=self.decode))
+                                         num=self._index['messageNumber'][n]))
                 self.current_message += 1
         return msgs
 
@@ -606,17 +597,7 @@ class Grib2MessageBase:
     dataRepresentationTemplate: list = field(init=False,repr=True,default=templates.DataRepresentationTemplate())
     typeOfValues = templates.TypeOfValues()
 
-#    def __new__(cls, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None, sectemplates=None):
-#        """
-#        """
-#        if sectemplates is not None:
-#            if sectemplates[0] == 0:
-#                msg = templates.add_grid_definition_template_0(cls)
-#        return msg
-
-
-#    def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None, sectemplates=None):
-    def __init__(self, msg=None, source=None, num=-1, decode=True, discipline=None, idsect=None):
+    def __init__(self, msg=None, source=None, num=-1, discipline=None, idsect=None):
         """
         Class Constructor. Instantiation of this class can handle a GRIB2 message from an existing
         file or the creation of new GRIB2 message.  To create a new GRIB2 message, provide the
@@ -636,9 +617,6 @@ class Grib2MessageBase:
         instance of `grib2io.open`. Default is None.
 
         **`num`**: integer GRIB2 Message number from `grib2io.open`. Default value is -1.
-
-        **`decode`**: If True [DEFAULT], decode GRIB2 section lists into metadata
-        instance variables.
 
         **`discipline`**: integer GRIB2 Discipline [GRIB2 Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)
 
@@ -662,7 +640,6 @@ class Grib2MessageBase:
         """
         self._source = source
         self._msgnum = num
-        self._decode = decode
         self._pos = 0
         self._datapos = 0
         self._sections = []
@@ -840,18 +817,6 @@ class Grib2MessageBase:
             else:
                 errmsg = 'Unknown section number = %i' % sectnum
                 raise ValueError(errmsg)
-
-        #if self._decode: self.decode()
-
-    def decode(self):
-        """
-        Decode the unpacked GRIB2 integer-coded metadata in human-readable form and linked to GRIB2 tables.
-        """
-        if self.productDefinitionTemplateNumber.value in [8,9,10,11,12]:
-            self.dtEndOfTimePeriod = datetime.datetime(self.yearOfEndOfTimePeriod,self.monthOfEndOfTimePeriod,
-                                     self.dayOfEndOfTimePeriod,hour=self.hourOfEndOfTimePeriod,
-                                     minute=self.minuteOfEndOfTimePeriod,
-                                     second=self.secondOfEndOfTimePeriod)
 
 
     def data(self, fill_value=DEFAULT_FILL_VALUE, masked_array=True, expand=True, order=None,
