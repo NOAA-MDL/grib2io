@@ -141,7 +141,7 @@ def getdate(year,month,day,hour,minute=None,second=None):
 
 def getleadtime(idsec,pdtn,pdt):
     """
-    Computes the lead time (in units of hours) from using information from
+    Computes lead time as a datetime.timedelta object using information from
     GRIB2 Identification Section (Section 1), Product Definition Template
     Number, and Product Definition Template (Section 4).
 
@@ -157,37 +157,19 @@ def getleadtime(idsec,pdtn,pdt):
     Returns
     -------
 
-    **`lt`**: Lead time in units of hours
+    **`datetime.timedelta`** object representing the lead time of the GRIB2 message.
     """
+    _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
     refdate = datetime.datetime(*idsec[5:11])
-    if pdtn == 8:
-        enddate = datetime.datetime(*pdt[15:21])
-        td = enddate - refdate
-        lt = (td).total_seconds()/3600.0
-    elif pdtn == 9:
-        enddate = datetime.datetime(*pdt[22:28])
-        td = enddate - refdate
-        lt = (td).total_seconds()/3600.0
-    elif pdtn == 10:
-        enddate = datetime.datetime(*pdt[16:22])
-        td = enddate - refdate
-        lt = (td).total_seconds()/3600.0
-    elif pdtn == 11:
-        enddate = datetime.datetime(*pdt[18:24])
-        td = enddate - refdate
-        lt = (td).total_seconds()/3600.0
-    elif pdtn == 12:
-        enddate = datetime.datetime(*pdt[17:23])
-        td = enddate - refdate
-        lt = (td).total_seconds()/3600.0
-    else:
-        lt = pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours'))
-    return int(lt)
+    try:
+        return datetime.datetime(*pdt[_key[pdtn]])-refdate
+    except(KeyError):
+        return datetime.timedelta(hours=pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours')))
 
 
 def getduration(pdtn,pdt):
     """
-    Computes the duration time (in units of hours) from using information from
+    Computes a time duration as a datetime.timedelta using information from
     Product Definition Template Number, and Product Definition Template (Section 4).
 
     Parameters
@@ -200,21 +182,13 @@ def getduration(pdtn,pdt):
     Returns
     -------
 
-    **`dur`**: Duration time in units of hours
+    **`datetime.timedelta`** object representing the time duration of the GRIB2 message.
     """
-    if pdtn == 8:
-        dur = pdt[26]*(tables.get_value_from_table(pdt[25],'scale_time_hours'))
-    elif pdtn == 9:
-        dur = pdt[33]*(tables.get_value_from_table(pdt[32],'scale_time_hours'))
-    elif pdtn == 10:
-        dur = pdt[27]*(tables.get_value_from_table(pdt[26],'scale_time_hours'))
-    elif pdtn == 11:
-        dur = pdt[29]*(tables.get_value_from_table(pdt[28],'scale_time_hours'))
-    elif pdtn == 12:
-        dur = pdt[28]*(tables.get_value_from_table(pdt[27],'scale_time_hours'))
-    else:
-        dur = 0
-    return int(dur)
+    _key = {8:25, 9:32, 10:26, 11:28, 12:27}
+    try:
+        return datetime.timedelta(hours=pdt[_key[pdtn]+1]*tables.get_value_from_table(pdt[_key[pdtn]],'scale_time_hours'))
+    except(KeyError):
+        return None
 
 
 def decode_wx_strings(lus):
@@ -305,6 +279,8 @@ def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
         probstr = 'prob >%g' % (lower)
     elif probtype == 4:
         probstr = 'prob <%g' % (upper)
+    else:
+        probstr = ''
     return probstr
 
 
