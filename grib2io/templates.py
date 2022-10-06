@@ -1,6 +1,8 @@
 from copy import copy
 from dataclasses import dataclass, field
 
+import datetime
+
 from . import tables
 from . import utils
 
@@ -146,14 +148,18 @@ class Second:
 
 class RefDate:
     def __get__(self, obj, objtype=None):
-        return (obj.year*1000000)+(obj.month*10000)+(obj.day*100)+obj.hour
+        return datetime.datetime(*obj._section1[5:11])
     def __set__(self, obj, value):
-        d = str(value)
-        obj._section1[5] = int(d[0:4])
-        obj._section1[6] = int(d[4:6])
-        obj._section1[7] = int(d[6:8])
-        obj._section1[8] = int(d[8:10])
-        del d
+        if isinstance(value,datetime.datetime):
+            obj._section1[5] = value.year
+            obj._section1[6] = value.month
+            obj._section1[7] = value.day
+            obj._section1[8] = value.hour
+            obj._section1[9] = value.minute
+            obj._section1[10] = value.second
+        else:
+            msg = 'Reference date must be a datetime.datetime object.'
+            raise TypeError(msg)
 
 class ProductionStatus:
     def __get__(self, obj, objtype=None):
@@ -856,6 +862,23 @@ class SecondOfEndOfTimePeriod:
     def __set__(self, obj, value):
         pdtn = obj._productDefinitionTemplateNumber
         obj._productDefinitionTemplate[self._key[pdtn]] = value
+
+class Duration:
+    def __get__(self, obj, objtype=None):
+        return utils.getduration(obj._productDefinitionTemplateNumber,obj._productDefinitionTemplate)
+    def __set__(self, obj, value):
+        pass
+
+class ValidDate:
+    _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj._productDefinitionTemplateNumber
+        try:
+            return datetime.datetime(*obj.productDefinitionTemplate[self._key[pdtn]])
+        except(KeyError):
+            return obj.refDate + obj.leadTime
+    def __set__(self, obj, value):
+        pass
 
 class NumberOfTimeRanges:
     _key = {8:21, 9:28, 11:24, 12:23}
