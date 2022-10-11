@@ -225,6 +225,14 @@ class TypeOfData:
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 3 metadata.
 # ---------------------------------------------------------------------------------------- 
+class GridDefinitionSection:
+    """
+    """
+    def __get__(self, obj, objtype=None):
+        return obj._gridDefinitionSection
+    def __set__(self, obj, value):
+        obj._gridDefinitionSection = value
+
 class GridDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj._gridDefinitionSection[4],table='3.1')
@@ -233,13 +241,12 @@ class GridDefinitionTemplateNumber:
         pass
 
 class GridDefinitionTemplate:
-    """ This has __get__ and __set__ and therefore implements the descriptor protocol """ 
-    def __set_name__(self, owner, name):
-        self.private_name = f'_{name}'   
+    """
+    """
     def __get__(self, obj, objtype=None):
-        return getattr(obj, self.private_name)
+        return obj._gridDefinitionTemplate
     def __set__(self, obj, value):
-        setattr(obj, self.private_name, value)
+        obj._gridDefinitionTemplate = value
 
 class ShapeOfEarth:
     def __get__(self, obj, objtype=None):
