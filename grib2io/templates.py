@@ -29,6 +29,8 @@ class Grib2Metadata():
             self.definition = tables.get_value_from_table(self.value,self.table)
     def __call__(self):
         return self.value
+    def __hash__(self):
+        return self.value
     def __repr__(self):
         return '%s(%d, table = %s)' % (self.__class__.__name__,self.value,self.table)
     def __str__(self):
@@ -69,6 +71,14 @@ class Grib2Section:
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 0 metadata.
 # ---------------------------------------------------------------------------------------- 
+class IndicatorSection:
+    """
+    """
+    def __get__(self, obj, objtype=None):
+        return obj._indicatorSection
+    def __set__(self, obj, value):
+        obj._indicatorSection = value
+
 class Discipline:
     """Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)"""
     def __get__(self, obj, objtype=None):
@@ -78,9 +88,18 @@ class Discipline:
         obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
                                                      obj._productDefinitionTemplate[1],isNDFD=obj.isNDFD)
 
+
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 1 metadata.
 # ---------------------------------------------------------------------------------------- 
+class IdentificationSection:
+    """
+    """
+    def __get__(self, obj, objtype=None):
+        return obj._indicatorSection
+    def __set__(self, obj, value):
+        obj._indicatorSection = value
+
 class OriginatingCenter:
     """Identification of originating/generating center 
     [(See Table 0)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
@@ -456,6 +475,8 @@ class ProjParameters:
 
 @dataclass(init=False)
 class GridDefinitionTemplate0():
+    _len = 19
+    _num = 0
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
@@ -465,6 +486,8 @@ class GridDefinitionTemplate0():
 
 @dataclass(init=False)
 class GridDefinitionTemplate1():
+    _len = 22
+    _num = 1
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
@@ -477,6 +500,8 @@ class GridDefinitionTemplate1():
 
 @dataclass(init=False)
 class GridDefinitionTemplate10():
+    _len = 19
+    _num = 10
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
@@ -489,6 +514,8 @@ class GridDefinitionTemplate10():
 
 @dataclass(init=False)
 class GridDefinitionTemplate20():
+    _len = 18
+    _num = 20
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
@@ -500,6 +527,8 @@ class GridDefinitionTemplate20():
 
 @dataclass(init=False)
 class GridDefinitionTemplate30():
+    _len = 22
+    _num = 30
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
@@ -515,6 +544,8 @@ class GridDefinitionTemplate30():
 
 @dataclass(init=False)
 class GridDefinitionTemplate31():
+    _len = 22
+    _num = 31
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
@@ -529,6 +560,8 @@ class GridDefinitionTemplate31():
 
 @dataclass(init=False)
 class GridDefinitionTemplate40():
+    _len = 19
+    _num = 40
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
@@ -538,6 +571,8 @@ class GridDefinitionTemplate40():
 
 @dataclass(init=False)
 class GridDefinitionTemplate41():
+    _len = 22
+    _num = 41
     latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
     longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
     latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
@@ -550,6 +585,8 @@ class GridDefinitionTemplate41():
 
 @dataclass(init=False)
 class GridDefinitionTemplate50():
+    _len = 5
+    _num = 50
     spectralFunctionParameters: list = field(init=False, repr=True, default=SpectralFunctionParameters())
 
 _gdt_by_gdtn = {0: GridDefinitionTemplate0,
@@ -998,21 +1035,29 @@ class NumberOfDataPointsForSpatialProcessing:
     
 @dataclass(init=False)
 class ProductDefinitionTemplate0():
+    _len = 15
+    _num = 0
     pass
 
 @dataclass(init=False)
 class ProductDefinitionTemplate1():
+    _len = 18
+    _num = 1
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=True, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate2():
+    _len = 17
+    _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate5():
+    _len = 22
+    _num = 5
     forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
@@ -1022,10 +1067,14 @@ class ProductDefinitionTemplate5():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate6():
+    _len = 16
+    _num = 6
     percentileValue: int = field(init=False, repr=True, default=PercentileValue())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate8():
+    _len = 29
+    _num = 8
     yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
     monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
     dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
@@ -1043,6 +1092,8 @@ class ProductDefinitionTemplate8():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate9():
+    _len = 36
+    _num = 9
     forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
@@ -1066,6 +1117,8 @@ class ProductDefinitionTemplate9():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate10():
+    _len = 30
+    _num = 10
     percentileValue: int = field(init=False, repr=True, default=PercentileValue())
     yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
     monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
@@ -1084,6 +1137,8 @@ class ProductDefinitionTemplate10():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate11():
+    _len = 32
+    _num = 11
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=True, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
@@ -1104,6 +1159,8 @@ class ProductDefinitionTemplate11():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate12():
+    _len = 31
+    _num = 12
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
     yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
@@ -1123,6 +1180,8 @@ class ProductDefinitionTemplate12():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate15():
+    _len = 18
+    _num = 15
     statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=True, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=True, default=NumberOfDataPointsForSpatialProcessing())
@@ -1309,8 +1368,17 @@ class TargetCompressionRatio:
     def __set__(self, obj, value):
         pass
 
+class RealOfCoefficient:
+    def __get__(self, obj, objtype=None):
+        return utils.ieee_int_to_float(obj._dataRepresentationTemplate[4])
+    def __set__(self, obj, value):
+        obj._dataRepresentationTemplate[4] = utils.ieee_float_to_int(float(value))
+
 @dataclass(init=False)
 class DataRepresentationTemplate0():
+    _len = 5
+    _num = 0
+    packingScheme = 'simple'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1318,6 +1386,9 @@ class DataRepresentationTemplate0():
 
 @dataclass(init=False)
 class DataRepresentationTemplate2():
+    _len = 16
+    _num = 2
+    packingScheme = 'complex'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1335,6 +1406,9 @@ class DataRepresentationTemplate2():
 
 @dataclass(init=False)
 class DataRepresentationTemplate3():
+    _len = 18
+    _num = 3
+    packingScheme = 'complex-spdiff'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1354,10 +1428,16 @@ class DataRepresentationTemplate3():
 
 @dataclass(init=False)
 class DataRepresentationTemplate4():
+    _len = 1
+    _num = 4
+    packingScheme = 'ieee-float'
     precision: Grib2Metadata = field(init=False, repr=True, default=Precision())
 
 @dataclass(init=False)
 class DataRepresentationTemplate40():
+    _len = 7
+    _num = 40
+    packingScheme = 'jpeg'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1367,10 +1447,24 @@ class DataRepresentationTemplate40():
 
 @dataclass(init=False)
 class DataRepresentationTemplate41():
+    _len = 5
+    _num = 41
+    packingScheme = 'png'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+
+@dataclass(init=False)
+class DataRepresentationTemplate50():
+    _len = 5
+    _num = 0
+    packingScheme = 'spectral-simple'
+    refValue: float = field(init=False, repr=True, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    realOfCoefficient: float = field(init=False, repr=True, default=RealOfCoefficient())
 
 _drt_by_drtn = {
     0: DataRepresentationTemplate0,
@@ -1379,6 +1473,7 @@ _drt_by_drtn = {
     4: DataRepresentationTemplate4,
     40: DataRepresentationTemplate40,
     41: DataRepresentationTemplate41,
+    50: DataRepresentationTemplate50,
     }
 
 def drt_class_by_drtn(drtn):
