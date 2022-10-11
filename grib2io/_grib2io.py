@@ -168,13 +168,11 @@ class open():
                 warnings.warn("GRIB2 Message number 0 does not exist.")
                 return None
             self._filehandle.seek(self._index['offset'][key])
-            #return [Grib2Message(msg=self._filehandle.read(self._index['size'][key]),
             gdtn = self._index['gridDefinitionTemplateNumber'][key]
             pdtn = self._index['productDefinitionTemplateNumber'][key]
             drtn = self._index['dataRepresentationTemplateNumber'][key]
             msgsize = self._index['dataOffset'][key]-self._index['offset'][key]
-            #return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][key]),
-            return [grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
+            return [create_message(gdtn,pdtn,drtn,init=False)(msg=self._filehandle.read(msgsize),
                                  source=self,
                                  num=self._index['messageNumber'][key])]
         elif isinstance(key,str):
@@ -416,13 +414,11 @@ class open():
                 msgrange = range(beg,end+1)
             for n in msgrange:
                 self._filehandle.seek(self._index['offset'][n])
-                #msgs.append(Grib2Message(msg=self._filehandle.read(self._index['size'][n]),
                 gdtn = self._index['gridDefinitionTemplateNumber'][n]
                 pdtn = self._index['productDefinitionTemplateNumber'][n]
                 drtn = self._index['dataRepresentationTemplateNumber'][n]
                 msgsize = self._index['dataOffset'][n]-self._index['offset'][n]
-                #msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(self._index['size'][n]),
-                msgs.append(grib2_message_creator(gdtn,pdtn,drtn)(msg=self._filehandle.read(msgsize),
+                msgs.append(create_message(gdtn,pdtn,drtn,init=False)(msg=self._filehandle.read(msgsize),
                                          source=self,
                                          num=self._index['messageNumber'][n]))
                 self.current_message += 1
@@ -531,10 +527,8 @@ class open():
 
 @dataclass
 class Grib2MessageBase:
-    section0: list = field(init=False,repr=True,default=templates.Grib2Section())
-    section1: list = field(init=False,repr=True,default=templates.Grib2Section())
-    #section2: list = field(init=False,repr=True,default=templates.Grib2Section())
-    #section3: list = field(init=False,repr=True,default=templates.Grib2Section())
+    indicatorSection: list = field(init=False,repr=True,default=templates.IndicatorSection())
+    identificationSection: list = field(init=False,repr=True,default=templates.IdentificationSection())
 
     discipline = templates.Discipline()
 
@@ -554,7 +548,7 @@ class Grib2MessageBase:
     productionStatus = templates.ProductionStatus()
     typeOfData = templates.TypeOfData()
 
-    gridDefinitionSection: list = field(init=False,repr=True,default=templates.Grib2Section())
+    gridDefinitionSection: list = field(init=False,repr=True,default=templates.GridDefinitionSection())
     gridDefinitionTemplateNumber = templates.GridDefinitionTemplateNumber()
     gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
 
@@ -597,7 +591,8 @@ class Grib2MessageBase:
     dataRepresentationTemplate: list = field(init=False,repr=True,default=templates.DataRepresentationTemplate())
     typeOfValues = templates.TypeOfValues()
 
-    def __init__(self, msg=None, source=None, num=-1, discipline=None, idsect=None):
+    #def __init__(self, msg=None, source=None, num=-1, discipline=None, idsect=None):
+    def __init__(self, msg=None, source=None, num=-1):
         """
         Class Constructor. Instantiation of this class can handle a GRIB2 message from an existing
         file or the creation of new GRIB2 message.  To create a new GRIB2 message, provide the
@@ -638,23 +633,42 @@ class Grib2MessageBase:
         | idsect[11] | Production status of data - [Code Table 1.3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)|
         | idsect[12] | Type of processed data - [Code Table 1.4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)|
         """
+        self._msg = msg
         self._source = source
         self._msgnum = num
         self._pos = 0
         self._datapos = 0
         self._sections = []
+        self._lldivisor = 1.e6
+        self._xydivisor = 1.e3
+        self._llscalefactor = 1.
         self.hasLocalUseSection = False
         self.isNDFD = False
-        if discipline is not None and idsect is not None:
-            # New message
-            self._msg,self._pos = g2clib.grib2_create(np.array([discipline,GRIB2_EDITION_NUMBER],DEFAULT_NUMPY_INT),
-                                                      np.array(idsect,DEFAULT_NUMPY_INT))
-            self._sections += [0,1]
-        else:
-            # Existing message
-            self._msg = msg
+        #if discipline is not None and idsect is not None:
+        #    # New message
+        #    self._msg,self._pos = g2clib.grib2_create(np.array([discipline,GRIB2_EDITION_NUMBER],DEFAULT_NUMPY_INT),
+        #                                              np.array(idsect,DEFAULT_NUMPY_INT))
+        #    
+        #    self._sections += [0,1]
+        #else:
+        #    # Existing message
+        #    self._msg = msg
         #self.md5 = {}
-        if self._msg is not None and self._source is not None: self.unpack()
+        if self._msg is not None and self._source is not None:
+            self._msg = msg
+            self.unpack()
+        else:
+            self._indicatorSection = ['GRIB', 0, 255, 2, 0]
+            self._identificationSection = [255, 255, 255, 255, 255, 0, 0, 0, 0, 0, 0, 255, 255]
+            self._gridDefinitionSection = [0, 0, 0, 0, self.__class__.__mro__[2]._num]
+            self._deflist = None
+            self._gridDefinitionTemplateNumber = self.__class__.__mro__[2]._num
+            self._gridDefinitionTemplate = [0 for i in range(self.__class__.__mro__[2]._len)]
+            self._productDefinitionTemplateNumber = self.__class__.__mro__[3]._num
+            self._productDefinitionTemplate = [0 for i in range(self.__class__.__mro__[3]._len)]
+            self._dataRepresentationTemplateNumber = self.__class__.__mro__[4]._num
+            self._dataRepresentationTemplate = [0 for i in range(self.__class__.__mro__[4]._len)]
+
 
     def __repr__(self):
         """
@@ -675,28 +689,87 @@ class Grib2MessageBase:
         return ''.join(strings)
 
 
+    def pack(self, field, local=None):
+        """
+        Packs GRIB2 section data into a binary message.  It is the user's responsibility
+        to populate the GRIB2 section information.
+
+        Parameters
+        ----------
+
+        **`field`**: Numpy array of data values to pack.  If field is a masked array, then
+        a bitmap is created from the mask.
+
+        **`local`**: Local use data.  If the GRIB2 message is to contain local use informatiom, 
+        provide as bytes.
+        """
+        self._msg,self._pos = g2clib.grib2_create(np.array(self.indicatorSection[2:4],DEFAULT_NUMPY_INT),
+                                                  np.array(self.identificationSection,DEFAULT_NUMPY_INT))
+        self._sections += [0,1]
+
+        if local is not None:
+            assert isinstance(local,bytes)
+            self._msg,self._pos = g2clib.grib2_addlocal(self._msg,local)
+            self.hasLocalUseSection = True
+            self._sections.append(2)
+       
+        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,np.array(self.gridDefinitionSection,dtype=DEFAULT_NUMPY_INT),
+                                                   np.array(self.gridDefinitionTemplate,dtype=DEFAULT_NUMPY_INT),self._deflist)
+        self._sections.append(3)
+    
+        if self.scanModeFlags is not None:
+            if self.scanModeFlags[3]:
+                fieldsave = field.astype('f') # Casting makes a copy
+                field[1::2,:] = fieldsave[1::2,::-1]
+        fld = field.astype('f')
+        if ma.isMA(field) and ma.count_masked(field) > 0:
+            bitmapflag = 0
+            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
+        else:
+            bitmapflag = 255
+            bmap = None
+        if coordlist is not None:
+            crdlist = np.array(coordlist,'f')
+        else:
+            crdlist = None
+            self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.productDefinitionTemplateNumber,
+                                                        np.array(self.productDefinitionTemplate,dtype=DEFAULT_NUMPY_INT),
+                                                        crdlist,
+                                                        drtnum,
+                                                        drtmpl,
+                                                        np.ravel(fld),
+                                                        bitmapflag,
+                                                        bmap)
+        self._sections.append(4)
+        self._sections.append(5)
+        if bmap is not None: self._sections.append(6)
+        self._sections.append(7)
+
+        self._msg, self._pos = g2clib.grib2_end(self._msg)
+        self._sections.append(8)
+
+
     def unpack(self):
         """
         Unpacks GRIB2 section data from the packed, binary message.
         """
         # Section 0 - Indicator Section
-        self.indicatorSection = []
-        self.indicatorSection.append(struct.unpack('>4s',self._msg[0:4])[0])
-        self.indicatorSection.append(struct.unpack('>H',self._msg[4:6])[0])
-        self.indicatorSection.append(self._msg[6])
-        self.indicatorSection.append(self._msg[7])
-        self.indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
+        self._indicatorSection = []
+        self._indicatorSection.append(struct.unpack('>4s',self._msg[0:4])[0])
+        self._indicatorSection.append(struct.unpack('>H',self._msg[4:6])[0])
+        self._indicatorSection.append(self._msg[6])
+        self._indicatorSection.append(self._msg[7])
+        self._indicatorSection.append(struct.unpack('>Q',self._msg[8:16])[0])
         self._pos = 16
         self._sections.append(0)
-        self._section0 = self.indicatorSection #NEW
-        #self.md5[0] = _getmd5str(self.indicatorSection)
+        #self.md5[0] = _getmd5str(self._indicatorSection)
 
         # Section 1 - Identification Section via g2clib.unpack1()
-        self.identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
-        self.identificationSection = self.identificationSection.tolist()
-        self._section1 = self.identificationSection #NEW
+        self._identificationSection,self._pos = g2clib.unpack1(self._msg,self._pos,np.empty)
+        self._identificationSection = self._identificationSection.tolist()
         self._sections.append(1)
-        if self.identificationSection[0:2] == [8,65535]: self.isNDFD = True
+        if self._identificationSection[0:2] == [8,65535]: self.isNDFD = True
+        #self.md5[1] = _getmd5str(self._identificationSection)
 
         # After Section 1, perform rest of GRIB2 Decoding inside while loop
         # to account for sub-messages.
@@ -705,7 +778,6 @@ class Grib2MessageBase:
             if self._msg[self._pos:self._pos+4].decode('ascii','ignore') == '7777':
                 break
 
-            #print(self._pos,len(self._msg))
             if self._pos == len(self._msg):
                 break
 
@@ -1257,23 +1329,28 @@ class Grib2MessageBase:
         self._msg, self._pos = g2clib.grib2_end(self._msg)
         self._sections.append(8)
 
+
     def to_bytes(self, validate=True):
         """
-        Return grib data in byte format. Useful for exporting data in non-file formats.
-        For example, can be used to output grib data directly to S3 using the boto3 client
-        without the need to write a temporary file to upload first.
+        Return packed GRIB2 message in bytes format. This will be Useful for 
+        exporting data in non-file formats.  For example, can be used to 
+        output grib data directly to S3 using the boto3 client without the 
+        need to write a temporary file to upload first.
 
         Parameters
         ----------
-        **`validate`**: bool (Default: True) If true, validates first/last four bytes for proper formatting, else
-        returns None. If False, message is output as is.
+
+        **`validate : bool`**:
+
+        If `True` (DEFAULT), validates first/last four bytes for proper 
+        formatting, else returns None. If `False`, message is output as is.
 
         Returns
         -------
         Returns GRIB2 formatted message as bytes.
         """
         if validate:
-            if str(self._msg[0:4] + self._msg[-4:], 'utf-8') == 'GRIB7777':
+            if str(self._msg[0:4]+self._msg[-4:],'utf-8') == 'GRIB7777':
                 return self._msg
             else:
                 return None
@@ -1281,7 +1358,7 @@ class Grib2MessageBase:
             return self._msg
 
 
-def grib2_message_creator(gdtn,pdtn,drtn):
+def create_message(gdtn, pdtn, drtn, init=True):
     """
     Dynamically create Grib2Message class inheriting from supported
     grid definition, product definition, and data representation
@@ -1302,10 +1379,24 @@ def grib2_message_creator(gdtn,pdtn,drtn):
     **`drtn : int`**:
 
     Data Representation Template Number.
+
+    **`init : bool`**:
+
+    If `True` (DEFAULT), an instance of Grib2Message will be returned,
+    otherwise, the class is returned that contains the appropriate
+    inherited section templates given by the input arguments.
+
+    Returns
+    -------
+    Returns Grib2Message class or instance according to `init`.
+
     """
     Gdt = templates.gdt_class_by_gdtn(gdtn)
     Pdt = templates.pdt_class_by_pdtn(pdtn)
     Drt = templates.drt_class_by_drtn(drtn)
     class Grib2Message(Grib2MessageBase, Gdt, Pdt, Drt):
         pass
-    return Grib2Message
+    if init:
+        return Grib2Message()
+    else:
+        return Grib2Message
