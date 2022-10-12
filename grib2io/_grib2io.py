@@ -396,7 +396,7 @@ class open():
         Parameters
         ----------
 
-        **`num`**: integer number of GRIB2 Message to read.
+        **`num : int`**: GRIB2 message number to read.
 
         Returns
         -------
@@ -439,7 +439,7 @@ class open():
         Parameters
         ----------
 
-        **`pos`**: GRIB2 Message number to set the read pointer to.
+        **`pos : int`**: GRIB2 Message number to set the read pointer to.
         """
         if self._hasindex:
             if pos == 0:
@@ -514,7 +514,7 @@ class open():
         Parameters
         ----------
 
-        **`msg`**: instance of `Grib2Message`.
+        **`msg`**: `Grib2Message` object to write.
         """
         if isinstance(msg,Grib2Message):
             self._filehandle.write(msg._msg)
@@ -689,6 +689,36 @@ class Grib2MessageBase:
         return ''.join(strings)
 
 
+    def attrs_by_section(self, sect):
+        """
+        Provide a tuple of attribute names for the given GRIB2 section.
+
+        Parameters
+        ----------
+
+        **`sect : int`** GRIB2 section number.
+
+        Returns
+        -------
+
+        Tuple of strings of attribute names for the given GRIB2 section.
+        """
+        if sect in [0,1]:
+            return tuple(templates._section_attrs[sect])
+        elif sect in [3,4,5]:
+            def _find_class_index(n):
+                _key = {3:'Grid', 4:'Product', 5:'Data'}
+                for i,c in enumerate(self.__class__.__mro__):
+                    if _key[n] in c.__name__:
+                        return i
+                else:
+                    return None
+            return tuple(templates._section_attrs[sect]+
+                         self.__class__.__mro__[_find_class_index(sect)].attrs)
+        else:
+            return tuple([])
+
+
     def pack(self, field, local=None):
         """
         Packs GRIB2 section data into a binary message.  It is the user's responsibility
@@ -846,7 +876,7 @@ class Grib2MessageBase:
                 #self.productDefinitionTemplateNumber = templates.Grib2Metadata(int(_pdtn),table='4.0')
                 self._productDefinitionTemplateNumber = int(_pdtn) # NEW
                 self.coordinateList = _coordlst.tolist()
-                self._varinfo = tables.get_varinfo_from_table(self._section0[2],self._productDefinitionTemplate[0],
+                self._varinfo = tables.get_varinfo_from_table(self._indicatorSection[2],self._productDefinitionTemplate[0],
                                                               self._productDefinitionTemplate[1],isNDFD=self.isNDFD)
                 self._fixedsfc1info = [None, None] if self._productDefinitionTemplate[9] == 255 else \
                                       tables.get_value_from_table(self._productDefinitionTemplate[9],'4.5')
@@ -1389,7 +1419,6 @@ def create_message(gdtn, pdtn, drtn, init=True):
     Returns
     -------
     Returns Grib2Message class or instance according to `init`.
-
     """
     Gdt = templates.gdt_class_by_gdtn(gdtn)
     Pdt = templates.pdt_class_by_pdtn(pdtn)
