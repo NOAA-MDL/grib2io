@@ -100,10 +100,10 @@ class IndicatorSection:
 class Discipline:
     """Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section0[2],table='0.0')
+        return Grib2Metadata(obj._indcatorSection[2],table='0.0')
     def __set__(self, obj, value):
-        obj._section0[2] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+        obj._indcatorSection[2] = value
+        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
                                                      obj._productDefinitionTemplate[1],isNDFD=obj.isNDFD)
 
 
@@ -123,97 +123,97 @@ class OriginatingCenter:
     [(See Table 0)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section1[0],table='originating_centers')
+        return Grib2Metadata(obj._identificationSection[0],table='originating_centers')
     def __set__(self, obj, value):
-        obj._section1[0] = value
+        obj._identificationSection[0] = value
 
 class OriginatingSubCenter:
     """Identification of originating/generating subcenter
     [(See Table C)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section1[1],table='originating_subcenters')
+        return Grib2Metadata(obj._identificationSection[1],table='originating_subcenters')
     def __set__(self, obj, value):
-        obj._section1[1] = value
+        obj._identificationSection[1] = value
 
 class MasterTableInfo:
     """GRIB master tables version number (currently 2) 
     [(See Table 1.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section1[2],table='1.0')
+        return Grib2Metadata(obj._identificationSection[2],table='1.0')
     def __set__(self, obj, value):
-        obj._section1[2] = value
+        obj._identificationSection[2] = value
 
 class LocalTableInfo:
     """Version number of GRIB local tables used to augment Master Tables
     [(See Table 1.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section1[3],table='1.1')
+        return Grib2Metadata(obj._identificationSection[3],table='1.1')
     def __set__(self, obj, value):
-        obj._section1[3] = value
+        obj._identificationSection[3] = value
 
 class SignificanceOfReferenceTime:
     """Significance of reference time [(See Table 1.2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._section1[4],table='1.2')
+        return Grib2Metadata(obj._identificationSection[4],table='1.2')
     def __set__(self, obj, value):
-        obj._section1[4] = value
+        obj._identificationSection[4] = value
 
 class Year:
     """Year of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[5]
+        return obj._identificationSection[5]
     def __set__(self, obj, value):
-        obj._section1[5] = value
+        obj._identificationSection[5] = value
 
 class Month:
     """Month of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[6]
+        return obj._identificationSection[6]
     def __set__(self, obj, value):
-        obj._section1[6] = value
+        obj._identificationSection[6] = value
 
 class Day:
     """Day of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[7]
+        return obj._identificationSection[7]
     def __set__(self, obj, value):
-        obj._section1[7] = value
+        obj._identificationSection[7] = value
 
 class Hour:
     """Hour of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[8]
+        return obj._identificationSection[8]
     def __set__(self, obj, value):
-        obj._section1[8] = value
+        obj._identificationSection[8] = value
 
 class Minute:
     """Minute of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[9]
+        return obj._identificationSection[9]
     def __set__(self, obj, value):
-        obj._section1[9] = value
+        obj._identificationSection[9] = value
 
 class Second:
     """Second of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._section1[10]
+        return obj._identificationSection[10]
     def __set__(self, obj, value):
-        obj._section1[10] = value
+        obj._identificationSection[10] = value
 
 class RefDate:
     """Reference date as a `datetime.datetime` object"""
     def __get__(self, obj, objtype=None):
-        return datetime.datetime(*obj._section1[5:11])
+        return datetime.datetime(*obj._identificationSection[5:11])
     def __set__(self, obj, value):
         if isinstance(value,datetime.datetime):
-            obj._section1[5] = value.year
-            obj._section1[6] = value.month
-            obj._section1[7] = value.day
-            obj._section1[8] = value.hour
-            obj._section1[9] = value.minute
-            obj._section1[10] = value.second
+            obj._identificationSection[5] = value.year
+            obj._identificationSection[6] = value.month
+            obj._identificationSection[7] = value.day
+            obj._identificationSection[8] = value.hour
+            obj._identificationSection[9] = value.minute
+            obj._identificationSection[10] = value.second
         else:
             msg = 'Reference date must be a datetime.datetime object.'
             raise TypeError(msg)
@@ -223,18 +223,18 @@ class ProductionStatus:
     [(See Table 1.3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section1[11],table='1.3')
+        return Grib2Metadata(obj._identificationSection[11],table='1.3')
     def __set__(self, obj, value):
-        obj._section1[11] = value
+        obj._identificationSection[11] = value
 
 class TypeOfData:
     """Type of processed data in this GRIB message 
     [(See Table 1.4)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section1[12],table='1.4')
+        return Grib2Metadata(obj._identificationSection[12],table='1.4')
     def __set__(self, obj, value):
-        obj._section1[12] = value
+        obj._identificationSection[12] = value
 
 # ---------------------------------------------------------------------------------------- 
 # Descriptor Classes for Section 2 metadata.
@@ -688,7 +688,7 @@ class ParameterCategory:
         return obj._productDefinitionTemplate[0]
     def __set__(self, obj, value):
         obj._productDefinitionTemplate[0] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
                                                      obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
 
 class ParameterNumber:
@@ -696,7 +696,7 @@ class ParameterNumber:
         return obj._productDefinitionTemplate[1]
     def __set__(self, obj, value):
         obj._productDefinitionTemplate[1] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._section0[2],obj._productDefinitionTemplate[0],
+        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
                                                      obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
 
 class FullName:
@@ -746,7 +746,7 @@ class UnitOfTimeRange:
 
 class LeadTime:
     def __get__(self, obj, objtype=None):
-        return utils.getleadtime(obj._section1,obj._productDefinitionTemplateNumber,
+        return utils.getleadtime(obj._identificationSection,obj._productDefinitionTemplateNumber,
                                  obj._productDefinitionTemplate)
     def __set__(self, obj, value):
         pass
