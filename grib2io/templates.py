@@ -6,6 +6,24 @@ import datetime
 from . import tables
 from . import utils
 
+_section_attrs = {0:['discipline'],
+                  1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
+                     'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
+                     'refDate', 'validDate', 'productionStatus', 'typeOfData'],
+                  2:[],
+                  3:['shapeOfEarth', 'earthRadius', 'earthMajorAxis', 'earthMinorAxis',
+                     'resolutionAndComponentFlags', 'ny', 'nx', 'scanModeFlags'],
+                  4:['parameterCategory', 'parameterNumber', 'fullName', 'units', 'shortName',
+                     'typeOfGeneratingProcess', 'backgroundGeneratingProcessIdentifier', 'generatingProcess',
+                     'unitOfTimeRange', 'leadTime', 'typeOfFirstFixedSurface', 'scaleFactorOfFirstFixedSurface',
+                     'unitOfFirstFixedSurface', 'scaledValueOfFirstFixedSurface', 'valueOfFirstFixedSurface',
+                     'typeOfSecondFixedSurface', 'scaleFactorOfSecondFixedSurface', 'unitOfSecondFixedSurface',
+                     'scaledValueOfSecondFixedSurface', 'valueOfSecondFixedSurface'],
+                  5:[],
+                  6:[],
+                  7:[],
+                  8:[],}
+
 class Grib2Metadata():
     """
     Class to hold GRIB2 metadata both as numeric code value as stored in
@@ -490,6 +508,10 @@ class GridDefinitionTemplate0():
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
     gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate1():
@@ -504,6 +526,10 @@ class GridDefinitionTemplate1():
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate10():
@@ -518,6 +544,10 @@ class GridDefinitionTemplate10():
     gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate20():
@@ -531,6 +561,10 @@ class GridDefinitionTemplate20():
     gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
     projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate30():
@@ -548,6 +582,10 @@ class GridDefinitionTemplate30():
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
     projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate31():
@@ -564,6 +602,10 @@ class GridDefinitionTemplate31():
     standardLatitude2: float = field(init=False, repr=True, default=StandardLatitude2())
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate40():
@@ -575,6 +617,10 @@ class GridDefinitionTemplate40():
     longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
     gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate41():
@@ -589,12 +635,20 @@ class GridDefinitionTemplate41():
     latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate50():
     _len = 5
     _num = 50
     spectralFunctionParameters: list = field(init=False, repr=True, default=SpectralFunctionParameters())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     1: GridDefinitionTemplate1,
@@ -1044,7 +1098,10 @@ class NumberOfDataPointsForSpatialProcessing:
 class ProductDefinitionTemplate0():
     _len = 15
     _num = 0
-    pass
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate1():
@@ -1053,6 +1110,10 @@ class ProductDefinitionTemplate1():
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=True, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate2():
@@ -1060,6 +1121,10 @@ class ProductDefinitionTemplate2():
     _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate5():
@@ -1071,12 +1136,20 @@ class ProductDefinitionTemplate5():
     thesholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
     thesholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=True, default=Threshold())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate6():
     _len = 16
     _num = 6
     percentileValue: int = field(init=False, repr=True, default=PercentileValue())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate8():
@@ -1096,6 +1169,10 @@ class ProductDefinitionTemplate8():
     timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate9():
@@ -1121,6 +1198,10 @@ class ProductDefinitionTemplate9():
     timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate10():
@@ -1141,6 +1222,10 @@ class ProductDefinitionTemplate10():
     timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate11():
@@ -1163,6 +1248,10 @@ class ProductDefinitionTemplate11():
     timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate12():
@@ -1184,6 +1273,10 @@ class ProductDefinitionTemplate12():
     timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate15():
@@ -1192,6 +1285,10 @@ class ProductDefinitionTemplate15():
     statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=True, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=True, default=NumberOfDataPointsForSpatialProcessing())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
@@ -1385,17 +1482,21 @@ class RealOfCoefficient:
 class DataRepresentationTemplate0():
     _len = 5
     _num = 0
-    packingScheme = 'simple'
+    _packingScheme = 'simple'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate2():
     _len = 16
     _num = 2
-    packingScheme = 'complex'
+    _packingScheme = 'complex'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1410,12 +1511,16 @@ class DataRepresentationTemplate2():
     groupLengthIncrement: int = field(init=False, repr=True, default=GroupLengthIncrement())
     lengthOfLastGroup: int = field(init=False, repr=True, default=LengthOfLastGroup())
     nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate3():
     _len = 18
     _num = 3
-    packingScheme = 'complex-spdiff'
+    _packingScheme = 'complex-spdiff'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
@@ -1432,46 +1537,66 @@ class DataRepresentationTemplate3():
     nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
     spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=True, default=SpatialDifferenceOrder())
     nBytesSpatialDifference: int = field(init=False, repr=True, default=NBytesSpatialDifference())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate4():
     _len = 1
     _num = 4
-    packingScheme = 'ieee-float'
+    _packingScheme = 'ieee-float'
     precision: Grib2Metadata = field(init=False, repr=True, default=Precision())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate40():
     _len = 7
     _num = 40
-    packingScheme = 'jpeg'
+    _packingScheme = 'jpeg'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
     typeOfCompression: Grib2Metadata = field(init=False, repr=True, default=TypeOfCompression())
     targetCompressionRatio: int = field(init=False, repr=True, default=TargetCompressionRatio())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate41():
     _len = 5
     _num = 41
-    packingScheme = 'png'
+    _packingScheme = 'png'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate50():
     _len = 5
     _num = 0
-    packingScheme = 'spectral-simple'
+    _packingScheme = 'spectral-simple'
     refValue: float = field(init=False, repr=True, default=RefValue())
     binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
     realOfCoefficient: float = field(init=False, repr=True, default=RealOfCoefficient())
+    @classmethod
+    @property
+    def attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
 
 _drt_by_drtn = {
     0: DataRepresentationTemplate0,
@@ -1485,3 +1610,10 @@ _drt_by_drtn = {
 
 def drt_class_by_drtn(drtn):
     return _drt_by_drtn[drtn]
+
+def _get_template_class_attrs(items):
+    attrs = []
+    for i in items:
+        if not i.startswith('_') and i != 'attrs':
+            attrs.append(i)
+    return attrs
