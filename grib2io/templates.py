@@ -114,9 +114,9 @@ class IdentificationSection:
     """
     """
     def __get__(self, obj, objtype=None):
-        return obj._indicatorSection
+        return obj._identificationSection
     def __set__(self, obj, value):
-        obj._indicatorSection = value
+        obj._identificationSection = value
 
 class OriginatingCenter:
     """Identification of originating/generating center 
