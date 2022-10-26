@@ -17,7 +17,7 @@ def get_table(table, expand=False):
     Parameters
     ----------
 
-    **`table`**: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value 
+    **`table`**: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value
     representing the product discipline (e.g. '4.1.0').
 
     **`expand`**: If `True`, expand output dictionary where keys are a range.
@@ -25,7 +25,7 @@ def get_table(table, expand=False):
     Returns
     -------
 
-    **`dict`**    
+    **`dict`**
     """
     if len(table) == 3 and table == '4.1':
         raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
@@ -66,7 +66,7 @@ def get_value_from_table(value, table):
     """
     try:
         tbl = get_table(table,expand=True)
-        if isinstance(value,int): value = str(value)
+        value = str(value)
         return tbl[value]
     except(KeyError):
         return None
@@ -99,23 +99,23 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
     - list[1] = units
     - list[2] = short name (abbreviated name)
     """
-    if isinstance(discipline,int): discipline = str(discipline)
-    if isinstance(parmcat,int): parmcat = str(parmcat)
-    if isinstance(parmnum,int): parmnum = str(parmnum)
+   #if isinstance(discipline,int): discipline = str(discipline)
+   #if isinstance(parmcat,int): parmcat = str(parmcat)
+   #if isinstance(parmnum,int): parmnum = str(parmnum)
     if isNDFD:
         try:
-            tblname = 'table_4_2_'+discipline+'_'+parmcat+'_ndfd'
-            modname = '.section4_discipline'+discipline
+            tblname = f'table_4_2_{discipline}_{parmcat}_ndfd'
+            modname = f'.section4_discipline{discipline}'
             exec('from '+modname+' import *')
-            return locals()[tblname][parmnum]
+            return locals()[tblname][str(parmnum)]
         except(ImportError,KeyError):
             pass
             #return ['Unknown','Unknown','Unknown']
     try:
-        tblname = 'table_4_2_'+discipline+'_'+parmcat
-        modname = '.section4_discipline'+discipline
+        tblname = f'table_4_2_{discipline}_{parmcat}'
+        modname = f'.section4_discipline{discipline}'
         exec('from '+modname+' import *')
-        return locals()[tblname][parmnum]
+        return locals()[tblname][str(parmnum)]
     except(ImportError,KeyError):
         return ['Unknown','Unknown','Unknown']
 
@@ -164,5 +164,5 @@ def get_wgrib2_level_string(type1,sfac1,sval1,type2,sfac2,sval2):
         # Level
         lvlstr = get_value_from_table(type1,table='wgrib2_level_string')[0]
         vals = (val1)
-    if '%g' in lvlstr: lvlstr %= vals 
+    if '%g' in lvlstr: lvlstr %= vals
     return lvlstr
