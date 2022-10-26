@@ -221,8 +221,8 @@ def decode_wx_strings(lus):
         refvalue = np.float32(ieee_int_to_float(refvalue)*10**-dsf)
     elif datatype == 1: # Integer
         refvalue = np.int32(ieee_int_to_float(refvalue)*10**-dsf)
-    # Upack each byte starting at byte 15 to end of the local use 
-    # section, create a binary string and append to the full 
+    # Upack each byte starting at byte 15 to end of the local use
+    # section, create a binary string and append to the full
     # binary string.
     b = ''
     for i in range(15,len(lus)):

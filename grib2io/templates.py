@@ -58,7 +58,7 @@ class Grib2Metadata():
     def __gt__(self,other):
         return self.value > other
     def __ge__(self,other):
-        return self.value >= other 
+        return self.value >= other
     def __lt__(self,other):
         return self.value < other
     def __le__(self,other):
@@ -66,415 +66,455 @@ class Grib2Metadata():
     def __contains__(self,other):
         return other in self.definition
 
-class Grib2Section:
-    """Generic descriptor class for a GRIB2 section."""
-    def __set_name__(self, owner, name):
-        self.private_name = f'_{name}'
-        
-    def public_name(self):
-        """Can be used by subclass with super().get_name() to discover
-           the private name without _ ; helpfull for raising informative errors"""
-        return self.private_name.strip('_')
-        
-    def __get__(self, obj, objtype=None):
-        # Returning a copy prevents changes occuring to obj
-        return copy(getattr(obj, self.private_name))
-    
-    def __set__(self, obj, value):
-        # Logic for managing set
-        print(f'setitem called on self.{self.public_name()}; rebuild Grib2msg Object')
-        setattr(obj, self.private_name, value)
+#class Grib2Section:
+#    """Generic descriptor class for a GRIB2 section."""
+#    def __set_name__(self, owner, name):
+#        self.private_name = f'_{name}'
+#
+#    def public_name(self):
+#        """Can be used by subclass with super().get_name() to discover
+#           the private name without _ ; helpfull for raising informative errors"""
+#        return self.private_name.strip('_')
+#
+#    def __get__(self, obj, objtype=None):
+#        # Returning a copy prevents changes occuring to obj
+#        return copy(getattr(obj, self.private_name))
+#
+#    def __set__(self, obj, value):
+#        # Logic for managing set
+#        print(f'setitem called on self.{self.public_name()}; rebuild Grib2msg Object')
+#        setattr(obj, self.private_name, value)
 
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 0 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 class IndicatorSection:
     """
     """
     def __get__(self, obj, objtype=None):
-        return obj._indicatorSection
+        return obj.section0
     def __set__(self, obj, value):
-        obj._indicatorSection = value
+        obj.section0 = value
 
 class Discipline:
     """Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._indcatorSection[2],table='0.0')
+        return Grib2Metadata(obj.indicatorSection[2],table='0.0')
     def __set__(self, obj, value):
-        obj._indcatorSection[2] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
-                                                     obj._productDefinitionTemplate[1],isNDFD=obj.isNDFD)
+        obj.section0[2] = value
 
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 1 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 class IdentificationSection:
     """
     """
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection
+        return obj.section1
     def __set__(self, obj, value):
-        obj._identificationSection = value
+        obj.section1 = value
 
 class OriginatingCenter:
-    """Identification of originating/generating center 
+    """Identification of originating/generating center
     [(See Table 0)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[0],table='originating_centers')
+        return Grib2Metadata(obj.section1[0],table='originating_centers')
     def __set__(self, obj, value):
-        obj._identificationSection[0] = value
+        obj.section1[0] = value
 
 class OriginatingSubCenter:
     """Identification of originating/generating subcenter
     [(See Table C)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[1],table='originating_subcenters')
+        return Grib2Metadata(obj.section1[1],table='originating_subcenters')
     def __set__(self, obj, value):
-        obj._identificationSection[1] = value
+        obj.section1[1] = value
 
 class MasterTableInfo:
-    """GRIB master tables version number (currently 2) 
+    """GRIB master tables version number (currently 2)
     [(See Table 1.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[2],table='1.0')
+        return Grib2Metadata(obj.section1[2],table='1.0')
     def __set__(self, obj, value):
-        obj._identificationSection[2] = value
+        obj.section1[2] = value
 
 class LocalTableInfo:
     """Version number of GRIB local tables used to augment Master Tables
     [(See Table 1.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[3],table='1.1')
+        return Grib2Metadata(obj.section1[3],table='1.1')
     def __set__(self, obj, value):
-        obj._identificationSection[3] = value
+        obj.section1[3] = value
 
 class SignificanceOfReferenceTime:
     """Significance of reference time [(See Table 1.2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)"""
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[4],table='1.2')
+        return Grib2Metadata(obj.section1[4],table='1.2')
     def __set__(self, obj, value):
-        obj._identificationSection[4] = value
+        obj.section1[4] = value
 
 class Year:
     """Year of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[5]
+        return obj.section1[5]
     def __set__(self, obj, value):
-        obj._identificationSection[5] = value
+        obj.section1[5] = value
 
 class Month:
     """Month of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[6]
+        return obj.section1[6]
     def __set__(self, obj, value):
-        obj._identificationSection[6] = value
+        obj.section1[6] = value
 
 class Day:
     """Day of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[7]
+        return obj.section1[7]
     def __set__(self, obj, value):
-        obj._identificationSection[7] = value
+        obj.section1[7] = value
 
 class Hour:
     """Hour of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[8]
+        return obj.section1[8]
     def __set__(self, obj, value):
-        obj._identificationSection[8] = value
+        obj.section1[8] = value
 
 class Minute:
     """Minute of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[9]
+        return obj.section1[9]
     def __set__(self, obj, value):
-        obj._identificationSection[9] = value
+        obj.section1[9] = value
 
 class Second:
     """Second of reference time"""
     def __get__(self, obj, objtype=None):
-        return obj._identificationSection[10]
+        return obj.section1[10]
     def __set__(self, obj, value):
-        obj._identificationSection[10] = value
+        obj.section1[10] = value
 
 class RefDate:
     """Reference date as a `datetime.datetime` object"""
     def __get__(self, obj, objtype=None):
-        return datetime.datetime(*obj._identificationSection[5:11])
+        return datetime.datetime(*obj.section1[5:11])
     def __set__(self, obj, value):
         if isinstance(value,datetime.datetime):
-            obj._identificationSection[5] = value.year
-            obj._identificationSection[6] = value.month
-            obj._identificationSection[7] = value.day
-            obj._identificationSection[8] = value.hour
-            obj._identificationSection[9] = value.minute
-            obj._identificationSection[10] = value.second
+            obj.section1[5] = value.year
+            obj.section1[6] = value.month
+            obj.section1[7] = value.day
+            obj.section1[8] = value.hour
+            obj.section1[9] = value.minute
+            obj.section1[10] = value.second
         else:
             msg = 'Reference date must be a datetime.datetime object.'
             raise TypeError(msg)
 
 class ProductionStatus:
-    """Production Status of Processed data in the GRIB message 
+    """Production Status of Processed data in the GRIB message
     [(See Table 1.3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[11],table='1.3')
+        return Grib2Metadata(obj.section1[11],table='1.3')
     def __set__(self, obj, value):
-        obj._identificationSection[11] = value
+        obj.section1[11] = value
 
 class TypeOfData:
-    """Type of processed data in this GRIB message 
+    """Type of processed data in this GRIB message
     [(See Table 1.4)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)
     """
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._identificationSection[12],table='1.4')
+        return Grib2Metadata(obj.section1[12],table='1.4')
     def __set__(self, obj, value):
-        obj._identificationSection[12] = value
+        obj.section1[12] = value
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 2 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 3 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 class GridDefinitionSection:
-    """
-    """
     def __get__(self, obj, objtype=None):
-        return obj._gridDefinitionSection
+        return obj.section3[0:5]
     def __set__(self, obj, value):
-        obj._gridDefinitionSection = value
+        raise NotImplementedError
 
 class GridDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._gridDefinitionSection[4],table='3.1')
+        return Grib2Metadata(obj.section3[4],table='3.1')
     def __set__(self, obj, value):
-        #obj._gridDefinitionSection[4] = value
-        pass
+        raise NotImplementedError
 
 class GridDefinitionTemplate:
     """
     """
     def __get__(self, obj, objtype=None):
-        return obj._gridDefinitionTemplate
+        return obj.section3[5:]
     def __set__(self, obj, value):
-        obj._gridDefinitionTemplate = value
+        raise NotImplementedError
+
+class EarthParams:
+    def __get__(self, obj, objtype=None):
+        if obj.gridDefinitionSection[4] in {50,51,52,1200}:
+            return None
+        return tables.earth_params[str(obj.gridDefinitionTemplate[0])]
+# temporary while refactoring
+class DxSign:
+    def __get__(self, obj, objtype=None):
+        if obj.gridDefinitionSection[4] in {0,1,203,205,32768,32769}:
+            return -1.0
+        return 1.0
+# temporary while refactoring
+class LlScaleFactor:
+    def __get__(self, obj, objtype=None):
+        if obj.gridDefinitionSection[4] in {0,1,203,205,32768,32769}:
+            llscalefactor = float(obj.gridDefinitionTemplate[9])
+            if llscalefactor == 0:
+                return 1
+            return llscalefactor
+        return 1
+# temporary while refactoring
+class LlDivisor:
+    def __get__(self, obj, objtype=None):
+        if obj.gridDefinitionSection[4] in {0,1,203,205,32768,32769}:
+            lldivisor = float(self._gridDefinitionTemplate[10])
+            if lldivisor <= 0:
+                return 1.e6
+            return lldivisor
+        return 1.e6
+# temporary while refactoring
+class XyDivisor:
+    def __get__(self, obj, objtype=None):
+        if obj.gridDefinitionSection[4] in {0,1,203,205,32768,32769}:
+            return obj._lldivisor
+        return 1.e3
 
 class ShapeOfEarth:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._gridDefinitionTemplate[0],table='3.2')
+        return Grib2Metadata(obj.section3[5],table='3.2')
     def __set__(self, obj, value):
-        obj._gridDefinitionTemplate[0] = value
+        obj.section3[5] = value
 
 class EarthRadius:
     def __get__(self, obj, objtype=None):
-        if obj._earthparams['shape'] == 'spherical':
-            if obj._earthparams['radius'] is None:
-                return obj._gridDefinitionTemplate[2]/(10.**obj._gridDefinitionTemplate[1])
+        earthparams = obj.earthparams
+        if earthparams['shape'] == 'spherical':
+            if earthparams['radius'] is None:
+                return obj.section3[7]/(10.**obj.section3[6])
             else:
-                return obj._earthparams['radius']
-        if obj._earthparams['shape'] == 'oblateSpheriod':
-            if obj._earthparams['radius'] is None and obj._earthparams['major_axis'] is None and obj._earthparams['minor_axis'] is None:
-                return obj._gridDefinitionTemplate[2]/(10.**obj._gridDefinitionTemplate[1])
+                return earthparams['radius']
+        if earthparams['shape'] == 'oblateSpheriod':
+            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+                return obj.section3[7]/(10.**obj.section3[6])
             else:
                 return earthparams['radius']
 
 class EarthMajorAxis:
     def __get__(self, obj, objtype=None):
-        if obj._earthparams['shape'] == 'spherical':
+        earthparams = obj.earthparams
+        if earthparams['shape'] == 'spherical':
             return None
-        if obj._earthparams['shape'] == 'oblateSpheriod':
-            if obj._earthparams['radius'] is None and obj._earthparams['major_axis'] is None and obj._earthparams['minor_axis'] is None:
-                return obj._gridDefinitionTemplate[4]/(10.**obj._gridDefinitionTemplate[3])
+        if earthparams['shape'] == 'oblateSpheriod':
+            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+                return obj.section3[9]/(10.**obj.section3[8])
             else:
                 return earthparams['major_axis']
 
 class EarthMinorAxis:
     def __get__(self, obj, objtype=None):
-        if obj._earthparams['shape'] == 'spherical':
+        earthparams = obj.earthparams
+        if earthparams['shape'] == 'spherical':
             return None
-        if obj._earthparams['shape'] == 'oblateSpheriod':
-            if obj._earthparams['radius'] is None and obj._earthparams['major_axis'] is None and obj._earthparams['minor_axis'] is None:
-                return obj._gridDefinitionTemplate[6]/(10.**obj._gridDefinitionTemplate[5])
+        if earthparams['shape'] == 'oblateSpheriod':
+            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+                return obj.section3[11]/(10.**section3[10])
             else:
                 return earthparams['minor_axis']
 
 class Nx:
     def __get__(self, obj, objtype=None):
-        return obj._gridDefinitionTemplate[7]
+        return obj.section3[12]
     def __set__(self, obj, value):
         pass
 
 class Ny:
     def __get__(self, obj, objtype=None):
-        return obj._gridDefinitionTemplate[8]
+        return obj.section3[13]
     def __set__(self, obj, value):
         pass
 
 class ScanModeFlags:
     _key = {0:18, 1:18, 10:15, 20:17, 30:17, 31:17, 40:18, 41:18, 90:16, 110:15, 203:18, 204:18, 205:18, 32768:18, 32769:18}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
+        gdtn = obj.section3[4]
         if gdtn == 50:
             return [None, None, None, None]
         else:
-            return utils.int2bin(obj._gridDefinitionTemplate[self._key[gdtn]],output=list)[0:4]
+            return utils.int2bin(obj.section3[self._key[gdtn] + 5],output=list)[0:4]
+    @classmethod
+    def values(cls, gdtn, gdt):
+        if gdtn == 50:
+            return [None, None, None, None]
+        else:
+            return utils.int2bin(gdt[cls._key[gdtn]],output=list)[0:4]
     def __set__(self, obj, value):
         pass
 
 class ResolutionAndComponentFlags:
     _key = {0:13, 1:13, 10:11, 20:11, 30:11, 31:11, 40:13, 41:13, 90:11, 110:11, 203:13, 204:13, 205:13, 32768:13, 32769:13}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
+        gdtn = obj.section3[-1]
         if gdtn == 50:
             return [None for i in range(8)]
         else:
-            return utils.int2bin(obj._gridDefinitionTemplate[self._key[gdtn]],output=list)
+            return utils.int2bin(obj.section3[self._key[gdtn] + 5],output=list)
     def __set__(self, obj, value):
         pass
 
 class LatitudeFirstGridpoint:
     _key = {0:11, 1:11, 10:9, 20:9, 30:9, 31:9, 40:11, 41:11, 110:9, 203:11, 204:11, 205:11, 32768:11, 32769:11}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.section3[4]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.section3[4]
+        obj.section3[self._key[gdtn]] = int(value*obj.lldivisor/obj.llscalefactor)
 
 class LongitudeFirstGridpoint:
     _key = {0:12, 1:12, 10:10, 20:10, 30:10, 31:10, 40:12, 41:12, 110:10, 203:12, 204:12, 205:12, 32768:12, 32769:12}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.section3[4]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.section3[4]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj.lldivisor/obj.llscalefactor)
 
 class LatitudeLastGridpoint:
     _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj.lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.section3[self._key[gdtn] + 5] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class LongitudeLastGridpoint:
     _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class GridlengthXDirection:
     _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return (obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dxsign
+        gdtn = obj.gridDefinitionSection[-1]
+        return (obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dxsign
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj.llscalefactor)
 
 class GridlengthYDirection:
     _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return (obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dysign
+        gdtn = obj.gridDefinitionSection[-1]
+        return (obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._xydivisor)*obj._dysign
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._xydivisor/obj.llscalefactor)
 
 class LatitudeSouthernPole:
     _key = {1:19, 30:20, 31:20, 41:19}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class LongitudeSouthernPole:
     _key = {1:20, 30:21, 31:21, 41:20}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class AnglePoleRotation:
     _key = {1:21, 41:21}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._gridDefinitionTemplate[self._key[gdtn]]
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.gridDefinitionTemplate[self._key[gdtn]]
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value)
 
 class LatitudeTrueScale:
     _key = {10:12, 20:12, 30:12, 31:12}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj.lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class GridOrientation:
     _key = {10:16, 20:13, 30:13, 31:13}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj.lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
+        gdtn = obj.gridDefinitionSection[-1]
         if gdtn == 10 and (value < 0 or value > 90):
             raise ValueError("Grid orientation is limited to range of 0 to 90 degrees.")
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj.lldivisor/obj.llscalefactor)
 
 class ProjectionCenterFlag:
     _key = {20:16, 30:16, 31:16}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return utils.int2bin(obj._gridDefinitionTemplate[self._key[gdtn]],output=list)[0]
+        gdtn = obj.gridDefinitionSection[-1]
+        return utils.int2bin(obj.gridDefinitionTemplate[self._key[gdtn]],output=list)[0]
     def __set__(self, obj, value):
         pass
 
 class StandardLatitude1:
     _key = {30:18, 31:18}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj.lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj.llscalefactor)
 
 class StandardLatitude2:
     _key = {30:19, 31:19}
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
-        return obj._llscalefactor*obj._gridDefinitionTemplate[self._key[gdtn]]/obj._lldivisor
+        gdtn = obj.gridDefinitionSection[-1]
+        return obj.llscalefactor*obj.gridDefinitionTemplate[self._key[gdtn]]/obj.lldivisor
     def __set__(self, obj, value):
-        gdtn = obj._gridDefinitionSection[-1]
-        obj._gridDefinitionTemplate[self._key[gdtn]] = int(value*obj._lldivisor/obj._llscalefactor)
+        gdtn = obj.gridDefinitionSection[-1]
+        obj.gridDefinitionTemplate[self._key[gdtn]] = int(value*obj.lldivisor/obj.llscalefactor)
 
 class SpectralFunctionParameters:
     def __get__(self, obj, objtype=None):
-        return obj._gridDefinitionTemplate[0:3]
+        return obj.gridDefinitionTemplate[0:3]
     def __set__(self, obj, value):
-        obj._gridDefinitionTemplate[0:3] = value[0:3]
+        obj.gridDefinitionTemplate[0:3] = value[0:3]
 
 class ProjParameters:
     def __get__(self, obj, objtype=None):
-        gdtn = obj._gridDefinitionSection[-1]
+        gdtn = obj.gridDefinitionSection[-1]
         if gdtn == 0:
             return {'proj':'eqc'}
         if gdtn == 10:
@@ -664,110 +704,130 @@ _gdt_by_gdtn = {0: GridDefinitionTemplate0,
 def gdt_class_by_gdtn(gdtn):
     return _gdt_by_gdtn[gdtn]
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 4 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 class ProductDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplateNumber,table='4.0')
+        return Grib2Metadata(obj.section4[1],table='4.0')
     def __set__(self, obj, value):
-        #obj._productDefinitionTemplateNumber = value
         pass
 
 class ProductDefinitionTemplate:
     """ This has __get__ and __set__ and therefore implements the descriptor protocol """
-    def __set_name__(self, owner, name):
-        self.private_name = f'_{name}'
     def __get__(self, obj, objtype=None):
-        return getattr(obj, self.private_name)
+        return obj.section4[2:]
     def __set__(self, obj, value):
-        setattr(obj, self.private_name, value)
+        pass
 
 class ParameterCategory:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[0]
+        return obj.section4[2]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[0] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
-                                                     obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+        obj.section4[2] = value
+#       obj._productDefinitionTemplate[0] = value
+#       obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
+#                                                    obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
 
 class ParameterNumber:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[1]
+        return obj.section4[3]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[1] = value
-        obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
-                                                     obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+        obj.section4[3] = value
+#       obj._productDefinitionTemplate[1] = value
+#       obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
+#                                                    obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
 
 class FullName:
     def __get__(self, obj, objtype=None):
-        return obj._varinfo[0]
+        discipline = obj.section0[2]
+        parmcat = obj.section4[2]
+        parmnum = obj.section4[3]
+        # isndfd capability deffered for now
+        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[0]
     def __set__(self, obj, value):
-        #obj._varinfo[0] = value
-        pass
+        raise NotImplementedError
 
 class Units:
     def __get__(self, obj, objtype=None):
-        return obj._varinfo[1]
+        discipline = obj.section0[2]
+        parmcat = obj.section4[2]
+        parmnum = obj.section4[3]
+        # isndfd capability deffered for now
+        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[1]
     def __set__(self, obj, value):
-        #obj._varinfo[1] = value
-        pass
+        raise NotImplementedError
 
 class ShortName:
     def __get__(self, obj, objtype=None):
-        return obj._varinfo[2]
+        discipline = obj.section0[2]
+        parmcat = obj.section4[2]
+        parmnum = obj.section4[3]
+        #return tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)[2]
+        # isndfd capability deffered for now
+        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[2]
     def __set__(self, obj, value):
-        #obj._varinfo[2] = value
-        pass
+        raise NotImplementedError
+
+class VarInfo:
+    def __get__(self, obj, objtype=None):
+        discipline = obj.section0[2]
+        parmcat = obj.section4[2]
+        parmnum = obj.section4[3]
+        #return tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)[2]
+        # isndfd capability deffered for now
+        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)
+    def __set__(self, obj, value):
+        raise NotImplementedError
 
 class TypeOfGeneratingProcess:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplate[2],table='4.3')
+        return Grib2Metadata(obj.section4[4],table='4.3')
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[2] = value
-        
+        obj.section4[4] = value
+
 class BackgroundGeneratingProcessIdentifier:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[3]
+        return obj.section4[5]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[3] = value
+        obj.section4[5] = value
 
 class GeneratingProcess:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplate[4],table='generating_process')
+        return Grib2Metadata(obj.section4[6],table='generating_process')
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[4] = value
+        obj.section4[6] = value
 
 class UnitOfTimeRange:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplate[7],table='4.4')
+        return Grib2Metadata(obj.section4[9],table='4.4')
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[7] = value
+        obj.section4[9] = value
 
 class LeadTime:
     def __get__(self, obj, objtype=None):
-        return utils.getleadtime(obj._identificationSection,obj._productDefinitionTemplateNumber,
-                                 obj._productDefinitionTemplate)
+        return utils.getleadtime(obj.section1,obj.section4[2],
+                obj.section4[2:])
     def __set__(self, obj, value):
-        pass
+        raise NotImplementedError
 
 class TypeOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplate[9],table='4.5')
+        return Grib2Metadata(obj.section4[11],table='4.5')
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[9] = value
+        obj.section4[11] = value
 
 class ScaleFactorOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[10]
+        return obj.section4[12]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[10] = value
+        obj.section4[12] = value
 
 class ScaledValueOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[11]
+        return obj.section4[13]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[11] = value
+        obj.section4[13] = value
 
 class UnitOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
@@ -777,27 +837,27 @@ class UnitOfFirstFixedSurface:
 
 class ValueOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[11]/(10.**obj._productDefinitionTemplate[10])
+        return obj.section4[13]/(10.**obj.section4[12])
     def __set__(self, obj, value):
         pass
 
 class TypeOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._productDefinitionTemplate[12],table='4.5')
+        return Grib2Metadata(obj.section4[14],table='4.5')
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[12] = value
+        obj.section4[14] = value
 
 class ScaleFactorOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[13]
+        return obj.section4[15]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[13] = value
+        obj.section4[15] = value
 
 class ScaledValueOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[14]
+        return obj.section4[16]
     def __set__(self, obj, value):
-        obj._productDefinitionTemplate[14] = value
+        obj.section4[16] = value
 
 class UnitOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
@@ -807,16 +867,19 @@ class UnitOfSecondFixedSurface:
 
 class ValueOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj._productDefinitionTemplate[14]/(10.**obj._productDefinitionTemplate[13])
+        return obj.section4[16]/(10.**obj.section4[15])
     def __set__(self, obj, value):
         pass
 
 class Level:
     def __get__(self, obj, objtype=None):
-        return tables.get_wgrib2_level_string(*obj._productDefinitionTemplate[9:15])
+        # pdt starts at section4[2]
+        #return tables.get_wgrib2_level_string(*obj._productDefinitionTemplate[9:15])
+        return tables.get_wgrib2_level_string(*obj.section4[11:17])
     def __set__(self, obj, value):
         pass
 
+# stopped here with converting to work off of sectionN
 class TypeOfEnsembleForecast:
     _key = {1:15, 11:15}
     def __get__(self, obj, objtype=None):
@@ -888,7 +951,7 @@ class ScaleFactorOfThresholdLowerLimit:
     def __set__(self, obj, value):
         pdtn = obj._productDefinitionTemplateNumber
         obj._productDefinitionTemplate[self._key[pdtn]] = value
-        
+
 class ScaledValueOfThresholdLowerLimit:
     _key = {5:19, 9:19}
     def __get__(self, obj, objtype=None):
@@ -1093,7 +1156,7 @@ class NumberOfDataPointsForSpatialProcessing:
     def __set__(self, obj, value):
         pdtn = obj._productDefinitionTemplateNumber
         obj._productDefinitionTemplate[self._key[pdtn]] = value
-    
+
 @dataclass(init=False)
 class ProductDefinitionTemplate0():
     _len = 15
@@ -1303,13 +1366,13 @@ _pdt_by_pdtn = {
     12: ProductDefinitionTemplate12,
     15: ProductDefinitionTemplate15,
     }
-        
+
 def pdt_class_by_pdtn(pdtn):
     return _pdt_by_pdtn[pdtn]
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 5 metadata.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 class NumberOfDataPoints:
     def __get__(self, obj, objtype=None):
         return obj._numberOfDataPoints
@@ -1318,165 +1381,162 @@ class NumberOfDataPoints:
 
 class DataRepresentationTemplateNumber:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplateNumber,table='5.0')
+        return Grib2Metadata(obj.section5[1],table='5.0')
     def __set__(self, obj, value):
-        #obj._dataRepresentationTemplateNumber = value
+        #obj.dataRepresentationTemplateNumber = value
         pass
 
 class DataRepresentationTemplate:
-    """ This has __get__ and __set__ and therefore implements the descriptor protocol """
-    def __set_name__(self, owner, name):
-        self.private_name = f'_{name}'
     def __get__(self, obj, objtype=None):
-        return getattr(obj, self.private_name)
+        return obj.section5[2:]
     def __set__(self, obj, value):
-        setattr(obj, self.private_name, value)
+        raise NotImplementedError
 
 class RefValue:
     def __get__(self, obj, objtype=None):
-        return utils.ieee_int_to_float(obj._dataRepresentationTemplate[0])
+        return utils.ieee_int_to_float(obj.dataRepresentationTemplate[0])
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[0] = utils.ieee_float_to_int(float(value))
+        obj.dataRepresentationTemplate[0] = utils.ieee_float_to_int(float(value))
 
 class BinScaleFactor:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[1]
+        return obj.dataRepresentationTemplate[1]
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[1] = value
+        obj.dataRepresentationTemplate[1] = value
 
 class DecScaleFactor:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[2]
+        return obj.dataRepresentationTemplate[2]
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[2] = value
+        obj.dataRepresentationTemplate[2] = value
 
 class NBitsPacking:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[3]
+        return obj.dataRepresentationTemplate[3]
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[3] = value
+        obj.dataRepresentationTemplate[3] = value
 
 class TypeOfValues:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.dataRepresentationTemplate[4],table='5.1')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[4] = value
+        obj.dataRepresentationTemplate[4] = value
 
 class GroupSplitMethod:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplate[5],table='5.4')
+        return Grib2Metadata(obj.dataRepresentationTemplate[5],table='5.4')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[5] = value
+        obj.dataRepresentationTemplate[5] = value
 
 class TypeOfMissingValue:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplate[6],table='5.5')
+        return Grib2Metadata(obj.dataRepresentationTemplate[6],table='5.5')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[5] = value
+        obj.dataRepresentationTemplate[5] = value
 
 class PriMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj._dataRepresentationTemplate[7]) if obj._dataRepresentationTemplate[6] in [1,2] else None
+            return utils.ieee_int_to_float(obj.dataRepresentationTemplate[7]) if obj.dataRepresentationTemplate[6] in {1,2} else None
         elif obj.typeOfValues == 1:
-            return obj._dataRepresentationTemplate[7] if obj._dataRepresentationTemplate[6] in [1,2] else None
+            return obj.dataRepresentationTemplate[7] if obj.dataRepresentationTemplate[6] in [1,2] else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
-            obj._dataRepresentationTemplate[7] = utils.ieee_float_to_int(value)
+            obj.dataRepresentationTemplate[7] = utils.ieee_float_to_int(value)
         elif self.typeOfValues == 1:
-            obj._dataRepresentationTemplate[7] = int(value)
-        obj._dataRepresentationTemplate[6] = 1
+            obj.dataRepresentationTemplate[7] = int(value)
+        obj.dataRepresentationTemplate[6] = 1
 
 class SecMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj._dataRepresentationTemplate[8]) if obj._dataRepresentationTemplate[6] in [1,2] else None
+            return utils.ieee_int_to_float(obj.dataRepresentationTemplate[8]) if obj.dataRepresentationTemplate[6] in {1,2} else None
         elif obj.typeOfValues == 1:
-            return obj._dataRepresentationTemplate[8] if obj._dataRepresentationTemplate[6] in [1,2] else None
+            return obj.dataRepresentationTemplate[8] if obj.dataRepresentationTemplate[6] in {1,2} else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
-            obj._dataRepresentationTemplate[8] = utils.ieee_float_to_int(value)
+            obj.dataRepresentationTemplate[8] = utils.ieee_float_to_int(value)
         elif self.typeOfValues == 1:
-            obj._dataRepresentationTemplate[8] = int(value)
-        obj._dataRepresentationTemplate[6] = 2
+            obj.dataRepresentationTemplate[8] = int(value)
+        obj.dataRepresentationTemplate[6] = 2
 
 class NGroups:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[9]
+        return obj.dataRepresentationTemplate[9]
     def __set__(self, obj, value):
         pass
 
 class RefGroupWidth:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[10]
+        return obj.dataRepresentationTemplate[10]
     def __set__(self, obj, value):
         pass
 
 class NBitsGroupWidth:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[11]
+        return obj.dataRepresentationTemplate[11]
     def __set__(self, obj, value):
         pass
 
 class RefGroupLength:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[12]
+        return obj.dataRepresentationTemplate[12]
     def __set__(self, obj, value):
         pass
 
 class GroupLengthIncrement:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[13]
+        return obj.dataRepresentationTemplate[13]
     def __set__(self, obj, value):
         pass
 
 class LengthOfLastGroup:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[14]
+        return obj.dataRepresentationTemplate[14]
     def __set__(self, obj, value):
         pass
 
 class NBitsScaledGroupLength:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[15]
+        return obj.dataRepresentationTemplate[15]
     def __set__(self, obj, value):
         pass
 
 class SpatialDifferenceOrder:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplate[16],table='5.6')
+        return Grib2Metadata(obj.dataRepresentationTemplate[16],table='5.6')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[16] = value
+        obj.dataRepresentationTemplate[16] = value
 
 class NBytesSpatialDifference:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[17]
+        return obj.dataRepresentationTemplate[17]
     def __set__(self, obj, value):
         pass
 
 class Precision:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplate[0],table='5.7')
+        return Grib2Metadata(obj.dataRepresentationTemplate[0],table='5.7')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[0] = value
+        obj.dataRepresentationTemplate[0] = value
 
 class TypeOfCompression:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj._dataRepresentationTemplate[5],table='5.40')
+        return Grib2Metadata(obj.dataRepresentationTemplate[5],table='5.40')
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[5] = value
+        obj.dataRepresentationTemplate[5] = value
 
 class TargetCompressionRatio:
     def __get__(self, obj, objtype=None):
-        return obj._dataRepresentationTemplate[6]
+        return obj.dataRepresentationTemplate[6]
     def __set__(self, obj, value):
         pass
 
 class RealOfCoefficient:
     def __get__(self, obj, objtype=None):
-        return utils.ieee_int_to_float(obj._dataRepresentationTemplate[4])
+        return utils.ieee_int_to_float(obj.dataRepresentationTemplate[4])
     def __set__(self, obj, value):
-        obj._dataRepresentationTemplate[4] = utils.ieee_float_to_int(float(value))
+        obj.dataRepresentationTemplate[4] = utils.ieee_float_to_int(float(value))
 
 @dataclass(init=False)
 class DataRepresentationTemplate0():

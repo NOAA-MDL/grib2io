@@ -23,7 +23,8 @@ from xarray.backends.common import (
 from xarray.core import indexing
 from xarray.backends.locks import SerializableLock
 import grib2io
-from grib2io import Grib2Message
+from grib2io import Grib2Message, templates
+from grib2io._grib2io import _data
 
 logger = logging.getLogger(__name__)
 
@@ -55,42 +56,10 @@ class GribBackendEntrypoint(BackendEntrypoint):
         f = grib2io.open(filename)
         file_index = pd.DataFrame(f._index)[1:]  # first line is all None
 
-        initial_filters = copy(filters)
-
-        # apply common filters(to all definition templates) to reduce dataset to single cube
-
-#       # apply product definition template number filter
-#       if 'productDefinitionTemplateNumber' in filters:
-#           if not isinstance(filters['productDefinitionTemplateNumber'], int):
-#               raise TypeError('productDefinitionTemplateNumber filter must be of type int')
-#           file_index = file_index.loc[file_index['productDefinitionTemplateNumber'] == filters['productDefinitionTemplateNumber']]
-#       unique_pdtn = file_index.productDefinitionTemplateNumber.unique()
-#       if len(file_index.productDefinitionTemplateNumber.unique()) != 1:
-#           raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {file_index.productDefinitionTemplateNumber.unique()}')
-#       pdtn = unique_pdtn[0]
-
-#       # apply type of generating process filter
-#       field = 'typeOfGeneratingProcess'
-#       if field in filters:
-#           if not isinstance(filters[field], int):
-#               raise TypeError(f'{field} filter must be of type int')
-#           file_index = file_index.loc[file_index[field] == filters[field]]
-#       unique = file_index[field].unique()
-#       if len(unique) != 1:
-#           raise ValueError(f'filter to a single {field}; found: {unique}')
-
-#       # apply type of first fixed surface filter
-#       if 'typeOfFirstFixedSurface' in filters:
-#           if not isinstance(filters['typeOfFirstFixedSurface'], str):
-#               raise TypeError('typeOfFirstFixedSurface filter must be of type str')
-#           file_index = file_index.loc[file_index['typeOfFirstFixedSurface'] == filters['typeOfFirstFixedSurface']]
-#       if len(file_index.typeOfFirstFixedSurface.unique()) != 1:
-#           raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {file_index.typeOfFirstFixedSurface.unique()}')
-
-
+        # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)
         file_index, non_geo_dims = parse_grib_index(file_index, filters)
 
-        # Apply rest of filters and divide up records by variable
+        # Apply filters and divide up records by variable
         frames, cube, extra_geo = make_variables(file_index, filters, f, non_geo_dims)
         # return empty dataset if no data
         if frames is None:
@@ -290,28 +259,22 @@ class OnDiskArray:
         with open(self.file_name, mode='rb', buffering=ONE_MB) as filehandle:
             for key, row in index.iterrows():
                 t2 = datetime.datetime.now()
-                filehandle.seek(int(row['offset']))
+                msg = Grib2Message(row['section0'],
+                        row['section1'],
+                        row['section3'],
+                        row['section4'],
+                        row['section5'],
+                        row['bitMapFlag'])
+                msg.bitMap = row['bitMap']
+                datasize = (row['offset'] + row['size']) - row['data_offset']
 
-                t3 = datetime.datetime.now()
-                msg = Grib2Message(msg=filehandle.read(int(row['size'])),
-                    source='grib file',
-                    num=row['messageNumber'],
-                    decode=False,
-                    )
-
-                # data method sometimes returns masked array and sometimes ndarray
-                # convert to ndarray with nan values where masked
-                a = msg.data()
-                try:
-                    values = a.filled(fill_value=np.nan)
-                except AttributeError:
-                    values = a
-
+                values = _data(filehandle, msg, row['data_offset'], datasize)
 
                 if len(index_slicer_inclusive) >= 1:
                     array_field[row.miloc] = values
                 else:
                     array_field = values
+                print(f'msg load took {datetime.datetime.now() - t2}')
 
         # handle geo dim slicing
         #print(f'data load took: {datetime.datetime.now() - t1}')
@@ -321,7 +284,7 @@ class OnDiskArray:
         for i, it in reversed(list(enumerate(item[: -self.geo_ndim]))):
             if isinstance(it, int):
                 array_field = array_field[(slice(None, None, None),) * i + (0,)]
-        #f.close()
+
         return array_field
 
 
@@ -333,31 +296,31 @@ def dims_to_shape(d) -> tuple:
     return t
 
 def filter_index(index, k, v):
-	if isinstance(v, slice):
-		index = index.set_index(k)
-		index = index.loc[v]
-		index = index.reset_index()
-	else:
-		label = (
-			v
-			if getattr(v, "ndim", 1) > 1  # vectorized-indexing
-			else _asarray_tuplesafe(v)
-			)
-		if label.ndim == 0:
-			label_value = label[()] if label.dtype.kind in "mM" else label.item() # see https://github.com/pydata/xarray/pull/4292 for details
-			try:
-				indexer = pd.Index(index[k]).get_loc(label_value)
-				if isinstance(indexer, int):
-					index = index.iloc[[indexer]]
-				else:
-					index = index.iloc[indexer]
-			except KeyError:
-				index = index.iloc[[]]
-		else:
-			indexer = pd.Index(index[k]).get_indexer_for(np.ravel(v))
-			index = index.iloc[indexer[indexer >= 0]]
+    if isinstance(v, slice):
+        index = index.set_index(k)
+        index = index.loc[v]
+        index = index.reset_index()
+    else:
+        label = (
+            v
+            if getattr(v, "ndim", 1) > 1  # vectorized-indexing
+            else _asarray_tuplesafe(v)
+            )
+        if label.ndim == 0:
+            label_value = label[()] if label.dtype.kind in "mM" else label.item() # see https://github.com/pydata/xarray/pull/4292 for details
+            try:
+                indexer = pd.Index(index[k]).get_loc(label_value)
+                if isinstance(indexer, int):
+                    index = index.iloc[[indexer]]
+                else:
+                    index = index.iloc[indexer]
+            except KeyError:
+                index = index.iloc[[]]
+        else:
+            indexer = pd.Index(index[k]).get_indexer_for(np.ravel(v))
+            index = index.iloc[indexer[indexer >= 0]]
 
-	return index
+    return index
 
 def threshold_lower_limit(pdt):
     if pdt[19] == 255:
@@ -378,6 +341,7 @@ def parse_grib_index(index, filters):
     '''
     Apply filters; evaluate what dimesnions are possible (based on pdtn) and parse each out
     '''
+    index = index.astype({'offset':'int','data_offset':'int', 'size':'int', 'ny':'int','nx':'int'})
     # apply common filters(to all definition templates) to reduce dataset to single cube
 
     # apply product definition template number filter
@@ -504,7 +468,7 @@ def build_da_without_coords(index, cube, file) -> xr.DataArray:
                     continue
             except ValueError:
                 continue  # encountered np arrays; ignore for now
-            if isinstance(msg1.__dict__[attr], grib2io.Grib2Metadata):
+            if isinstance(msg1.__dict__[attr], grib2io.templates.Grib2Metadata):
                 v = msg1.__dict__[attr].value
             elif isinstance(msg1.__dict__[attr], (str, numbers.Number, np.ndarray, list, tuple)):
                 v = msg1.__dict__[attr]
@@ -649,7 +613,7 @@ def make_variables(index, filters, f, non_geo_dims):
     latitude, longitude = rec.latlons()
     latitude = xr.DataArray(latitude, dims=['y','x'])
     latitude.attrs['standard_name'] = 'latitude'
-    longitude = xr.DataArray(longitude * -1, dims=['y','x'])
+    longitude = xr.DataArray(longitude, dims=['y','x'])
     longitude.attrs['standard_name'] = 'longitude'
     extra_geo = dict(latitude=latitude, longitude=longitude)
     return ordered_frames, cube, extra_geo
