@@ -269,6 +269,7 @@ class open():
                                     _gds = _gds.tolist()
                                     _gdt = _gdt.tolist()
                                     section3 = np.concatenate((_gds,_gdt))
+                                    section3 = np.where(section3==4294967295,-1,section3)
                                 elif secnum == 4:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
@@ -370,20 +371,34 @@ class open():
                             self._index['edition'].append(edition)
                             self._index['size'].append(size)
                             self._index['indicatorSection'].append(['GRIB',0,discipline,edition,size])
+                            self._index['section0'].append(['GRIB',0,discipline,edition,size])
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['identificationSection'].append(_grbsec1)
+                            self._index['section1'].append(_grbsec1)
+                            self._index['section3'].append(section3)
+                            self._index['section4'].append(section4)
+                            self._index['section5'].append(section5)
                             self._index['refDate'].append(_refdate)
                             self._index['gridDefinitionTemplateNumber'].append(_gds[-1])
+                            self._index['gridDefinitionTemplate'].append(_gdt)
+                            self._index['gridDefinitionSection'].append(_gds)
                             self._index['nx'].append(int(_gdt[7]))
                             self._index['ny'].append(int(_gdt[8]))
                             self._index['productDefinitionTemplateNumber'].append(_pdtnum)
                             self._index['productDefinitionTemplate'].append(_pdt)
+                            self._index['typeOfFirstFixedSurface'].append(templates.Grib2Metadata(_pdt[9],table='4.5').definition[0])
+                            scaleFactorOfFirstFixedSurface = _pdt[10]
+                            scaledValueOfFirstFixedSurface = _pdt[11]
+                            valueOfFirstFixedSurface = scaledValueOfFirstFixedSurface/(10.**scaleFactorOfFirstFixedSurface)
+                            self._index['typeOfGeneratingProcess'].append(_pdt[2])
+                            self._index['valueOfFirstFixedSurface'].append(valueOfFirstFixedSurface)
+                            self._index['level'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
                             self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
                             self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
-                            self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
+                            self._index['bitMapFlag'].append(_bmapflag)
                             if _pdtnum in [5,9]:
                                 self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
                             else:
@@ -391,6 +406,7 @@ class open():
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
                             self._index['dataRepresentationTemplateNumber'].append(_drtn)
+                            self._index['dataRepresentationTemplate'].append(_drt)
                             continue
 
             except(struct.error):
@@ -540,6 +556,7 @@ class open():
 
 @dataclass
 class Grib2Message:
+    # GRIB2 Sections
     section0: np.array = field(init=True,repr=True,)
     section1: np.array = field(init=True,repr=True)
     section3: np.array = field(init=True,repr=True)
@@ -547,17 +564,17 @@ class Grib2Message:
     section5: np.array = field(init=True,repr=True)
     bitMapFlag: int = field(init=True,repr=False,default=255)
 
-    # section 0 looked up attributes
+    # Section 0 looked up attributes
     indicatorSection: np.array = field(init=False,repr=False,default=templates.IndicatorSection())
     discipline: Grib2Metadata = field(init=False,repr=False,default=templates.Discipline())
 
-    # section 1 looked up attributes
+    # Section 1 looked up attributes
     identificationSection: np.array = field(init=False,repr=False,default=templates.IdentificationSection)
     originatingCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingCenter())
-#   originatingSubCenter = field(init=False,repr=False,default=templates.OriginatingSubCenter())
-    masterTableInfo: str = field(init=False,repr=False,default=templates.MasterTableInfo())
-    localTableInfo: str = field(init=False,repr=False,default=templates.LocalTableInfo())
-    significanceOfReferenceTime: str = field(init=False,repr=False,default=templates.SignificanceOfReferenceTime())
+    originatingSubCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingSubCenter())
+    masterTableInfo: Grib2Metadata = field(init=False,repr=False,default=templates.MasterTableInfo())
+    localTableInfo: Grib2Metadata = field(init=False,repr=False,default=templates.LocalTableInfo())
+    significanceOfReferenceTime: Grib2Metadata = field(init=False,repr=False,default=templates.SignificanceOfReferenceTime())
     year: int = field(init=False,repr=False,default=templates.Year())
     month: int = field(init=False,repr=False,default=templates.Month())
     day: int = field(init=False,repr=False,default=templates.Day())
@@ -565,37 +582,33 @@ class Grib2Message:
     minute: int = field(init=False,repr=False,default=templates.Minute())
     second: int = field(init=False,repr=False,default=templates.Second())
     refDate: datetime.datetime = field(init=False,repr=True,default=templates.RefDate())
-    productionStatus: str = field(init=False,repr=False,default=templates.ProductionStatus())
-    typeOfData: str = field(init=False,repr=False,default=templates.TypeOfData())
+    productionStatus: Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
+    typeOfData: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
 
-    # section 3 looked up attributes
+    # Section 3 looked up common attributes.  Other looked up attributes are available according
+    # to the Grid Definition Template.
     gridDefinitionSection: np.array = field(init=False,repr=True,default=templates.GridDefinitionSection())
-    gridDefinitionTemplateNumber: int = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
+    gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
     gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
     _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
-    earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
-    _dxsign = templates.DxSign() # temporary
-    _dysign = templates.DxSign() # temporary
-    _llscalefactor = templates.LlScaleFactor() # temporary
-    llscalefactor = templates.LlScaleFactor() # temporary
-    _lldivisor = templates.LlDivisor() # temporary
-    lldivisor = templates.LlDivisor() # temporary
-    _xydivisor = templates.XyDivisor() # temporary
-
-    gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
-
-    shapeOfEarth = templates.ShapeOfEarth()
-    earthRadius = templates.EarthRadius()
-    earthMajorAxis = templates.EarthMajorAxis()
-    earthMinorAxis = templates.EarthMinorAxis()
-    resolutionAndComponentFlags = templates.ResolutionAndComponentFlags()
+    _dxsign: float = field(init=False,repr=False,default=templates.DxSign())
+    _dysign: float = field(init=False,repr=False,default=templates.DySign())
+    _llscalefactor: float = field(init=False,repr=False,default=templates.LLScaleFactor())
+    _lldivisor: float = field(init=False,repr=False,default=templates.LLDivisor())
+    _xydivisor: float = field(init=False,repr=False,default=templates.XYDivisor())
+    shapeOfEarth: Grib2Metadata = field(init=False,repr=False,default=templates.ShapeOfEarth())
+    earthRadius: float = field(init=False,repr=False,default=templates.EarthRadius())
+    earthMajorAxis: float = field(init=False,repr=False,default=templates.EarthMajorAxis())
+    earthMinorAxis: float = field(init=False,repr=False,default=templates.EarthMinorAxis())
+    resolutionAndComponentFlags: list = field(init=False,repr=False,default=templates.ResolutionAndComponentFlags())
     ny: int = field(init=False,repr=True,default=templates.Ny())
     nx: int = field(init=False,repr=True,default=templates.Nx())
     scanModeFlags: list = field(init=False,repr=True,default=templates.ScanModeFlags())
 #    priMissingValue: list = field(init=False,repr=True,default=templates.PriMissingValue()) # is this encoded?
 #    secMissingValue: list = field(init=False,repr=True,default=templates.SecMissingValue())
 
-    # section 4 looked up attributes
+    # Section 4 looked up common attributes.  Other looked up attributes are available according
+    # to the Product Definition Template.
     productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
     parameterCategory: int = field(init=False,repr=False,default=templates.ParameterCategory())
@@ -605,7 +618,7 @@ class Grib2Message:
     shortName: str = field(init=False, repr=True, default=templates.ShortName())
     varinfo: str = field(init=False, repr=True, default=templates.VarInfo())
     typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfGeneratingProcess())
-#    generatingProcess: Grib2Metadata = field(init=False, repr=False, default=templates.GeneratingProcess())
+    generatingProcess: Grib2Metadata = field(init=False, repr=False, default=templates.GeneratingProcess())
     backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=templates.BackgroundGeneratingProcessIdentifier())
     unitOfTimeRange: Grib2Metadata = field(init=False,repr=True,default=templates.UnitOfTimeRange())
     leadTime: datetime.timedelta = field(init=False,repr=True,default=templates.LeadTime())
@@ -625,7 +638,8 @@ class Grib2Message:
     level: str = field(init=False, repr=True, default=templates.Level())
 #   duration = templates.Duration()
 
-    # section 5 looked up attributes
+    # Section 5 looked up common attributes.  Other looked up attributes are available according
+    # to the Data Representation Template.
 #   numberOfDataPoints = templates.NumberOfDataPoints()
     dataRepresentationTemplateNumber: int = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
@@ -654,6 +668,7 @@ class Grib2Message:
         dtype = 'float32'
         data_offset = index['data_offset'][loc]
         data_size = (index['offset'][loc] + index['size'][loc]) - data_offset
+        msg._msgnum = loc
         msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile._filehandle, msg, data_offset, data_size)
 
         return msg
