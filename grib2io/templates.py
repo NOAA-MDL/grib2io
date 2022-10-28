@@ -777,7 +777,7 @@ class UnitOfTimeRange:
 
 class LeadTime:
     def __get__(self, obj, objtype=None):
-        return utils.getleadtime(obj.section1,obj.section4[2],
+        return utils.getleadtime(obj.section1,obj.section4[1],
                 obj.section4[2:])
     def __set__(self, obj, value):
         raise NotImplementedError
@@ -947,27 +947,27 @@ class ScaledValueOfThresholdLowerLimit:
 
 class ThresholdLowerLimit:
     def __get__(self, obj, objtype=None):
-        if obj.section4[18] == -127 and \
-           obj.section4[19] == 255:
+        if obj.section4[18+2] == -127 and \
+           obj.section4[19+2] == 255:
             return 0.0
         else:
-            return obj.section4[19]/(10.**obj.section4[18])
+            return obj.section4[19+2]/(10.**obj.section4[18+2])
     def __set__(self, obj, value):
         pass
 
 class ThresholdUpperLimit:
     def __get__(self, obj, objtype=None):
-        if obj.section4[20] == -127 and \
-           obj.section4[21] == 255:
+        if obj.section4[20+2] == -127 and \
+           obj.section4[21+2] == 255:
             return 0.0
         else:
-            return obj.section4[21]/(10.**obj.section4[20])
+            return obj.section4[21+2]/(10.**obj.section4[20+2])
     def __set__(self, obj, value):
         pass
 
 class Threshold:
     def __get__(self, obj, objtype=None):
-        return utils.get_wgrib2_prob_string(*obj.section4[17:22])
+        return utils.get_wgrib2_prob_string(*obj.section4[17+2:22+2])
     def __set__(self, obj, value):
         pass
 

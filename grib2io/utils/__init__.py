@@ -264,6 +264,8 @@ def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
     **`str`**: wgrib2-formatted string of probability threshold.
     """
     probstr = ''
+    if sfacl == -127: sfacl = 0
+    if sfacu == -127: sfacu = 0
     lower = svall/(10**sfacl)
     upper = svalu/(10**sfacu)
     if probtype == 0:
