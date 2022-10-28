@@ -1,4 +1,3 @@
-from copy import copy
 from dataclasses import dataclass, field
 
 import datetime
@@ -23,6 +22,13 @@ _section_attrs = {0:['discipline'],
                   6:[],
                   7:[],
                   8:[],}
+
+def _get_template_class_attrs(items):
+    attrs = []
+    for i in items:
+        if not i.startswith('_') and i != 'attrs':
+            attrs.append(i)
+    return attrs
 
 class Grib2Metadata():
     """
@@ -65,26 +71,6 @@ class Grib2Metadata():
         return self.value <= other
     def __contains__(self,other):
         return other in self.definition
-
-#class Grib2Section:
-#    """Generic descriptor class for a GRIB2 section."""
-#    def __set_name__(self, owner, name):
-#        self.private_name = f'_{name}'
-#
-#    def public_name(self):
-#        """Can be used by subclass with super().get_name() to discover
-#           the private name without _ ; helpfull for raising informative errors"""
-#        return self.private_name.strip('_')
-#
-#    def __get__(self, obj, objtype=None):
-#        # Returning a copy prevents changes occuring to obj
-#        return copy(getattr(obj, self.private_name))
-#
-#    def __set__(self, obj, value):
-#        # Logic for managing set
-#        print(f'setitem called on self.{self.public_name()}; rebuild Grib2msg Object')
-#        setattr(obj, self.private_name, value)
-
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 0 metadata.
@@ -516,27 +502,35 @@ class SpectralFunctionParameters:
 
 class ProjParameters:
     def __get__(self, obj, objtype=None):
+        a = 1.0
+        b = 1.0
+        if obj.earthRadius is not None:
+            a = obj.earthRadius
+            b = obj.earthRadius
+        else:
+            if obj.earthMajorAxis is not None: a = obj.earthMajorAxis
+            if obj.earthMajorAxis is not None: b = obj.earthMinorAxis
         gdtn = obj.section3[4]
         if gdtn == 0:
-            return {'proj':'eqc'}
+            return {'proj':'eqc','a':a,'b':b}
         if gdtn == 10:
             return {'proj':'merc','lat_ts':obj.latitudeTrueScale,
-                    'lon_0':0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)}
+                    'lon_0':0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint),'a':a,'b':b}
         elif gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
             elif obj.projectionCenterFlag == 1:
                 lat0 = -90.0
             return {'proj':'stere','lat_ts':obj.latitudeTrueScale,
-                    'lat_0':lat0,'lon_0':obj.gridOrientation}
+                    'lat_0':lat0,'lon_0':obj.gridOrientation,'a':a,'b':b}
         elif gdtn == 30:
             return {'proj':'lcc','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation}
+                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation,'a':a,'b':b}
         elif gdtn == 31:
             return {'proj':'aea','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation}
+                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation,'a':a,'b':b}
         elif gdtn == 40:
-            return {'proj':'eqc'}
+            return {'proj':'eqc','a':a,'b':b}
     def __set__(self, obj, value):
         pass
 
@@ -716,7 +710,6 @@ class ProductDefinitionTemplateNumber:
         pass
 
 class ProductDefinitionTemplate:
-    """ This has __get__ and __set__ and therefore implements the descriptor protocol """
     def __get__(self, obj, objtype=None):
         return obj.section4[2:]
     def __set__(self, obj, value):
@@ -727,58 +720,34 @@ class ParameterCategory:
         return obj.section4[2]
     def __set__(self, obj, value):
         obj.section4[2] = value
-#       obj._productDefinitionTemplate[0] = value
-#       obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
-#                                                    obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
 
 class ParameterNumber:
     def __get__(self, obj, objtype=None):
         return obj.section4[3]
     def __set__(self, obj, value):
         obj.section4[3] = value
-#       obj._productDefinitionTemplate[1] = value
-#       obj._varinfo = tables.get_varinfo_from_table(obj._indcatorSection[2],obj._productDefinitionTemplate[0],
-#                                                    obj._productDefinitionTemplate[1],isNDFD=self.isNDFD)
+
+class VarInfo:
+    def __get__(self, obj, objtype=None):
+        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)
+    def __set__(self, obj, value):
+        raise NotImplementedError
 
 class FullName:
     def __get__(self, obj, objtype=None):
-        discipline = obj.section0[2]
-        parmcat = obj.section4[2]
-        parmnum = obj.section4[3]
-        # isndfd capability deffered for now
-        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[0]
+        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class Units:
     def __get__(self, obj, objtype=None):
-        discipline = obj.section0[2]
-        parmcat = obj.section4[2]
-        parmnum = obj.section4[3]
-        # isndfd capability deffered for now
-        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[1]
+        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[1]
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class ShortName:
     def __get__(self, obj, objtype=None):
-        discipline = obj.section0[2]
-        parmcat = obj.section4[2]
-        parmnum = obj.section4[3]
-        #return tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)[2]
-        # isndfd capability deffered for now
-        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)[2]
-    def __set__(self, obj, value):
-        raise NotImplementedError
-
-class VarInfo:
-    def __get__(self, obj, objtype=None):
-        discipline = obj.section0[2]
-        parmcat = obj.section4[2]
-        parmnum = obj.section4[3]
-        #return tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)[2]
-        # isndfd capability deffered for now
-        return tables.get_varinfo_from_table(discipline,parmcat,parmnum)
+        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
         raise NotImplementedError
 
@@ -810,6 +779,22 @@ class LeadTime:
     def __get__(self, obj, objtype=None):
         return utils.getleadtime(obj.section1,obj.section4[2],
                 obj.section4[2:])
+    def __set__(self, obj, value):
+        raise NotImplementedError
+
+class FixedSfc1Info:
+    def __get__(self, obj, objtype=None):
+        if obj.section4[11] == 255:
+            return [None, None]
+        return tables.get_value_from_table(obj.section4[11],'4.5')
+    def __set__(self, obj, value):
+        raise NotImplementedError
+
+class FixedSfc2Info:
+    def __get__(self, obj, objtype=None):
+        if obj.section4[14] == 255:
+            return [None, None]
+        return tables.get_value_from_table(obj.section4[14],'4.5')
     def __set__(self, obj, value):
         raise NotImplementedError
 
@@ -875,195 +860,193 @@ class ValueOfSecondFixedSurface:
 
 class Level:
     def __get__(self, obj, objtype=None):
-        # pdt starts at section4[2]
-        #return tables.get_wgrib2_level_string(*obj._productDefinitionTemplate[9:15])
         return tables.get_wgrib2_level_string(*obj.section4[11:17])
     def __set__(self, obj, value):
         pass
 
-# stopped here with converting to work off of sectionN
 class TypeOfEnsembleForecast:
     _key = {1:15, 11:15}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.6')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.6')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class PerturbationNumber:
     _key = {1:16, 11:16}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfEnsembleForecasts:
     _key = {1:17, 2:16, 11:17, 12:16}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfDerivedForecast:
     _key = {2:15, 12:15}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.7')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.7')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class ForecastProbabilityNumber:
     _key = {5:15, 9:15}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TotalNumberOfForecastProbabilities:
     _key = {5:16, 9:16}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfProbability:
     _key = {5:17, 9:17}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.9')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.9')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class ScaleFactorOfThresholdLowerLimit:
     _key = {5:18, 9:18}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class ScaledValueOfThresholdLowerLimit:
     _key = {5:19, 9:19}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class ThresholdLowerLimit:
     def __get__(self, obj, objtype=None):
-        if obj._productDefinitionTemplate[18] == -127 and \
-           obj._productDefinitionTemplate[19] == 255:
+        if obj.section4[18] == -127 and \
+           obj.section4[19] == 255:
             return 0.0
         else:
-            return obj._productDefinitionTemplate[19]/(10.**obj._productDefinitionTemplate[18])
+            return obj.section4[19]/(10.**obj.section4[18])
     def __set__(self, obj, value):
         pass
 
 class ThresholdUpperLimit:
     def __get__(self, obj, objtype=None):
-        if obj._productDefinitionTemplate[20] == -127 and \
-           obj._productDefinitionTemplate[21] == 255:
+        if obj.section4[20] == -127 and \
+           obj.section4[21] == 255:
             return 0.0
         else:
-            return obj._productDefinitionTemplate[21]/(10.**obj._productDefinitionTemplate[20])
+            return obj.section4[21]/(10.**obj.section4[20])
     def __set__(self, obj, value):
         pass
 
 class Threshold:
     def __get__(self, obj, objtype=None):
-        return utils.get_wgrib2_prob_string(*obj._productDefinitionTemplate[17:22])
+        return utils.get_wgrib2_prob_string(*obj.section4[17:22])
     def __set__(self, obj, value):
         pass
 
 class PercentileValue:
     _key = {6:15, 10:15}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class YearOfEndOfTimePeriod:
     _key = {8:15, 9:22, 10:16, 11:18, 12:17}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class MonthOfEndOfTimePeriod:
     _key = {8:16, 9:23, 10:17, 11:19, 12:18}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class DayOfEndOfTimePeriod:
     _key = {8:17, 9:24, 10:18, 11:20, 12:19}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class HourOfEndOfTimePeriod:
     _key = {8:18, 9:25, 10:19, 11:21, 12:20}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class MinuteOfEndOfTimePeriod:
     _key = {8:19, 9:26, 10:20, 11:22, 12:21}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class SecondOfEndOfTimePeriod:
     _key = {8:20, 9:27, 10:21, 11:23, 12:22}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class Duration:
     def __get__(self, obj, objtype=None):
-        return utils.getduration(obj._productDefinitionTemplateNumber,obj._productDefinitionTemplate)
+        return utils.getduration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
         pass
 
 class ValidDate:
     _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
+        pdtn = obj.section4[1]
         try:
-            return datetime.datetime(*obj.productDefinitionTemplate[self._key[pdtn]])
+            s = slice(self._key[pdtn].start+2,self._key[pdtn].stop+2)
+            return datetime.datetime(*obj.section4[s])
         except(KeyError):
             return obj.refDate + obj.leadTime
     def __set__(self, obj, value):
@@ -1072,92 +1055,92 @@ class ValidDate:
 class NumberOfTimeRanges:
     _key = {8:21, 9:28, 11:24, 12:23}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfMissingValues:
     _key = {8:22, 9:29, 11:25, 12:24}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class StatisticalProcess:
     _key = {8:23, 9:30, 11:26, 12:25, 15:15}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.10')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.10')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfTimeIncrementOfStatisticalProcess:
     _key = {8:24, 9:31, 11:27, 12:26}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.11')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.11')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfStatisticalProcess:
     _key = {8:25, 9:32, 11:28, 12:27}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.4')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.4')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TimeRangeOfStatisticalProcess:
     _key = {8:26, 9:33, 11:29, 12:28}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfSuccessiveFields:
     _key = {8:27, 9:34, 11:30, 12:29}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.4')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.4')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TimeIncrementOfSuccessiveFields:
     _key = {8:28, 9:35, 11:31, 12:30}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfStatisticalProcessing:
     _key = {15:16}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return Grib2Metadata(obj._productDefinitionTemplate[self._key[pdtn]],table='4.15')
+        pdtn = obj.section4[1]
+        return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.15')
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfDataPointsForSpatialProcessing:
     _key = {15:17}
     def __get__(self, obj, objtype=None):
-        pdtn = obj._productDefinitionTemplateNumber
-        return obj._productDefinitionTemplate[self._key[pdtn]]
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
     def __set__(self, obj, value):
-        pdtn = obj._productDefinitionTemplateNumber
-        obj._productDefinitionTemplate[self._key[pdtn]] = value
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
 
 @dataclass(init=False)
 class ProductDefinitionTemplate0():
@@ -1377,7 +1360,7 @@ def pdt_class_by_pdtn(pdtn):
 # ----------------------------------------------------------------------------------------
 class NumberOfDataPoints:
     def __get__(self, obj, objtype=None):
-        return obj._numberOfDataPoints
+        return obj.section5[0]
     def __set__(self, obj, value):
         pass
 
@@ -1385,7 +1368,6 @@ class DataRepresentationTemplateNumber:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[1],table='5.0')
     def __set__(self, obj, value):
-        #obj.dataRepresentationTemplateNumber = value
         pass
 
 class DataRepresentationTemplate:
@@ -1396,149 +1378,149 @@ class DataRepresentationTemplate:
 
 class RefValue:
     def __get__(self, obj, objtype=None):
-        return utils.ieee_int_to_float(obj.dataRepresentationTemplate[0])
+        return utils.ieee_int_to_float(obj.section5[0+2])
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[0] = utils.ieee_float_to_int(float(value))
+        pass
 
 class BinScaleFactor:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[1]
+        return obj.section5[1+2]
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[1] = value
+        obj.section5[1+2] = value
 
 class DecScaleFactor:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[2]
+        return obj.section5[2+2]
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[2] = value
+        obj.section5[2+2] = value
 
 class NBitsPacking:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[3]
+        return obj.section5[3+2]
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[3] = value
+        obj.section5[3+2] = value
 
 class TypeOfValues:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[4],table='5.1')
+        return Grib2Metadata(obj.section5[4+2],table='5.1')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[4] = value
+        obj.section5[4+2] = value
 
 class GroupSplitMethod:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[5],table='5.4')
+        return Grib2Metadata(obj.section5[5+2],table='5.4')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[5] = value
+        obj.section5[5+2] = value
 
 class TypeOfMissingValue:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[6],table='5.5')
+        return Grib2Metadata(obj.section5[6+2],table='5.5')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[5] = value
+        obj.section5[5+2] = value
 
 class PriMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj.dataRepresentationTemplate[7]) if obj.dataRepresentationTemplate[6] in {1,2} else None
+            return utils.ieee_int_to_float(obj.section5[7+2]) if obj.section5[6+2] in {1,2} else None
         elif obj.typeOfValues == 1:
-            return obj.dataRepresentationTemplate[7] if obj.dataRepresentationTemplate[6] in [1,2] else None
+            return obj.section5[7+2] if obj.section5[6+2] in [1,2] else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
-            obj.dataRepresentationTemplate[7] = utils.ieee_float_to_int(value)
+            obj.section5[7+2] = utils.ieee_float_to_int(value)
         elif self.typeOfValues == 1:
-            obj.dataRepresentationTemplate[7] = int(value)
-        obj.dataRepresentationTemplate[6] = 1
+            obj.section5[7+2] = int(value)
+        obj.section5[6+2] = 1
 
 class SecMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj.dataRepresentationTemplate[8]) if obj.dataRepresentationTemplate[6] in {1,2} else None
+            return utils.ieee_int_to_float(obj.section5[8+2]) if obj.section5[6+2] in {1,2} else None
         elif obj.typeOfValues == 1:
-            return obj.dataRepresentationTemplate[8] if obj.dataRepresentationTemplate[6] in {1,2} else None
+            return obj.section5[8+2] if obj.section5[6+2] in {1,2} else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
-            obj.dataRepresentationTemplate[8] = utils.ieee_float_to_int(value)
+            obj.section5[8+2] = utils.ieee_float_to_int(value)
         elif self.typeOfValues == 1:
-            obj.dataRepresentationTemplate[8] = int(value)
-        obj.dataRepresentationTemplate[6] = 2
+            obj.section5[8+2] = int(value)
+        obj.section5[6+2] = 2
 
 class NGroups:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[9]
+        return obj.section5[9+2]
     def __set__(self, obj, value):
         pass
 
 class RefGroupWidth:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[10]
+        return obj.section5[10+2]
     def __set__(self, obj, value):
         pass
 
 class NBitsGroupWidth:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[11]
+        return obj.section5[11+2]
     def __set__(self, obj, value):
         pass
 
 class RefGroupLength:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[12]
+        return obj.section5[12+2]
     def __set__(self, obj, value):
         pass
 
 class GroupLengthIncrement:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[13]
+        return obj.section5[13+2]
     def __set__(self, obj, value):
         pass
 
 class LengthOfLastGroup:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[14]
+        return obj.section5[14+2]
     def __set__(self, obj, value):
         pass
 
 class NBitsScaledGroupLength:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[15]
+        return obj.section5[15+2]
     def __set__(self, obj, value):
         pass
 
 class SpatialDifferenceOrder:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[16],table='5.6')
+        return Grib2Metadata(obj.section5[16+2],table='5.6')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[16] = value
+        obj.section5[16+2] = value
 
 class NBytesSpatialDifference:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[17]
+        return obj.section5[17+2]
     def __set__(self, obj, value):
         pass
 
 class Precision:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[0],table='5.7')
+        return Grib2Metadata(obj.section5[0+2],table='5.7')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[0] = value
+        obj.section5[0+2] = value
 
 class TypeOfCompression:
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.dataRepresentationTemplate[5],table='5.40')
+        return Grib2Metadata(obj.section5[5+2],table='5.40')
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[5] = value
+        obj.section5[5+2] = value
 
 class TargetCompressionRatio:
     def __get__(self, obj, objtype=None):
-        return obj.dataRepresentationTemplate[6]
+        return obj.section5[6+2]
     def __set__(self, obj, value):
         pass
 
 class RealOfCoefficient:
     def __get__(self, obj, objtype=None):
-        return utils.ieee_int_to_float(obj.dataRepresentationTemplate[4])
+        return utils.ieee_int_to_float(obj.section5[4+2])
     def __set__(self, obj, value):
-        obj.dataRepresentationTemplate[4] = utils.ieee_float_to_int(float(value))
+        obj.section5[4+2] = utils.ieee_float_to_int(float(value))
 
 @dataclass(init=False)
 class DataRepresentationTemplate0():
@@ -1672,10 +1654,3 @@ _drt_by_drtn = {
 
 def drt_class_by_drtn(drtn):
     return _drt_by_drtn[drtn]
-
-def _get_template_class_attrs(items):
-    attrs = []
-    for i in items:
-        if not i.startswith('_') and i != 'attrs':
-            attrs.append(i)
-    return attrs

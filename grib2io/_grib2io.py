@@ -85,7 +85,7 @@ class open():
         `w` opens the file for writing.
 
         """
-        if mode in ['a','r','w']:
+        if mode in {'a','r','w'}:
             mode = mode+'b'
         self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
         self._hasindex = False
@@ -349,7 +349,7 @@ class open():
                             self._index['bitMap'].append(_bmap)
                             self._index['bitMapFlag'].append(_bmapflag)
                             self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
-                            if _pdtnum in [5,9]:
+                            if _pdtnum in {5,9}:
                                 self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
                             else:
                                 self._index['probString'].append('')
@@ -399,7 +399,7 @@ class open():
                             self._index['shortName'].append(_varinfo[2])
                             self._index['bitMap'].append(_bmap)
                             self._index['bitMapFlag'].append(_bmapflag)
-                            if _pdtnum in [5,9]:
+                            if _pdtnum in {5,9}:
                                 self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
                             else:
                                 self._index['probString'].append('')
@@ -557,7 +557,7 @@ class open():
 @dataclass
 class Grib2Message:
     # GRIB2 Sections
-    section0: np.array = field(init=True,repr=True,)
+    section0: np.array = field(init=True,repr=True)
     section1: np.array = field(init=True,repr=True)
     section3: np.array = field(init=True,repr=True)
     section4: np.array = field(init=True,repr=True)
@@ -604,46 +604,44 @@ class Grib2Message:
     ny: int = field(init=False,repr=True,default=templates.Ny())
     nx: int = field(init=False,repr=True,default=templates.Nx())
     scanModeFlags: list = field(init=False,repr=True,default=templates.ScanModeFlags())
-#    priMissingValue: list = field(init=False,repr=True,default=templates.PriMissingValue()) # is this encoded?
-#    secMissingValue: list = field(init=False,repr=True,default=templates.SecMissingValue())
 
     # Section 4 looked up common attributes.  Other looked up attributes are available according
     # to the Product Definition Template.
     productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
+    _varinfo: list = field(init=False, repr=True, default=templates.VarInfo())
+    _fixedsfc1info: list = field(init=False, repr=True, default=templates.FixedSfc1Info())
+    _fixedsfc2info: list = field(init=False, repr=True, default=templates.FixedSfc2Info())
     parameterCategory: int = field(init=False,repr=False,default=templates.ParameterCategory())
     parameterNumber: int = field(init=False,repr=False,default=templates.ParameterNumber())
     fullName: str = field(init=False, repr=True, default=templates.FullName())
     units: str = field(init=False, repr=True, default=templates.Units())
     shortName: str = field(init=False, repr=True, default=templates.ShortName())
-    varinfo: str = field(init=False, repr=True, default=templates.VarInfo())
     typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfGeneratingProcess())
     generatingProcess: Grib2Metadata = field(init=False, repr=False, default=templates.GeneratingProcess())
     backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=templates.BackgroundGeneratingProcessIdentifier())
     unitOfTimeRange: Grib2Metadata = field(init=False,repr=True,default=templates.UnitOfTimeRange())
     leadTime: datetime.timedelta = field(init=False,repr=True,default=templates.LeadTime())
-
     typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfFirstFixedSurface())
     scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfFirstFixedSurface())
     scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfFirstFixedSurface())
-    #unitOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.UnitOfFirstFixedSurface())  # type?
+    unitOfFirstFixedSurface: str = field(init=False,repr=True,default=templates.UnitOfFirstFixedSurface())
     valueOfFirstFixedSurface: int = field(init=False,repr=True,default=templates.ValueOfFirstFixedSurface())
-
     typeOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfSecondFixedSurface())
     scaleFactorOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfSecondFixedSurface())
     scaledValueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfSecondFixedSurface())
-    #unitOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.UnitOfSecondFixedSurface())  # type?
+    unitOfSecondFixedSurface: str = field(init=False,repr=True,default=templates.UnitOfSecondFixedSurface())
     valueOfSecondFixedSurface: int = field(init=False,repr=True,default=templates.ValueOfSecondFixedSurface())
-
     level: str = field(init=False, repr=True, default=templates.Level())
-#   duration = templates.Duration()
+    duration: datetime.timedelta = field(init=False,repr=True,default=templates.Duration())
+    validDate: datetime.datetime = field(init=False,repr=True,default=templates.ValidDate())
 
     # Section 5 looked up common attributes.  Other looked up attributes are available according
     # to the Data Representation Template.
-#   numberOfDataPoints = templates.NumberOfDataPoints()
-    dataRepresentationTemplateNumber: int = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
+    numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
+    dataRepresentationTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
-#    typeOfValues: str = field(init=False,repr=True,default=templates.TypeOfValues())
+    typeOfValues: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfValues())
 
     @classmethod
     def from_grib2io_openfile(cls, openfile, loc):
@@ -660,7 +658,6 @@ class Grib2Message:
                 index['section4'][loc],
                 index['section5'][loc],
                 index['bitMapFlag'][loc])
-#                index['dataRepresentationTemplate'][loc])
         msg.bitMap = index['bitMap'][loc]
 
         shape = (msg.ny,msg.nx)
@@ -668,6 +665,7 @@ class Grib2Message:
         dtype = 'float32'
         data_offset = index['data_offset'][loc]
         data_size = (index['offset'][loc] + index['size'][loc]) - data_offset
+        msg._isNDFD = np.all(msg.section1[0:2]==[8,65535])
         msg._msgnum = loc
         msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile._filehandle, msg, data_offset, data_size)
 
@@ -697,9 +695,9 @@ class Grib2Message:
 
         Tuple of strings of attribute names for the given GRIB2 section.
         """
-        if sect in [0,1]:
+        if sect in {0,1}:
             return tuple(templates._section_attrs[sect])
-        elif sect in [3,4,5]:
+        elif sect in {3,4,5}:
             def _find_class_index(n):
                 _key = {3:'Grid', 4:'Product', 5:'Data'}
                 for i,c in enumerate(self.__class__.__mro__):
@@ -821,8 +819,6 @@ class Grib2Message:
         gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
-        if self.earthMajorAxis is not None: self.projParameters['a']=self.earthMajorAxis
-        if self.earthMajorAxis is not None: self.projParameters['b']=self.earthMinorAxis
         if gdtn == 0:
             # Regular lat/lon grid
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
@@ -859,7 +855,7 @@ class Grib2Message:
             #if not self.scanModeFlags[1]:
             #    lats = lats[::-1]
             lons,lats = np.meshgrid(lons,lats)
-        elif gdtn in [10,20,30,31,110]:
+        elif gdtn in {10,20,30,31,110}:
             # Mercator, Lambert Conformal, Stereographic, Albers Equal Area, Azimuthal Equidistant
             dx,dy = self.gridlengthXDirection, self.gridlengthYDirection
             lon1,lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
@@ -942,7 +938,7 @@ class Grib2Message:
         else:
             _deflist = None
         gdtnum = gdsinfo[4]
-        if gdtnum in [0,1,2,3,40,41,42,43,44,203,205,32768,32769]:
+        if gdtnum in {0,1,2,3,40,41,42,43,44,203,205,32768,32769}:
             self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
         elif gdtnum == 10: # mercator
             self.scanModeFlags = utils.int2bin(gdtmpl[15],output=list)[0:4]
@@ -960,7 +956,7 @@ class Grib2Message:
             self.scanModeFlags = utils.int2bin(gdtmpl[6],output=list)[0:4]
         elif gdtnum == 204: # curvilinear orthogonal
             self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
-        elif gdtnum in [1000,1100]:
+        elif gdtnum in {1000,1100}:
             self.scanModeFlags = utils.int2bin(gdtmpl[12],output=list)[0:4]
         self._msg,self._pos = g2clib.grib2_addgrid(self._msg,
                                                    np.array(gdsinfo,dtype=DEFAULT_NUMPY_INT),
