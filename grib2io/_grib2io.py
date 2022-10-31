@@ -16,6 +16,7 @@ import builtins
 import collections
 import copy
 import datetime
+import hashlib
 import os
 import re
 import struct
@@ -41,6 +42,7 @@ DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 ONE_MB = 1048576 # 1 MB in units of bytes
 
+_latlon_datastore = {}
 
 class open():
     """
@@ -100,8 +102,10 @@ class open():
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
-            self.variables = tuple(sorted(set(filter(None,self._index['shortName']))))
-            self.levels = tuple(sorted(set(filter(None,self._index['levelString']))))
+            #self.variables = tuple(sorted(set(filter(None,self._index['shortName']))))
+            #self.levels = tuple(sorted(set(filter(None,self._index['levelString']))))
+            self.variables = tuple(sorted(set(filter(None,[msg.shortName for msg in self._index['msg'] if msg is not None]))))
+            self.levels = tuple(sorted(set(filter(None,[msg.level for msg in self._index['msg'] if msg is not None]))))
 
 
     def __delete__(self, instance):
@@ -148,7 +152,6 @@ class open():
         """
         """
         strings = []
-        #keys = self.__dict__.keys()
         for k in self.__slots__:
             if k.startswith('_'): continue
             strings.append('%s = %s\n'%(k,eval('self.'+k)))
@@ -170,7 +173,8 @@ class open():
             if key == 0:
                 warnings.warn("GRIB2 Message number 0 does not exist.")
                 return None
-            return [Grib2Message.from_grib2io_openfile(self,key)]
+            #return [Grib2Message.from_grib2io_openfile(self,key)]
+            return [self._index['msg'][key]]
         elif isinstance(key,str):
             return self.select(shortName=key)
         else:
@@ -184,41 +188,12 @@ class open():
         # Initialize index dictionary
         self._index['offset'] = [None]
         self._index['data_offset'] = [None]
-        self._index['section0'] = [None]
-        self._index['section1'] = [None]
-        self._index['section3'] = [None]
-        self._index['section4'] = [None]
-        self._index['section5'] = [None]
-        self._index['discipline'] = [None]
-        self._index['edition'] = [None]
         self._index['size'] = [None]
-        self._index['indicatorSection'] = [None]
         self._index['submessageOffset'] = [None]
         self._index['submessageBeginSection'] = [None]
         self._index['isSubmessage'] = [None]
         self._index['messageNumber'] = [None]
-        self._index['identificationSection'] = [None]
-        self._index['refDate'] = [None]
-        self._index['gridDefinitionTemplateNumber'] = [None]
-        self._index['gridDefinitionTemplate'] = [None]
-        self._index['gridDefinitionSection'] = [None]
-        self._index['productDefinitionTemplateNumber'] = [None]
-        self._index['productDefinitionTemplate'] = [None]
-        self._index['typeOfFirstFixedSurface'] = [None]
-        self._index['valueOfFirstFixedSurface'] = [None]
-        self._index['typeOfGeneratingProcess'] = [None]
-        self._index['level'] = [None]
-        self._index['leadTime'] = [None]
-        self._index['duration'] = [None]
-        self._index['shortName'] = [None]
-        self._index['bitMap'] = [None]
-        self._index['bitMapFlag'] = [None]
-        self._index['levelString'] = [None]
-        self._index['probString'] = [None]
-        self._index['ny'] = [None]
-        self._index['nx'] = [None]
-        self._index['dataRepresentationTemplateNumber'] = [None]
-        self._index['dataRepresentationTemplate'] = [None]
+        self._index['msg'] = [None]
 
         # Iterate
         while True:
@@ -237,11 +212,19 @@ class open():
 
                     # Read and unpack Section 0. Note that this is not done through
                     # the g2clib.
-                    self._filehandle.seek(self._filehandle.tell()+2)
-                    discipline = int(struct.unpack('>B',self._filehandle.read(1))[0])
-                    edition = int(struct.unpack('>B',self._filehandle.read(1))[0])
-                    assert edition == 2
-                    size = struct.unpack('>Q',self._filehandle.read(8))[0]
+                    #section0 = []
+                    #section0.append(header)
+                    #section0.append(0)
+                    #self._filehandle.seek(self._filehandle.tell()+2)
+                    #discipline = int(struct.unpack('>B',self._filehandle.read(1))[0])
+                    #section0.append(discipline)
+                    #edition = int(struct.unpack('>B',self._filehandle.read(1))[0])
+                    #section0.append(edition)
+                    #assert edition == 2
+                    #size = struct.unpack('>Q',self._filehandle.read(8))[0]
+                    #section0.append(size)
+                    section0 = [header] + list(struct.unpack('>HBBQ',self._filehandle.read(12)))
+                    assert section0[3] == 2
 
                     # Read and unpack Section 1
                     secsize = struct.unpack('>i',self._filehandle.read(4))[0]
@@ -250,10 +233,12 @@ class open():
                     self._filehandle.seek(self._filehandle.tell()-5)
                     _grbmsg = self._filehandle.read(secsize)
                     _grbpos = 0
-                    _grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
-                    _grbsec1 = _grbsec1.tolist()
-                    _refdate = datetime.datetime(*_grbsec1[5:11])
-                    _isndfd = True if _grbsec1[0:2] == [8,65535] else False
+                    #_grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
+                    #_grbsec1 = _grbsec1.tolist()
+                    #section1 = _grbsec1
+                    #_refdate = datetime.datetime(*_grbsec1[5:11])
+                    #_isndfd = True if _grbsec1[0:2] == [8,65535] else False
+                    section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     secrange = range(2,8)
                     while 1:
                         for num in secrange:
@@ -275,9 +260,10 @@ class open():
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
                                     # Unpack Section 4
-                                    _numcoord, _pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
+                                    _numcoord,_pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
-                                    _varinfo = tables.get_varinfo_from_table(discipline,_pdt[0],_pdt[1],isNDFD=_isndfd)
+                                    #_isndfd = True if _grbsec1[0:2] == [8,65535] else False
+                                    #_varinfo = tables.get_varinfo_from_table(section0[2],_pdt[0],_pdt[1],isNDFD=_isndfd)
                                     section4 = np.concatenate((np.array((_numcoord,_pdtnum)),_pdt))
                                 elif secnum == 5:
                                     self._filehandle.seek(self._filehandle.tell()-5)
@@ -299,6 +285,7 @@ class open():
                                 elif secnum == 7:
                                     # Unpack Section 7. No need to read it, just index the position in file.
                                     _datapos = self._filehandle.tell()-5
+                                    _datasize = secsize
                                     self._filehandle.seek(self._filehandle.tell()+secsize-5)
                                 else:
                                     self._filehandle.seek(self._filehandle.tell()+secsize-5)
@@ -316,97 +303,30 @@ class open():
                             self.messages += 1
                             self._index['offset'].append(pos)
                             self._index['data_offset'].append(_datapos)
-                            self._index['discipline'].append(discipline)
-                            self._index['edition'].append(edition)
-                            self._index['size'].append(size)
-                            self._index['indicatorSection'].append(['GRIB',0,discipline,edition,size])
-                            self._index['section0'].append(['GRIB',0,discipline,edition,size])
+                            self._index['size'].append(section0[-1])
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
-                            self._index['identificationSection'].append(_grbsec1)
-                            self._index['section1'].append(_grbsec1)
-                            self._index['section3'].append(section3)
-                            self._index['section4'].append(section4)
-                            self._index['section5'].append(section5)
-                            self._index['refDate'].append(_refdate)
-                            self._index['gridDefinitionTemplateNumber'].append(_gds[-1])
-                            self._index['gridDefinitionTemplate'].append(_gdt)
-                            self._index['gridDefinitionSection'].append(_gds)
-                            self._index['nx'].append(int(_gdt[7]))
-                            self._index['ny'].append(int(_gdt[8]))
-                            self._index['productDefinitionTemplateNumber'].append(_pdtnum)
-                            self._index['productDefinitionTemplate'].append(_pdt)
-                            self._index['typeOfFirstFixedSurface'].append(templates.Grib2Metadata(_pdt[9],table='4.5').definition[0])
-                            scaleFactorOfFirstFixedSurface = _pdt[10]
-                            scaledValueOfFirstFixedSurface = _pdt[11]
-                            valueOfFirstFixedSurface = scaledValueOfFirstFixedSurface/(10.**scaleFactorOfFirstFixedSurface)
-                            self._index['typeOfGeneratingProcess'].append(_pdt[2])
-                            self._index['valueOfFirstFixedSurface'].append(valueOfFirstFixedSurface)
-                            self._index['level'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
-                            self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
-                            self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
-                            self._index['shortName'].append(_varinfo[2])
-                            self._index['bitMap'].append(_bmap)
-                            self._index['bitMapFlag'].append(_bmapflag)
-                            self._index['levelString'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
-                            if _pdtnum in {5,9}:
-                                self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
-                            else:
-                                self._index['probString'].append('')
                             if _issubmessage:
                                 self._index['submessageOffset'].append(_submsgoffset)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
                             else:
                                 self._index['submessageOffset'].append(0)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
-                            self._index['dataRepresentationTemplateNumber'].append(_drtn)
-                            self._index['dataRepresentationTemplate'].append(_drt)
+                            self._index['msg'].append(Grib2Message.from_grib2io_index(self,section0,section1,section3,section4,section5,
+                                                                                      _bmapflag,_bmap,pos,_datapos,_datasize,section0[-1],self.messages))
                             break
                         else:
                             self._filehandle.seek(self._filehandle.tell()-4)
                             self.messages += 1
                             self._index['offset'].append(pos)
                             self._index['data_offset'].append(_datapos)
-                            self._index['discipline'].append(discipline)
-                            self._index['edition'].append(edition)
-                            self._index['size'].append(size)
-                            self._index['indicatorSection'].append(['GRIB',0,discipline,edition,size])
-                            self._index['section0'].append(['GRIB',0,discipline,edition,size])
+                            self._index['size'].append(section0[-1])
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
-                            self._index['identificationSection'].append(_grbsec1)
-                            self._index['section1'].append(_grbsec1)
-                            self._index['section3'].append(section3)
-                            self._index['section4'].append(section4)
-                            self._index['section5'].append(section5)
-                            self._index['refDate'].append(_refdate)
-                            self._index['gridDefinitionTemplateNumber'].append(_gds[-1])
-                            self._index['gridDefinitionTemplate'].append(_gdt)
-                            self._index['gridDefinitionSection'].append(_gds)
-                            self._index['nx'].append(int(_gdt[7]))
-                            self._index['ny'].append(int(_gdt[8]))
-                            self._index['productDefinitionTemplateNumber'].append(_pdtnum)
-                            self._index['productDefinitionTemplate'].append(_pdt)
-                            self._index['typeOfFirstFixedSurface'].append(templates.Grib2Metadata(_pdt[9],table='4.5').definition[0])
-                            scaleFactorOfFirstFixedSurface = _pdt[10]
-                            scaledValueOfFirstFixedSurface = _pdt[11]
-                            valueOfFirstFixedSurface = scaledValueOfFirstFixedSurface/(10.**scaleFactorOfFirstFixedSurface)
-                            self._index['typeOfGeneratingProcess'].append(_pdt[2])
-                            self._index['valueOfFirstFixedSurface'].append(valueOfFirstFixedSurface)
-                            self._index['level'].append(tables.get_wgrib2_level_string(*_pdt[9:15]))
-                            self._index['leadTime'].append(utils.getleadtime(_grbsec1,_pdtnum,_pdt))
-                            self._index['duration'].append(utils.getduration(_pdtnum,_pdt))
-                            self._index['shortName'].append(_varinfo[2])
-                            self._index['bitMap'].append(_bmap)
-                            self._index['bitMapFlag'].append(_bmapflag)
-                            if _pdtnum in {5,9}:
-                                self._index['probString'].append(utils.get_wgrib2_prob_string(*_pdt[17:22]))
-                            else:
-                                self._index['probString'].append('')
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
-                            self._index['dataRepresentationTemplateNumber'].append(_drtn)
-                            self._index['dataRepresentationTemplate'].append(_drt)
+                            self._index['msg'].append(Grib2Message.from_grib2io_index(self,section0,section1,section3,section4,section5,
+                                                                                      _bmapflag,_bmap,pos,_datapos,_datasize,section0[-1],self.messages))
                             continue
 
             except(struct.error):
@@ -449,7 +369,8 @@ class open():
                 end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
                 msgrange = range(beg,end+1)
             for n in msgrange:
-                msgs.append(Grib2Message.from_grib2io_openfile(self,self._index['messageNumber'][n]))
+                #msgs.append(Grib2Message.from_grib2io_openfile(self,self._index['messageNumber'][n]))
+                msgs.append(self._index['msg'][n])
                 self.current_message += 1
         return msgs
 
@@ -487,6 +408,17 @@ class open():
 
 
     def select(self,**kwargs):
+        """
+        """
+        idxs = []
+        nkeys = len(kwargs.keys())
+        for k,v in kwargs.items():
+            idxs += [msg._msgnum for msg in self._index['msg'] if msg is not None and getattr(msg,k) == v]
+        idxs = np.array(idxs,dtype=np.int32)
+        return [self._index['msg'][i] for i in [ii[0] for ii in collections.Counter(idxs).most_common() if ii[1] == nkeys]]
+
+
+    def selectOLD(self,**kwargs):
         """
         Returns a list of `grib2io.Grib2Message` instances based on the selection **`**kwargs`**.
 
@@ -643,6 +575,32 @@ class Grib2Message:
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
     typeOfValues: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfValues())
 
+    # New class method to create GRIB2 message object from read/unpacked sections capable of storing
+    # in the grib2io.open class _index dictionary under the 'msg' key.
+    @classmethod
+    def from_grib2io_index(cls, openfile, sect0, sect1, sect3, sect4, sect5, bitmapflag, bitmap,
+                           offset, dataoffset, datasize, msgsize, msgnum):
+
+        Msg = create_message_cls(sect3[4],sect4[1],sect5[1])
+
+        msg = Msg(sect0,sect1,sect3,sect4,sect5,bitmapflag)
+        msg._sha1_section3 = hashlib.sha1(msg.section3).hexdigest()
+        msg.bitMap = bitmap
+
+        shape = (msg.ny,msg.nx)
+        ndim = 2
+        if msg.typeOfValues == 0:
+            dtype = 'float32'
+        elif msg.typeOfValues == 1:
+            dtype = 'int32'
+        data_offset = dataoffset
+        data_size = datasize
+        msg._isNDFD = np.all(msg.section1[0:2]==[8,65535])
+        msg._msgnum = msgnum
+        msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile, msg, data_offset, data_size)
+
+        return msg
+
     @classmethod
     def from_grib2io_openfile(cls, openfile, loc):
 
@@ -673,7 +631,8 @@ class Grib2Message:
 
 
     def __repr__(self):
-        ''' easier to read repr'''
+        """
+        """
         strings = []
         for k,field in self.__dataclass_fields__.items():
             if field.repr:
@@ -816,6 +775,8 @@ class Grib2Message:
         Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
         longitudes in units of degrees.
         """
+        if self._sha1_section3 in _latlon_datastore.keys():
+            return _latlon_datastore[self._sha1_section3]
         gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
@@ -887,7 +848,10 @@ class Grib2Message:
         else:
             raise ValueError('Unsupported grid')
 
-        return lats.astype('f'), lons.astype('f')
+        lats = lats.astype('f')
+        lons = lons.astype('f')
+        _latlon_datastore[self._sha1_section3] = (lats,lons)
+        return lats, lons
 
 
     def addlocal(self, ludata):
@@ -1141,7 +1105,7 @@ class Grib2MessageOnDiskArray:
         return np.asarray(data, dtype=dtype)
 
 
-def _data(filehandle: open, msg: Grib2Message, data_offset: int, data_size: int)-> np.array:
+def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)-> np.array:
     """
     Returns an unpacked data grid.
 
@@ -1195,9 +1159,9 @@ def _data(filehandle: open, msg: Grib2Message, data_offset: int, data_size: int)
     #t1 = datetime.datetime.now()
     # TEST
     # NEW
-    filehandle.seek(data_offset) # Position file pointer to the beginning of data section.
+    openfile._filehandle.seek(data_offset) # Position file pointer to the beginning of data section.
     ipos = 0
-    fld = g2clib.unpack7(filehandle.read(data_size),gdtnum,gdtmpl,drtnum,drtmpl,ngrdpts,ipos,np.empty,storageorder=storageorder)
+    fld = g2clib.unpack7(openfile._filehandle.read(data_size),gdtnum,gdtmpl,drtnum,drtmpl,ngrdpts,ipos,np.empty,storageorder=storageorder)
     #fld = np.ones(ngrdpts)
     # NEW
 #   # convert missing values to nan
