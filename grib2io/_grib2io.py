@@ -536,6 +536,7 @@ class Grib2Message:
     ny: int = field(init=False,repr=True,default=templates.Ny())
     nx: int = field(init=False,repr=True,default=templates.Nx())
     scanModeFlags: list = field(init=False,repr=True,default=templates.ScanModeFlags())
+    projParameters: dict = field(init=False,repr=True,default=templates.ProjParameters())
 
     # Section 4 looked up common attributes.  Other looked up attributes are available according
     # to the Product Definition Template.
@@ -628,6 +629,21 @@ class Grib2Message:
         msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile._filehandle, msg, data_offset, data_size)
 
         return msg
+
+
+    @property
+    def gdtn(self):
+        return self.section3[4]
+ 
+
+    @property
+    def pdtn(self):
+        return self.section4[1]
+
+
+    @property
+    def drtn(self):
+        return self.section5[1]
 
 
     def __repr__(self):
@@ -794,6 +810,9 @@ class Grib2Message:
             #if not self.scanModeFlags[1]:
             #    lats = lats[::-1]
             lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
+        elif gdtn == 1: # Rotated Lat/Lon grid
+            #pj = pyproj.Proj(self.projParameters)
+            pass
         elif gdtn == 40: # Gaussian grid (only works for global!)
             from utils.gauss_grids import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
