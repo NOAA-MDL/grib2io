@@ -502,35 +502,52 @@ class SpectralFunctionParameters:
 
 class ProjParameters:
     def __get__(self, obj, objtype=None):
-        a = 1.0
-        b = 1.0
+        projparams = {}
+        projparams['a'] = 1.0
+        projparams['b'] = 1.0
         if obj.earthRadius is not None:
-            a = obj.earthRadius
-            b = obj.earthRadius
+            projparams['a'] = obj.earthRadius
+            projparams['b'] = obj.earthRadius
         else:
-            if obj.earthMajorAxis is not None: a = obj.earthMajorAxis
-            if obj.earthMajorAxis is not None: b = obj.earthMinorAxis
+            if obj.earthMajorAxis is not None: projparams['a'] = obj.earthMajorAxis
+            if obj.earthMajorAxis is not None: projparams['b'] = obj.earthMinorAxis
         gdtn = obj.section3[4]
         if gdtn == 0:
-            return {'proj':'eqc','a':a,'b':b}
-        if gdtn == 10:
-            return {'proj':'merc','lat_ts':obj.latitudeTrueScale,
-                    'lon_0':0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint),'a':a,'b':b}
+            projparams['proj'] = 'longlat'
+        elif gdtn == 1:
+            projparams['o_proj'] = 'longlat'
+            projparams['proj'] = 'ob_tran'
+            projparams['o_lat_p'] = -1.0*obj.latitudeSouthernPole
+            projparams['o_lon_p'] = obj.angleOfRotation
+            projparams['lon_0'] = obj.longitudeSouthernPole
+        elif gdtn == 10:
+            projparams['proj'] = 'merc'
+            projparams['lat_ts'] = obj.latitudeTrueScale
+            projparams['lon_0'] = 0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)
         elif gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
             elif obj.projectionCenterFlag == 1:
                 lat0 = -90.0
-            return {'proj':'stere','lat_ts':obj.latitudeTrueScale,
-                    'lat_0':lat0,'lon_0':obj.gridOrientation,'a':a,'b':b}
+            projparams['proj'] = 'stere'
+            projparams['lat_ts'] = obj.latitudeTrueScale
+            projparams['lat_0'] = lat0 
+            projparams['lon_0'] = obj.gridOrientation
         elif gdtn == 30:
-            return {'proj':'lcc','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation,'a':a,'b':b}
+            projparams['proj'] = 'lcc'
+            projparams['lat_1'] = obj.standardLatitude1
+            projparams['lat_2'] = obj.standardLatitude2
+            projparams['lat_0'] = obj.latitudeTrueScale
+            projparams['lon_0'] = obj.gridOrientation
         elif gdtn == 31:
-            return {'proj':'aea','lat_1':obj.standardLatitude1,'lat_2':obj.standardLatitude2,
-                    'lat_0':obj.latitudeTrueScale,'lon_0':obj.gridOrientation,'a':a,'b':b}
+            projparams['proj'] = 'aea'
+            projparams['lat_1'] = obj.standardLatitude1
+            projparams['lat_2'] = obj.standardLatitude2
+            projparams['lat_0'] = obj.latitudeTrueScale
+            projparams['lon_0'] = obj.gridOrientation
         elif gdtn == 40:
-            return {'proj':'eqc','a':a,'b':b}
+            projparams['proj'] = 'eqc'
+        return projparams
     def __set__(self, obj, value):
         pass
 
