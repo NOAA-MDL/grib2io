@@ -169,3 +169,16 @@ do
 done
 sed "s/:'201-49151',/:'Reserved',/g" section5.py > junk
 mv -v junk section5.py
+
+# ---------------------------------------------------------------------------------------- 
+# Generate Section 6
+# ---------------------------------------------------------------------------------------- 
+echo " -- Making section6.py"
+if [ -f section6.py ]; then rm -f section6.py; fi
+for table in 6.0
+do
+   echo "\t - Table $table"
+   ./get-ncep-grib2-table.py $table >> section6.py
+done
+
+
