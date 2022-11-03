@@ -233,6 +233,12 @@ class GridDefinitionSection:
     def __set__(self, obj, value):
         raise NotImplementedError
 
+class NumberOfDataPoints:
+    def __get__(self, obj, objtype=None):
+        return obj.section3[1]
+    def __set__(self, obj, value):
+        pass
+
 class GridDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[4],table='3.1')
@@ -1375,7 +1381,7 @@ def pdt_class_by_pdtn(pdtn):
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 5 metadata.
 # ----------------------------------------------------------------------------------------
-class NumberOfDataPoints:
+class NumberOfPackedValues:
     def __get__(self, obj, objtype=None):
         return obj.section5[0]
     def __set__(self, obj, value):
