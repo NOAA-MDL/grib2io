@@ -102,8 +102,6 @@ class open():
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
-            #self.variables = tuple(sorted(set(filter(None,self._index['shortName']))))
-            #self.levels = tuple(sorted(set(filter(None,self._index['levelString']))))
             self.variables = tuple(sorted(set(filter(None,[msg.shortName for msg in self._index['msg'] if msg is not None]))))
             self.levels = tuple(sorted(set(filter(None,[msg.level for msg in self._index['msg'] if msg is not None]))))
 
@@ -173,8 +171,7 @@ class open():
             if key == 0:
                 warnings.warn("GRIB2 Message number 0 does not exist.")
                 return None
-            #return [Grib2Message.from_grib2io_openfile(self,key)]
-            return [self._index['msg'][key]]
+            return self._index['msg'][key]
         elif isinstance(key,str):
             return self.select(shortName=key)
         else:
@@ -206,23 +203,13 @@ class open():
                 # number, edition number (should always be 2), and GRIB2 message size.
                 # Then iterate to check for submessages.
                 if header == 'GRIB':
+
                     _issubmessage = False
                     _submsgoffset = 0
                     _submsgbegin = 0
+                    _bmapflag = None
 
-                    # Read and unpack Section 0. Note that this is not done through
-                    # the g2clib.
-                    #section0 = []
-                    #section0.append(header)
-                    #section0.append(0)
-                    #self._filehandle.seek(self._filehandle.tell()+2)
-                    #discipline = int(struct.unpack('>B',self._filehandle.read(1))[0])
-                    #section0.append(discipline)
-                    #edition = int(struct.unpack('>B',self._filehandle.read(1))[0])
-                    #section0.append(edition)
-                    #assert edition == 2
-                    #size = struct.unpack('>Q',self._filehandle.read(8))[0]
-                    #section0.append(size)
+                    # Read the rest of Section 0 using struct.
                     section0 = [header] + list(struct.unpack('>HBBQ',self._filehandle.read(12)))
                     assert section0[3] == 2
 
@@ -233,11 +220,6 @@ class open():
                     self._filehandle.seek(self._filehandle.tell()-5)
                     _grbmsg = self._filehandle.read(secsize)
                     _grbpos = 0
-                    #_grbsec1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
-                    #_grbsec1 = _grbsec1.tolist()
-                    #section1 = _grbsec1
-                    #_refdate = datetime.datetime(*_grbsec1[5:11])
-                    #_isndfd = True if _grbsec1[0:2] == [8,65535] else False
                     section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     secrange = range(2,8)
                     while 1:
@@ -262,8 +244,6 @@ class open():
                                     # Unpack Section 4
                                     _numcoord,_pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
                                     _pdt = _pdt.tolist()
-                                    #_isndfd = True if _grbsec1[0:2] == [8,65535] else False
-                                    #_varinfo = tables.get_varinfo_from_table(section0[2],_pdt[0],_pdt[1],isNDFD=_isndfd)
                                     section4 = np.concatenate((np.array((_numcoord,_pdtnum)),_pdt))
                                 elif secnum == 5:
                                     self._filehandle.seek(self._filehandle.tell()-5)
@@ -273,15 +253,15 @@ class open():
                                     _drt,_drtn,_npts,self._pos = g2clib.unpack5(_grbmsg,_grbpos,np.empty)
                                     section5 = np.concatenate((np.array((_npts,_drtn)),_drt))
                                 elif secnum == 6:
-                                    self._filehandle.seek(self._filehandle.tell()-5)
-                                    _grbmsg = self._filehandle.read(secsize)
-                                    _grbpos = 0
-                                    # Unpack Section 6. Save bitmap
-                                    _bmap,_bmapflag = g2clib.unpack6(_grbmsg,_gds[1],_grbpos,np.empty)
+                                    # Unpack Section 6. Not really...just get the flag value.
+                                    _bmapflag = struct.unpack('>B',self._filehandle.read(1))[0]
                                     if _bmapflag == 0:
-                                        _bmap_save = copy.deepcopy(_bmap)
+                                        _bmappos = self._filehandle.tell()-6
                                     elif _bmapflag == 254:
-                                        _bmap = copy.deepcopy(_bmap_save)
+                                        pass # Do this to keep the previous position value
+                                    else:
+                                        _bmappos = None
+                                    self._filehandle.seek(self._filehandle.tell()+secsize-6)
                                 elif secnum == 7:
                                     # Unpack Section 7. No need to read it, just index the position in file.
                                     _datapos = self._filehandle.tell()-5
@@ -312,8 +292,22 @@ class open():
                             else:
                                 self._index['submessageOffset'].append(0)
                                 self._index['submessageBeginSection'].append(_submsgbegin)
-                            self._index['msg'].append(Grib2Message.from_grib2io_index(self,section0,section1,section3,section4,section5,
-                                                                                      _bmapflag,_bmap,pos,_datapos,_datasize,section0[-1],self.messages))
+
+                            # Create Grib2Message with data.
+                            Msg = create_message_cls(section3[4],section4[1],section5[1])
+                            msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
+                            msg._msgnum = self.messages
+                            shape = (msg.ny,msg.nx)
+                            ndim = 2
+                            if msg.typeOfValues == 0:
+                                dtype = 'float32'
+                            elif msg.typeOfValues == 1:
+                                dtype = 'int32'
+                            on_disk_array = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                    msg, _bmappos, _datapos)
+                            msg._data = on_disk_array
+                            self._index['msg'].append(msg)
+
                             break
                         else:
                             self._filehandle.seek(self._filehandle.tell()-4)
@@ -325,8 +319,22 @@ class open():
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
-                            self._index['msg'].append(Grib2Message.from_grib2io_index(self,section0,section1,section3,section4,section5,
-                                                                                      _bmapflag,_bmap,pos,_datapos,_datasize,section0[-1],self.messages))
+
+                            # Create Grib2Message with data.
+                            Msg = create_message_cls(section3[4],section4[1],section5[1])
+                            msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
+                            msg._msgnum = self.messages
+                            shape = (msg.ny,msg.nx)
+                            ndim = 2
+                            if msg.typeOfValues == 0:
+                                dtype = 'float32'
+                            elif msg.typeOfValues == 1:
+                                dtype = 'int32'
+                            on_disk_array = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                    msg, _bmappos, _datapos)
+                            msg._data = on_disk_array
+                            self._index['msg'].append(msg)
+
                             continue
 
             except(struct.error):
@@ -347,32 +355,32 @@ class open():
 
     def read(self, num=1):
         """
-        Read num GRIB2 messages from the current position
+        Read num GRIB2 messages from the current position.
 
         Parameters
         ----------
 
-        **`num : int`**: GRIB2 message number to read.
+        **`num : int`**: number of GRIB2 messages to read.
 
         Returns
         -------
 
-        **`list`**: list of `grib2io.Grib2Message` instances.
+        `Grib2Message` object when num = 1 or a `list` of Grib2Messages when
+        num > 1.
         """
-        msgs = []
-        if self.tell() >= self.messages: return msgs
-        if num > 0:
-            if num == 1:
-                msgrange = [self.tell()+1]
-            else:
-                beg = self.tell()+1
-                end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
-                msgrange = range(beg,end+1)
+        if num <= 0 or self.tell() >= self.messages: return None
+        if num == 1:
+            self.current_message += 1
+            return self._index['msg'][self.tell()+1]
+        elif num > 1:
+            msgs = []
+            beg = self.tell()+1
+            end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
+            msgrange = range(beg,end+1)
             for n in msgrange:
-                #msgs.append(Grib2Message.from_grib2io_openfile(self,self._index['messageNumber'][n]))
                 msgs.append(self._index['msg'][n])
                 self.current_message += 1
-        return msgs
+            return msgs
 
 
     def rewind(self):
@@ -410,62 +418,13 @@ class open():
     def select(self,**kwargs):
         """
         """
+        # FUTURE: Added ability to process multiple values for each keyword (attribute)
         idxs = []
         nkeys = len(kwargs.keys())
         for k,v in kwargs.items():
             idxs += [msg._msgnum for msg in self._index['msg'] if msg is not None and getattr(msg,k) == v]
         idxs = np.array(idxs,dtype=np.int32)
         return [self._index['msg'][i] for i in [ii[0] for ii in collections.Counter(idxs).most_common() if ii[1] == nkeys]]
-
-
-    def selectOLD(self,**kwargs):
-        """
-        Returns a list of `grib2io.Grib2Message` instances based on the selection **`**kwargs`**.
-
-        The following keywords are currently supported:
-
-        **`duration : int`** specifiying the time duration (in unit of hours) of a GRIB2 Message that is
-        determined from a period of time.
-
-        **`leadTime : datetime.timedelta`** object representing the lead time.
-
-        **`level : str`** wgrib2-formatted layer/level string.
-
-        **`percentile : int`** specify the percentile value.
-
-        **`refDate : datetime.datetime`** object representing then reference date.
-
-        **`shortName : str`** the GRIB2 `shortName`.  This is the abbreviation name found in the NCEP GRIB2 tables.
-
-        **`threshold : str`** wgrib2-formatted probability threshold string.
-        """
-        kwargs_allowed = ['duration','leadTime','level','percentile','refDate','shortName','threshold']
-        idxs = {}
-        for k,v in kwargs.items():
-            if k not in kwargs_allowed: continue
-            if k == 'duration':
-                idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['duration']])==v)[0]
-            elif k == 'leadTime':
-                idxs[k] = np.where(np.asarray([i if i is not None else None for i in self._index['leadTime']])==v)[0]
-            elif k == 'level':
-                idxs[k] = np.where(np.array(self._index['levelString'])==v)[0]
-            elif k == 'percentile':
-                tmp1 = np.where(np.asarray(self._index['productDefinitionTemplateNumber'])==6)[0]
-                tmp2 = np.where(np.asarray(self._index['productDefinitionTemplateNumber'])==10)[0]
-                idxs[k] = [i for i in np.concatenate((tmp1,tmp2)) if self._index['productDefinitionTemplate'][i][15]==v]
-                del tmp1,tmp2
-            elif k == 'refDate':
-                idxs[k] = np.where(np.asarray(self._index['refDate'])==v)[0]
-            elif k == 'shortName':
-                idxs[k] = np.where(np.array(self._index['shortName'])==v)[0]
-            elif k == 'threshold':
-                idxs[k] = np.where(np.array(self._index['probString'])==v)[0]
-        idxsarr = np.concatenate(tuple(idxs.values()))
-        nidxs = len(idxs.keys())
-        if nidxs == 1:
-            return [self[int(i)][0] for i in idxsarr]
-        elif nidxs > 1:
-            return [self[int(i)][0] for i in [ii[0] for ii in collections.Counter(idxsarr).most_common() if ii[1] == nidxs]]
 
 
     def write(self, msg):
@@ -517,9 +476,14 @@ class Grib2Message:
     productionStatus: Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
     typeOfData: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
 
+    @property
+    def _isNDFD(self):
+        return np.all(self.section1[0:2]==[8,65535])
+
     # Section 3 looked up common attributes.  Other looked up attributes are available according
     # to the Grid Definition Template.
     gridDefinitionSection: np.array = field(init=False,repr=True,default=templates.GridDefinitionSection())
+    numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
     gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
     gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
     _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
@@ -571,64 +535,14 @@ class Grib2Message:
 
     # Section 5 looked up common attributes.  Other looked up attributes are available according
     # to the Data Representation Template.
-    numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
+    numberOfPackedValues: int = field(init=False,repr=False,default=templates.NumberOfPackedValues())
     dataRepresentationTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
     typeOfValues: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfValues())
 
-    # New class method to create GRIB2 message object from read/unpacked sections capable of storing
-    # in the grib2io.open class _index dictionary under the 'msg' key.
-    @classmethod
-    def from_grib2io_index(cls, openfile, sect0, sect1, sect3, sect4, sect5, bitmapflag, bitmap,
-                           offset, dataoffset, datasize, msgsize, msgnum):
 
-        Msg = create_message_cls(sect3[4],sect4[1],sect5[1])
-
-        msg = Msg(sect0,sect1,sect3,sect4,sect5,bitmapflag)
-        msg._sha1_section3 = hashlib.sha1(msg.section3).hexdigest()
-        msg.bitMap = bitmap
-
-        shape = (msg.ny,msg.nx)
-        ndim = 2
-        if msg.typeOfValues == 0:
-            dtype = 'float32'
-        elif msg.typeOfValues == 1:
-            dtype = 'int32'
-        data_offset = dataoffset
-        data_size = datasize
-        msg._isNDFD = np.all(msg.section1[0:2]==[8,65535])
-        msg._msgnum = msgnum
-        msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile, msg, data_offset, data_size)
-
-        return msg
-
-    @classmethod
-    def from_grib2io_openfile(cls, openfile, loc):
-
-        index = openfile._index
-
-        Msg = create_message_cls(index['gridDefinitionTemplateNumber'][loc],
-                index['productDefinitionTemplateNumber'][loc],
-                index['dataRepresentationTemplateNumber'][loc])
-
-        msg = Msg(index['section0'][loc],
-                index['section1'][loc],
-                index['section3'][loc],
-                index['section4'][loc],
-                index['section5'][loc],
-                index['bitMapFlag'][loc])
-        msg.bitMap = index['bitMap'][loc]
-
-        shape = (msg.ny,msg.nx)
-        ndim = 2
-        dtype = 'float32'
-        data_offset = index['data_offset'][loc]
-        data_size = (index['offset'][loc] + index['size'][loc]) - data_offset
-        msg._isNDFD = np.all(msg.section1[0:2]==[8,65535])
-        msg._msgnum = loc
-        msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, openfile._filehandle, msg, data_offset, data_size)
-
-        return msg
+    def __post_init__(self):
+        self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
 
 
     @property
@@ -867,9 +781,8 @@ class Grib2Message:
         else:
             raise ValueError('Unsupported grid')
 
-        lats = lats.astype('f')
-        lons = lons.astype('f')
         _latlon_datastore[self._sha1_section3] = (lats,lons)
+
         return lats, lons
 
 
@@ -1116,15 +1029,15 @@ class Grib2MessageOnDiskArray:
     dtype: str
     filehandle: open
     msg: Grib2Message
+    bmap_offset: int
     data_offset: int
-    data_size: int
 
     def __array__(self, dtype=None):
-        data =  _data(self.filehandle, self.msg, self.data_offset, self.data_size)
+        data =  _data(self.filehandle, self.msg, self.bmap_offset, self.data_offset)
         return np.asarray(data, dtype=dtype)
 
 
-def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)-> np.array:
+def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: int)-> np.array:
     """
     Returns an unpacked data grid.
 
@@ -1134,17 +1047,25 @@ def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)->
     **`numpy.ndarray`**: A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32,
     but could be np.int32 if Grib2Message.typeOfValues is integer.
     """
-    gridDefinitionTemplate = msg.section3[5:]
-    gridDefinitionSection = msg.section3[0:5]
-    dataRepresentationTemplate = msg.section5[2:]
-    drtnum = msg.section5[1]
+    gds = msg.section3[0:5]
+    gdt = msg.section3[5:]
+    drt = msg.section5[2:]
     nx, ny = msg.nx, msg.ny
-    bitmapflag = msg.bitMapFlag
-    bitmap = msg.bitMap
     scanModeFlags = msg.scanModeFlags
+    fill_value = np.nan # or DEFAULT_FILL_VALUE
+
+    if bmap_offset is not None:
+        filehandle.seek(bmap_offset) # Position file pointer to the beginning of bitmap section.
+        bmap_size,num = struct.unpack('>IB',filehandle.read(5))
+        filehandle.seek(filehandle.tell()-5)
+        ipos = 0
+        bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
+        print(len(bmap),bmap)
+        print(msg.section3[1],msg.section5[0])
+
     # is there any missing value stored other than the bitmask?
-#   priMissingValue = 9999.0 #msg.priMissingValue
-#   secMissingValue = 9998.0 #msg.secMissingValue
+    #priMissingValue = 9999.0 #msg.priMissingValue
+    #secMissingValue = 9998.0 #msg.secMissingValue
 
     try:
         if scanModeFlags[2]:
@@ -1154,33 +1075,27 @@ def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)->
     except AttributeError:
         raise ValueError('Unsupported grid definition template number %s'%gridDefinitionTemplateNumber)
 
-   #'''    **`order`**: If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing
-   #            or bitmapped values. If 1, linear interpolation is used for expanding reduced Gaussian grids.
-   #'''
+    #'''    **`order`**: If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing
+    #            or bitmapped values. If 1, linear interpolation is used for expanding reduced Gaussian grids.
+    #'''
     # I didn't see where order gets used?
-    if (drtnum in {2,3} and
-        dataRepresentationTemplate[6] != 0) or bitmapflag == 0:
-        order = 0
-    else:
-        order = 1
+    #if (msg.drtn in {2,3} and
+    #    dataRepresentationTemplate[6] != 0) or msg.bitMapFlag == 0:
+    #    order = 0
+    #else:
+    #    order = 1
 
-    drtmpl = np.asarray(dataRepresentationTemplate,dtype=DEFAULT_NUMPY_INT)
-    gdtnum = gridDefinitionSection[4]
-    gdtmpl = np.asarray(gridDefinitionTemplate,dtype=DEFAULT_NUMPY_INT)
-    gds = gridDefinitionSection
-    ngrdpts = gds[1]
-    # TEST
-    #ipos = self._datapos
-    ##print(f'before array unpack took: {datetime.datetime.now() - t1}')
-    #t1 = datetime.datetime.now()
-    #fld1 = g2clib.unpack7(self._msg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos,np.empty,storageorder=storageorder)
-    ##print(f'array unpack took: {datetime.datetime.now() - t1}')
-    #t1 = datetime.datetime.now()
-    # TEST
-    # NEW
-    openfile._filehandle.seek(data_offset) # Position file pointer to the beginning of data section.
+    # Position file pointer to the beginning of data section.
+    filehandle.seek(data_offset)
+    data_size,secnum = struct.unpack('>IB',filehandle.read(5))
+    assert secnum == 7
+    filehandle.seek(filehandle.tell()-5)
     ipos = 0
-    fld = g2clib.unpack7(openfile._filehandle.read(data_size),gdtnum,gdtmpl,drtnum,drtmpl,ngrdpts,ipos,np.empty,storageorder=storageorder)
+    npvals = msg.numberOfPackedValues
+    ngrdpts = msg.numberOfDataPoints
+    fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,ipos,
+                          np.empty,storageorder=storageorder)
+
     #fld = np.ones(ngrdpts)
     # NEW
 #   # convert missing values to nan
@@ -1188,50 +1103,59 @@ def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)->
 #       fld[fld==priMissingValue] = np.nan
 #   if secMissingValue is not None:
 #       fld[fld==secMissingValue] = np.nan
-    # Apply bitmap.
-    if bitmapflag == 0:
-        #fld = fill_value*np.ones(ngrdpts,'f')
-        np.put(fld,np.nonzero(bitmap),np.nan)
-#       if masked_array:
-#           fld = ma.masked_values(fld,fill_value)
-    # Missing values instead of bitmap
-#   elif masked_array and hasattr(msg,'priMissingValue'):
-#       if hasattr(msg,'secMissingValue'):
-#           mask = np.logical_or(fld1==msg.priMissingValue,fld1==msg.secMissingValue)
-#       else:
-#           mask = fld1 == msg.priMissingValue
-#       fld = ma.array(fld1,mask=mask)
-#   else:
-#       fld = fld1
+
+    #TEMPORARY
+    masked_array = False
+    expand = False
+    #TEMPORARY
+
+    # Apply bitmap or missing values
+    if msg.bitMapFlag in {0,254}:
+        # Bitmap
+        fld = fill_value*np.ones(ngrdpts,dtype=np.float32)
+        np.put(fld,np.nonzero(bmap),fld1)
+        if masked_array:
+            fld = ma.masked_values(fld,fill_value)
+    elif masked_array and hasattr(msg,'priMissingValue'):
+        # Missing values
+        if hasattr(msg,'secMissingValue'):
+            mask = np.logical_or(fld1==msg.priMissingValue,fld1==msg.secMissingValue)
+        else:
+            mask = fld1 == msg.priMissingValue
+        fld = ma.array(fld1,mask=mask)
+    else:
+        fld = fld1
+
     if nx is not None and ny is not None: # Rectangular grid.
-#       if ma.isMA(fld):
-#           fld = ma.reshape(fld,(ny,nx))
-#       else:
-        fld = np.reshape(fld,(ny,nx))
+        if ma.isMA(fld):
+            fld = ma.reshape(fld,(ny,nx))
+        else:
+            fld = np.reshape(fld,(ny,nx))
     else:
         if gds[2] and gdtnum == 40: # Reduced global Gaussian grid.
             if expand:
                 from . import redtoreg
                 nx = 2*ny
                 lonsperlat = msg.defList
-#               if ma.isMA(fld):
-#                   fld = ma.filled(fld)
-#                   fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
-#                                            fld.astype(np.double),fill_value)
-#                   fld = ma.masked_values(fld,fill_value)
-#               else:
-                fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
-                                         fld.astype(np.double),fill_value)
-    #print(f'bitmap/missing: {datetime.datetime.now() - t1}')
+                if ma.isMA(fld):
+                    fld = ma.filled(fld)
+                    fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
+                                             fld.astype(np.double),fill_value)
+                    fld = ma.masked_values(fld,fill_value)
+                else:
+                    fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
+                                             fld.astype(np.double),fill_value)
+
     # Check scan modes for rect grids.
     if nx is not None and ny is not None:
         if scanModeFlags[3]:
-            fldsave = fld.astype('f') # casting makes a copy
+            fldsave = fld.astype(np.float32) # casting makes a copy
             fld[1::2,:] = fldsave[1::2,::-1]
-    #print(f'bitmap/missing and scan modes for rect: {datetime.datetime.now() - t1}')
 
-    # Set data to integer according to GRIB metadata
-    if dataRepresentationTemplate[4] == 1: fld = fld.astype(np.int32)
+    # Default data type is np.float32. Convert to np.int32 according GRIB2
+    # metadata attribute typeOfValues.
+    if msg.typeOfValues == 1:
+        fld = fld.astype(np.int32)
 
 #   # Map the data values to their respective definitions.
 #   if map_keys:
@@ -1250,7 +1174,7 @@ def _data(openfile: open, msg: Grib2Message, data_offset: int, data_size: int)->
 #           tbl = re.findall(r'\d\.\d+',msg.units,re.IGNORECASE)[0]
 #           for k,v in tables.get_table(tbl).items():
 #               fld = np.where(fld==k,v,fld)
-    #print(f'after array unpack took: {datetime.datetime.now() - t1}')
+
     return fld
 
 def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
