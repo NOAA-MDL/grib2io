@@ -483,6 +483,7 @@ class Grib2Message:
     # Section 3 looked up common attributes.  Other looked up attributes are available according
     # to the Grid Definition Template.
     gridDefinitionSection: np.array = field(init=False,repr=True,default=templates.GridDefinitionSection())
+    sourceOfGridDefinition: int = field(init=False,repr=False,default=templates.SourceOfGridDefinition())
     numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
     gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
     gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
