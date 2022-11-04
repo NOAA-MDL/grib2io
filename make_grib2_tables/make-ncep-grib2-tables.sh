@@ -33,7 +33,7 @@ done
 # ---------------------------------------------------------------------------------------- 
 echo " -- Making section3.py"
 if [ -f section3.py ]; then rm -f section3.py; fi
-for table in 3.1 3.2
+for table in 3.0 3.1 3.2
 do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section3.py

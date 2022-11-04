@@ -5,6 +5,7 @@ import datetime
 from . import tables
 from . import utils
 
+
 _section_attrs = {0:['discipline'],
                   1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
                      'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
@@ -23,12 +24,17 @@ _section_attrs = {0:['discipline'],
                   7:[],
                   8:[],}
 
+
 def _get_template_class_attrs(items):
+    """
+    Provide a list of public attributes for a template class.
+    """
     attrs = []
     for i in items:
         if not i.startswith('_') and i != 'attrs':
             attrs.append(i)
     return attrs
+
 
 class Grib2Metadata():
     """
@@ -77,6 +83,7 @@ class Grib2Metadata():
 # ----------------------------------------------------------------------------------------
 class IndicatorSection:
     """
+    GRIB2 Section 0, [Indicator Section](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect0.shtml)
     """
     def __get__(self, obj, objtype=None):
         return obj.section0
@@ -84,7 +91,9 @@ class IndicatorSection:
         obj.section0 = value
 
 class Discipline:
-    """Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)"""
+    """
+    Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)
+    """
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.indicatorSection[2],table='0.0')
     def __set__(self, obj, value):
@@ -96,6 +105,7 @@ class Discipline:
 # ----------------------------------------------------------------------------------------
 class IdentificationSection:
     """
+    GRIB2 Section 1, [Identification Section](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect1.shtml)
     """
     def __get__(self, obj, objtype=None):
         return obj.section1
@@ -228,26 +238,41 @@ class TypeOfData:
 # Descriptor Classes for Section 3 metadata.
 # ----------------------------------------------------------------------------------------
 class GridDefinitionSection:
+    """
+    GRIB2 Section 3, [Grid Definition Section](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect3.shtml)
+    """
     def __get__(self, obj, objtype=None):
         return obj.section3[0:5]
     def __set__(self, obj, value):
         raise NotImplementedError
 
+class SourceOfGridDefinition:
+    """Source of grid definition 
+    [(See Table 3.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml
+    """
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj.section3[0],table='3.0')
+    def __set__(self, obj, value):
+        pass
+
 class NumberOfDataPoints:
+    """Number of Data Points"""
     def __get__(self, obj, objtype=None):
         return obj.section3[1]
     def __set__(self, obj, value):
         pass
 
 class GridDefinitionTemplateNumber:
+    """Grid definition template number
+    [(See Table 3.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml
+    """
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[4],table='3.1')
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class GridDefinitionTemplate:
-    """
-    """
+    """Grid definition template"""
     def __get__(self, obj, objtype=None):
         return obj.section3[5:]
     def __set__(self, obj, value):
