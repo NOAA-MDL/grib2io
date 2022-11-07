@@ -140,7 +140,7 @@ class open():
         """
         """
         if self.current_message < self.messages:
-            return self.read()[0]
+            return self.read()
         else:
             self.seek(0)
             raise StopIteration
@@ -368,10 +368,12 @@ class open():
         `Grib2Message` object when num = 1 or a `list` of Grib2Messages when
         num > 1.
         """
-        if num <= 0 or self.tell() >= self.messages: return None
+        if num <= 0 or self.tell() >= self.messages:
+            return None
+        
         if num == 1:
             self.current_message += 1
-            return self._index['msg'][self.tell()+1]
+            return self._index['msg'][self.current_message]
         elif num > 1:
             msgs = []
             beg = self.tell()+1
