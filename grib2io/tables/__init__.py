@@ -48,7 +48,7 @@ def get_table(table, expand=False):
         return {}
 
 
-def get_value_from_table(value, table):
+def get_value_from_table(value, table, expand=False):
     """
     Return the definition given a GRIB2 code table.
 
@@ -59,16 +59,22 @@ def get_value_from_table(value, table):
 
     **`table`**: `str` code table number.
 
+    **`expand`**: If `True`, expand output dictionary where keys are a range.
     Returns
     -------
 
     Table value or `None` if not found.
     """
     try:
-        tbl = get_table(table,expand=True)
+        tbl = get_table(table,expand=expand)
         value = str(value)
         return tbl[value]
     except(KeyError):
+        for k in tbl.keys():
+            if '-' in k:
+                bounds = k.split('-')
+                if value >= bounds[0] and value <= bounds[1]:
+                    return tbl[k]
         return None
 
 
@@ -99,9 +105,6 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
     - list[1] = units
     - list[2] = short name (abbreviated name)
     """
-   #if isinstance(discipline,int): discipline = str(discipline)
-   #if isinstance(parmcat,int): parmcat = str(parmcat)
-   #if isinstance(parmnum,int): parmnum = str(parmnum)
     if isNDFD:
         try:
             tblname = f'table_4_2_{discipline}_{parmcat}_ndfd'

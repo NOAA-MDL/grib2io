@@ -49,14 +49,10 @@ class Grib2Metadata():
 
     GRIB2 table to lookup the `value`. Default is None.
     """
-    __slots__ = ('definition','table','value')
+    __slots__ = ('value','table')
     def __init__(self, value, table=None):
         self.value = value
         self.table = table
-        if self.table is None:
-            self.definition = None
-        else:
-            self.definition = tables.get_value_from_table(self.value,self.table)
     def __call__(self):
         return self.value
     def __hash__(self):
@@ -77,6 +73,9 @@ class Grib2Metadata():
         return self.value <= other
     def __contains__(self,other):
         return other in self.definition
+    @property
+    def definition(self):
+        return tables.get_value_from_table(self.value,self.table)
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 0 metadata.
