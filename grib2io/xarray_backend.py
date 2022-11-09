@@ -212,7 +212,7 @@ class OnDiskArray:
     dtype = 'float32'
 
     def __post_init__(self):
-        geo_shape = (int(self.index.iloc[0].ny), int(self.index.iloc[0].nx))  # multiple grids not allowed so can just use first
+        geo_shape = (self.index.iloc[0].ny, self.index.iloc[0].nx)  # multiple grids not allowed so can just use first
 
         self.geo_shape = geo_shape
         self.geo_ndim = len(geo_shape)
@@ -259,16 +259,9 @@ class OnDiskArray:
         with open(self.file_name, mode='rb', buffering=ONE_MB) as filehandle:
             for key, row in index.iterrows():
                 t2 = datetime.datetime.now()
-                msg = Grib2Message(row['section0'],
-                        row['section1'],
-                        row['section3'],
-                        row['section4'],
-                        row['section5'],
-                        row['bitMapFlag'])
-                msg.bitMap = row['bitMap']
-                datasize = (row['offset'] + row['size']) - row['data_offset']
 
-                values = _data(filehandle, msg, row['data_offset'], datasize)
+                bitmap_offset = None if pd.isna(row['bitmap_offset']) else int(row['bitmap_offset'])
+                values = _data(filehandle, row.msg, bitmap_offset, row['data_offset'])
 
                 if len(index_slicer_inclusive) >= 1:
                     array_field[row.miloc] = values
@@ -277,7 +270,6 @@ class OnDiskArray:
                 print(f'msg load took {datetime.datetime.now() - t2}')
 
         # handle geo dim slicing
-        #print(f'data load took: {datetime.datetime.now() - t1}')
         array_field = array_field[(Ellipsis,) + item[-self.geo_ndim :]]
 
         # squeeze array dimensions expressed as integer
@@ -322,29 +314,22 @@ def filter_index(index, k, v):
 
     return index
 
-def threshold_lower_limit(pdt):
-    if pdt[19] == 255:
-        return None
-    else:
-        return pdt[19]/(10.**pdt[18])
-
-def threshold_upper_limit(pdt):
-    if pdt[21] == 255:
-        return None
-    else:
-        return pdt[21]/(10.**pdt[20])
-
-def percentile_value(pdt):
-    return pdt[15]
 
 def parse_grib_index(index, filters):
     '''
     Apply filters; evaluate what dimesnions are possible (based on pdtn) and parse each out
     '''
-    index = index.astype({'offset':'int','data_offset':'int', 'size':'int', 'ny':'int','nx':'int'})
+
+    # expand index
+    index = index.assign(shortName=index.msg.apply(lambda msg: msg.shortName))
+    index = index.assign(nx=index.msg.apply(lambda msg: msg.nx))
+    index = index.assign(ny=index.msg.apply(lambda msg: msg.ny))
+    index = index.astype({'data_offset':'int', 'ny':'int','nx':'int'})
     # apply common filters(to all definition templates) to reduce dataset to single cube
 
+    # ensure only one of each of the below exists after filter applied
     # apply product definition template number filter
+    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.pdtn))
     if 'productDefinitionTemplateNumber' in filters:
         if not isinstance(filters['productDefinitionTemplateNumber'], int):
             raise TypeError('productDefinitionTemplateNumber filter must be of type int')
@@ -355,6 +340,7 @@ def parse_grib_index(index, filters):
     pdtn = unique_pdtn[0]
 
     # apply type of generating process filter
+    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.section4[4]))
     field = 'typeOfGeneratingProcess'
     if field in filters:
         if not isinstance(filters[field], int):
@@ -365,6 +351,7 @@ def parse_grib_index(index, filters):
         raise ValueError(f'filter to a single {field}; found: {unique}')
 
     # apply type of first fixed surface filter
+    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface.definition[0]))
     if 'typeOfFirstFixedSurface' in filters:
         if not isinstance(filters['typeOfFirstFixedSurface'], str):
             raise TypeError('typeOfFirstFixedSurface filter must be of type str')
@@ -372,27 +359,26 @@ def parse_grib_index(index, filters):
     if len(index.typeOfFirstFixedSurface.unique()) != 1:
         raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {index.typeOfFirstFixedSurface.unique()}')
 
-    refdate = pd.to_datetime(index['refDate'], format='%Y%m%d%H')
-    index = index.assign(refDate=refdate)
-    leadtime = pd.to_timedelta(index['leadTime'], unit='hour')
-    index = index.assign(leadTime=leadtime)
-
+    # determine which non geo dimensions can be created from data
     # by this point the index is filtered down to a single typeOfFirstFixedSurface and productDefinitionTemplateNumber
     non_geo_dims = list()
 
     # refDate always added for now (could add only based on typOfGeneratingProcess)
+    index = index.assign(refDate=index.msg.apply(lambda msg: msg.refDate))
     @dataclass(init=False)
     class RefDateDim:
         refDate: pd.Index = PdIndex()
     non_geo_dims.append(RefDateDim)
 
     # leadTime always added for now (could add only based on typOfGeneratingProcess)
+    index = index.assign(leadTime=index.msg.apply(lambda msg: msg.leadTime))
     @dataclass(init=False)
     class LeadTimeDim:
         leadTime: pd.Index = PdIndex()
     non_geo_dims.append(LeadTimeDim)
 
     # duration added if multiple durations or if not instant
+    index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
     unique_durations = index.duration.unique()
 
     @dataclass(init=False)
@@ -400,10 +386,11 @@ def parse_grib_index(index, filters):
         duration: pd.Index = PdIndex()
     if len(unique_durations) > 1:
         non_geo_dims.append(Duration)
-    elif len(unique_durations) == 1 and 0 not in unique_durations and not np.isnan(unique_durations).any():
+    elif len(unique_durations) == 1 and 0 not in unique_durations and not pd.isna(unique_durations[0]):
         non_geo_dims.append(Duration)
 
 
+    index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
     if 'valueOfFirstFixedSurface' in filters:
         index = filter_index(index, 'valueOfFirstFixedSurface', filters['valueOfFirstFixedSurface'])
         del filters['valueOfFirstFixedSurface']
@@ -415,12 +402,11 @@ def parse_grib_index(index, filters):
             valueOfFirstFixedSurface: pd.Index = PdIndex()
         non_geo_dims.append(ValueOfFirstFixedSurfaceDim)
 
-    # logic for parsing possible dims from product definition section
+    # logic for parsing possible dims from specific product definition section
     if pdtn == 9:
-        lower = index.productDefinitionTemplate.apply(threshold_lower_limit)
-        index = index.assign(thresholdLowerLimit=lower.values)
-        upper = index.productDefinitionTemplate.apply(threshold_upper_limit)
-        index = index.assign(thresholdUpperLimit=upper.values)
+        index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
+        index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
+
 
         if index['thresholdLowerLimit'].nunique() > 1:
             @dataclass(init=False)
@@ -434,8 +420,7 @@ def parse_grib_index(index, filters):
             non_geo_dims.append(ThresholdUpperLimitDim)
 
     elif pdtn == 10:
-        value = index.productDefinitionTemplate.apply(percentile_value)
-        index = index.assign(percentileValue=value)
+        index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
 
         @dataclass(init=False)
         class PercentileValueDim:
@@ -459,19 +444,20 @@ def build_da_without_coords(index, cube, file) -> xr.DataArray:
     da.encoding['original_shape'] = data.shape
 
     da.encoding['preffered_chunks'] = {'y':-1, 'x':-1}
-    msg1 = file[int(index.messageNumber.iloc[0])][0]
-    for attr in msg1.__dict__.keys():
-        if not attr.startswith('_'):
-            at = f'GRIB_{attr}'
-            try:
-                if not msg1.__dict__[attr]:
-                    continue
-            except ValueError:
-                continue  # encountered np arrays; ignore for now
-            if isinstance(msg1.__dict__[attr], grib2io.templates.Grib2Metadata):
-                v = msg1.__dict__[attr].value
-            elif isinstance(msg1.__dict__[attr], (str, numbers.Number, np.ndarray, list, tuple)):
-                v = msg1.__dict__[attr]
+    msg1 = index.msg.iloc[0]
+    for attr, field in msg1.__dataclass_fields__.items():
+        if field.repr:
+            name = f'GRIB_{attr}'
+          # try:
+          #     if not getattr(msg1.__dict__[attr]:
+          #         continue
+          # except ValueError:
+          #     continue  # encountered np arrays; ignore for now
+            v = getattr(msg1, attr)
+            if isinstance(v, grib2io.templates.Grib2Metadata):
+                v = v.value
+            elif isinstance(v, (str, numbers.Number, np.ndarray, list, tuple)):
+                v = v
                 if isinstance(v, bool):
                     if v:
                         v = 1
@@ -479,10 +465,11 @@ def build_da_without_coords(index, cube, file) -> xr.DataArray:
                         v = 0
             else:
                 continue
-            if at not in cube:
-                da.attrs[at] = v
-            elif cube[at] is None:
-                da.attrs[at] = v
+
+            if attr not in cube:
+                da.attrs[name] = v
+            elif cube[attr] is None:
+                da.attrs[name] = v
 
 
 
@@ -573,7 +560,7 @@ def make_variables(index, filters, f, non_geo_dims):
 
         for dim in dims:
             if frame[dim].value_counts().nunique() > 1:
-                raise ValueError(f'un-even numer of grib msgs associated with dimension: {dim}')
+                raise ValueError(f'un-even numer of grib msgs associated with dimension: {dim}\n unique values for {dim}: {frame[dim].unique()} ')
 
         if len(dims) >= 1: # dims may be empty if no extra dims on top of x,y
             frame = frame.sort_values(dims)
@@ -606,11 +593,11 @@ def make_variables(index, filters, f, non_geo_dims):
     cube.x = range(int(index.nx.iloc[0]))
 
     extra_geo = None
-    rec = f[int(ordered_frames[0].messageNumber.iloc[0])][0]
+    msg = index.msg[0]
 
     # we want the lat lons; make them via accessing a record; we are asuming all records are the same grid because they have the same shape;
     # may want a unique grid identifier from grib2io to avoid assuming this
-    latitude, longitude = rec.latlons()
+    latitude, longitude = msg.latlons()
     latitude = xr.DataArray(latitude, dims=['y','x'])
     latitude.attrs['standard_name'] = 'latitude'
     longitude = xr.DataArray(longitude, dims=['y','x'])
