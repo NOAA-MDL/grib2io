@@ -246,7 +246,7 @@ class GridDefinitionSection:
         raise NotImplementedError
 
 class SourceOfGridDefinition:
-    """Source of grid definition 
+    """Source of grid definition
     [(See Table 3.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml
     """
     def __get__(self, obj, objtype=None):
@@ -561,7 +561,7 @@ class ProjParameters:
                 lat0 = -90.0
             projparams['proj'] = 'stere'
             projparams['lat_ts'] = obj.latitudeTrueScale
-            projparams['lat_0'] = lat0 
+            projparams['lat_0'] = lat0
             projparams['lon_0'] = obj.gridOrientation
         elif gdtn == 30:
             projparams['proj'] = 'lcc'
@@ -1228,8 +1228,8 @@ class ProductDefinitionTemplate5():
     forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
-    thesholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
-    thesholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
+    thresholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
+    thresholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=True, default=Threshold())
     @classmethod
     @property
@@ -1276,8 +1276,8 @@ class ProductDefinitionTemplate9():
     forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
-    thesholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
-    thesholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
+    thresholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
+    thresholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=True, default=Threshold())
     yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
     monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
