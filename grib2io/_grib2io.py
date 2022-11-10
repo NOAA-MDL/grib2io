@@ -102,8 +102,8 @@ class open():
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
-            self.variables = tuple(sorted(set(filter(None,[msg.shortName for msg in self._index['msg'] if msg is not None]))))
-            self.levels = tuple(sorted(set(filter(None,[msg.level for msg in self._index['msg'] if msg is not None]))))
+            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg'][1:]])))
+            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg'][1:]])))
 
 
     def __delete__(self, instance):
@@ -178,6 +178,7 @@ class open():
         self._index['bitmap_offset'] = [None]
         self._index['data_offset'] = [None]
         self._index['size'] = [None]
+        self._index['data_size'] = [None]
         self._index['submessageOffset'] = [None]
         self._index['submessageBeginSection'] = [None]
         self._index['isSubmessage'] = [None]
@@ -277,6 +278,7 @@ class open():
                             self._index['bitmap_offset'].append(_bmappos)
                             self._index['data_offset'].append(_datapos)
                             self._index['size'].append(section0[-1])
+                            self._index['data_size'].append(_datasize)
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
                             if _issubmessage:
@@ -309,6 +311,7 @@ class open():
                             self._index['bitmap_offset'].append(_bmappos)
                             self._index['data_offset'].append(_datapos)
                             self._index['size'].append(section0[-1])
+                            self._index['data_size'].append(_datasize)
                             self._index['messageNumber'].append(self.messages)
                             self._index['isSubmessage'].append(_issubmessage)
                             self._index['submessageOffset'].append(_submsgoffset)
@@ -442,6 +445,30 @@ class open():
             self.current_message += 1
         else:
             raise TypeError("msg must be a Grib2Message object.")
+
+
+    def levels_by_var(self,name):
+        """
+        Return a list of level strings given a variable shortName.
+
+        Parameters
+        ----------
+
+        **`name`**: Grib2Message variable shortName
+        """
+        return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
+
+
+    def vars_by_level(self,level):
+        """
+        Return a list of variable shortName strings given a level.
+
+        Parameters
+        ----------
+
+        **`level`**: Grib2Message variable level
+        """
+        return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
 
 @dataclass
@@ -1203,6 +1230,7 @@ def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
     Gdt = templates.gdt_class_by_gdtn(gdtn)
     Pdt = templates.pdt_class_by_pdtn(pdtn)
     Drt = templates.drt_class_by_drtn(drtn)
+    @dataclass(init=False, repr=False)
     class Msg(Grib2Message, Gdt, Pdt, Drt):
         pass
     return Msg
