@@ -169,27 +169,6 @@ class open():
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
-#
-#       if isinstance(key,slice):
-#           return self._index[key]
-#           if key.start is None and key.stop is None and key.step is None:
-#               beg = 1
-#               end = self.messages+1
-#               inc = 1
-#           else:
-#               beg, end, inc = key.indices(self.messages)
-#           return [self[i] for i in range(beg,end,inc)]
-#       elif isinstance(key,int):
-#           if key == 0:
-#               warnings.warn("GRIB2 Message number 0 does not exist.")
-#               return None
-#           return self._index['msg'][key]
-#       elif isinstance(key,str):
-#           return self.select(shortName=key)
-#       else:
-#           raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
-
-
     def _build_index(self):
         """
         Perform indexing of GRIB2 Messages.
@@ -364,40 +343,43 @@ class open():
         Close the file handle
         """
         if not self._filehandle.closed:
+            self.messages = 0
+            self.current_message = 0
             self._filehandle.close()
             self.closed = self._filehandle.closed
 
 
-    def read(self, num=1):
+    def read(self, size=None):
         """
-        Read num GRIB2 messages from the current position.
+        Read size amount of GRIB2 messages from the current position. If no argument is
+        given, then size is None and all messages are returned from the current position
+        in the file. This read method follows the behavior of Python's builtin open()
+        function, but whereas that operates on units of bytes, we operate on units of
+        GRIB2 messages.
 
         Parameters
         ----------
 
-        **`num : int`**: number of GRIB2 messages to read.
+        **`size : int`**: number of GRIB2 messages to read. The default value is None.
 
         Returns
         -------
 
-        `Grib2Message` object when num = 1 or a `list` of Grib2Messages when
-        num > 1.
+        `Grib2Message` object when size = 1 or a `list` of Grib2Messages when
+        size > 1.
         """
-        if num <= 0 or self.tell() >= self.messages:
-            return None
-
-        if num == 1:
+        if size is not None and size < 0:
+            size = None
+        if size is None or size > 1:
+            start = self.tell()+1 # From the current message, start at next one.
+            stop = self.messages+1 if size is None else start+size
+            self.current_message = stop-1
+            return self._index['msg'][slice(start,stop,1)]
+        elif size == 1:
             self.current_message += 1
             return self._index['msg'][self.current_message]
-        elif num > 1:
-            msgs = []
-            beg = self.tell()+1
-            end = self.tell()+1+num if self.tell()+1+num <= self.messages else self.messages
-            msgrange = range(beg,end+1)
-            for n in msgrange:
-                msgs.append(self._index['msg'][n])
-                self.current_message += 1
-            return msgs
+        else:
+            None
 
 
     def rewind(self):
