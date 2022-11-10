@@ -128,22 +128,13 @@ class open():
     def __iter__(self):
         """
         """
-        return self
+        yield from self._index['msg'][1:]
+
 
     def __len__(self):
         """
         """
         return self.messages
-
-
-    def __next__(self):
-        """
-        """
-        if self.current_message < self.messages:
-            return self.read()
-        else:
-            self.seek(0)
-            raise StopIteration
 
 
     def __repr__(self):
@@ -159,23 +150,44 @@ class open():
     def __getitem__(self, key):
         """
         """
-        if isinstance(key,slice):
-            if key.start is None and key.stop is None and key.step is None:
-                beg = 1
-                end = self.messages+1
-                inc = 1
+        if isinstance(key,int):
+            if key > 0:
+                return self._index['msg'][key]
+            elif key == 0:
+                raise IndexError("GRIB2 Message number 0 does not exist.")
+            elif abs(key) >= len(self._index['msg']):
+                raise IndexError("index out of range")
             else:
-                beg, end, inc = key.indices(self.messages)
-            return [self[i][0] for i in range(beg,end,inc)]
-        elif isinstance(key,int):
-            if key == 0:
-                warnings.warn("GRIB2 Message number 0 does not exist.")
-                return None
-            return self._index['msg'][key]
+                return self._index['msg'][key]
         elif isinstance(key,str):
             return self.select(shortName=key)
+        elif isinstance(key,slice):
+            if key.start is None:
+                raise IndexError("GRIB2 Message number 0 does not exist.")
+            return self._index['msg'][key]
         else:
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
+
+
+#
+#       if isinstance(key,slice):
+#           return self._index[key]
+#           if key.start is None and key.stop is None and key.step is None:
+#               beg = 1
+#               end = self.messages+1
+#               inc = 1
+#           else:
+#               beg, end, inc = key.indices(self.messages)
+#           return [self[i] for i in range(beg,end,inc)]
+#       elif isinstance(key,int):
+#           if key == 0:
+#               warnings.warn("GRIB2 Message number 0 does not exist.")
+#               return None
+#           return self._index['msg'][key]
+#       elif isinstance(key,str):
+#           return self.select(shortName=key)
+#       else:
+#           raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
     def _build_index(self):
@@ -184,6 +196,7 @@ class open():
         """
         # Initialize index dictionary
         self._index['offset'] = [None]
+        self._index['bitmap_offset'] = [None]
         self._index['data_offset'] = [None]
         self._index['size'] = [None]
         self._index['submessageOffset'] = [None]
@@ -282,6 +295,7 @@ class open():
                         if trailer == '7777':
                             self.messages += 1
                             self._index['offset'].append(pos)
+                            self._index['bitmap_offset'].append(_bmappos)
                             self._index['data_offset'].append(_datapos)
                             self._index['size'].append(section0[-1])
                             self._index['messageNumber'].append(self.messages)
@@ -313,6 +327,7 @@ class open():
                             self._filehandle.seek(self._filehandle.tell()-4)
                             self.messages += 1
                             self._index['offset'].append(pos)
+                            self._index['bitmap_offset'].append(_bmappos)
                             self._index['data_offset'].append(_datapos)
                             self._index['size'].append(section0[-1])
                             self._index['messageNumber'].append(self.messages)
@@ -370,7 +385,7 @@ class open():
         """
         if num <= 0 or self.tell() >= self.messages:
             return None
-        
+
         if num == 1:
             self.current_message += 1
             return self._index['msg'][self.current_message]
@@ -462,7 +477,7 @@ class Grib2Message:
     discipline: Grib2Metadata = field(init=False,repr=False,default=templates.Discipline())
 
     # Section 1 looked up attributes
-    identificationSection: np.array = field(init=False,repr=False,default=templates.IdentificationSection)
+    identificationSection: np.array = field(init=False,repr=False,default=templates.IdentificationSection())
     originatingCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingCenter())
     originatingSubCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingSubCenter())
     masterTableInfo: Grib2Metadata = field(init=False,repr=False,default=templates.MasterTableInfo())
@@ -509,9 +524,9 @@ class Grib2Message:
     # to the Product Definition Template.
     productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
-    _varinfo: list = field(init=False, repr=True, default=templates.VarInfo())
-    _fixedsfc1info: list = field(init=False, repr=True, default=templates.FixedSfc1Info())
-    _fixedsfc2info: list = field(init=False, repr=True, default=templates.FixedSfc2Info())
+    _varinfo: list = field(init=False, repr=False, default=templates.VarInfo())
+    _fixedsfc1info: list = field(init=False, repr=False, default=templates.FixedSfc1Info())
+    _fixedsfc2info: list = field(init=False, repr=False, default=templates.FixedSfc2Info())
     parameterCategory: int = field(init=False,repr=False,default=templates.ParameterCategory())
     parameterNumber: int = field(init=False,repr=False,default=templates.ParameterNumber())
     fullName: str = field(init=False, repr=True, default=templates.FullName())
@@ -551,7 +566,7 @@ class Grib2Message:
     @property
     def gdtn(self):
         return self.section3[4]
- 
+
 
     @property
     def pdtn(self):
@@ -668,9 +683,7 @@ class Grib2Message:
         ''' accessing the data attribute loads data into memmory '''
         if hasattr(self,'_data'):
             if isinstance(self._data, Grib2MessageOnDiskArray):
-                t = datetime.datetime.now()
                 self._data = np.asarray(self._data)
-                print(f'load took {datetime.datetime.now() - t}')
             return self._data
         raise ValueError
 
@@ -1063,8 +1076,6 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
         bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
-        print(len(bmap),bmap)
-        print(msg.section3[1],msg.section5[0])
 
     # is there any missing value stored other than the bitmask?
     #priMissingValue = 9999.0 #msg.priMissingValue
