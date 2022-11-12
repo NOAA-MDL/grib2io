@@ -31,7 +31,7 @@ def _get_template_class_attrs(items):
     """
     attrs = []
     for i in items:
-        if not i.startswith('_') and i != 'attrs':
+        if not i.startswith('_') and i != '_attrs':
             attrs.append(i)
     return attrs
 
@@ -593,7 +593,7 @@ class GridDefinitionTemplate0():
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -611,7 +611,7 @@ class GridDefinitionTemplate1():
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -629,7 +629,7 @@ class GridDefinitionTemplate10():
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -646,7 +646,7 @@ class GridDefinitionTemplate20():
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -667,7 +667,7 @@ class GridDefinitionTemplate30():
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -687,7 +687,7 @@ class GridDefinitionTemplate31():
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -702,7 +702,7 @@ class GridDefinitionTemplate40():
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -720,7 +720,7 @@ class GridDefinitionTemplate41():
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -730,7 +730,7 @@ class GridDefinitionTemplate50():
     spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 _gdt_by_gdtn = {0: GridDefinitionTemplate0,
@@ -1195,7 +1195,7 @@ class ProductDefinitionTemplate0():
     _num = 0
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1207,7 +1207,7 @@ class ProductDefinitionTemplate1():
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1218,7 +1218,7 @@ class ProductDefinitionTemplate2():
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1233,7 +1233,7 @@ class ProductDefinitionTemplate5():
     threshold: str = field(init=False, repr=False, default=Threshold())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1243,7 +1243,7 @@ class ProductDefinitionTemplate6():
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1266,7 +1266,7 @@ class ProductDefinitionTemplate8():
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1295,7 +1295,7 @@ class ProductDefinitionTemplate9():
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1319,7 +1319,7 @@ class ProductDefinitionTemplate10():
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1345,7 +1345,7 @@ class ProductDefinitionTemplate11():
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1370,7 +1370,7 @@ class ProductDefinitionTemplate12():
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1382,7 +1382,7 @@ class ProductDefinitionTemplate15():
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 _pdt_by_pdtn = {
@@ -1580,7 +1580,7 @@ class DataRepresentationTemplate0():
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1604,7 +1604,7 @@ class DataRepresentationTemplate2():
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1630,7 +1630,7 @@ class DataRepresentationTemplate3():
     nBytesSpatialDifference: int = field(init=False, repr=False, default=NBytesSpatialDifference())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1641,7 +1641,7 @@ class DataRepresentationTemplate4():
     precision: Grib2Metadata = field(init=False, repr=False, default=Precision())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1657,7 +1657,7 @@ class DataRepresentationTemplate40():
     targetCompressionRatio: int = field(init=False, repr=False, default=TargetCompressionRatio())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1671,7 +1671,7 @@ class DataRepresentationTemplate41():
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 @dataclass(init=False)
@@ -1686,7 +1686,7 @@ class DataRepresentationTemplate50():
     realOfCoefficient: float = field(init=False, repr=False, default=RealOfCoefficient())
     @classmethod
     @property
-    def attrs(cls):
+    def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
 _drt_by_drtn = {
