@@ -824,7 +824,7 @@ class UnitOfTimeRange:
 
 class LeadTime:
     def __get__(self, obj, objtype=None):
-        return utils.getleadtime(obj.section1,obj.section4[1],
+        return utils.get_leadtime(obj.section1,obj.section4[1],
                 obj.section4[2:])
     def __set__(self, obj, value):
         raise NotImplementedError
@@ -1083,7 +1083,7 @@ class SecondOfEndOfTimePeriod:
 
 class Duration:
     def __get__(self, obj, objtype=None):
-        return utils.getduration(obj.section4[1],obj.section4[2:])
+        return utils.get_duration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
         pass
 
