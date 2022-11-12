@@ -585,12 +585,12 @@ class ProjParameters:
 class GridDefinitionTemplate0():
     _len = 19
     _num = 0
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
-    longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     @classmethod
     @property
     def attrs(cls):
@@ -600,15 +600,15 @@ class GridDefinitionTemplate0():
 class GridDefinitionTemplate1():
     _len = 22
     _num = 1
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
-    longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
-    longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
-    anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
+    longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
+    anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
     @property
     def attrs(cls):
@@ -618,15 +618,15 @@ class GridDefinitionTemplate1():
 class GridDefinitionTemplate10():
     _len = 19
     _num = 10
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
-    latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
-    longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeTrueScale: float = field(init=False, repr=False, default=LatitudeTrueScale())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    gridOrientation: float = field(init=False, repr=False, default=GridOrientation())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
     def attrs(cls):
@@ -636,14 +636,14 @@ class GridDefinitionTemplate10():
 class GridDefinitionTemplate20():
     _len = 18
     _num = 20
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
-    gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
-    projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeTrueScale: float = field(init=False, repr=False, default=LatitudeTrueScale())
+    gridOrientation: float = field(init=False, repr=False, default=GridOrientation())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
+    projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
     def attrs(cls):
@@ -653,18 +653,18 @@ class GridDefinitionTemplate20():
 class GridDefinitionTemplate30():
     _len = 22
     _num = 30
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
-    gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
-    standardLatitude1: float = field(init=False, repr=True, default=StandardLatitude1())
-    standardLatitude2: float = field(init=False, repr=True, default=StandardLatitude2())
-    latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
-    longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
-    projParameters: dict = field(init=False, repr=True, default=ProjParameters())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeTrueScale: float = field(init=False, repr=False, default=LatitudeTrueScale())
+    gridOrientation: float = field(init=False, repr=False, default=GridOrientation())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
+    standardLatitude1: float = field(init=False, repr=False, default=StandardLatitude1())
+    standardLatitude2: float = field(init=False, repr=False, default=StandardLatitude2())
+    latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
+    longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
+    projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
     @property
     def attrs(cls):
@@ -674,17 +674,17 @@ class GridDefinitionTemplate30():
 class GridDefinitionTemplate31():
     _len = 22
     _num = 31
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeTrueScale: float = field(init=False, repr=True, default=LatitudeTrueScale())
-    gridOrientation: float = field(init=False, repr=True, default=GridOrientation())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    projectionCenterFlag: list = field(init=False, repr=True, default=ProjectionCenterFlag())
-    standardLatitude1: float = field(init=False, repr=True, default=StandardLatitude1())
-    standardLatitude2: float = field(init=False, repr=True, default=StandardLatitude2())
-    latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
-    longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeTrueScale: float = field(init=False, repr=False, default=LatitudeTrueScale())
+    gridOrientation: float = field(init=False, repr=False, default=GridOrientation())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
+    standardLatitude1: float = field(init=False, repr=False, default=StandardLatitude1())
+    standardLatitude2: float = field(init=False, repr=False, default=StandardLatitude2())
+    latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
+    longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     @classmethod
     @property
     def attrs(cls):
@@ -694,12 +694,12 @@ class GridDefinitionTemplate31():
 class GridDefinitionTemplate40():
     _len = 19
     _num = 40
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
-    longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     @classmethod
     @property
     def attrs(cls):
@@ -709,15 +709,15 @@ class GridDefinitionTemplate40():
 class GridDefinitionTemplate41():
     _len = 22
     _num = 41
-    latitudeFirstGridpoint: float = field(init=False, repr=True, default=LatitudeFirstGridpoint())
-    longitudeFirstGridpoint: float = field(init=False, repr=True, default=LongitudeFirstGridpoint())
-    latitudeLastGridpoint: float = field(init=False, repr=True, default=LatitudeLastGridpoint())
-    longitudeLastGridpoint: float = field(init=False, repr=True, default=LongitudeLastGridpoint())
-    gridlengthXDirection: float = field(init=False, repr=True, default=GridlengthXDirection())
-    gridlengthYDirection: float = field(init=False, repr=True, default=GridlengthYDirection())
-    latitudeSouthernPole: float = field(init=False, repr=True, default=LatitudeSouthernPole())
-    longitudeSouthernPole: float = field(init=False, repr=True, default=LongitudeSouthernPole())
-    anglePoleRotation: float = field(init=False, repr=True, default=AnglePoleRotation())
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
+    longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
+    anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
     @property
     def attrs(cls):
@@ -727,7 +727,7 @@ class GridDefinitionTemplate41():
 class GridDefinitionTemplate50():
     _len = 5
     _num = 50
-    spectralFunctionParameters: list = field(init=False, repr=True, default=SpectralFunctionParameters())
+    spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
     @classmethod
     @property
     def attrs(cls):
@@ -1202,9 +1202,9 @@ class ProductDefinitionTemplate0():
 class ProductDefinitionTemplate1():
     _len = 18
     _num = 1
-    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfEnsembleForecast())
-    perturbationNumber: int = field(init=False, repr=True, default=PerturbationNumber())
-    numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
     @property
     def attrs(cls):
@@ -1214,8 +1214,8 @@ class ProductDefinitionTemplate1():
 class ProductDefinitionTemplate2():
     _len = 17
     _num = 2
-    typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfDerivedForecast())
-    numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
+    typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
     @property
     def attrs(cls):
@@ -1225,12 +1225,12 @@ class ProductDefinitionTemplate2():
 class ProductDefinitionTemplate5():
     _len = 22
     _num = 5
-    forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
-    totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
-    typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
-    thresholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
-    thresholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
-    threshold: str = field(init=False, repr=True, default=Threshold())
+    forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
+    totalNumberOfForecastProbabilities: int = field(init=False, repr=False, default=TotalNumberOfForecastProbabilities())
+    typeOfProbability: Grib2Metadata = field(init=False, repr=False, default=TypeOfProbability())
+    thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
+    thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
+    threshold: str = field(init=False, repr=False, default=Threshold())
     @classmethod
     @property
     def attrs(cls):
@@ -1240,7 +1240,7 @@ class ProductDefinitionTemplate5():
 class ProductDefinitionTemplate6():
     _len = 16
     _num = 6
-    percentileValue: int = field(init=False, repr=True, default=PercentileValue())
+    percentileValue: int = field(init=False, repr=False, default=PercentileValue())
     @classmethod
     @property
     def attrs(cls):
@@ -1250,20 +1250,20 @@ class ProductDefinitionTemplate6():
 class ProductDefinitionTemplate8():
     _len = 29
     _num = 8
-    yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
-    monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
-    dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
-    hourOfEndOfTimePeriod: int = field(init=False, repr=True, default=HourOfEndOfTimePeriod())
-    minuteOfEndOfTimePeriod: int = field(init=False, repr=True, default=MinuteOfEndOfTimePeriod())
-    secondOfEndOfTimePeriod: int = field(init=False, repr=True, default=SecondOfEndOfTimePeriod())
-    numberOfTimeRanges: int = field(init=False, repr=True, default=NumberOfTimeRanges())
-    numberOfMissingValues: int = field(init=False, repr=True, default=NumberOfMissingValues())
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=TypeOfTimeIncrementOfStatisticalProcess())
-    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfStatisticalProcess())
-    timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
-    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
-    timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
     def attrs(cls):
@@ -1273,26 +1273,26 @@ class ProductDefinitionTemplate8():
 class ProductDefinitionTemplate9():
     _len = 36
     _num = 9
-    forecastProbabilityNumber: int = field(init=False, repr=True, default=ForecastProbabilityNumber())
-    totalNumberOfForecastProbabilities: int = field(init=False, repr=True, default=TotalNumberOfForecastProbabilities())
-    typeOfProbability: Grib2Metadata = field(init=False, repr=True, default=TypeOfProbability())
-    thresholdLowerLimit: float = field(init=False, repr=True, default=ThresholdLowerLimit())
-    thresholdUpperLimit: float = field(init=False, repr=True, default=ThresholdUpperLimit())
-    threshold: str = field(init=False, repr=True, default=Threshold())
-    yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
-    monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
-    dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
-    hourOfEndOfTimePeriod: int = field(init=False, repr=True, default=HourOfEndOfTimePeriod())
-    minuteOfEndOfTimePeriod: int = field(init=False, repr=True, default=MinuteOfEndOfTimePeriod())
-    secondOfEndOfTimePeriod: int = field(init=False, repr=True, default=SecondOfEndOfTimePeriod())
-    numberOfTimeRanges: int = field(init=False, repr=True, default=NumberOfTimeRanges())
-    numberOfMissingValues: int = field(init=False, repr=True, default=NumberOfMissingValues())
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=TypeOfTimeIncrementOfStatisticalProcess())
-    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfStatisticalProcess())
-    timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
-    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
-    timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
+    totalNumberOfForecastProbabilities: int = field(init=False, repr=False, default=TotalNumberOfForecastProbabilities())
+    typeOfProbability: Grib2Metadata = field(init=False, repr=False, default=TypeOfProbability())
+    thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
+    thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
+    threshold: str = field(init=False, repr=False, default=Threshold())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
     def attrs(cls):
@@ -1302,21 +1302,21 @@ class ProductDefinitionTemplate9():
 class ProductDefinitionTemplate10():
     _len = 30
     _num = 10
-    percentileValue: int = field(init=False, repr=True, default=PercentileValue())
-    yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
-    monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
-    dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
-    hourOfEndOfTimePeriod: int = field(init=False, repr=True, default=HourOfEndOfTimePeriod())
-    minuteOfEndOfTimePeriod: int = field(init=False, repr=True, default=MinuteOfEndOfTimePeriod())
-    secondOfEndOfTimePeriod: int = field(init=False, repr=True, default=SecondOfEndOfTimePeriod())
-    numberOfTimeRanges: int = field(init=False, repr=True, default=NumberOfTimeRanges())
-    numberOfMissingValues: int = field(init=False, repr=True, default=NumberOfMissingValues())
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=TypeOfTimeIncrementOfStatisticalProcess())
-    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfStatisticalProcess())
-    timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
-    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
-    timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    percentileValue: int = field(init=False, repr=False, default=PercentileValue())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
     def attrs(cls):
@@ -1326,23 +1326,23 @@ class ProductDefinitionTemplate10():
 class ProductDefinitionTemplate11():
     _len = 32
     _num = 11
-    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfEnsembleForecast())
-    perturbationNumber: int = field(init=False, repr=True, default=PerturbationNumber())
-    numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
-    yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
-    monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
-    dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
-    hourOfEndOfTimePeriod: int = field(init=False, repr=True, default=HourOfEndOfTimePeriod())
-    minuteOfEndOfTimePeriod: int = field(init=False, repr=True, default=MinuteOfEndOfTimePeriod())
-    secondOfEndOfTimePeriod: int = field(init=False, repr=True, default=SecondOfEndOfTimePeriod())
-    numberOfTimeRanges: int = field(init=False, repr=True, default=NumberOfTimeRanges())
-    numberOfMissingValues: int = field(init=False, repr=True, default=NumberOfMissingValues())
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=TypeOfTimeIncrementOfStatisticalProcess())
-    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfStatisticalProcess())
-    timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
-    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
-    timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
     def attrs(cls):
@@ -1352,22 +1352,22 @@ class ProductDefinitionTemplate11():
 class ProductDefinitionTemplate12():
     _len = 31
     _num = 12
-    typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=True, default=TypeOfDerivedForecast())
-    numberOfEnsembleForecasts: int = field(init=False, repr=True, default=NumberOfEnsembleForecasts())
-    yearOfEndOfTimePeriod: int = field(init=False, repr=True, default=YearOfEndOfTimePeriod())
-    monthOfEndOfTimePeriod: int = field(init=False, repr=True, default=MonthOfEndOfTimePeriod())
-    dayOfEndOfTimePeriod: int = field(init=False, repr=True, default=DayOfEndOfTimePeriod())
-    hourOfEndOfTimePeriod: int = field(init=False, repr=True, default=HourOfEndOfTimePeriod())
-    minuteOfEndOfTimePeriod: int = field(init=False, repr=True, default=MinuteOfEndOfTimePeriod())
-    secondOfEndOfTimePeriod: int = field(init=False, repr=True, default=SecondOfEndOfTimePeriod())
-    numberOfTimeRanges: int = field(init=False, repr=True, default=NumberOfTimeRanges())
-    numberOfMissingValues: int = field(init=False, repr=True, default=NumberOfMissingValues())
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=TypeOfTimeIncrementOfStatisticalProcess())
-    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfStatisticalProcess())
-    timeRangeOfStatisticalProcess: int = field(init=False, repr=True, default=TimeRangeOfStatisticalProcess())
-    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=True, default=UnitOfTimeRangeOfSuccessiveFields())
-    timeIncrementOfSuccessiveFields: int = field(init=False, repr=True, default=TimeIncrementOfSuccessiveFields())
+    typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
     @property
     def attrs(cls):
@@ -1377,9 +1377,9 @@ class ProductDefinitionTemplate12():
 class ProductDefinitionTemplate15():
     _len = 18
     _num = 15
-    statisticalProcess: Grib2Metadata = field(init=False, repr=True, default=StatisticalProcess())
-    typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=True, default=TypeOfStatisticalProcessing())
-    numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=True, default=NumberOfDataPointsForSpatialProcessing())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
+    numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
     @classmethod
     @property
     def attrs(cls):
@@ -1574,10 +1574,10 @@ class DataRepresentationTemplate0():
     _len = 5
     _num = 0
     _packingScheme = 'simple'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
     @property
     def attrs(cls):
@@ -1588,20 +1588,20 @@ class DataRepresentationTemplate2():
     _len = 16
     _num = 2
     _packingScheme = 'complex'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
-    typeOfMissingValue: Grib2Metadata = field(init=False, repr=True, default=TypeOfMissingValue())
-    priMissingValue: [float, int] = field(init=False, repr=True, default=PriMissingValue())
-    secMissingValue: [float, int] = field(init=False, repr=True, default=SecMissingValue())
-    nGroups: int = field(init=False, repr=True, default=NGroups())
-    refGroupWidth: int = field(init=False, repr=True, default=RefGroupWidth())
-    nBitsGroupWidth: int = field(init=False, repr=True, default=NBitsGroupWidth())
-    refGroupLength: int = field(init=False, repr=True, default=RefGroupLength())
-    groupLengthIncrement: int = field(init=False, repr=True, default=GroupLengthIncrement())
-    lengthOfLastGroup: int = field(init=False, repr=True, default=LengthOfLastGroup())
-    nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
+    priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
+    secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
+    nGroups: int = field(init=False, repr=False, default=NGroups())
+    refGroupWidth: int = field(init=False, repr=False, default=RefGroupWidth())
+    nBitsGroupWidth: int = field(init=False, repr=False, default=NBitsGroupWidth())
+    refGroupLength: int = field(init=False, repr=False, default=RefGroupLength())
+    groupLengthIncrement: int = field(init=False, repr=False, default=GroupLengthIncrement())
+    lengthOfLastGroup: int = field(init=False, repr=False, default=LengthOfLastGroup())
+    nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
     @classmethod
     @property
     def attrs(cls):
@@ -1612,22 +1612,22 @@ class DataRepresentationTemplate3():
     _len = 18
     _num = 3
     _packingScheme = 'complex-spdiff'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
-    typeOfMissingValue: Grib2Metadata = field(init=False, repr=True, default=TypeOfMissingValue())
-    priMissingValue: [float, int] = field(init=False, repr=True, default=PriMissingValue())
-    secMissingValue: [float, int] = field(init=False, repr=True, default=SecMissingValue())
-    nGroups: int = field(init=False, repr=True, default=NGroups())
-    refGroupWidth: int = field(init=False, repr=True, default=RefGroupWidth())
-    nBitsGroupWidth: int = field(init=False, repr=True, default=NBitsGroupWidth())
-    refGroupLength: int = field(init=False, repr=True, default=RefGroupLength())
-    groupLengthIncrement: int = field(init=False, repr=True, default=GroupLengthIncrement())
-    lengthOfLastGroup: int = field(init=False, repr=True, default=LengthOfLastGroup())
-    nBitsScaledGroupLength: int = field(init=False, repr=True, default=NBitsScaledGroupLength())
-    spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=True, default=SpatialDifferenceOrder())
-    nBytesSpatialDifference: int = field(init=False, repr=True, default=NBytesSpatialDifference())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
+    priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
+    secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
+    nGroups: int = field(init=False, repr=False, default=NGroups())
+    refGroupWidth: int = field(init=False, repr=False, default=RefGroupWidth())
+    nBitsGroupWidth: int = field(init=False, repr=False, default=NBitsGroupWidth())
+    refGroupLength: int = field(init=False, repr=False, default=RefGroupLength())
+    groupLengthIncrement: int = field(init=False, repr=False, default=GroupLengthIncrement())
+    lengthOfLastGroup: int = field(init=False, repr=False, default=LengthOfLastGroup())
+    nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
+    spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=False, default=SpatialDifferenceOrder())
+    nBytesSpatialDifference: int = field(init=False, repr=False, default=NBytesSpatialDifference())
     @classmethod
     @property
     def attrs(cls):
@@ -1638,7 +1638,7 @@ class DataRepresentationTemplate4():
     _len = 1
     _num = 4
     _packingScheme = 'ieee-float'
-    precision: Grib2Metadata = field(init=False, repr=True, default=Precision())
+    precision: Grib2Metadata = field(init=False, repr=False, default=Precision())
     @classmethod
     @property
     def attrs(cls):
@@ -1649,12 +1649,12 @@ class DataRepresentationTemplate40():
     _len = 7
     _num = 40
     _packingScheme = 'jpeg'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
-    typeOfCompression: Grib2Metadata = field(init=False, repr=True, default=TypeOfCompression())
-    targetCompressionRatio: int = field(init=False, repr=True, default=TargetCompressionRatio())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfCompression: Grib2Metadata = field(init=False, repr=False, default=TypeOfCompression())
+    targetCompressionRatio: int = field(init=False, repr=False, default=TargetCompressionRatio())
     @classmethod
     @property
     def attrs(cls):
@@ -1665,10 +1665,10 @@ class DataRepresentationTemplate41():
     _len = 5
     _num = 41
     _packingScheme = 'png'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
     @property
     def attrs(cls):
@@ -1679,11 +1679,11 @@ class DataRepresentationTemplate50():
     _len = 5
     _num = 0
     _packingScheme = 'spectral-simple'
-    refValue: float = field(init=False, repr=True, default=RefValue())
-    binScaleFactor: int = field(init=False, repr=True, default=BinScaleFactor())
-    decScaleFactor: int = field(init=False, repr=True, default=DecScaleFactor())
-    nBitsPacking: int = field(init=False, repr=True, default=NBitsPacking())
-    realOfCoefficient: float = field(init=False, repr=True, default=RealOfCoefficient())
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    realOfCoefficient: float = field(init=False, repr=False, default=RealOfCoefficient())
     @classmethod
     @property
     def attrs(cls):
