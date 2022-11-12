@@ -471,7 +471,7 @@ class open():
         return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
 
-@dataclass
+@dataclass 
 class Grib2Message:
     # GRIB2 Sections
     section0: np.array = field(init=True,repr=False)
@@ -587,11 +587,17 @@ class Grib2Message:
         return self.section5[1]
 
 
+    @property
+    def pdy(self):
+        return ''.join([str(i) for i in self.section1[5:10]])
+
+
     def __repr__(self):
         """
         """
-        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName}:'
-                f'{self.level}:{self.leadTime}')
+        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
+                f'{self.fullName} ({self.units}):{self.level}:'
+                f'{self.leadTime}')
 
 
     def attrs_by_section(self, sect):
