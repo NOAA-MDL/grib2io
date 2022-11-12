@@ -474,11 +474,11 @@ class open():
 @dataclass
 class Grib2Message:
     # GRIB2 Sections
-    section0: np.array = field(init=True,repr=True)
-    section1: np.array = field(init=True,repr=True)
-    section3: np.array = field(init=True,repr=True)
-    section4: np.array = field(init=True,repr=True)
-    section5: np.array = field(init=True,repr=True)
+    section0: np.array = field(init=True,repr=False)
+    section1: np.array = field(init=True,repr=False)
+    section3: np.array = field(init=True,repr=False)
+    section4: np.array = field(init=True,repr=False)
+    section5: np.array = field(init=True,repr=False)
     bitMapFlag: int = field(init=True,repr=False,default=255)
 
     # Section 0 looked up attributes
@@ -498,7 +498,7 @@ class Grib2Message:
     hour: int = field(init=False,repr=False,default=templates.Hour())
     minute: int = field(init=False,repr=False,default=templates.Minute())
     second: int = field(init=False,repr=False,default=templates.Second())
-    refDate: datetime.datetime = field(init=False,repr=True,default=templates.RefDate())
+    refDate: datetime.datetime = field(init=False,repr=False,default=templates.RefDate())
     productionStatus: Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
     typeOfData: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
 
@@ -508,11 +508,11 @@ class Grib2Message:
 
     # Section 3 looked up common attributes.  Other looked up attributes are available according
     # to the Grid Definition Template.
-    gridDefinitionSection: np.array = field(init=False,repr=True,default=templates.GridDefinitionSection())
+    gridDefinitionSection: np.array = field(init=False,repr=False,default=templates.GridDefinitionSection())
     sourceOfGridDefinition: int = field(init=False,repr=False,default=templates.SourceOfGridDefinition())
     numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
-    gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.GridDefinitionTemplateNumber())
-    gridDefinitionTemplate: list = field(init=False,repr=True,default=templates.GridDefinitionTemplate())
+    gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.GridDefinitionTemplateNumber())
+    gridDefinitionTemplate: list = field(init=False,repr=False,default=templates.GridDefinitionTemplate())
     _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
     _dxsign: float = field(init=False,repr=False,default=templates.DxSign())
     _dysign: float = field(init=False,repr=False,default=templates.DySign())
@@ -524,48 +524,48 @@ class Grib2Message:
     earthMajorAxis: float = field(init=False,repr=False,default=templates.EarthMajorAxis())
     earthMinorAxis: float = field(init=False,repr=False,default=templates.EarthMinorAxis())
     resolutionAndComponentFlags: list = field(init=False,repr=False,default=templates.ResolutionAndComponentFlags())
-    ny: int = field(init=False,repr=True,default=templates.Ny())
-    nx: int = field(init=False,repr=True,default=templates.Nx())
-    scanModeFlags: list = field(init=False,repr=True,default=templates.ScanModeFlags())
-    projParameters: dict = field(init=False,repr=True,default=templates.ProjParameters())
+    ny: int = field(init=False,repr=False,default=templates.Ny())
+    nx: int = field(init=False,repr=False,default=templates.Nx())
+    scanModeFlags: list = field(init=False,repr=False,default=templates.ScanModeFlags())
+    projParameters: dict = field(init=False,repr=False,default=templates.ProjParameters())
 
     # Section 4 looked up common attributes.  Other looked up attributes are available according
     # to the Product Definition Template.
-    productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=True,default=templates.ProductDefinitionTemplateNumber())
-    productDefinitionTemplate: np.array = field(init=False,repr=True,default=templates.ProductDefinitionTemplate())
+    productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
+    productDefinitionTemplate: np.array = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
     _varinfo: list = field(init=False, repr=False, default=templates.VarInfo())
     _fixedsfc1info: list = field(init=False, repr=False, default=templates.FixedSfc1Info())
     _fixedsfc2info: list = field(init=False, repr=False, default=templates.FixedSfc2Info())
     parameterCategory: int = field(init=False,repr=False,default=templates.ParameterCategory())
     parameterNumber: int = field(init=False,repr=False,default=templates.ParameterNumber())
-    fullName: str = field(init=False, repr=True, default=templates.FullName())
-    units: str = field(init=False, repr=True, default=templates.Units())
-    shortName: str = field(init=False, repr=True, default=templates.ShortName())
+    fullName: str = field(init=False, repr=False, default=templates.FullName())
+    units: str = field(init=False, repr=False, default=templates.Units())
+    shortName: str = field(init=False, repr=False, default=templates.ShortName())
     typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfGeneratingProcess())
     generatingProcess: Grib2Metadata = field(init=False, repr=False, default=templates.GeneratingProcess())
     backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=templates.BackgroundGeneratingProcessIdentifier())
-    unitOfTimeRange: Grib2Metadata = field(init=False,repr=True,default=templates.UnitOfTimeRange())
-    leadTime: datetime.timedelta = field(init=False,repr=True,default=templates.LeadTime())
-    typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfFirstFixedSurface())
+    unitOfTimeRange: Grib2Metadata = field(init=False,repr=False,default=templates.UnitOfTimeRange())
+    leadTime: datetime.timedelta = field(init=False,repr=False,default=templates.LeadTime())
+    typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfFirstFixedSurface())
     scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfFirstFixedSurface())
     scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfFirstFixedSurface())
-    unitOfFirstFixedSurface: str = field(init=False,repr=True,default=templates.UnitOfFirstFixedSurface())
-    valueOfFirstFixedSurface: int = field(init=False,repr=True,default=templates.ValueOfFirstFixedSurface())
-    typeOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfSecondFixedSurface())
+    unitOfFirstFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfFirstFixedSurface())
+    valueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfFirstFixedSurface())
+    typeOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfSecondFixedSurface())
     scaleFactorOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfSecondFixedSurface())
     scaledValueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfSecondFixedSurface())
-    unitOfSecondFixedSurface: str = field(init=False,repr=True,default=templates.UnitOfSecondFixedSurface())
-    valueOfSecondFixedSurface: int = field(init=False,repr=True,default=templates.ValueOfSecondFixedSurface())
-    level: str = field(init=False, repr=True, default=templates.Level())
-    duration: datetime.timedelta = field(init=False,repr=True,default=templates.Duration())
-    validDate: datetime.datetime = field(init=False,repr=True,default=templates.ValidDate())
+    unitOfSecondFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfSecondFixedSurface())
+    valueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfSecondFixedSurface())
+    level: str = field(init=False, repr=False, default=templates.Level())
+    duration: datetime.timedelta = field(init=False,repr=False,default=templates.Duration())
+    validDate: datetime.datetime = field(init=False,repr=False,default=templates.ValidDate())
 
     # Section 5 looked up common attributes.  Other looked up attributes are available according
     # to the Data Representation Template.
     numberOfPackedValues: int = field(init=False,repr=False,default=templates.NumberOfPackedValues())
     dataRepresentationTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
-    typeOfValues: Grib2Metadata = field(init=False,repr=True,default=templates.TypeOfValues())
+    typeOfValues: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
 
 
     def __post_init__(self):
@@ -590,11 +590,8 @@ class Grib2Message:
     def __repr__(self):
         """
         """
-        strings = []
-        for k,field in self.__dataclass_fields__.items():
-            if field.repr:
-                strings.append(f'{k} = {getattr(self,k)}\n')
-        return ''.join(strings)
+        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName}:'
+                f'{self.level}:{self.leadTime}')
 
 
     def attrs_by_section(self, sect):
