@@ -625,7 +625,7 @@ class Grib2Message:
                 else:
                     return None
             return tuple(templates._section_attrs[sect]+
-                         self.__class__.__mro__[_find_class_index(sect)].attrs)
+                         self.__class__.__mro__[_find_class_index(sect)]._attrs)
         else:
             return tuple([])
 
