@@ -16,9 +16,9 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 
 ## Required Software
 * [NCEP g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
-* Python 3.6+
+* Python 3.8+
 * setuptools 34.0+
-* NumPy 1.12+
+* NumPy 1.22+
 * pyproj 1.9.6+
 * C Compiler: GCC, Intel, and Apple Clang have been tested.
 
