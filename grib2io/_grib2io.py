@@ -600,7 +600,7 @@ class Grib2Message:
                 f'{self.leadTime}')
 
 
-    def attrs_by_section(self, sect):
+    def attrs_by_section(self, sect, values=False):
         """
         Provide a tuple of attribute names for the given GRIB2 section.
 
@@ -609,13 +609,16 @@ class Grib2Message:
 
         **`sect : int`** GRIB2 section number.
 
+        **`values : bool`** Optional (default is False) arugment to return
+        attributes values.
+
         Returns
         -------
 
-        Tuple of strings of attribute names for the given GRIB2 section.
+        list attribute names or dict if `values = True`.
         """
         if sect in {0,1}:
-            return tuple(templates._section_attrs[sect])
+            attrs = templates._section_attrs[sect]
         elif sect in {3,4,5}:
             def _find_class_index(n):
                 _key = {3:'Grid', 4:'Product', 5:'Data'}
@@ -623,11 +626,15 @@ class Grib2Message:
                     if _key[n] in c.__name__:
                         return i
                 else:
-                    return None
-            return tuple(templates._section_attrs[sect]+
-                         self.__class__.__mro__[_find_class_index(sect)]._attrs)
+                    return []
+            attrs = templates._section_attrs[sect]+\
+                    self.__class__.__mro__[_find_class_index(sect)]._attrs
         else:
-            return tuple([])
+            attrs = []
+        if values:
+            return {k:getattr(self,k) for k in attrs}
+        else:
+            return attrs
 
 
     def pack(self, field, local=None):
