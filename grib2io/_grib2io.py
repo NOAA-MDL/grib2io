@@ -24,7 +24,6 @@ import math
 import warnings
 import typing
 
-
 from dataclasses import dataclass, field
 from numpy import ma
 import numpy as np
@@ -41,6 +40,8 @@ DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 ONE_MB = 1048576 # 1 MB in units of bytes
+
+_AUTO_NANS = True
 
 _latlon_datastore = {}
 
@@ -298,9 +299,8 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            on_disk_array = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                    msg, _bmappos, _datapos)
-                            msg._data = on_disk_array
+                            msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             break
@@ -327,9 +327,8 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            on_disk_array = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                    msg, _bmappos, _datapos)
-                            msg._data = on_disk_array
+                            msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             continue
@@ -700,8 +699,12 @@ class Grib2Message:
     @property
     def data(self) -> np.array:
         ''' accessing the data attribute loads data into memmory '''
+        if not hasattr(self,'_auto_nans'): self._auto_nans = _AUTO_NANS
         if hasattr(self,'_data'):
+            if self._auto_nans != _AUTO_NANS:
+                self._data = self._ondiskarray
             if isinstance(self._data, Grib2MessageOnDiskArray):
+                self._ondiskarray = self._data
                 self._data = np.asarray(self._data)
             return self._data
         raise ValueError
@@ -1068,8 +1071,7 @@ class Grib2MessageOnDiskArray:
     data_offset: int
 
     def __array__(self, dtype=None):
-        data =  _data(self.filehandle, self.msg, self.bmap_offset, self.data_offset)
-        return np.asarray(data, dtype=dtype)
+        return np.asarray(_data(self.filehandle, self.msg, self.bmap_offset, self.data_offset),dtype=dtype)
 
 
 def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: int)-> np.array:
@@ -1087,18 +1089,24 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     drt = msg.section5[2:]
     nx, ny = msg.nx, msg.ny
     scanModeFlags = msg.scanModeFlags
-    fill_value = np.nan # or DEFAULT_FILL_VALUE
 
+    # Set the fill value according to how we are handling missing values
+    msg._auto_nans = _AUTO_NANS
+    if msg._auto_nans:
+        fill_value = np.nan
+    else:
+        if hasattr(msg,'priMissingValue'):
+            fill_value = msg.priMissingValue
+        else:
+            fill_value = np.nan
+
+    # Read bitmap data.
     if bmap_offset is not None:
         filehandle.seek(bmap_offset) # Position file pointer to the beginning of bitmap section.
         bmap_size,num = struct.unpack('>IB',filehandle.read(5))
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
         bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
-
-    # is there any missing value stored other than the bitmask?
-    #priMissingValue = 9999.0 #msg.priMissingValue
-    #secMissingValue = 9998.0 #msg.secMissingValue
 
     try:
         if scanModeFlags[2]:
@@ -1107,16 +1115,6 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
             storageorder='C'
     except AttributeError:
         raise ValueError('Unsupported grid definition template number %s'%gridDefinitionTemplateNumber)
-
-    #'''    **`order`**: If 0 [DEFAULT], nearest neighbor interpolation is used if grid has missing
-    #            or bitmapped values. If 1, linear interpolation is used for expanding reduced Gaussian grids.
-    #'''
-    # I didn't see where order gets used?
-    #if (msg.drtn in {2,3} and
-    #    dataRepresentationTemplate[6] != 0) or msg.bitMapFlag == 0:
-    #    order = 0
-    #else:
-    #    order = 1
 
     # Position file pointer to the beginning of data section.
     filehandle.seek(data_offset)
@@ -1129,55 +1127,35 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,ipos,
                           np.empty,storageorder=storageorder)
 
-    #fld = np.ones(ngrdpts)
-    # NEW
-#   # convert missing values to nan
-#   if priMissingValue is not None:
-#       fld[fld==priMissingValue] = np.nan
-#   if secMissingValue is not None:
-#       fld[fld==secMissingValue] = np.nan
-
     #TEMPORARY
-    masked_array = False
     expand = False
     #TEMPORARY
 
-    # Apply bitmap or missing values
+    # Handle the missing values
     if msg.bitMapFlag in {0,254}:
         # Bitmap
-        fld = fill_value*np.ones(ngrdpts,dtype=np.float32)
+        fill_value = np.nan # If bitmap, use nans
+        fld = np.full((ngrdpts),fill_value,dtype=np.float32)
         np.put(fld,np.nonzero(bmap),fld1)
-        if masked_array:
-            fld = ma.masked_values(fld,fill_value)
-    elif masked_array and hasattr(msg,'priMissingValue'):
-        # Missing values
-        if hasattr(msg,'secMissingValue'):
-            mask = np.logical_or(fld1==msg.priMissingValue,fld1==msg.secMissingValue)
-        else:
-            mask = fld1 == msg.priMissingValue
-        fld = ma.array(fld1,mask=mask)
     else:
+        # No bitmap, check missing values
+        if msg._auto_nans:
+            if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
+                fld1 = np.where(fld1==msg.priMissingValue,fill_value,fld1)
+            if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
+                fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
         fld = fld1
 
     if nx is not None and ny is not None: # Rectangular grid.
-        if ma.isMA(fld):
-            fld = ma.reshape(fld,(ny,nx))
-        else:
-            fld = np.reshape(fld,(ny,nx))
+        fld = np.reshape(fld,(ny,nx))
     else:
         if gds[2] and gdtnum == 40: # Reduced global Gaussian grid.
             if expand:
                 from . import redtoreg
                 nx = 2*ny
                 lonsperlat = msg.defList
-                if ma.isMA(fld):
-                    fld = ma.filled(fld)
-                    fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
-                                             fld.astype(np.double),fill_value)
-                    fld = ma.masked_values(fld,fill_value)
-                else:
-                    fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
-                                             fld.astype(np.double),fill_value)
+                fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
+                                         fld.astype(np.double),fill_value)
 
     # Check scan modes for rect grids.
     if nx is not None and ny is not None:
@@ -1244,3 +1222,23 @@ def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
     class Msg(Grib2Message, Gdt, Pdt, Drt):
         pass
     return Msg
+
+
+def set_auto_nans(value):
+    """
+    Handle missing values in GRIB2 message data.
+
+    Parameters
+    ----------
+
+    **`value : bool`**:
+
+    If `True` [DEFAULT], missing values in GRIB2 message data will be set to `np.nan` and
+    if `False`, missing values will present in the data array.  If a bitmap is used, then `np.nan`
+    will be used regardless of this setting.
+    """
+    global _AUTO_NANS
+    if isinstance(value,bool):
+        _AUTO_NANS = value
+    else:
+        raise TypeError(f"Argument must be bool")
