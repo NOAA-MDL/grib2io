@@ -129,9 +129,7 @@ def get_duration(pdtn,pdt):
 def decode_wx_strings(lus):
     """
     Decode GRIB2 Local Use Section to obtain NDFD/MDL Weather Strings.  The
-    decode procedure is defined here:
-
-    https://vlab.noaa.gov/web/mdl/nbm-gmos-grib2-wx-info
+    decode procedure is defined [here](https://vlab.noaa.gov/web/mdl/nbm-gmos-grib2-wx-info).
 
     Parameters
     ----------
@@ -141,7 +139,9 @@ def decode_wx_strings(lus):
     Returns
     -------
 
-    **`list`**: List of NDFD weather strings.
+    **`dict`**: Dictionary of NDFD/MDL weather strings. Keys are an integer
+    value that represent the sequential order of the key in the packed loca
+    use section and the value is the weather key.
     """
     assert lus[0] == 1
     # Unpack information related to the simple packing method
@@ -171,7 +171,8 @@ def decode_wx_strings(lus):
     for i in range(0,len(b),nbits):
         wxstring += chr(int(b[i:i+nbits],2)+refvalue)
     # Return string as list, split by null character.
-    return list(filter(None,wxstring.split('\0')))
+    #return list(filter(None,wxstring.split('\0')))
+    return {n:k for n,k in enumerate(list(filter(None,wxstring.split('\0'))))}
 
 
 def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
