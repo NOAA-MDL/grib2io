@@ -217,11 +217,18 @@ class open():
                     section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     secrange = range(2,8)
                     while 1:
+                        _luspos = 0
+                        _lussize = 0
                         for num in secrange:
                             secsize = struct.unpack('>i',self._filehandle.read(4))[0]
                             secnum = struct.unpack('>B',self._filehandle.read(1))[0]
                             if secnum == num:
-                                if secnum == 3:
+                                if secnum == 2:
+                                    # Unpack Section 2. No need to read it, just index the position in the file.
+                                    _luspos = self._filehandle.tell()-5
+                                    _lussize = secsize
+                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
+                                elif secnum == 3:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
                                     _grbpos = 0
@@ -293,6 +300,7 @@ class open():
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
+                            msg._lusinfo = {'file':self._filehandle, 'offset':_luspos, 'size':_lussize}
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -321,6 +329,7 @@ class open():
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
+                            msg._lusinfo = {'file':self._filehandle, 'offset':_luspos, 'size':_lussize}
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -1032,6 +1041,44 @@ class Grib2Message:
         self._sections.append(8)
 
 
+    def mapkeys(self):
+        """
+        Returns an unpacked data grid where integer grid values are replaced with
+        a string in which the numeric value is a representation of. These types
+        of fields are cateogrical or classifications where data values do not
+        represent an observable or predictable physical quantity.
+
+        An example of such a field field would be [Dominant Precipitation Type -
+        DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml)
+        
+        Returns
+        -------
+    
+        **`numpy.ndarray`**: of string values per element.
+        """
+        hold_auto_nans = _AUTO_NANS
+        set_auto_nans(False)
+        if (np.all(self.section1[0:2]==[7,14]) and self.shortName == 'PWTHER') or \
+        (np.all(self.section1[0:2]==[8,65535]) and self.shortName == 'WX'):
+            if not hasattr(self,'_lus'):
+                self._lusinfo['file'].seek(self._lusinfo['offset']+5) # Position file
+                self._lus = self._lusinfo['file'].read(self._lusinfo['size']) # Read file
+            keys = utils.decode_wx_strings(self._lus)
+            if hasattr(self,'priMissingValue') and self.priMissingValue not in [None,0]:
+                keys[int(self.priMissingValue)] = 'Missing'
+            if hasattr(self,'secMissingValue') and self.secMissingValue not in [None,0]:
+                keys[int(self.secMissingValue)] = 'Missing'
+            u,inv = np.unique(self.data,return_inverse=True)
+            fld = np.array([keys[x] for x in u])[inv].reshape(self.data.shape)
+        else:
+            # For data whose units are defined in a code table
+            tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
+            for k,v in tables.get_table(tbl).items():
+                fld = np.where(fld==k,v,fld)
+        set_auto_nans(hold_auto_nans)
+        return fld
+
+
     def to_bytes(self, validate=True):
         """
         Return packed GRIB2 message in bytes format. This will be Useful for
@@ -1168,25 +1215,8 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     if msg.typeOfValues == 1:
         fld = fld.astype(np.int32)
 
-#   # Map the data values to their respective definitions.
-#   if map_keys:
-#       fld = fld.astype(np.int32).astype(str)
-#       if (msg.identificationSection[0] == 7 and \
-#           msg.identificationSection[1] == 14 and \
-#           msg.shortName == 'PWTHER') or \
-#          (msg.identificationSection[0] == 8 and \
-#           msg.identificationSection[1] == 65535 and \
-#           msg.shortName == 'WX'):
-#           keys = utils.decode_wx_strings(msg._lus)
-#           for n,k in enumerate(keys):
-#               fld = np.where(fld==str(n+1),k,fld)
-#       else:
-#           # For data whose units are defined in a code table
-#           tbl = re.findall(r'\d\.\d+',msg.units,re.IGNORECASE)[0]
-#           for k,v in tables.get_table(tbl).items():
-#               fld = np.where(fld==k,v,fld)
-
     return fld
+
 
 def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
     """
@@ -1242,3 +1272,4 @@ def set_auto_nans(value):
         _AUTO_NANS = value
     else:
         raise TypeError(f"Argument must be bool")
+
