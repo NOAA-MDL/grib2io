@@ -217,17 +217,14 @@ class open():
                     section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
                     secrange = range(2,8)
                     while 1:
-                        _luspos = 0
-                        _lussize = 0
+                        section2 = b''
                         for num in secrange:
                             secsize = struct.unpack('>i',self._filehandle.read(4))[0]
                             secnum = struct.unpack('>B',self._filehandle.read(1))[0]
                             if secnum == num:
                                 if secnum == 2:
-                                    # Unpack Section 2. No need to read it, just index the position in the file.
-                                    _luspos = self._filehandle.tell()-5
-                                    _lussize = secsize
-                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
+                                    if secsize > 0:
+                                        section2 = self._filehandle.read(secsize-5)
                                 elif secnum == 3:
                                     self._filehandle.seek(self._filehandle.tell()-5)
                                     _grbmsg = self._filehandle.read(secsize)
@@ -298,9 +295,8 @@ class open():
 
                             # Create Grib2Message with data.
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
-                            msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
+                            msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
-                            msg._lusinfo = {'file':self._filehandle, 'offset':_luspos, 'size':_lussize}
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -327,9 +323,8 @@ class open():
 
                             # Create Grib2Message with data.
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
-                            msg = Msg(section0,section1,section3,section4,section5,_bmapflag)
+                            msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
-                            msg._lusinfo = {'file':self._filehandle, 'offset':_luspos, 'size':_lussize}
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -484,6 +479,7 @@ class Grib2Message:
     # GRIB2 Sections
     section0: np.array = field(init=True,repr=False)
     section1: np.array = field(init=True,repr=False)
+    section2: bytes = field(init=True,repr=False)
     section3: np.array = field(init=True,repr=False)
     section4: np.array = field(init=True,repr=False)
     section5: np.array = field(init=True,repr=False)
@@ -1060,10 +1056,7 @@ class Grib2Message:
         set_auto_nans(False)
         if (np.all(self.section1[0:2]==[7,14]) and self.shortName == 'PWTHER') or \
         (np.all(self.section1[0:2]==[8,65535]) and self.shortName == 'WX'):
-            if not hasattr(self,'_lus'):
-                self._lusinfo['file'].seek(self._lusinfo['offset']+5) # Position file
-                self._lus = self._lusinfo['file'].read(self._lusinfo['size']) # Read file
-            keys = utils.decode_wx_strings(self._lus)
+            keys = utils.decode_wx_strings(self.section2)
             if hasattr(self,'priMissingValue') and self.priMissingValue not in [None,0]:
                 keys[int(self.priMissingValue)] = 'Missing'
             if hasattr(self,'secMissingValue') and self.secMissingValue not in [None,0]:
