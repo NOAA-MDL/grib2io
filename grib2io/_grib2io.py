@@ -297,6 +297,8 @@ class open():
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
+                            msg._deflist = _deflist
+                            msg._coordlist = _coordlist
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -325,6 +327,8 @@ class open():
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages
+                            msg._deflist = _deflist
+                            msg._coordlist = _coordlist
                             shape = (msg.ny,msg.nx)
                             ndim = 2
                             if msg.typeOfValues == 0:
@@ -641,34 +645,29 @@ class Grib2Message:
             return attrs
 
 
-    def pack(self, field, local=None):
+    def pack(self):
         """
         Packs GRIB2 section data into a binary message.  It is the user's responsibility
-        to populate the GRIB2 section information.
-
-        Parameters
-        ----------
-
-        **`field`**: Numpy array of data values to pack.  If field is a masked array, then
-        a bitmap is created from the mask.
-
-        **`local`**: Local use data.  If the GRIB2 message is to contain local use informatiom,
-        provide as bytes.
+        to populate the GRIB2 section information with appropriate metadata.
         """
-        self._msg,self._pos = g2clib.grib2_create(np.array(self.indicatorSection[2:4],DEFAULT_NUMPY_INT),
-                                                  np.array(self.identificationSection,DEFAULT_NUMPY_INT))
+        # Create beginning of packed binary message with section 0 and 1 data.
+        self._sections = []
+        self._msg,self._pos = g2clib.grib2_create(self.indicatorSection[2:4],self.identificationSection)
         self._sections += [0,1]
 
-        if local is not None:
-            assert isinstance(local,bytes)
-            self._msg,self._pos = g2clib.grib2_addlocal(self._msg,local)
-            self.hasLocalUseSection = True
+        # Add section 2 if present.
+        if len(self.section2) > 0 and isinstance(self.section2,bytes):
+            self._msg,self._pos = g2clib.grib2_addlocal(self._msg,self.section2)
             self._sections.append(2)
 
-        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,np.array(self.gridDefinitionSection,dtype=DEFAULT_NUMPY_INT),
-                                                   np.array(self.gridDefinitionTemplate,dtype=DEFAULT_NUMPY_INT),self._deflist)
+        # Add section 3.
+        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,self.gridDefinitionSection,
+                                                   self.gridDefinitionTemplate,
+                                                   self._deflist)
         self._sections.append(3)
 
+        # Prepare data and bitmap (optional).
+        field = np.copy(self.data)
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
                 fieldsave = field.astype('f') # Casting makes a copy
@@ -680,23 +679,28 @@ class Grib2Message:
         else:
             bitmapflag = 255
             bmap = None
-        if coordlist is not None:
-            crdlist = np.array(coordlist,'f')
+
+        # Prepare optional coordinate list
+        if self._coordlist is not None:
+            crdlist = np.array(self._coordlist,'f')
         else:
             crdlist = None
-            self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.productDefinitionTemplateNumber,
-                                                        np.array(self.productDefinitionTemplate,dtype=DEFAULT_NUMPY_INT),
-                                                        crdlist,
-                                                        drtnum,
-                                                        drtmpl,
-                                                        np.ravel(fld),
-                                                        bitmapflag,
-                                                        bmap)
+
+        # Add sections 4, 5, 6 (if present), and 7.
+        self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
+                                                    self.productDefinitionTemplate,
+                                                    crdlist,
+                                                    self.drtn,
+                                                    self.dataRepresentationTemplate,
+                                                    np.ravel(fld),
+                                                    bitmapflag,
+                                                    bmap)
         self._sections.append(4)
         self._sections.append(5)
         if bmap is not None: self._sections.append(6)
         self._sections.append(7)
 
+        # Finalize GRIB2 message with section 8.
         self._msg, self._pos = g2clib.grib2_end(self._msg)
         self._sections.append(8)
 
