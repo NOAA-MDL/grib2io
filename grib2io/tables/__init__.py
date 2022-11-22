@@ -148,7 +148,7 @@ def get_wgrib2_level_string(pdtn,pdt):
     if pdtn == 48:
         idxs = slice(20,26)
     else:
-        idxs = slice(15,21)
+        idxs = slice(9,15)
     type1, sfac1, sval1, type2, sfac2, sval2 = map(int,pdt[idxs])
     lvlstr = ''
     val1 = sval1/10**sfac1
