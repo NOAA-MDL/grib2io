@@ -65,6 +65,9 @@ for idx,row in df.iterrows():
     if tblin == '4.5':
         units = row['Units']
         line = "'%s':['%s','%s']," % (value,center,units)
+    elif tblin == '4.233':
+        chemform = row['Chemical Formula']
+        line = "'%s':['%s','%s']," % (value,center,chemform)
     else:
         line = "'%s':'%s'," % (value,center)
     line = line.replace('nan','unknown')
