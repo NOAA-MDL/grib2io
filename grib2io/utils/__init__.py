@@ -99,7 +99,10 @@ def get_leadtime(idsec,pdtn,pdt):
     try:
         return datetime.datetime(*pdt[_key[pdtn]])-refdate
     except(KeyError):
-        return datetime.timedelta(hours=pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours')))
+        if pdtn == 48:
+            return datetime.timedelta(hours=pdt[19]*(tables.get_value_from_table(pdt[18],'scale_time_hours')))
+        else:
+            return datetime.timedelta(hours=pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours')))
 
 
 def get_duration(pdtn,pdt):
