@@ -99,6 +99,8 @@ class open():
         self.current_message = 0
         self.size = os.path.getsize(self.name)
         self.closed = self._filehandle.closed
+        self.levels = None
+        self.variables = None
         if 'r' in self.mode: self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
@@ -175,28 +177,30 @@ class open():
         Perform indexing of GRIB2 Messages.
         """
         # Initialize index dictionary
-        self._index['offset'] = [None]
-        self._index['bitmap_offset'] = [None]
-        self._index['data_offset'] = [None]
-        self._index['size'] = [None]
-        self._index['data_size'] = [None]
-        self._index['submessageOffset'] = [None]
-        self._index['submessageBeginSection'] = [None]
-        self._index['isSubmessage'] = [None]
-        self._index['messageNumber'] = [None]
-        self._index['msg'] = [None]
+        if not self._hasindex:
+            self._index['offset'] = [None]
+            self._index['bitmap_offset'] = [None]
+            self._index['data_offset'] = [None]
+            self._index['size'] = [None]
+            self._index['data_size'] = [None]
+            self._index['submessageOffset'] = [None]
+            self._index['submessageBeginSection'] = [None]
+            self._index['isSubmessage'] = [None]
+            self._index['messageNumber'] = [None]
+            self._index['msg'] = [None]
+            self._hasindex = True
 
         # Iterate
         while True:
             try:
                 # Read first 4 bytes and decode...looking for "GRIB"
                 pos = self._filehandle.tell()
-                header = struct.unpack('>4s',self._filehandle.read(4))[0].decode()
+                header = struct.unpack('>i',self._filehandle.read(4))[0]
 
                 # Test header. Then get information from GRIB2 Section 0: the discipline
                 # number, edition number (should always be 2), and GRIB2 message size.
                 # Then iterate to check for submessages.
-                if header == 'GRIB':
+                if header.to_bytes(4,'big') == b'GRIB':
 
                     _issubmessage = False
                     _submsgoffset = 0
@@ -204,7 +208,7 @@ class open():
                     _bmapflag = None
 
                     # Read the rest of Section 0 using struct.
-                    section0 = [header] + list(struct.unpack('>HBBQ',self._filehandle.read(12)))
+                    section0 = np.concatenate(([header],list(struct.unpack('>HBBQ',self._filehandle.read(12)))),dtype=np.int64)
                     assert section0[3] == 2
 
                     # Read and unpack Section 1
@@ -276,8 +280,8 @@ class open():
                                     _submsgbegin = secnum
                                 self._filehandle.seek(self._filehandle.tell()-5)
                                 continue
-                        trailer = struct.unpack('>4s',self._filehandle.read(4))[0].decode()
-                        if trailer == '7777':
+                        trailer = struct.unpack('>4s',self._filehandle.read(4))[0]
+                        if trailer == b'7777':
                             self.messages += 1
                             self._index['offset'].append(pos)
                             self._index['bitmap_offset'].append(_bmappos)
@@ -344,8 +348,6 @@ class open():
             except(struct.error):
                 self._filehandle.seek(0)
                 break
-
-        self._hasindex = True
 
 
     def close(self):
@@ -427,7 +429,7 @@ class open():
     def select(self,**kwargs):
         """
         """
-        # FUTURE: Added ability to process multiple values for each keyword (attribute)
+        # TODO: Added ability to process multiple values for each keyword (attribute)
         idxs = []
         nkeys = len(kwargs.keys())
         for k,v in kwargs.items():
@@ -450,6 +452,7 @@ class open():
             self.size = os.path.getsize(self.name)
             self.messages += 1
             self.current_message += 1
+            # TODO: Add ability to update dictionary
         else:
             raise TypeError("msg must be a Grib2Message object.")
 
@@ -1096,7 +1099,7 @@ class Grib2Message:
         Returns GRIB2 formatted message as bytes.
         """
         if validate:
-            if str(self._msg[0:4]+self._msg[-4:],'utf-8') == 'GRIB7777':
+            if self._msg[0:4]+self._msg[-4:] == b'GRIB7777':
                 return self._msg
             else:
                 return None
