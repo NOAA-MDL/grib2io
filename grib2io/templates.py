@@ -763,16 +763,18 @@ class ProductDefinitionTemplate:
         pass
 
 class ParameterCategory:
+    _key = {0:0, 1:0, 2:0, 5:0, 6:0, 8:0, 9:0, 10:0, 11:0, 12:0, 15:0, 48:0}
     def __get__(self, obj, objtype=None):
-        return obj.section4[2]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[2] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class ParameterNumber:
+    _key = {0:1, 1:1, 2:1, 5:1, 6:1, 8:1, 9:1, 10:1, 11:1, 12:1, 15:1, 48:1}
     def __get__(self, obj, objtype=None):
-        return obj.section4[3]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[3] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class VarInfo:
     def __get__(self, obj, objtype=None):
@@ -799,69 +801,78 @@ class ShortName:
         raise NotImplementedError
 
 class TypeOfGeneratingProcess:
+    _key = {0:2, 1:2, 2:2, 5:2, 6:2, 8:2, 9:2, 10:2, 11:2, 12:2, 15:2, 48:13}
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section4[4],table='4.3')
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.3')
     def __set__(self, obj, value):
-        obj.section4[4] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class BackgroundGeneratingProcessIdentifier:
+    _key = {0:3, 1:3, 2:3, 5:3, 6:3, 8:3, 9:3, 10:3, 11:3, 12:3, 15:3, 48:14}
     def __get__(self, obj, objtype=None):
-        return obj.section4[5]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[5] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class GeneratingProcess:
+    _key = {0:4, 1:4, 2:4, 5:4, 6:4, 8:4, 9:4, 10:4, 11:4, 12:4, 15:4, 48:15}
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section4[6],table='generating_process')
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='generating_process')
     def __set__(self, obj, value):
-        obj.section4[6] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfTimeRange:
+    _key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section4[9],table='4.4')
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.4')
     def __set__(self, obj, value):
-        obj.section4[9] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class LeadTime:
     def __get__(self, obj, objtype=None):
         return utils.get_leadtime(obj.section1,obj.section4[1],
-                obj.section4[2:])
+                                  obj.section4[2:])
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class FixedSfc1Info:
+    _key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
-        if obj.section4[11] == 255:
+        if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
-        return tables.get_value_from_table(obj.section4[11],'4.5')
+        return tables.get_value_from_table(obj.section4[self._key[obj.pdtn]+2],'4.5')
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class FixedSfc2Info:
+    _key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
-        if obj.section4[14] == 255:
+        if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
-        return tables.get_value_from_table(obj.section4[14],'4.5')
+        return tables.get_value_from_table(obj.section4[self._key[obj.pdtn]+2],'4.5')
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class TypeOfFirstFixedSurface:
+    _key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section4[11],table='4.5')
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
-        obj.section4[11] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfFirstFixedSurface:
+    _key = {0:10, 1:10, 2:10, 5:10, 6:10, 8:10, 9:10, 10:10, 11:10, 12:10, 15:10, 48:21}
     def __get__(self, obj, objtype=None):
-        return obj.section4[12]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[12] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfFirstFixedSurface:
+    _key = {0:11, 1:11, 2:11, 5:11, 6:11, 8:11, 9:11, 10:11, 11:11, 12:11, 15:11, 48:22}
     def __get__(self, obj, objtype=None):
-        return obj.section4[13]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[13] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
@@ -870,28 +881,33 @@ class UnitOfFirstFixedSurface:
         pass
 
 class ValueOfFirstFixedSurface:
+    _key = {0:[12,13], 1:[12,13], 2:[12,13], 5:[12,13], 6:[12,13], 8:[12,13], 9:[12,13],
+            10:[12,13], 11:[12,13], 12:[12,13], 15:[12,13], 48:[21,22]}
     def __get__(self, obj, objtype=None):
-        return obj.section4[13]/(10.**obj.section4[12])
+        return obj.section4[self._key[obj.pdtn][-1]+2]/(10.**obj.section4[self._key[obj.pdtn][0]+2])
     def __set__(self, obj, value):
         pass
 
 class TypeOfSecondFixedSurface:
+    _key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
-        return Grib2Metadata(obj.section4[14],table='4.5')
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
-        obj.section4[14] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfSecondFixedSurface:
+    _key = {0:13, 1:13, 2:13, 5:13, 6:13, 8:13, 9:13, 10:13, 11:13, 12:13, 15:13, 48:24}
     def __get__(self, obj, objtype=None):
-        return obj.section4[15]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[15] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfSecondFixedSurface:
+    _key = {0:14, 1:14, 2:14, 5:14, 6:14, 8:14, 9:14, 10:14, 11:14, 12:14, 15:14, 48:25}
     def __get__(self, obj, objtype=None):
-        return obj.section4[16]
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
-        obj.section4[16] = value
+        obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
@@ -900,14 +916,16 @@ class UnitOfSecondFixedSurface:
         pass
 
 class ValueOfSecondFixedSurface:
+    _key = {0:[15,16], 1:[15,16], 2:[15,16], 5:[15,16], 6:[15,16], 8:[15,16], 9:[15,16],
+            10:[15,16], 11:[15,16], 12:[15,16], 15:[15,16], 48:[24,25]}
     def __get__(self, obj, objtype=None):
-        return obj.section4[16]/(10.**obj.section4[15])
+        return obj.section4[self._key[obj.pdtn][-1]+2]/(10.**obj.section4[self._key[obj.pdtn][0]+2])
     def __set__(self, obj, value):
         pass
 
 class Level:
     def __get__(self, obj, objtype=None):
-        return tables.get_wgrib2_level_string(*obj.section4[11:17])
+        return tables.get_wgrib2_level_string(obj.pdtn,obj.section4[2:])
     def __set__(self, obj, value):
         pass
 
@@ -1189,6 +1207,83 @@ class NumberOfDataPointsForSpatialProcessing:
         pdtn = obj.section4[1]
         obj.section4[self._key[pdtn]+2] = value
 
+class TypeOfAerosol:
+    _key = {48:2}
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.233')
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class TypeOfIntervalForAerosolSize:
+    _key = {48:3}
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.91')
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaleFactorOfFirstSize:
+    _key = {48:4}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaledValueOfFirstSize:
+    _key = {48:5}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaleFactorOfSecondSize:
+    _key = {48:6}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaledValueOfSecondSize:
+    _key = {48:7}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class TypeOfIntervalForAerosolWavelength:
+    _key = {48:8}
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.91')
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaleFactorOfFirstWavelength:
+    _key = {48:9}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaledValueOfFirstWavelength:
+    _key = {48:10}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaleFactorOfSecondWavelength:
+    _key = {48:11}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ScaledValueOfSecondWavelength:
+    _key = {48:12}
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
 @dataclass(init=False)
 class ProductDefinitionTemplate0():
     _len = 15
@@ -1385,6 +1480,26 @@ class ProductDefinitionTemplate15():
     def _attrs(cls):
         return _get_template_class_attrs(cls.__dict__.keys())
 
+@dataclass(init=False)
+class ProductDefinitionTemplate48():
+    _len = 26
+    _num = 48
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
+    scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
+    scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
+    scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    @classmethod
+    @property
+    def _attrs(cls):
+        return _get_template_class_attrs(cls.__dict__.keys())
+
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
     1: ProductDefinitionTemplate1,
@@ -1397,6 +1512,7 @@ _pdt_by_pdtn = {
     11: ProductDefinitionTemplate11,
     12: ProductDefinitionTemplate12,
     15: ProductDefinitionTemplate15,
+    48: ProductDefinitionTemplate48,
     }
 
 def pdt_class_by_pdtn(pdtn):
