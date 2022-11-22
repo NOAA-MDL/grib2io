@@ -123,7 +123,7 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
         return ['Unknown','Unknown','Unknown']
 
 
-def get_wgrib2_level_string(type1,sfac1,sval1,type2,sfac2,sval2):
+def get_wgrib2_level_string(pdtn,pdt):
     """
     Return a string that describes the level or layer of the GRIB2 message. The
     format and language of the string is an exact replica of how wgrib2 produces
@@ -136,23 +136,20 @@ def get_wgrib2_level_string(type1,sfac1,sval1,type2,sfac2,sval2):
     Parameters
     ----------
 
-    **`type1`**: `int` type of first fixed surface.
+    **`pdtn`**: GRIB2 Product Definition Template Number
 
-    **`sfac1`**: `int` scale factor of first fixed surface.
-
-    **`sval1`**: `int` scaled value of first fixed surface.
-
-    **`type2`**: `int` type of second fixed surface.
-
-    **`sfac2`**: `int` scale factor of second fixed surface.
-
-    **`sval2`**: `int` scaled value of second fixed surface.
+    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
 
     **`str`**: wgrib2-formatted level/layer string.
     """
+    if pdtn == 48:
+        idxs = slice(20,26)
+    else:
+        idxs = slice(15,21)
+    type1, sfac1, sval1, type2, sfac2, sval2 = map(int,pdt[idxs])
     lvlstr = ''
     val1 = sval1/10**sfac1
     if type1 in [100,108]: val1 *= 0.01
