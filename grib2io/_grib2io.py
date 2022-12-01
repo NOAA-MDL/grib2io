@@ -105,8 +105,8 @@ class open():
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
-            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg'][1:]])))
-            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg'][1:]])))
+            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
+            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
 
 
     def __delete__(self, instance):
@@ -131,7 +131,7 @@ class open():
     def __iter__(self):
         """
         """
-        yield from self._index['msg'][1:]
+        yield from self._index['msg']
 
 
     def __len__(self):
@@ -154,19 +154,13 @@ class open():
         """
         """
         if isinstance(key,int):
-            if key > 0:
-                return self._index['msg'][key]
-            elif key == 0:
-                raise IndexError("GRIB2 Message number 0 does not exist.")
-            elif abs(key) >= len(self._index['msg']):
+            if abs(key) >= len(self._index['msg']):
                 raise IndexError("index out of range")
             else:
                 return self._index['msg'][key]
         elif isinstance(key,str):
             return self.select(shortName=key)
         elif isinstance(key,slice):
-            if key.start is None:
-                raise IndexError("GRIB2 Message number 0 does not exist.")
             return self._index['msg'][key]
         else:
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
@@ -178,16 +172,16 @@ class open():
         """
         # Initialize index dictionary
         if not self._hasindex:
-            self._index['offset'] = [None]
-            self._index['bitmap_offset'] = [None]
-            self._index['data_offset'] = [None]
-            self._index['size'] = [None]
-            self._index['data_size'] = [None]
-            self._index['submessageOffset'] = [None]
-            self._index['submessageBeginSection'] = [None]
-            self._index['isSubmessage'] = [None]
-            self._index['messageNumber'] = [None]
-            self._index['msg'] = [None]
+            self._index['offset'] = []
+            self._index['bitmap_offset'] = []
+            self._index['data_offset'] = []
+            self._index['size'] = []
+            self._index['data_size'] = []
+            self._index['submessageOffset'] = []
+            self._index['submessageBeginSection'] = []
+            self._index['isSubmessage'] = []
+            self._index['messageNumber'] = []
+            self._index['msg'] = []
             self._hasindex = True
 
         # Iterate
@@ -300,7 +294,7 @@ class open():
                             # Create Grib2Message with data.
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
-                            msg._msgnum = self.messages
+                            msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
                             shape = (msg.ny,msg.nx)
@@ -330,7 +324,7 @@ class open():
                             # Create Grib2Message with data.
                             Msg = create_message_cls(section3[4],section4[1],section5[1])
                             msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
-                            msg._msgnum = self.messages
+                            msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
                             shape = (msg.ny,msg.nx)
@@ -383,22 +377,18 @@ class open():
         if size is not None and size < 0:
             size = None
         if size is None or size > 1:
-            start = self.tell()+1 # From the current message, start at next one.
-            stop = self.messages+1 if size is None else start+size
-            self.current_message = stop-1
+            start = self.tell()
+            stop = self.messages if size is None else start+size
+            if size is None:
+                self.current_message = self.messages-1
+            else:
+                self.current_message += size
             return self._index['msg'][slice(start,stop,1)]
         elif size == 1:
             self.current_message += 1
             return self._index['msg'][self.current_message]
         else:
             None
-
-
-    def rewind(self):
-        """
-        Set the position of the file to zero in units of GRIB2 messages.
-        """
-        self.seek(0)
 
 
     def seek(self, pos):
@@ -411,12 +401,8 @@ class open():
         **`pos : int`**: GRIB2 Message number to set the read pointer to.
         """
         if self._hasindex:
-            if pos == 0:
-                self._filehandle.seek(pos)
-                self.current_message = pos
-            elif pos > 0:
-                self._filehandle.seek(self._index['offset'][pos-1])
-                self.current_message = pos
+            self._filehandle.seek(self._index['offset'][pos])
+            self.current_message = pos
 
 
     def tell(self):
@@ -433,7 +419,7 @@ class open():
         idxs = []
         nkeys = len(kwargs.keys())
         for k,v in kwargs.items():
-            idxs += [msg._msgnum for msg in self._index['msg'] if msg is not None and getattr(msg,k) == v]
+            idxs += [msg._msgnum for msg in self._index['msg'] if getattr(msg,k) == v]
         idxs = np.array(idxs,dtype=np.int32)
         return [self._index['msg'][i] for i in [ii[0] for ii in collections.Counter(idxs).most_common() if ii[1] == nkeys]]
 
