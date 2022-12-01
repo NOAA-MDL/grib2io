@@ -426,15 +426,23 @@ class open():
 
     def write(self, msg):
         """
-        Writes a packed GRIB2 message to file.
+        Writes GRIB2 message object to file.
 
         Parameters
         ----------
 
-        **`msg`**: `Grib2Message` object to write.
+        **`msg`**: `Grib2Message or sequence of Grib2Message`
+        
+        GRIB2 message objects to write to file.
         """
-        if isinstance(msg,Grib2Message):
+        if isinstance(msg,list):
+            for m in msg:
+                self.write(m)
+        elif isinstance(msg,Grib2Message):
+            if not hasattr(msg,'_msg'):
+                msg.pack()
             self._filehandle.write(msg._msg)
+            self._filehandle.flush()
             self.size = os.path.getsize(self.name)
             self.messages += 1
             self.current_message += 1
