@@ -82,11 +82,13 @@ class open():
         Parameters
         ----------
 
-        **`filename`**: File name containing GRIB2 messages.
+        **`filename : str`**
 
-        **`mode `**: File access mode where `r` opens the files for reading only;
-        `w` opens the file for writing.
+        File name containing GRIB2 messages.
 
+        **`mode : str`**
+
+        File access mode where `r` opens the files for reading only; `w` opens the file for writing.
         """
         if mode in {'a','r','w'}:
             mode = mode+'b'
@@ -366,7 +368,10 @@ class open():
         Parameters
         ----------
 
-        **`size : int`**: number of GRIB2 messages to read. The default value is None.
+        **`size : int, optional`**
+
+        The number of GRIB2 messages to read from the current position. If no argument is
+        give, the default value is `None` and remainder of the file is read.
 
         Returns
         -------
@@ -398,7 +403,9 @@ class open():
         Parameters
         ----------
 
-        **`pos : int`**: GRIB2 Message number to set the read pointer to.
+        **`pos : int`**
+
+        The GRIB2 Message number to set the file pointer to.
         """
         if self._hasindex:
             self._filehandle.seek(self._index['offset'][pos])
@@ -414,6 +421,7 @@ class open():
 
     def select(self,**kwargs):
         """
+        Select GRIB2 messages by `Grib2Message` attributes.
         """
         # TODO: Added ability to process multiple values for each keyword (attribute)
         idxs = []
@@ -431,7 +439,7 @@ class open():
         Parameters
         ----------
 
-        **`msg`**: `Grib2Message or sequence of Grib2Message`
+        **`msg : Grib2Message or sequence of Grib2Messages`**
         
         GRIB2 message objects to write to file.
         """
@@ -458,7 +466,14 @@ class open():
         Parameters
         ----------
 
-        **`name`**: Grib2Message variable shortName
+        **`name : str`**
+
+        Grib2Message variable shortName
+
+        Returns
+        -------
+
+        A list of strings of unique level strings.
         """
         return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
 
@@ -470,7 +485,14 @@ class open():
         Parameters
         ----------
 
-        **`level`**: Grib2Message variable level
+        **`level : str`**
+
+        Grib2Message variable level
+
+        Returns
+        -------
+
+        A list of strings of variable shortName strings.
         """
         return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
@@ -612,15 +634,18 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`sect : int`** GRIB2 section number.
+        **`sect : int`**
 
-        **`values : bool`** Optional (default is False) arugment to return
-        attributes values.
+        The GRIB2 section number.
+
+        **`values : bool, optional`**
+
+        Optional (default is False) arugment to return attributes values.
 
         Returns
         -------
 
-        list attribute names or dict if `values = True`.
+        A List attribute names or Dict if `values = True`.
         """
         if sect in {0,1}:
             attrs = templates._section_attrs[sect]
@@ -838,7 +863,9 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`ludata : bytes`**: Local Use data.
+        **`ludata : bytes`**
+
+        Local Use data.
         """
         assert isinstance(ludata,bytes)
         self._msg,self._pos = g2clib.grib2_addlocal(self._msg,ludata)
@@ -1083,13 +1110,14 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`validate : bool`**:
+        **`validate : bool, optional`**
 
         If `True` (DEFAULT), validates first/last four bytes for proper
         formatting, else returns None. If `False`, message is output as is.
 
         Returns
         -------
+
         Returns GRIB2 formatted message as bytes.
         """
         if validate:
@@ -1122,8 +1150,10 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     Returns
     -------
 
-    **`numpy.ndarray`**: A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32,
-    but could be np.int32 if Grib2Message.typeOfValues is integer.
+    **`numpy.ndarray`**
+
+    A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but 
+    could be np.int32 if Grib2Message.typeOfValues is integer.
     """
     gds = msg.section3[0:5]
     gdt = msg.section3[5:]
@@ -1232,16 +1262,16 @@ def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
 
     **`drtn : int`**:
 
-    The class is returned that contains the appropriate
-    inherited section templates given by the input arguments.
-
     Returns
     -------
-    Returns Grib2Message class or instance according to `init`.
+
+    `Grib2Message` class that contains the appropriate inherited
+    section templates given by the input arguments.
     """
     Gdt = templates.gdt_class_by_gdtn(gdtn)
     Pdt = templates.pdt_class_by_pdtn(pdtn)
     Drt = templates.drt_class_by_drtn(drtn)
+
     @dataclass(init=False, repr=False)
     class Msg(Grib2Message, Gdt, Pdt, Drt):
         pass
