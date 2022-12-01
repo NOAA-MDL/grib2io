@@ -206,7 +206,7 @@
 </span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">,</span><span class="s1">&#39;Unknown&#39;</span><span class="p">]</span>
 </span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>
 </span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
-</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">sfac1</span><span class="p">,</span><span class="n">sval1</span><span class="p">,</span><span class="n">type2</span><span class="p">,</span><span class="n">sfac2</span><span class="p">,</span><span class="n">sval2</span><span class="p">):</span>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a><span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
 </span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a><span class="sd">    Return a string that describes the level or layer of the GRIB2 message. The</span>
 </span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a><span class="sd">    format and language of the string is an exact replica of how wgrib2 produces</span>
@@ -219,39 +219,36 @@
 </span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="sd">    Parameters</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">    ----------</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>
-</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    **`type1`**: `int` type of first fixed surface.</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 </span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>
-</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">    **`sfac1`**: `int` scale factor of first fixed surface.</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a><span class="sd">    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).</span>
 </span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>
-</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    **`sval1`**: `int` scaled value of first fixed surface.</span>
-</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>
-</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a><span class="sd">    **`type2`**: `int` type of second fixed surface.</span>
-</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>
-</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">    **`sfac2`**: `int` scale factor of second fixed surface.</span>
-</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>
-</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a><span class="sd">    **`sval2`**: `int` scaled value of second fixed surface.</span>
-</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>
-</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a><span class="sd">    Returns</span>
-</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a><span class="sd">    -------</span>
-</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>
-</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a><span class="sd">    **`str`**: wgrib2-formatted level/layer string.</span>
-</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
-</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
-</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="c1"># Layer</span>
-</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
-</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
-</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
-</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
-</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>        <span class="c1"># Level</span>
-</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="L-169"><a href="#L-169"><span class="linenos">169</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
-</span><span id="L-170"><a href="#L-170"><span class="linenos">170</span></a>    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span>
-</span><span id="L-171"><a href="#L-171"><span class="linenos">171</span></a>    <span class="k">return</span> <span class="n">lvlstr</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a><span class="sd">    Returns</span>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a><span class="sd">    -------</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a><span class="sd">    **`str`**: wgrib2-formatted level/layer string.</span>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">48</span><span class="p">:</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>        <span class="n">idxs</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">26</span><span class="p">)</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>        <span class="n">idxs</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">15</span><span class="p">)</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>    <span class="n">type1</span><span class="p">,</span> <span class="n">sfac1</span><span class="p">,</span> <span class="n">sval1</span><span class="p">,</span> <span class="n">type2</span><span class="p">,</span> <span class="n">sfac2</span><span class="p">,</span> <span class="n">sval2</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">pdt</span><span class="p">[</span><span class="n">idxs</span><span class="p">])</span>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span id="L-154"><a href="#L-154"><span class="linenos">154</span></a>    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
+</span><span id="L-155"><a href="#L-155"><span class="linenos">155</span></a>    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
+</span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a>    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
+</span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a>        <span class="c1"># Layer</span>
+</span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a>        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a>        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
+</span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
+</span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
+</span><span id="L-163"><a href="#L-163"><span class="linenos">163</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-164"><a href="#L-164"><span class="linenos">164</span></a>        <span class="c1"># Level</span>
+</span><span id="L-165"><a href="#L-165"><span class="linenos">165</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="L-166"><a href="#L-166"><span class="linenos">166</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
+</span><span id="L-167"><a href="#L-167"><span class="linenos">167</span></a>    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span>
+</span><span id="L-168"><a href="#L-168"><span class="linenos">168</span></a>    <span class="k">return</span> <span class="n">lvlstr</span>
 </span></pre></div>
 
 
@@ -472,13 +469,13 @@ information if variable is not found.</p>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_wgrib2_level_string</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">type1</span>, </span><span class="param"><span class="n">sfac1</span>, </span><span class="param"><span class="n">sval1</span>, </span><span class="param"><span class="n">type2</span>, </span><span class="param"><span class="n">sfac2</span>, </span><span class="param"><span class="n">sval2</span></span><span class="return-annotation">):</span></span>
+        <span class="name">get_wgrib2_level_string</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">pdtn</span>, </span><span class="param"><span class="n">pdt</span></span><span class="return-annotation">):</span></span>
 
                 <label class="view-source-button" for="get_wgrib2_level_string-view-source"><span>View Source</span></label>
 
     </div>
     <a class="headerlink" href="#get_wgrib2_level_string"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="get_wgrib2_level_string-127"><a href="#get_wgrib2_level_string-127"><span class="linenos">127</span></a><span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">sfac1</span><span class="p">,</span><span class="n">sval1</span><span class="p">,</span><span class="n">type2</span><span class="p">,</span><span class="n">sfac2</span><span class="p">,</span><span class="n">sval2</span><span class="p">):</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="get_wgrib2_level_string-127"><a href="#get_wgrib2_level_string-127"><span class="linenos">127</span></a><span class="k">def</span> <span class="nf">get_wgrib2_level_string</span><span class="p">(</span><span class="n">pdtn</span><span class="p">,</span><span class="n">pdt</span><span class="p">):</span>
 </span><span id="get_wgrib2_level_string-128"><a href="#get_wgrib2_level_string-128"><span class="linenos">128</span></a>    <span class="sd">&quot;&quot;&quot;</span>
 </span><span id="get_wgrib2_level_string-129"><a href="#get_wgrib2_level_string-129"><span class="linenos">129</span></a><span class="sd">    Return a string that describes the level or layer of the GRIB2 message. The</span>
 </span><span id="get_wgrib2_level_string-130"><a href="#get_wgrib2_level_string-130"><span class="linenos">130</span></a><span class="sd">    format and language of the string is an exact replica of how wgrib2 produces</span>
@@ -491,39 +488,36 @@ information if variable is not found.</p>
 </span><span id="get_wgrib2_level_string-137"><a href="#get_wgrib2_level_string-137"><span class="linenos">137</span></a><span class="sd">    Parameters</span>
 </span><span id="get_wgrib2_level_string-138"><a href="#get_wgrib2_level_string-138"><span class="linenos">138</span></a><span class="sd">    ----------</span>
 </span><span id="get_wgrib2_level_string-139"><a href="#get_wgrib2_level_string-139"><span class="linenos">139</span></a>
-</span><span id="get_wgrib2_level_string-140"><a href="#get_wgrib2_level_string-140"><span class="linenos">140</span></a><span class="sd">    **`type1`**: `int` type of first fixed surface.</span>
+</span><span id="get_wgrib2_level_string-140"><a href="#get_wgrib2_level_string-140"><span class="linenos">140</span></a><span class="sd">    **`pdtn`**: GRIB2 Product Definition Template Number</span>
 </span><span id="get_wgrib2_level_string-141"><a href="#get_wgrib2_level_string-141"><span class="linenos">141</span></a>
-</span><span id="get_wgrib2_level_string-142"><a href="#get_wgrib2_level_string-142"><span class="linenos">142</span></a><span class="sd">    **`sfac1`**: `int` scale factor of first fixed surface.</span>
+</span><span id="get_wgrib2_level_string-142"><a href="#get_wgrib2_level_string-142"><span class="linenos">142</span></a><span class="sd">    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).</span>
 </span><span id="get_wgrib2_level_string-143"><a href="#get_wgrib2_level_string-143"><span class="linenos">143</span></a>
-</span><span id="get_wgrib2_level_string-144"><a href="#get_wgrib2_level_string-144"><span class="linenos">144</span></a><span class="sd">    **`sval1`**: `int` scaled value of first fixed surface.</span>
-</span><span id="get_wgrib2_level_string-145"><a href="#get_wgrib2_level_string-145"><span class="linenos">145</span></a>
-</span><span id="get_wgrib2_level_string-146"><a href="#get_wgrib2_level_string-146"><span class="linenos">146</span></a><span class="sd">    **`type2`**: `int` type of second fixed surface.</span>
-</span><span id="get_wgrib2_level_string-147"><a href="#get_wgrib2_level_string-147"><span class="linenos">147</span></a>
-</span><span id="get_wgrib2_level_string-148"><a href="#get_wgrib2_level_string-148"><span class="linenos">148</span></a><span class="sd">    **`sfac2`**: `int` scale factor of second fixed surface.</span>
-</span><span id="get_wgrib2_level_string-149"><a href="#get_wgrib2_level_string-149"><span class="linenos">149</span></a>
-</span><span id="get_wgrib2_level_string-150"><a href="#get_wgrib2_level_string-150"><span class="linenos">150</span></a><span class="sd">    **`sval2`**: `int` scaled value of second fixed surface.</span>
-</span><span id="get_wgrib2_level_string-151"><a href="#get_wgrib2_level_string-151"><span class="linenos">151</span></a>
-</span><span id="get_wgrib2_level_string-152"><a href="#get_wgrib2_level_string-152"><span class="linenos">152</span></a><span class="sd">    Returns</span>
-</span><span id="get_wgrib2_level_string-153"><a href="#get_wgrib2_level_string-153"><span class="linenos">153</span></a><span class="sd">    -------</span>
-</span><span id="get_wgrib2_level_string-154"><a href="#get_wgrib2_level_string-154"><span class="linenos">154</span></a>
-</span><span id="get_wgrib2_level_string-155"><a href="#get_wgrib2_level_string-155"><span class="linenos">155</span></a><span class="sd">    **`str`**: wgrib2-formatted level/layer string.</span>
-</span><span id="get_wgrib2_level_string-156"><a href="#get_wgrib2_level_string-156"><span class="linenos">156</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="get_wgrib2_level_string-157"><a href="#get_wgrib2_level_string-157"><span class="linenos">157</span></a>    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
-</span><span id="get_wgrib2_level_string-158"><a href="#get_wgrib2_level_string-158"><span class="linenos">158</span></a>    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
-</span><span id="get_wgrib2_level_string-159"><a href="#get_wgrib2_level_string-159"><span class="linenos">159</span></a>    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
-</span><span id="get_wgrib2_level_string-160"><a href="#get_wgrib2_level_string-160"><span class="linenos">160</span></a>    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
-</span><span id="get_wgrib2_level_string-161"><a href="#get_wgrib2_level_string-161"><span class="linenos">161</span></a>        <span class="c1"># Layer</span>
-</span><span id="get_wgrib2_level_string-162"><a href="#get_wgrib2_level_string-162"><span class="linenos">162</span></a>        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
-</span><span id="get_wgrib2_level_string-163"><a href="#get_wgrib2_level_string-163"><span class="linenos">163</span></a>        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
-</span><span id="get_wgrib2_level_string-164"><a href="#get_wgrib2_level_string-164"><span class="linenos">164</span></a>        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
-</span><span id="get_wgrib2_level_string-165"><a href="#get_wgrib2_level_string-165"><span class="linenos">165</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
-</span><span id="get_wgrib2_level_string-166"><a href="#get_wgrib2_level_string-166"><span class="linenos">166</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
-</span><span id="get_wgrib2_level_string-167"><a href="#get_wgrib2_level_string-167"><span class="linenos">167</span></a>    <span class="k">else</span><span class="p">:</span>
-</span><span id="get_wgrib2_level_string-168"><a href="#get_wgrib2_level_string-168"><span class="linenos">168</span></a>        <span class="c1"># Level</span>
-</span><span id="get_wgrib2_level_string-169"><a href="#get_wgrib2_level_string-169"><span class="linenos">169</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-</span><span id="get_wgrib2_level_string-170"><a href="#get_wgrib2_level_string-170"><span class="linenos">170</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
-</span><span id="get_wgrib2_level_string-171"><a href="#get_wgrib2_level_string-171"><span class="linenos">171</span></a>    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span>
-</span><span id="get_wgrib2_level_string-172"><a href="#get_wgrib2_level_string-172"><span class="linenos">172</span></a>    <span class="k">return</span> <span class="n">lvlstr</span>
+</span><span id="get_wgrib2_level_string-144"><a href="#get_wgrib2_level_string-144"><span class="linenos">144</span></a><span class="sd">    Returns</span>
+</span><span id="get_wgrib2_level_string-145"><a href="#get_wgrib2_level_string-145"><span class="linenos">145</span></a><span class="sd">    -------</span>
+</span><span id="get_wgrib2_level_string-146"><a href="#get_wgrib2_level_string-146"><span class="linenos">146</span></a>
+</span><span id="get_wgrib2_level_string-147"><a href="#get_wgrib2_level_string-147"><span class="linenos">147</span></a><span class="sd">    **`str`**: wgrib2-formatted level/layer string.</span>
+</span><span id="get_wgrib2_level_string-148"><a href="#get_wgrib2_level_string-148"><span class="linenos">148</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="get_wgrib2_level_string-149"><a href="#get_wgrib2_level_string-149"><span class="linenos">149</span></a>    <span class="k">if</span> <span class="n">pdtn</span> <span class="o">==</span> <span class="mi">48</span><span class="p">:</span>
+</span><span id="get_wgrib2_level_string-150"><a href="#get_wgrib2_level_string-150"><span class="linenos">150</span></a>        <span class="n">idxs</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">26</span><span class="p">)</span>
+</span><span id="get_wgrib2_level_string-151"><a href="#get_wgrib2_level_string-151"><span class="linenos">151</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="get_wgrib2_level_string-152"><a href="#get_wgrib2_level_string-152"><span class="linenos">152</span></a>        <span class="n">idxs</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">9</span><span class="p">,</span><span class="mi">15</span><span class="p">)</span>
+</span><span id="get_wgrib2_level_string-153"><a href="#get_wgrib2_level_string-153"><span class="linenos">153</span></a>    <span class="n">type1</span><span class="p">,</span> <span class="n">sfac1</span><span class="p">,</span> <span class="n">sval1</span><span class="p">,</span> <span class="n">type2</span><span class="p">,</span> <span class="n">sfac2</span><span class="p">,</span> <span class="n">sval2</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span><span class="n">pdt</span><span class="p">[</span><span class="n">idxs</span><span class="p">])</span>
+</span><span id="get_wgrib2_level_string-154"><a href="#get_wgrib2_level_string-154"><span class="linenos">154</span></a>    <span class="n">lvlstr</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+</span><span id="get_wgrib2_level_string-155"><a href="#get_wgrib2_level_string-155"><span class="linenos">155</span></a>    <span class="n">val1</span> <span class="o">=</span> <span class="n">sval1</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac1</span>
+</span><span id="get_wgrib2_level_string-156"><a href="#get_wgrib2_level_string-156"><span class="linenos">156</span></a>    <span class="k">if</span> <span class="n">type1</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val1</span> <span class="o">*=</span> <span class="mf">0.01</span>
+</span><span id="get_wgrib2_level_string-157"><a href="#get_wgrib2_level_string-157"><span class="linenos">157</span></a>    <span class="k">if</span> <span class="n">type2</span> <span class="o">!=</span> <span class="mi">255</span><span class="p">:</span>
+</span><span id="get_wgrib2_level_string-158"><a href="#get_wgrib2_level_string-158"><span class="linenos">158</span></a>        <span class="c1"># Layer</span>
+</span><span id="get_wgrib2_level_string-159"><a href="#get_wgrib2_level_string-159"><span class="linenos">159</span></a>        <span class="c1">#assert type2 == type1, &quot;Surface types are not equal: %g - %g&quot; % (type1,type2)</span>
+</span><span id="get_wgrib2_level_string-160"><a href="#get_wgrib2_level_string-160"><span class="linenos">160</span></a>        <span class="n">val2</span> <span class="o">=</span> <span class="n">sval2</span><span class="o">/</span><span class="mi">10</span><span class="o">**</span><span class="n">sfac2</span>
+</span><span id="get_wgrib2_level_string-161"><a href="#get_wgrib2_level_string-161"><span class="linenos">161</span></a>        <span class="k">if</span> <span class="n">type2</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">100</span><span class="p">,</span><span class="mi">108</span><span class="p">]:</span> <span class="n">val2</span> <span class="o">*=</span> <span class="mf">0.01</span>
+</span><span id="get_wgrib2_level_string-162"><a href="#get_wgrib2_level_string-162"><span class="linenos">162</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</span><span id="get_wgrib2_level_string-163"><a href="#get_wgrib2_level_string-163"><span class="linenos">163</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">,</span><span class="n">val2</span><span class="p">)</span>
+</span><span id="get_wgrib2_level_string-164"><a href="#get_wgrib2_level_string-164"><span class="linenos">164</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="get_wgrib2_level_string-165"><a href="#get_wgrib2_level_string-165"><span class="linenos">165</span></a>        <span class="c1"># Level</span>
+</span><span id="get_wgrib2_level_string-166"><a href="#get_wgrib2_level_string-166"><span class="linenos">166</span></a>        <span class="n">lvlstr</span> <span class="o">=</span> <span class="n">get_value_from_table</span><span class="p">(</span><span class="n">type1</span><span class="p">,</span><span class="n">table</span><span class="o">=</span><span class="s1">&#39;wgrib2_level_string&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="get_wgrib2_level_string-167"><a href="#get_wgrib2_level_string-167"><span class="linenos">167</span></a>        <span class="n">vals</span> <span class="o">=</span> <span class="p">(</span><span class="n">val1</span><span class="p">)</span>
+</span><span id="get_wgrib2_level_string-168"><a href="#get_wgrib2_level_string-168"><span class="linenos">168</span></a>    <span class="k">if</span> <span class="s1">&#39;</span><span class="si">%g</span><span class="s1">&#39;</span> <span class="ow">in</span> <span class="n">lvlstr</span><span class="p">:</span> <span class="n">lvlstr</span> <span class="o">%=</span> <span class="n">vals</span>
+</span><span id="get_wgrib2_level_string-169"><a href="#get_wgrib2_level_string-169"><span class="linenos">169</span></a>    <span class="k">return</span> <span class="n">lvlstr</span>
 </span></pre></div>
 
 
@@ -537,17 +531,9 @@ were converted into a Python dictionary and stored in grib2io as table
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>type1</code></strong>: <code>int</code> type of first fixed surface.</p>
+<p><strong><code>pdtn</code></strong>: GRIB2 Product Definition Template Number</p>
 
-<p><strong><code>sfac1</code></strong>: <code>int</code> scale factor of first fixed surface.</p>
-
-<p><strong><code>sval1</code></strong>: <code>int</code> scaled value of first fixed surface.</p>
-
-<p><strong><code>type2</code></strong>: <code>int</code> type of second fixed surface.</p>
-
-<p><strong><code>sfac2</code></strong>: <code>int</code> scale factor of second fixed surface.</p>
-
-<p><strong><code>sval2</code></strong>: <code>int</code> scaled value of second fixed surface.</p>
+<p><strong><code>pdt</code></strong>: sequence containing GRIB2 Product Definition Template (Section 4).</p>
 
 <h2 id="returns">Returns</h2>
 
