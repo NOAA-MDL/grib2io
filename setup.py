@@ -1,5 +1,7 @@
 from setuptools import setup, Extension, find_packages, Command
 from os import environ
+from numpy.distutils.core import Extension as NPExtension
+from numpy.distutils.core import setup as NPsetup
 import configparser
 import glob
 import numpy
@@ -8,18 +10,6 @@ import platform
 import sys
 
 VERSION = '1.1.0'
-
-# ----------------------------------------------------------------------------------------
-# Function to provide the absolute path for a shared object library,
-# ----------------------------------------------------------------------------------------
-def _find_library_linux(name):
-    import subprocess
-    result = subprocess.run(['/sbin/ldconfig','-p'],stdout=subprocess.PIPE)
-    libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
-    try:
-        return [l for l in libs if name in l][0]
-    except IndexError:
-        return None
 
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
@@ -36,6 +26,14 @@ class _ConfigParser(configparser.ConfigParser):
 # ----------------------------------------------------------------------------------------
 system = platform.system()
 if system == 'Linux':
+    def _find_library_linux(name):
+        import subprocess
+        result = subprocess.run(['/sbin/ldconfig','-p'],stdout=subprocess.PIPE)
+        libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
+        try:
+            return [l for l in libs if name in l][0]
+        except IndexError:
+            return None
     find_library = _find_library_linux
 elif system == 'Darwin':
     from ctypes.util import find_library
@@ -62,7 +60,6 @@ if os.path.exists(setup_cfg):
     sys.stdout.write('Reading from setup.cfg...')
     config.read(setup_cfg)
 
-
 # ---------------------------------------------------------------------------------------- 
 # Define lists for build
 # ---------------------------------------------------------------------------------------- 
@@ -70,7 +67,7 @@ incdirs=[]
 libdirs=[]
 
 # ---------------------------------------------------------------------------------------- 
-# Get g2c library info
+# Get NCEPLIBS-g2c library info
 # ---------------------------------------------------------------------------------------- 
 g2c_dir = config.getq('directories', 'g2c_dir', environ.get('G2C_DIR'))
 g2c_libdir = config.getq('directories', 'g2c_libdir', environ.get('G2C_LIBDIR'))
@@ -96,8 +93,6 @@ incdirs.append(numpy.get_include())
 # ----------------------------------------------------------------------------------------
 # Define extensions
 # ---------------------------------------------------------------------------------------- 
-print('libdirs: ',libdirs)
-print('incdirs: ',incdirs)
 g2clibext = Extension('grib2io.g2clib',[g2clib_pyx],include_dirs=incdirs,\
             library_dirs=libdirs,libraries=['g2c'],runtime_library_dirs=runtime_libdirs)
 redtoregext = Extension('grib2io.redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])
@@ -175,10 +170,60 @@ setup(name = 'grib2io',
       scripts           = install_scripts,
       ext_modules       = install_ext_modules,
       py_modules        = install_py_modules,
-      entry_points     = {'xarray.backends':'grib2io=grib2io.xarray_backend:GribBackendEntrypoint'},
+      entry_points      = {'xarray.backends':'grib2io=grib2io.xarray_backend:GribBackendEntrypoint'},
       packages          = find_packages(),
       data_files        = data_files,
       install_requires  = ['setuptools>=34.0','numpy>=1.22.0','pyproj>=1.9.5'],
       python_requires   = '>=3.8',
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
+
+# ----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+# Check for interpolation configuration and build accordingly.
+# ----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+interp_libdirs = []
+interp_incdirs = []
+interp_libraries = ['sp_4','ip_4']
+
+# ---------------------------------------------------------------------------------------- 
+# Get NCEPLIBS-sp library info. This library is a required for interpolation.
+# ---------------------------------------------------------------------------------------- 
+sp_dir = config.getq('directories', 'sp_dir', environ.get('SP_DIR'))
+sp_libdir = config.getq('directories', 'sp_libdir', environ.get('SP_LIBDIR'))
+sp_incdir = config.getq('directories', 'sp_incdir', environ.get('SP_INCDIR'))
+if sp_libdir is None and sp_dir is not None:
+    interp_libdirs.append(os.path.join(sp_dir,'lib'))
+    interp_libdirs.append(os.path.join(sp_dir,'lib64'))
+else:
+    interp_libdirs.append(sp_libdir)
+if sp_incdir is None and sp_dir is not None:
+    interp_incdirs.append(os.path.join(sp_dir,'include_4'))
+else:
+    interp_incdirs.append(sp_incdir)
+
+# ---------------------------------------------------------------------------------------- 
+# Get NCEPLIBS-ip library info. This library is a required for interpolation.
+# ---------------------------------------------------------------------------------------- 
+ip_dir = config.getq('directories', 'ip_dir', environ.get('IP_DIR'))
+ip_libdir = config.getq('directories', 'ip_libdir', environ.get('IP_LIBDIR'))
+ip_incdir = config.getq('directories', 'ip_incdir', environ.get('IP_INCDIR'))
+if ip_libdir is None and ip_dir is not None:
+    interp_libdirs.append(os.path.join(ip_dir,'lib'))
+    interp_libdirs.append(os.path.join(ip_dir,'lib64'))
+else:
+    interp_libdirs.append(ip_libdir)
+if ip_incdir is None and ip_dir is not None:
+    interp_incdirs.append(os.path.join(ip_dir,'include_4'))
+else:
+    interp_incdirs.append(ip_incdir)
+
+interpext = NPExtension(name='grib2io._interpolate',
+                        sources=['interpolate.pyf','interpolate.f90'],
+                        extra_f77_compile_args=['-O3','-fopenmp'],
+                        extra_f90_compile_args=['-O3','-fopenmp'],
+                        include_dirs=interp_incdirs,
+                        library_dirs=interp_libdirs,
+                        libraries=interp_libraries)
+NPsetup(name='grib2io',ext_modules=[interpext])

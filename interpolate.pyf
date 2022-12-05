@@ -1,0 +1,36 @@
+!    -*- f90 -*-
+! Note: the context of this file is case sensitive.
+
+python module _interpolate ! in 
+    interface  ! in :interpolate
+        subroutine interpolate(ip,ipopt,igdtnumi,igdtmpli,igdtleni,igdtnumo,igdtmplo,igdtleno,mi,mo,km,ibi,li,gi,no,rlat,rlon,ibo,lo,go,iret) ! in :interpolate:interpolate.f90
+            threadsafe
+            use ipolates_mod
+            integer intent(in) :: ip
+            integer dimension(20),intent(in) :: ipopt
+            integer intent(in) :: igdtnumi
+            integer dimension(igdtleni),intent(in) :: igdtmpli
+            integer, optional,intent(in),check(shape(igdtmpli, 0) == igdtleni),depend(igdtmpli) :: igdtleni=shape(igdtmpli, 0)
+            integer intent(in) :: igdtnumo
+            integer dimension(igdtleno),intent(in) :: igdtmplo
+            integer, optional,intent(in),check(shape(igdtmplo, 0) == igdtleno),depend(igdtmplo) :: igdtleno=shape(igdtmplo, 0)
+            integer, optional,intent(in),check(shape(li, 0) == mi),depend(li) :: mi=shape(li, 0)
+            integer, optional,intent(in),check(shape(rlat, 0) == mo),depend(rlat) :: mo=shape(rlat, 0)
+            integer, optional,intent(in),check(shape(ibi, 0) == km),depend(ibi) :: km=shape(ibi, 0)
+            integer dimension(km),intent(in) :: ibi
+            logical(kind=1) dimension(mi,km),intent(in),depend(km) :: li
+            real dimension(mi,km),intent(in),depend(km,mi) :: gi
+            integer intent(out) :: no
+            real dimension(mo),intent(inout) :: rlat
+            real dimension(mo),intent(inout),depend(mo) :: rlon
+            integer dimension(km),intent(out),depend(km) :: ibo
+            logical(kind=1) dimension(mo,km),intent(out),depend(mo,km) :: lo
+            real dimension(mo,km),intent(out),depend(mo,km) :: go
+            integer intent(out) :: iret
+        end subroutine interpolate
+    end interface 
+end python module _interpolate
+
+! This file was auto-generated with f2py (version:1.23.2).
+! See:
+! https://web.archive.org/web/20140822061353/http://cens.ioc.ee/projects/f2py2e
