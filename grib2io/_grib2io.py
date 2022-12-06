@@ -57,21 +57,21 @@ class open():
     Attributes
     ----------
 
-    **`mode`**: File IO mode of opening the file.
+    **`mode`** File IO mode of opening the file.
 
-    **`name`**: Full path name of the GRIB2 file.
+    **`name`** Full path name of the GRIB2 file.
 
-    **`messages`**: Count of GRIB2 Messages contained in the file.
+    **`messages`** Count of GRIB2 Messages contained in the file.
 
-    **`current_message`**: Current position of the file in units of GRIB2 Messages.
+    **`current_message`** Current position of the file in units of GRIB2 Messages.
 
-    **`size`**: Size of the file in units of bytes.
+    **`size`** Size of the file in units of bytes.
 
     **`closed`** `True` is file handle is close; `False` otherwise.
 
-    **`variables`**: Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
+    **`variables`** Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
 
-    **`levels`**: Tuple containing a unique list of wgrib2-formatted level/layer strings.
+    **`levels`** Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
                  'current_message','size','closed','variables','levels','_pos')
@@ -450,13 +450,19 @@ class open():
             if not hasattr(msg,'_msg'):
                 msg.pack()
             self._filehandle.write(msg._msg)
-            self._filehandle.flush()
             self.size = os.path.getsize(self.name)
             self.messages += 1
             self.current_message += 1
             # TODO: Add ability to update dictionary
         else:
             raise TypeError("msg must be a Grib2Message object.")
+
+
+    def flush(self):
+        """
+        Flush the file object buffer.
+        """
+        self._filehandle.flush()
 
 
     def levels_by_var(self,name):
@@ -881,7 +887,7 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`gdsinfo`**: Sequence containing information needed for the grid definition section.
+        **`gdsinfo`** Sequence containing information needed for the grid definition section.
 
         | Index | Description |
         | :---: | :---        |
@@ -891,11 +897,11 @@ class Grib2Message:
         | gdsinfo[3] | Interpetation of list of numbers defining number of points - [Code Table 3.11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-11.shtml)|
         | gdsinfo[4] | Grid Definition Template Number - [Code Table 3.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)|
 
-        **`gdtmpl`**: Sequence of values for the specified Grid Definition Template. Each
+        **`gdtmpl`** Sequence of values for the specified Grid Definition Template. Each
         element of this integer array contains an entry (in the order specified) of Grid
         Definition Template 3.NN
 
-        **`deflist`**: Sequence containing the number of grid points contained in each
+        **`deflist`** Sequence containing the number of grid points contained in each
         row (or column) of a non-regular grid.  Used if gdsinfo[2] != 0.
         """
         if 3 in self._sections:
@@ -941,19 +947,19 @@ class Grib2Message:
         Parameters
         ----------
 
-        **`field`**: Numpy array of data values to pack.  If field is a masked array, then
+        **`field`** Numpy array of data values to pack.  If field is a masked array, then
         a bitmap is created from the mask.
 
-        **`pdtnum`**: integer Product Definition Template Number - [Code Table 4.0](http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)
+        **`pdtnum`** integer Product Definition Template Number - [Code Table 4.0](http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)
 
-        **`pdtmpl`**: Sequence with the data values for the specified Product Definition
+        **`pdtmpl`** Sequence with the data values for the specified Product Definition
         Template (N=pdtnum).  Each element of this integer array contains an entry (in
         the order specified) of Product Definition Template 4.N.
 
-        **`coordlist`**: Sequence containing floating point values intended to document the
+        **`coordlist`** Sequence containing floating point values intended to document the
         vertical discretization with model data on hybrid coordinate vertical levels. Default is `None`.
 
-        **`packing`**: String to specify the type of packing. Valid options are the following:
+        **`packing`** String to specify the type of packing. Valid options are the following:
 
         | Packing Scheme | Description |
         | :---:          | :---:       |
@@ -965,7 +971,7 @@ class Grib2Message:
         | 'spectral-simple'| [Spectral Data - Simple packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml) |
         | 'spectral-complex'| [Spectral Data - Complex packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-51.shtml) |
 
-        **`**packing_opts`**: Packing keyword arguments. The keywords are the same as Grib2Message attribute names for
+        **`**packing_opts`** Packing keyword arguments. The keywords are the same as Grib2Message attribute names for
         the Data Representation Template (Section 5) metadata. Valid keywords per packing scheme are the following:
 
         | Packing Scheme | Keyword Arguments |
@@ -1065,7 +1071,7 @@ class Grib2Message:
         self._sections.append(8)
 
 
-    def mapkeys(self):
+    def map_keys(self):
         """
         Returns an unpacked data grid where integer grid values are replaced with
         a string in which the numeric value is a representation of. These types
@@ -1078,7 +1084,7 @@ class Grib2Message:
         Returns
         -------
     
-        **`numpy.ndarray`**: of string values per element.
+        **`numpy.ndarray`** of string values per element.
         """
         hold_auto_nans = _AUTO_NANS
         set_auto_nans(False)
@@ -1127,6 +1133,60 @@ class Grib2Message:
                 return None
         else:
             return self._msg
+
+
+    def interpolate(self,ip,gdtn,gdt,ipopt=None):
+        """
+        Parameters
+        ----------
+
+        **`ip : int or str`**
+        
+        Interpolate method to use. This can either be an integer or string using
+        the following mapping:
+
+        | Interpolate Scheme | Integer Value |
+        | :---:              | :---:         |
+        | 'bilinear'         | 0             |
+        | 'bicubic'          | 1             |
+        | 'neighbor'         | 2             |
+        | 'budget'           | 3             |
+        | 'spectral'         | 4             |
+        | 'neighbor-budget'  | 6             |
+          
+        **`gdtn : int`**
+
+        Grid Definition Template Number of the interpolated grid.
+
+        **`gdt : list or numpy.ndarray`**
+
+        Grid Definition Template of the interpolated grid.
+
+        **`ipopt : list of ints, optional`**
+
+        Interpolation options. See the NCEPLIBS-ip doucmentation for
+        more information on how these are used.
+        """
+        Msg = create_message_cls(gdtn,self.pdtn,self.drtn)
+
+        section0 = self.section0
+        section0[-1] = 0
+        gds = [0, gdt[7]*gdt[8], 0, 255, gdtn]
+        section3 = np.concatenate((gds,gdt))
+        
+        msg = Msg(section0,self.section1,self.section2,section3,self.section4,self.section5,self.bitMapFlag)
+        msg._msgnum = -1
+        msg._deflist = self._deflist
+        msg._coordlist = self._coordlist
+        shape = (msg.ny,msg.nx)
+        ndim = 2
+        if msg.typeOfValues == 0:
+            dtype = 'float32'
+        elif msg.typeOfValues == 1:
+            dtype = 'int32'
+        msg._data = interpolate(self.data,ip,self.gdtn,self.gridDefinitionTemplate,
+                                gdtn,gdt,ipopt=ipopt).reshape(msg.ny,msg.nx)
+        return msg
 
 
 @dataclass
@@ -1252,15 +1312,15 @@ def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
     Parameters
     ----------
 
-    **`gdtn : int`**:
+    **`gdtn : int`**
 
     Grid Definition Template Number.
 
-    **`pdtn : int`**:
+    **`pdtn : int`**
 
     Product Definition Template Number.
 
-    **`drtn : int`**:
+    **`drtn : int`**
 
     Returns
     -------
@@ -1285,7 +1345,7 @@ def set_auto_nans(value):
     Parameters
     ----------
 
-    **`value : bool`**:
+    **`value : bool`**
 
     If `True` [DEFAULT], missing values in GRIB2 message data will be set to `np.nan` and
     if `False`, missing values will present in the data array.  If a bitmap is used, then `np.nan`
@@ -1297,3 +1357,104 @@ def set_auto_nans(value):
     else:
         raise TypeError(f"Argument must be bool")
 
+
+def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None,latlons=False):
+    """
+    Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+
+    Parameters
+    ----------
+
+    **`a : numpy.ndarray`**
+
+    Array data to interpolate from. These data are expected to be in
+    2-dimensional form with shape (ny, nx) and can also be 3-dimensional
+    where the 3rd dimension represent another spatial, temporal, or
+    classification (i.e. ensemble members). The function will properly
+    flatten the array that is acceptable for the NCEPLIBS-ip interpolation
+    subroutines.
+
+    **`ip : int or str`**
+
+    Interpolate method to use. This can either be an integer or string using
+    the following mapping:
+
+    | Interpolate Scheme | Integer Value |
+    | :---:              | :---:         |
+    | 'bilinear'         | 0             |
+    | 'bicubic'          | 1             |
+    | 'neighbor'         | 2             |
+    | 'budget'           | 3             |
+    | 'spectral'         | 4             |
+    | 'neighbor-budget'  | 6             |
+
+    **`gdtn_in : int`**
+
+    Grid Definition Template Number of the input grid.
+
+    **`gdt_in : list or numpy.ndarray`**
+
+    Grid Definition Template of the input grid.
+
+    **`gdtn_out : int`**
+
+    Grid Definition Template Number of the interpolated grid.
+
+    **`gdt_out : list or numpy.ndarray`**
+
+    Grid Definition Template of the interpolated grid.
+
+    **`ipopt : list of ints, optional`**
+
+    Interpolation options. See the NCEPLIBS-ip doucmentation for
+    more information on how these are used.
+
+    **`latlons : bool, optional`**
+
+    Return computed latitude and longitude values. The default
+    is `False`.
+    """
+    from . import _interpolate
+        
+    ip_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
+                  'budget':3, 'spectral':4, 'neighbor-budget':6}
+
+    if isinstance(ip,int) and ip not in ip_schemes.values():
+        raise ValueError('Invalid interpolation method.')
+    elif isinstance(ip,str):
+        if ip in ip_schemes.keys():
+            ip = ip_schemes[ip]
+        else:
+            raise ValueError('Invalid interpolation method.')
+
+    if ipopt is None:
+        ipopt = np.zeros((20),dtype=np.int32)
+        if ip == 3:
+            ipopt[0:2] = -1
+
+    nxi = gdt_in[7]
+    nyi = gdt_in[8]
+    nxo = gdt_out[7]
+    nyo = gdt_out[8]
+    ni = nxi*nyi
+    no = nxo*nyo
+
+    if len(a.shape) == 2 and a.shape == (nyi,nxi):
+        a = np.expand_dims(a.flatten(),axis=0)
+    elif len(a.shape) ==3:
+        pass # Find the non-nx/ny dimension
+
+    ibi = np.zeros((a.shape[0]),dtype=np.int32)
+    li = np.zeros(a.shape,dtype=np.int32)
+    
+    rlat = np.zeros((no),dtype=np.float32)
+    rlon = np.zeros((no),dtype=np.float32)
+
+    no,ibo,lo,go,iret = _interpolate.interpolate(ip,ipopt,gdtn_in,gdt_in,
+                                                 gdtn_out,gdt_out,ibi,li.T,a.T,
+                                                 rlat,rlon)
+
+    if latlons:
+        return go,rlat,rlon
+    else:
+        return go
