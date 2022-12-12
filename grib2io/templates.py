@@ -892,7 +892,7 @@ class UnitOfFirstFixedSurface:
 
 class ValueOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/
+        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/\
                             (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
     def __set__(self, obj, value):
         pass
@@ -929,7 +929,7 @@ class UnitOfSecondFixedSurface:
 
 class ValueOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
-        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/
+        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/\
                             (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
     def __set__(self, obj, value):
         pass
