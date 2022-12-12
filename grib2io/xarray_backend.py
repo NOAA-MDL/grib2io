@@ -54,7 +54,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
         # read and parse metadata from grib file
         f = grib2io.open(filename)
-        file_index = pd.DataFrame(f._index)[1:]  # first line is all None
+        file_index = pd.DataFrame(f._index)  # first line is all None
 
         # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)
         file_index, non_geo_dims = parse_grib_index(file_index, filters)
@@ -65,6 +65,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         if frames is None:
             return xr.Dataset()
 
+        print(frames)
         # create dataframe and add datarrays without any coords
         ds = xr.Dataset()
         for var_df in frames:
@@ -75,6 +76,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         f.close()
 
         # assign coords from the cube; the cube prevents datarrays with different shapes
+        print(cube)
+        print(ds)
         ds = ds.assign_coords(cube.coords())
         # assign extra geo coords
         ds = ds.assign_coords(extra_geo)
@@ -258,7 +261,6 @@ class OnDiskArray:
 
         with open(self.file_name, mode='rb', buffering=ONE_MB) as filehandle:
             for key, row in index.iterrows():
-                t2 = datetime.datetime.now()
 
                 bitmap_offset = None if pd.isna(row['bitmap_offset']) else int(row['bitmap_offset'])
                 values = _data(filehandle, row.msg, bitmap_offset, row['data_offset'])
@@ -267,7 +269,6 @@ class OnDiskArray:
                     array_field[row.miloc] = values
                 else:
                     array_field = values
-                print(f'msg load took {datetime.datetime.now() - t2}')
 
         # handle geo dim slicing
         array_field = array_field[(Ellipsis,) + item[-self.geo_ndim :]]
