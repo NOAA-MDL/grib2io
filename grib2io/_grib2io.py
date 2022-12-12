@@ -1358,7 +1358,7 @@ def set_auto_nans(value):
         raise TypeError(f"Argument must be bool")
 
 
-def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None,latlons=False):
+def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None):
     """
     Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
@@ -1368,10 +1368,10 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None,latlons=False):
     **`a : numpy.ndarray`**
 
     Array data to interpolate from. These data are expected to be in
-    2-dimensional form with shape (ny, nx) and can also be 3-dimensional
-    where the 3rd dimension represent another spatial, temporal, or
-    classification (i.e. ensemble members). The function will properly
-    flatten the array that is acceptable for the NCEPLIBS-ip interpolation
+    2-dimensional form with shape (ny, nx) or 3-dimensional where the 
+    3rd dimension represents another spatial, temporal, or classification 
+    (i.e. ensemble members) dimension. The function will properly flatten 
+    the array that is acceptable for the NCEPLIBS-ip interpolation 
     subroutines.
 
     **`ip : int or str`**
@@ -1408,11 +1408,6 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None,latlons=False):
 
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
-
-    **`latlons : bool, optional`**
-
-    Return computed latitude and longitude values. The default
-    is `False`.
     """
     from . import _interpolate
         
@@ -1440,21 +1435,19 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None,latlons=False):
     no = nxo*nyo
 
     if len(a.shape) == 2 and a.shape == (nyi,nxi):
+        newshp = (nyo,nxo)
         a = np.expand_dims(a.flatten(),axis=0)
-    elif len(a.shape) ==3:
-        pass # Find the non-nx/ny dimension
-
+    elif len(a.shape) == 3 and a.shape[-2:] == (nyi,nxi):
+        newshp = (a.shape[0],nyo,nxo)
+        a = a.reshape(*a.shape[:-2],-1)
+    else:
+        raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
+        
     ibi = np.zeros((a.shape[0]),dtype=np.int32)
     li = np.zeros(a.shape,dtype=np.int32)
+    go = np.zeros((a.shape[0],nxo*nyo),dtype=np.float32)
     
-    rlat = np.zeros((no),dtype=np.float32)
-    rlon = np.zeros((no),dtype=np.float32)
+    no,ibo,lo,iret = _interpolate.interpolate(ip,ipopt,gdtn_in,gdt_in,
+                                                 gdtn_out,gdt_out,ibi,li.T,a.T,go.T)
 
-    no,ibo,lo,go,iret = _interpolate.interpolate(ip,ipopt,gdtn_in,gdt_in,
-                                                 gdtn_out,gdt_out,ibi,li.T,a.T,
-                                                 rlat,rlon)
-
-    if latlons:
-        return go,rlat,rlon
-    else:
-        return go
+    return go.reshape(newshp)
