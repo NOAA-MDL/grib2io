@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
-
 import datetime
+from collections import defaultdict
 
 from . import tables
 from . import utils
@@ -756,6 +756,7 @@ class ProductDefinitionTemplateNumber:
     def __set__(self, obj, value):
         pass
 
+#  since PDT begins at position 2 of section4, code written with +2 for added readability with grib2 documentation
 class ProductDefinitionTemplate:
     def __get__(self, obj, objtype=None):
         return obj.section4[2:]
@@ -763,16 +764,16 @@ class ProductDefinitionTemplate:
         pass
 
 class ParameterCategory:
-    _key = {0:0, 1:0, 2:0, 5:0, 6:0, 8:0, 9:0, 10:0, 11:0, 12:0, 15:0, 48:0}
+    #_key = {0:0, 1:0, 2:0, 5:0, 6:0, 8:0, 9:0, 10:0, 11:0, 12:0, 15:0, 48:0}
     def __get__(self, obj, objtype=None):
-        return obj.section4[self._key[obj.pdtn]+2]
+        return obj.section4[0+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ParameterNumber:
-    _key = {0:1, 1:1, 2:1, 5:1, 6:1, 8:1, 9:1, 10:1, 11:1, 12:1, 15:1, 48:1}
+    #_key = {0:1, 1:1, 2:1, 5:1, 6:1, 8:1, 9:1, 10:1, 11:1, 12:1, 15:1, 48:1}
     def __get__(self, obj, objtype=None):
-        return obj.section4[self._key[obj.pdtn]+2]
+        return obj.section4[1+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
@@ -801,28 +802,32 @@ class ShortName:
         raise NotImplementedError
 
 class TypeOfGeneratingProcess:
-    _key = {0:2, 1:2, 2:2, 5:2, 6:2, 8:2, 9:2, 10:2, 11:2, 12:2, 15:2, 48:13}
+    _key = defaultdict(lambda: 2, {48:13})
+    #_key = {0:2, 1:2, 2:2, 5:2, 6:2, 8:2, 9:2, 10:2, 11:2, 12:2, 15:2, 48:13}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.3')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class BackgroundGeneratingProcessIdentifier:
-    _key = {0:3, 1:3, 2:3, 5:3, 6:3, 8:3, 9:3, 10:3, 11:3, 12:3, 15:3, 48:14}
+    _key = defaultdict(lambda: 3, {48:14})
+    #_key = {0:3, 1:3, 2:3, 5:3, 6:3, 8:3, 9:3, 10:3, 11:3, 12:3, 15:3, 48:14}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class GeneratingProcess:
-    _key = {0:4, 1:4, 2:4, 5:4, 6:4, 8:4, 9:4, 10:4, 11:4, 12:4, 15:4, 48:15}
+    _key = defaultdict(lambda: 4, {48:15})
+    #_key = {0:4, 1:4, 2:4, 5:4, 6:4, 8:4, 9:4, 10:4, 11:4, 12:4, 15:4, 48:15}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='generating_process')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfTimeRange:
-    _key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
+    _key = defaultdict(lambda: 7, {48:18})
+    #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.4')
     def __set__(self, obj, value):
@@ -836,7 +841,8 @@ class LeadTime:
         raise NotImplementedError
 
 class FixedSfc1Info:
-    _key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
+    _key = defaultdict(lambda: 9, {48:20})
+    #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
         if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
@@ -845,7 +851,8 @@ class FixedSfc1Info:
         raise NotImplementedError
 
 class FixedSfc2Info:
-    _key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
+    _key = defaultdict(lambda: 12, {48:23})
+    #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
         if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
@@ -854,21 +861,24 @@ class FixedSfc2Info:
         raise NotImplementedError
 
 class TypeOfFirstFixedSurface:
-    _key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
+    _key = defaultdict(lambda: 9, {48:20})
+    #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfFirstFixedSurface:
-    _key = {0:10, 1:10, 2:10, 5:10, 6:10, 8:10, 9:10, 10:10, 11:10, 12:10, 15:10, 48:21}
+    _key = defaultdict(lambda: 10, {48:21})
+    #_key = {0:10, 1:10, 2:10, 5:10, 6:10, 8:10, 9:10, 10:10, 11:10, 12:10, 15:10, 48:21}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfFirstFixedSurface:
-    _key = {0:11, 1:11, 2:11, 5:11, 6:11, 8:11, 9:11, 10:11, 11:11, 12:11, 15:11, 48:22}
+    _key = defaultdict(lambda: 11, {48:22})
+    #_key = {0:11, 1:11, 2:11, 5:11, 6:11, 8:11, 9:11, 10:11, 11:11, 12:11, 15:11, 48:22}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -881,29 +891,31 @@ class UnitOfFirstFixedSurface:
         pass
 
 class ValueOfFirstFixedSurface:
-    _key = {0:[12,13], 1:[12,13], 2:[12,13], 5:[12,13], 6:[12,13], 8:[12,13], 9:[12,13],
-            10:[12,13], 11:[12,13], 12:[12,13], 15:[12,13], 48:[21,22]}
     def __get__(self, obj, objtype=None):
-        return obj.section4[self._key[obj.pdtn][-1]+2]/(10.**obj.section4[self._key[obj.pdtn][0]+2])
+        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/
+                            (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
     def __set__(self, obj, value):
         pass
 
 class TypeOfSecondFixedSurface:
-    _key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
+    _key = defaultdict(lambda: 12, {48:23})
+    #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfSecondFixedSurface:
-    _key = {0:13, 1:13, 2:13, 5:13, 6:13, 8:13, 9:13, 10:13, 11:13, 12:13, 15:13, 48:24}
+    _key = defaultdict(lambda: 13, {48:24})
+    #_key = {0:13, 1:13, 2:13, 5:13, 6:13, 8:13, 9:13, 10:13, 11:13, 12:13, 15:13, 48:24}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfSecondFixedSurface:
-    _key = {0:14, 1:14, 2:14, 5:14, 6:14, 8:14, 9:14, 10:14, 11:14, 12:14, 15:14, 48:25}
+    _key = defaultdict(lambda: 14, {48:25})
+    #_key = {0:14, 1:14, 2:14, 5:14, 6:14, 8:14, 9:14, 10:14, 11:14, 12:14, 15:14, 48:25}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -916,10 +928,9 @@ class UnitOfSecondFixedSurface:
         pass
 
 class ValueOfSecondFixedSurface:
-    _key = {0:[15,16], 1:[15,16], 2:[15,16], 5:[15,16], 6:[15,16], 8:[15,16], 9:[15,16],
-            10:[15,16], 11:[15,16], 12:[15,16], 15:[15,16], 48:[24,25]}
     def __get__(self, obj, objtype=None):
-        return obj.section4[self._key[obj.pdtn][-1]+2]/(10.**obj.section4[self._key[obj.pdtn][0]+2])
+        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/
+                            (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
     def __set__(self, obj, value):
         pass
 
