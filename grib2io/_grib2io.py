@@ -1135,13 +1135,15 @@ class Grib2Message:
             return self._msg
 
 
-    def interpolate(self,ip,gdtn,gdt,ipopt=None):
+    def interpolate(self, method, grid_def_out, method_options=None):
         """
+        Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+    
         Parameters
         ----------
 
-        **`ip : int or str`**
-        
+        **`method : int or str`**
+
         Interpolate method to use. This can either be an integer or string using
         the following mapping:
 
@@ -1153,26 +1155,27 @@ class Grib2Message:
         | 'budget'           | 3             |
         | 'spectral'         | 4             |
         | 'neighbor-budget'  | 6             |
-          
-        **`gdtn : int`**
 
-        Grid Definition Template Number of the interpolated grid.
+        **`grid_def_out : list or tuple`**
 
-        **`gdt : list or numpy.ndarray`**
+        Grid definition of the output gridded data. This can be a list or tuple where
+        the first item is the grid definition template number and the second item is
+        a list or 1-D array containing the grid definition template values.
 
-        Grid Definition Template of the interpolated grid.
-
-        **`ipopt : list of ints, optional`**
+        **`method_options : list of ints, optional`**
 
         Interpolation options. See the NCEPLIBS-ip doucmentation for
         more information on how these are used.
         """
-        Msg = create_message_cls(gdtn,self.pdtn,self.drtn)
+        gdtn_out = grid_def_out[0]
+        gdt_out = grid_def_out[1]
+
+        Msg = create_message_cls(gdtn_out,self.pdtn,self.drtn)
 
         section0 = self.section0
         section0[-1] = 0
-        gds = [0, gdt[7]*gdt[8], 0, 255, gdtn]
-        section3 = np.concatenate((gds,gdt))
+        gds = [0, gdt_out[7]*gdt_out[8], 0, 255, gdtn_out]
+        section3 = np.concatenate((gds,gdt_out))
         
         msg = Msg(section0,self.section1,self.section2,section3,self.section4,self.section5,self.bitMapFlag)
         msg._msgnum = -1
@@ -1184,8 +1187,8 @@ class Grib2Message:
             dtype = 'float32'
         elif msg.typeOfValues == 1:
             dtype = 'int32'
-        msg._data = interpolate(self.data,ip,self.gdtn,self.gridDefinitionTemplate,
-                                gdtn,gdt,ipopt=ipopt).reshape(msg.ny,msg.nx)
+        msg._data = interpolate(self.data,method,[self.gdtn,self.gridDefinitionTemplate],grid_def_out,
+                                method_options=method_options).reshape(msg.ny,msg.nx)
         return msg
 
 
@@ -1358,7 +1361,7 @@ def set_auto_nans(value):
         raise TypeError(f"Argument must be bool")
 
 
-def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None):
+def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     """
     Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
@@ -1374,7 +1377,7 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None):
     the array that is acceptable for the NCEPLIBS-ip interpolation 
     subroutines.
 
-    **`ip : int or str`**
+    **`method : int or str`**
 
     Interpolate method to use. This can either be an integer or string using
     the following mapping:
@@ -1388,23 +1391,19 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None):
     | 'spectral'         | 4             |
     | 'neighbor-budget'  | 6             |
 
-    **`gdtn_in : int`**
+    **`grid_def_in : list or tuple`**
 
-    Grid Definition Template Number of the input grid.
+    Grid definition of the input gridded data. This can be a list or tuple where
+    the first item is the grid definition template number and the second item is
+    a list or 1-D array containing the grid definition template values.
 
-    **`gdt_in : list or numpy.ndarray`**
+    **`grid_def_out : list or tuple`**
 
-    Grid Definition Template of the input grid.
+    Grid definition of the output gridded data. This can be a list or tuple where
+    the first item is the grid definition template number and the second item is
+    a list or 1-D array containing the grid definition template values.
 
-    **`gdtn_out : int`**
-
-    Grid Definition Template Number of the interpolated grid.
-
-    **`gdt_out : list or numpy.ndarray`**
-
-    Grid Definition Template of the interpolated grid.
-
-    **`ipopt : list of ints, optional`**
+    **`method_options : list of ints, optional`**
 
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
@@ -1426,6 +1425,11 @@ def interpolate(a,ip,gdtn_in,gdt_in,gdtn_out,gdt_out,ipopt=None):
         ipopt = np.zeros((20),dtype=np.int32)
         if ip == 3:
             ipopt[0:2] = -1
+
+    gdtn_in = grid_def_in[0]
+    gdt_in = grid_def_in[1]
+    gdtn_out = grid_def_in[0]
+    gdt_out = grid_def_in[1]
 
     nxi = gdt_in[7]
     nyi = gdt_in[8]
