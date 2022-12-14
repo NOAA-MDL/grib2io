@@ -1410,26 +1410,26 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     """
     from . import _interpolate
         
-    ip_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                  'budget':3, 'spectral':4, 'neighbor-budget':6}
+    interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
+                      'budget':3, 'spectral':4, 'neighbor-budget':6}
 
-    if isinstance(ip,int) and ip not in ip_schemes.values():
+    if isinstance(method,int) and method not in interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
-    elif isinstance(ip,str):
-        if ip in ip_schemes.keys():
-            ip = ip_schemes[ip]
+    elif isinstance(method,str):
+        if method in interp_schemes.keys():
+            method = interp_schemes[method]
         else:
             raise ValueError('Invalid interpolation method.')
 
-    if ipopt is None:
-        ipopt = np.zeros((20),dtype=np.int32)
-        if ip == 3:
-            ipopt[0:2] = -1
+    if method_options is None:
+        method_options = np.zeros((20),dtype=np.int32)
+        if method == 3:
+            method_options[0:2] = -1
 
     gdtn_in = grid_def_in[0]
     gdt_in = grid_def_in[1]
-    gdtn_out = grid_def_in[0]
-    gdt_out = grid_def_in[1]
+    gdtn_out = grid_def_out[0]
+    gdt_out = grid_def_out[1]
 
     nxi = gdt_in[7]
     nyi = gdt_in[8]
@@ -1451,7 +1451,7 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     li = np.zeros(a.shape,dtype=np.int32)
     go = np.zeros((a.shape[0],nxo*nyo),dtype=np.float32)
     
-    no,ibo,lo,iret = _interpolate.interpolate(ip,ipopt,gdtn_in,gdt_in,
-                                                 gdtn_out,gdt_out,ibi,li.T,a.T,go.T)
+    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,gdtn_in,gdt_in,
+                                              gdtn_out,gdt_out,ibi,li.T,a.T,go.T)
 
     return go.reshape(newshp)
