@@ -512,7 +512,7 @@ class Grib2Message:
     section3: np.array = field(init=True,repr=False)
     section4: np.array = field(init=True,repr=False)
     section5: np.array = field(init=True,repr=False)
-    bitMapFlag: int = field(init=True,repr=False,default=255)
+    bitMapFlag: Grib2Metadata = field(init=True,repr=False,default=255)
 
     # Section 0 looked up attributes
     indicatorSection: np.array = field(init=False,repr=False,default=templates.IndicatorSection())
@@ -603,6 +603,7 @@ class Grib2Message:
 
     def __post_init__(self):
         self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
+        self.bitMapFlag = Grib2Metadata(self.bitMapFlag,table='6.0')
 
 
     @property
@@ -628,9 +629,14 @@ class Grib2Message:
     def __repr__(self):
         """
         """
-        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
-                f'{self.fullName} ({self.units}):{self.level}:'
-                f'{self.leadTime}')
+        #return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
+        #        f'{self.fullName} ({self.units}):{self.level}:'
+        #        f'{self.leadTime}')
+        info = ''
+        for sect in [0,1,3,4,5,6]:
+            for k,v in self.attrs_by_section(sect,values=True).items():
+                info += f'Section {sect}: {k} = {v}\n'
+        return info
 
 
     def attrs_by_section(self, sect, values=False):
@@ -653,7 +659,7 @@ class Grib2Message:
 
         A List attribute names or Dict if `values = True`.
         """
-        if sect in {0,1}:
+        if sect in {0,1,6}:
             attrs = templates._section_attrs[sect]
         elif sect in {3,4,5}:
             def _find_class_index(n):
