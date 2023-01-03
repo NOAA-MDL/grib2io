@@ -1595,7 +1595,7 @@ class TypeOfMissingValue:
 class PriMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj.section5[7+2]) if obj.section5[6+2] in {1,2} else None
+            return utils.ieee_int_to_float(obj.section5[7+2]) if obj.section5[6+2] in {1,2} and obj.section5[7+2] != 255 else None
         elif obj.typeOfValues == 1:
             return obj.section5[7+2] if obj.section5[6+2] in [1,2] else None
     def __set__(self, obj, value):
@@ -1608,7 +1608,7 @@ class PriMissingValue:
 class SecMissingValue:
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
-            return utils.ieee_int_to_float(obj.section5[8+2]) if obj.section5[6+2] in {1,2} else None
+            return utils.ieee_int_to_float(obj.section5[8+2]) if obj.section5[6+2] in {1,2} and obj.section5[8+2] != 255 else None
         elif obj.typeOfValues == 1:
             return obj.section5[8+2] if obj.section5[6+2] in {1,2} else None
     def __set__(self, obj, value):
