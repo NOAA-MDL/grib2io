@@ -272,7 +272,7 @@ class open():
                                     pass # Allow this.  Just means no Local Use Section.
                                 else:
                                     _issubmessage = True
-                                    _submsgoffset = (self._filehandle.tell()-5)-(self._index['offset'][self.messages])
+                                    _submsgoffset = (self._filehandle.tell()-5)-(self._index['offset'][-1])
                                     _submsgbegin = secnum
                                 self._filehandle.seek(self._filehandle.tell()-5)
                                 continue
