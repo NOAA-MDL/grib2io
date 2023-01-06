@@ -18,7 +18,7 @@ _section_attrs = {0:['discipline'],
                      'unitOfTimeRange', 'leadTime', 'typeOfFirstFixedSurface', 'scaleFactorOfFirstFixedSurface',
                      'unitOfFirstFixedSurface', 'scaledValueOfFirstFixedSurface', 'valueOfFirstFixedSurface',
                      'typeOfSecondFixedSurface', 'scaleFactorOfSecondFixedSurface', 'unitOfSecondFixedSurface',
-                     'scaledValueOfSecondFixedSurface', 'valueOfSecondFixedSurface','level'],
+                     'scaledValueOfSecondFixedSurface', 'valueOfSecondFixedSurface','duration','level'],
                   5:['dataRepresentationTemplateNumber','numberOfPackedValues','typeOfValues'],
                   6:['bitMapFlag'],
                   7:[],
@@ -1129,7 +1129,7 @@ class ValidDate:
         pass
 
 class NumberOfTimeRanges:
-    _key = {8:21, 9:28, 11:24, 12:23}
+    _key = {8:21, 9:28, 10:22, 11:24, 12:23}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return obj.section4[self._key[pdtn]+2]
@@ -1138,7 +1138,7 @@ class NumberOfTimeRanges:
         obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfMissingValues:
-    _key = {8:22, 9:29, 11:25, 12:24}
+    _key = {8:22, 9:29, 10:23, 11:25, 12:24}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return obj.section4[self._key[pdtn]+2]
@@ -1147,7 +1147,7 @@ class NumberOfMissingValues:
         obj.section4[self._key[pdtn]+2] = value
 
 class StatisticalProcess:
-    _key = {8:23, 9:30, 11:26, 12:25, 15:15}
+    _key = {8:23, 9:30, 10:24, 11:26, 12:25, 15:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.10')
@@ -1156,7 +1156,7 @@ class StatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfTimeIncrementOfStatisticalProcess:
-    _key = {8:24, 9:31, 11:27, 12:26}
+    _key = {8:24, 9:31, 10:25, 11:27, 12:26}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.11')
@@ -1165,7 +1165,7 @@ class TypeOfTimeIncrementOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfStatisticalProcess:
-    _key = {8:25, 9:32, 11:28, 12:27}
+    _key = {8:25, 9:32, 10:26, 11:28, 12:27}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.4')
@@ -1174,7 +1174,7 @@ class UnitOfTimeRangeOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class TimeRangeOfStatisticalProcess:
-    _key = {8:26, 9:33, 11:29, 12:28}
+    _key = {8:26, 9:33, 10:27, 11:29, 12:28}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return obj.section4[self._key[pdtn]+2]
@@ -1183,7 +1183,7 @@ class TimeRangeOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfSuccessiveFields:
-    _key = {8:27, 9:34, 11:30, 12:29}
+    _key = {8:27, 9:34, 10:28, 11:30, 12:29}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return Grib2Metadata(obj.section4[self._key[pdtn]+2],table='4.4')
@@ -1192,7 +1192,7 @@ class UnitOfTimeRangeOfSuccessiveFields:
         obj.section4[self._key[pdtn]+2] = value
 
 class TimeIncrementOfSuccessiveFields:
-    _key = {8:28, 9:35, 11:31, 12:30}
+    _key = {8:28, 9:35, 10:29, 11:31, 12:30}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
         return obj.section4[self._key[pdtn]+2]
