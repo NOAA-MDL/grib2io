@@ -75,7 +75,7 @@ class open():
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
                  'current_message','size','closed','variables','levels','_pos')
-    def __init__(self, filename, mode='r'):
+    def __init__(self, filename, mode='r', data=True):
         """
         `open` Constructor
 
@@ -103,7 +103,7 @@ class open():
         self.closed = self._filehandle.closed
         self.levels = None
         self.variables = None
-        if 'r' in self.mode: self._build_index()
+        if 'r' in self.mode: self._build_index(data)
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
@@ -168,7 +168,7 @@ class open():
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
-    def _build_index(self):
+    def _build_index(self, data):
         """
         Perform indexing of GRIB2 Messages.
         """
@@ -294,8 +294,9 @@ class open():
                                 self._index['submessageBeginSection'].append(_submsgbegin)
 
                             # Create Grib2Message with data.
-                            Msg = create_message_cls(section3[4],section4[1],section5[1])
-                            msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
+                           #Msg = create_message_cls(section3[4],section4[1],section5[1])
+                           #msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
+                            msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
@@ -305,8 +306,9 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                msg, _bmappos, _datapos)
+                            if data:
+                                msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                    msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             break
@@ -324,8 +326,9 @@ class open():
                             self._index['submessageBeginSection'].append(_submsgbegin)
 
                             # Create Grib2Message with data.
-                            Msg = create_message_cls(section3[4],section4[1],section5[1])
-                            msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
+                           #Msg = create_message_cls(section3[4],section4[1],section5[1])
+                           #msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
+                            msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
@@ -335,8 +338,9 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                msg, _bmappos, _datapos)
+                            if data:
+                                msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                                                    msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             continue
@@ -440,7 +444,7 @@ class open():
         ----------
 
         **`msg : Grib2Message or sequence of Grib2Messages`**
-        
+
         GRIB2 message objects to write to file.
         """
         if isinstance(msg,list):
@@ -502,9 +506,39 @@ class open():
         """
         return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
-
-@dataclass 
 class Grib2Message:
+
+    def __new__(self, section0: np.array = None,
+                      section1: np.array = None,
+                      section2: bytes = None,
+                      section3: np.array = None,
+                      section4: np.array = None,
+                      section5: np.array = None, *args):
+
+        bases = list()
+        if section3 is not None:
+            gdtn = section3[4]
+            Gdt = templates.gdt_class_by_gdtn(gdtn)
+            bases.append(Gdt)
+        if section4 is not None:
+            pdtn = section4[1]
+            Pdt = templates.pdt_class_by_pdtn(pdtn)
+            bases.append(Pdt)
+        if section5 is not None:
+            drtn = section5[1]
+            Drt = templates.drt_class_by_drtn(drtn)
+            bases.append(Drt)
+
+        @dataclass(init=False, repr=False)
+        class Msg(_Grib2Message, *bases):
+            pass
+
+        msg = Msg(section0, section1, section2, section3, section4, section5, *args)
+        return msg
+
+
+@dataclass
+class _Grib2Message:
     # GRIB2 Sections
     section0: np.array = field(init=True,repr=False)
     section1: np.array = field(init=True,repr=False)
@@ -1086,10 +1120,10 @@ class Grib2Message:
 
         An example of such a field field would be [Dominant Precipitation Type -
         DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml)
-        
+
         Returns
         -------
-    
+
         **`numpy.ndarray`** of string values per element.
         """
         hold_auto_nans = _AUTO_NANS
@@ -1144,7 +1178,7 @@ class Grib2Message:
     def interpolate(self, method, grid_def_out, method_options=None):
         """
         Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
-    
+
         Parameters
         ----------
 
@@ -1173,8 +1207,8 @@ class Grib2Message:
         Interpolation options. See the NCEPLIBS-ip doucmentation for
         more information on how these are used.
         """
-        gdtn_out = grid_def_out[0]
-        gdt_out = grid_def_out[1]
+        gdtn_out = grid_def_out.gdtn
+        gdt_out = grid_def_out.gdt
 
         Msg = create_message_cls(gdtn_out,self.pdtn,self.drtn)
 
@@ -1182,7 +1216,7 @@ class Grib2Message:
         section0[-1] = 0
         gds = [0, gdt_out[7]*gdt_out[8], 0, 255, gdtn_out]
         section3 = np.concatenate((gds,gdt_out))
-        
+
         msg = Msg(section0,self.section1,self.section2,section3,self.section4,self.section5,self.bitMapFlag)
         msg._msgnum = -1
         msg._deflist = self._deflist
@@ -1221,7 +1255,7 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
 
     **`numpy.ndarray`**
 
-    A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but 
+    A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
     could be np.int32 if Grib2Message.typeOfValues is integer.
     """
     gds = msg.section3[0:5]
@@ -1311,7 +1345,7 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     return fld
 
 
-def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
+def create_message_cls(gdtn: int = None, pdtn: int = None, drtn: int = None) -> Grib2Message:
     """
     Dynamically create Grib2Message class inheriting from supported
     grid definition, product definition, and data representation
@@ -1331,18 +1365,27 @@ def create_message_cls(gdtn: int, pdtn: int, drtn: int) -> Grib2Message:
 
     **`drtn : int`**
 
+    Data Representation Template Number.
+
     Returns
     -------
 
     `Grib2Message` class that contains the appropriate inherited
     section templates given by the input arguments.
     """
-    Gdt = templates.gdt_class_by_gdtn(gdtn)
-    Pdt = templates.pdt_class_by_pdtn(pdtn)
-    Drt = templates.drt_class_by_drtn(drtn)
+    bases = list()
+    if gdtn is not None:
+        Gdt = templates.gdt_class_by_gdtn(gdtn)
+        bases.append(Gdt)
+    if pdtn is not None:
+        Pdt = templates.pdt_class_by_pdtn(pdtn)
+        bases.append(Pdt)
+    if drtn is not None:
+        Drt = templates.drt_class_by_drtn(drtn)
+        bases.append(Drt)
 
     @dataclass(init=False, repr=False)
-    class Msg(Grib2Message, Gdt, Pdt, Drt):
+    class Msg(_Grib2Message, *bases):
         pass
     return Msg
 
@@ -1377,10 +1420,10 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     **`a : numpy.ndarray`**
 
     Array data to interpolate from. These data are expected to be in
-    2-dimensional form with shape (ny, nx) or 3-dimensional where the 
-    3rd dimension represents another spatial, temporal, or classification 
-    (i.e. ensemble members) dimension. The function will properly flatten 
-    the array that is acceptable for the NCEPLIBS-ip interpolation 
+    2-dimensional form with shape (ny, nx) or 3-dimensional where the
+    3rd dimension represents another spatial, temporal, or classification
+    (i.e. ensemble members) dimension. The function will properly flatten
+    the array that is acceptable for the NCEPLIBS-ip interpolation
     subroutines.
 
     **`method : int or str`**
@@ -1415,7 +1458,7 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     more information on how these are used.
     """
     from . import _interpolate
-        
+
     interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
                       'budget':3, 'spectral':4, 'neighbor-budget':6}
 
@@ -1432,10 +1475,10 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
         if method == 3:
             method_options[0:2] = -1
 
-    gdtn_in = grid_def_in[0]
-    gdt_in = grid_def_in[1]
-    gdtn_out = grid_def_out[0]
-    gdt_out = grid_def_out[1]
+    gdtn_in = grid_def_in.gdtn
+    gdt_in = grid_def_in.gdt
+    gdtn_out = grid_def_out.gdtn
+    gdt_out = grid_def_out.gdt
 
     nxi = gdt_in[7]
     nyi = gdt_in[8]
@@ -1452,12 +1495,25 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
         a = a.reshape(*a.shape[:-2],-1)
     else:
         raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
-        
+
     ibi = np.zeros((a.shape[0]),dtype=np.int32)
     li = np.zeros(a.shape,dtype=np.int32)
     go = np.zeros((a.shape[0],nxo*nyo),dtype=np.float32)
-    
+
     no,ibo,lo,iret = _interpolate.interpolate(method,method_options,gdtn_in,gdt_in,
                                               gdtn_out,gdt_out,ibi,li.T,a.T,go.T)
 
     return go.reshape(newshp)
+
+
+from dataclasses import dataclass
+import numpy as np
+
+@dataclass
+class GridDef:
+    gdtn: int
+    gdt: np.array
+
+    @classmethod
+    def from_section3(cls, section3):
+        return cls(section3[4],section3[5:])
