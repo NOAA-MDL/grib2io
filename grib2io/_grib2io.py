@@ -75,7 +75,7 @@ class open():
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
                  'current_message','size','closed','variables','levels','_pos')
-    def __init__(self, filename, mode='r', data=True):
+    def __init__(self, filename, mode='r', _on_disk_array=True):
         """
         `open` Constructor
 
@@ -86,9 +86,16 @@ class open():
 
         File name containing GRIB2 messages.
 
-        **`mode : str`**
+        **`mode : str, optional`**
 
         File access mode where `r` opens the files for reading only; `w` opens the file for writing.
+
+        **`_on_disk_array : bool, optional, internal use`**
+
+        If `True` [DEFAULT], then open GRIB2 file and index messages with on-disk array
+        functionality (i.e. access to data), otherwise do not. **IMPORTANT:** A value
+        of `False` will prevent you from accessing data and is intended for internal
+        use with the xarray backend.
         """
         if mode in {'a','r','w'}:
             mode = mode+'b'
@@ -103,7 +110,7 @@ class open():
         self.closed = self._filehandle.closed
         self.levels = None
         self.variables = None
-        if 'r' in self.mode: self._build_index(data)
+        if 'r' in self.mode: self._build_index(_on_disk_array)
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
@@ -168,7 +175,7 @@ class open():
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
-    def _build_index(self, data):
+    def _build_index(self, _on_disk_array):
         """
         Perform indexing of GRIB2 Messages.
         """
@@ -294,8 +301,6 @@ class open():
                                 self._index['submessageBeginSection'].append(_submsgbegin)
 
                             # Create Grib2Message with data.
-                           #Msg = create_message_cls(section3[4],section4[1],section5[1])
-                           #msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
@@ -306,7 +311,7 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            if data:
+                            if _on_disk_array:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -326,8 +331,6 @@ class open():
                             self._index['submessageBeginSection'].append(_submsgbegin)
 
                             # Create Grib2Message with data.
-                           #Msg = create_message_cls(section3[4],section4[1],section5[1])
-                           #msg = Msg(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
@@ -338,7 +341,7 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            if data:
+                            if _on_disk_array:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -686,7 +689,7 @@ class _Grib2Message:
 
         **`values : bool, optional`**
 
-        Optional (default is False) arugment to return attributes values.
+        Optional (default is `False`) arugment to return attributes values.
 
         Returns
         -------
