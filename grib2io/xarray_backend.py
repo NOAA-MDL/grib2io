@@ -54,7 +54,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
     ):
 
         # read and parse metadata from grib file
-        with grib2io.open(filename, data=False) as f:
+        with grib2io.open(filename, _on_disk_array=False) as f:
             file_index = pd.DataFrame(f._index)
 
         # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)
@@ -661,7 +661,7 @@ def interp_nd(a,*, method, grid_def_in, grid_def_out):
     a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
     return a
 
-@xr.register_dataarray_accessor("g2io")
+@xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
     def __init__(self, xarray_obj):
