@@ -1480,10 +1480,10 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     gdtn_out = grid_def_out.gdtn
     gdt_out = grid_def_out.gdt
 
-    nxi = gdt_in[7]
-    nyi = gdt_in[8]
-    nxo = gdt_out[7]
-    nyo = gdt_out[8]
+    nxi = grid_def_in.nx
+    nyi = grid_def_in.ny
+    nxo = grid_def_out.nx
+    nyo = grid_def_out.ny
     ni = nxi*nyi
     no = nxo*nyo
 
@@ -1510,10 +1510,22 @@ from dataclasses import dataclass
 import numpy as np
 
 @dataclass
-class GridDef:
+class Grib2GridDef:
     gdtn: int
     gdt: np.array
 
     @classmethod
     def from_section3(cls, section3):
         return cls(section3[4],section3[5:])
+
+    @property
+    def nx(self):
+        return self.gdt[7]
+
+    @property
+    def ny(self):
+        return self.gdt[8]
+
+    @property
+    def npoints(self):
+        return self.gdt[7] * self.gdt[8]
