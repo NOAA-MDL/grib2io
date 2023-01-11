@@ -58,9 +58,9 @@ class Grib2Metadata():
     def __hash__(self):
         return self.value
     def __repr__(self):
-        return '%s(%d, table = %s)' % (self.__class__.__name__,self.value,self.table)
+        return f'{self.__class__.__name__}({self.value}, table = {self.table}'
     def __str__(self):
-        return '%d - %s' % (self.value,self.definition)
+        return f'{self.value} - {self.definition}'
     def __eq__(self,other):
         return self.value == other
     def __gt__(self,other):
