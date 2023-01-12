@@ -54,7 +54,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
     ):
 
         # read and parse metadata from grib file
-        with grib2io.open(filename, _on_disk_array=False) as f:
+        with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
 
         # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)

@@ -76,7 +76,7 @@ class open():
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
                  'current_message','size','closed','variables','levels','_pos')
-    def __init__(self, filename, mode='r', _on_disk_array=True):
+    def __init__(self, filename, mode='r', **kwargs):
         """
         `open` Constructor
 
@@ -90,13 +90,6 @@ class open():
         **`mode : str, optional`**
 
         File access mode where `r` opens the files for reading only; `w` opens the file for writing.
-
-        **`_on_disk_array : bool, optional, internal use`**
-
-        If `True` [DEFAULT], then open GRIB2 file and index messages with on-disk array
-        functionality (i.e. access to data), otherwise do not. **IMPORTANT:** A value
-        of `False` will prevent you from accessing data and is intended for internal
-        use with the xarray backend.
         """
         if mode in {'a','r','w'}:
             mode = mode+'b'
@@ -111,7 +104,11 @@ class open():
         self.closed = self._filehandle.closed
         self.levels = None
         self.variables = None
-        if 'r' in self.mode: self._build_index(_on_disk_array)
+        if 'r' in self.mode:
+            try:
+                self._build_index(no_data=kwargs['_xarray_backend'])
+            except(KeyError):
+                self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
         if self._hasindex:
@@ -176,7 +173,7 @@ class open():
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
-    def _build_index(self, _on_disk_array):
+    def _build_index(self, no_data=False):
         """
         Perform indexing of GRIB2 Messages.
         """
@@ -312,7 +309,7 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            if _on_disk_array:
+                            if not no_data:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -342,7 +339,7 @@ class open():
                                 dtype = 'float32'
                             elif msg.typeOfValues == 1:
                                 dtype = 'int32'
-                            if _on_disk_array:
+                            if not no_data:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -670,16 +667,17 @@ class _Grib2Message:
         return Grib2GridDef.from_section3(self.section3)
 
     def __repr__(self):
-        """
-        """
-        #return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
-        #        f'{self.fullName} ({self.units}):{self.level}:'
-        #        f'{self.leadTime}')
         info = ''
         for sect in [0,1,3,4,5,6]:
             for k,v in self.attrs_by_section(sect,values=True).items():
                 info += f'Section {sect}: {k} = {v}\n'
         return info
+
+
+    def __str__(self):
+        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
+                f'{self.fullName} ({self.units}):{self.level}:'
+                f'{self.leadTime}')
 
 
     def attrs_by_section(self, sect, values=False):
