@@ -510,8 +510,10 @@ class open():
         """
         return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
-class Grib2Message:
 
+class Grib2Message:
+    """
+    """
     def __new__(self, section0: np.array = None,
                       section1: np.array = None,
                       section2: bytes = None,
@@ -537,8 +539,7 @@ class Grib2Message:
         class Msg(_Grib2Message, *bases):
             pass
 
-        msg = Msg(section0, section1, section2, section3, section4, section5, *args)
-        return msg
+        return Msg(section0, section1, section2, section3, section4, section5, *args)
 
 
 @dataclass
@@ -663,6 +664,10 @@ class _Grib2Message:
     def pdy(self):
         return ''.join([str(i) for i in self.section1[5:10]])
 
+
+    @property
+    def griddef(self):
+        return Grib2GridDef.from_section3(self.section3)
 
     def __repr__(self):
         """
@@ -909,216 +914,6 @@ class _Grib2Message:
         return lats, lons
 
 
-    def addlocal(self, ludata):
-        """
-        Add a Local Use Section [(Section 2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect2.shtml)
-        to the GRIB2 message.
-
-        Parameters
-        ----------
-
-        **`ludata : bytes`**
-
-        Local Use data.
-        """
-        assert isinstance(ludata,bytes)
-        self._msg,self._pos = g2clib.grib2_addlocal(self._msg,ludata)
-        self.hasLocalUseSection = True
-        self._sections.append(2)
-
-
-    def addgrid(self, gdsinfo, gdtmpl, deflist=None):
-        """
-        Add a Grid Definition Section [(Section 3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_doc/grib2_sect3.shtml)
-        to the GRIB2 message.
-
-        Parameters
-        ----------
-
-        **`gdsinfo`** Sequence containing information needed for the grid definition section.
-
-        | Index | Description |
-        | :---: | :---        |
-        | gdsinfo[0] | Source of grid definition - [Code Table 3.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml)|
-        | gdsinfo[1] | Number of data points|
-        | gdsinfo[2] | Number of octets for optional list of numbers defining number of points|
-        | gdsinfo[3] | Interpetation of list of numbers defining number of points - [Code Table 3.11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-11.shtml)|
-        | gdsinfo[4] | Grid Definition Template Number - [Code Table 3.1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)|
-
-        **`gdtmpl`** Sequence of values for the specified Grid Definition Template. Each
-        element of this integer array contains an entry (in the order specified) of Grid
-        Definition Template 3.NN
-
-        **`deflist`** Sequence containing the number of grid points contained in each
-        row (or column) of a non-regular grid.  Used if gdsinfo[2] != 0.
-        """
-        if 3 in self._sections:
-            raise ValueError('GRIB2 Message already contains Grid Definition Section.')
-        if deflist is not None:
-            _deflist = np.array(deflist,dtype=DEFAULT_NUMPY_INT)
-        else:
-            _deflist = None
-        gdtnum = gdsinfo[4]
-        if gdtnum in {0,1,2,3,40,41,42,43,44,203,205,32768,32769}:
-            self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
-        elif gdtnum == 10: # mercator
-            self.scanModeFlags = utils.int2bin(gdtmpl[15],output=list)[0:4]
-        elif gdtnum == 20: # stereographic
-            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
-        elif gdtnum == 30: # lambert conformal
-            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
-        elif gdtnum == 31: # albers equal area.
-            self.scanModeFlags = utils.int2bin(gdtmpl[17],output=list)[0:4]
-        elif gdtnum == 90: # near-sided vertical perspective satellite projection
-            self.scanModeFlags = utils.int2bin(gdtmpl[16],output=list)[0:4]
-        elif gdtnum == 110: # azimuthal equidistant.
-            self.scanModeFlags = utils.int2bin(gdtmpl[15],output=list)[0:4]
-        elif gdtnum == 120:
-            self.scanModeFlags = utils.int2bin(gdtmpl[6],output=list)[0:4]
-        elif gdtnum == 204: # curvilinear orthogonal
-            self.scanModeFlags = utils.int2bin(gdtmpl[18],output=list)[0:4]
-        elif gdtnum in {1000,1100}:
-            self.scanModeFlags = utils.int2bin(gdtmpl[12],output=list)[0:4]
-        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,
-                                                   np.array(gdsinfo,dtype=DEFAULT_NUMPY_INT),
-                                                   np.array(gdtmpl,dtype=DEFAULT_NUMPY_INT),
-                                                   _deflist)
-        self._sections.append(3)
-
-
-    def addfield(self, field, pdtnum, pdtmpl, coordlist=None, packing="complex-spdiff", **packing_opts):
-        """
-        Add a Product Definition, Data Representation, Bitmap, and Data Sections
-        to `Grib2Message` instance (i.e. Sections 4-7).  Must be called after the grid
-        definition section has been added (`addfield`).
-
-        Parameters
-        ----------
-
-        **`field`** Numpy array of data values to pack.  If field is a masked array, then
-        a bitmap is created from the mask.
-
-        **`pdtnum`** integer Product Definition Template Number - [Code Table 4.0](http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)
-
-        **`pdtmpl`** Sequence with the data values for the specified Product Definition
-        Template (N=pdtnum).  Each element of this integer array contains an entry (in
-        the order specified) of Product Definition Template 4.N.
-
-        **`coordlist`** Sequence containing floating point values intended to document the
-        vertical discretization with model data on hybrid coordinate vertical levels. Default is `None`.
-
-        **`packing`** String to specify the type of packing. Valid options are the following:
-
-        | Packing Scheme | Description |
-        | :---:          | :---:       |
-        | 'simple'         | [Simple packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-0.shtml) |
-        | 'complex'        | [Complex packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-2.shtml) |
-        | 'complex-spdiff' | [Complex packing with Spatial Differencing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-3.shtml) |
-        | 'jpeg'           | [JPEG compression](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-40.shtml) |
-        | 'png'            | [PNG compression](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-41.shtml) |
-        | 'spectral-simple'| [Spectral Data - Simple packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml) |
-        | 'spectral-complex'| [Spectral Data - Complex packing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-51.shtml) |
-
-        **`**packing_opts`** Packing keyword arguments. The keywords are the same as Grib2Message attribute names for
-        the Data Representation Template (Section 5) metadata. Valid keywords per packing scheme are the following:
-
-        | Packing Scheme | Keyword Arguments |
-        | :---:          | :---:                      |
-        | 'simple'     | `binScaleFactor`, `decScaleFactor` |
-        | 'complex'     | `binScaleFactor`, `decScaleFactor`, `priMissingValue`, [`secMissingValue`] |
-        | 'complex-spdiff'     | `binScaleFactor`, `decScaleFactor`, `spatialDifferenceOrder`, `priMissingValue`, [`secMissingValue`] |
-        | 'jpeg'     | `binScaleFactor`, `decScaleFactor` |
-        | 'png'     | `binScaleFactor`, `decScaleFactor` |
-        | 'spectral-simple'     | `binScaleFactor`, `decScaleFactor` |
-        | 'spectral-complex'     | `binScaleFactor`, `decScaleFactor` |
-        """
-        if self._sections[-1] != 3:
-            raise ValueError('addgrid() must be called before addfield()')
-        if self.scanModeFlags is not None:
-            if self.scanModeFlags[3]:
-                fieldsave = field.astype('f') # Casting makes a copy
-                field[1::2,:] = fieldsave[1::2,::-1]
-        fld = field.astype('f')
-        if ma.isMA(field) and ma.count_masked(field) > 0:
-            bitmapflag = 0
-            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
-        else:
-            bitmapflag = 255
-            bmap = None
-        if coordlist is not None:
-            crdlist = np.array(coordlist,'f')
-        else:
-            crdlist = None
-
-        # Set data representation template number and template values
-        drtnum = -1
-        drtmpl = np.zeros((DEFAULT_DRT_LEN),dtype=DEFAULT_NUMPY_INT)
-        if packing == "simple":
-            drtnum = 0
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-        elif packing == "complex" or packing == "complex-spdiff":
-            if packing == "complex":
-                drtnum = 2
-            if packing == "complex-spdiff":
-                drtnum = 3
-                drtmpl[16] = packing_opts['spatialDifferenceOrder']
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-            if set(("priMissingValue","secMissingValue")).issubset(packing_opts):
-                drtmpl[6] = 2
-                drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
-                drtmpl[8] = utils.ieee_float_to_int(packing_opts["secMissingValue"])
-            else:
-                if "priMissingValue" in packing_opts.keys():
-                    drtmpl[6] = 1
-                    drtmpl[7] = utils.ieee_float_to_int(packing_opts["priMissingValue"])
-                else:
-                    drtmpl[6] = 0
-        elif packing == "jpeg":
-            drtnum = 40
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-        elif packing == "png":
-            drtnum = 41
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-        elif packing == "spectral-simple":
-            drtnum = 50
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-        elif packing == "spectral-complex":
-            drtnum = 51
-            drtmpl[1] = packing_opts["binScaleFactor"]
-            drtmpl[2] = packing_opts["decScaleFactor"]
-
-        pdtnum = pdtnum.value if isinstance(pdtnum,Grib2Metadata) else pdtnum
-
-        self._msg,self._pos = g2clib.grib2_addfield(self._msg,
-                                                    pdtnum,
-                                                    np.array(pdtmpl,dtype=DEFAULT_NUMPY_INT),
-                                                    crdlist,
-                                                    drtnum,
-                                                    drtmpl,
-                                                    np.ravel(fld),
-                                                    bitmapflag,
-                                                    bmap)
-        self._sections.append(4)
-        self._sections.append(5)
-        if bmap is not None: self._sections.append(6)
-        self._sections.append(7)
-
-
-    def end(self):
-        """
-        Add End Section (Section 8) to the GRIB2 message. A GRIB2 message
-        is not complete without an end section.  Once an end section is added,
-        the GRIB2 message can be written to file.
-        """
-        self._msg, self._pos = g2clib.grib2_end(self._msg)
-        self._sections.append(8)
-
-
     def map_keys(self):
         """
         Returns an unpacked data grid where integer grid values are replaced with
@@ -1204,28 +999,27 @@ class _Grib2Message:
         | 'spectral'         | 4             |
         | 'neighbor-budget'  | 6             |
 
-        **`grid_def_out : list or tuple`**
+        **`grid_def_out : grib2io.Grib2GridDef`**
 
-        Grid definition of the output gridded data. This can be a list or tuple where
-        the first item is the grid definition template number and the second item is
-        a list or 1-D array containing the grid definition template values.
+        Grib2GridDef object of the output grid.
 
         **`method_options : list of ints, optional`**
 
         Interpolation options. See the NCEPLIBS-ip doucmentation for
         more information on how these are used.
         """
-        gdtn_out = grid_def_out.gdtn
-        gdt_out = grid_def_out.gdt
-
-        Msg = create_message_cls(gdtn_out,self.pdtn,self.drtn)
-
         section0 = self.section0
         section0[-1] = 0
-        gds = [0, gdt_out[7]*gdt_out[8], 0, 255, gdtn_out]
-        section3 = np.concatenate((gds,gdt_out))
+        gds = [0, grid_def_out.nx*grid_def_out.ny, 0, 255, grid_def_out.gdtn]
+        section3 = np.concatenate((gds,grid_def_out.gdt))
 
-        msg = Msg(section0,self.section1,self.section2,section3,self.section4,self.section5,self.bitMapFlag)
+        msg = Grib2Message(section0,
+                           self.section1,
+                           self.section2,
+                           section3,
+                           self.section4,
+                           self.section5,
+                           self.bitMapFlag.value)
         msg._msgnum = -1
         msg._deflist = self._deflist
         msg._coordlist = self._coordlist
@@ -1235,7 +1029,7 @@ class _Grib2Message:
             dtype = 'float32'
         elif msg.typeOfValues == 1:
             dtype = 'int32'
-        msg._data = interpolate(self.data,method,[self.gdtn,self.gridDefinitionTemplate],grid_def_out,
+        msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
                                 method_options=method_options).reshape(msg.ny,msg.nx)
         return msg
 
@@ -1353,51 +1147,6 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     return fld
 
 
-def create_message_cls(gdtn: int = None, pdtn: int = None, drtn: int = None) -> Grib2Message:
-    """
-    Dynamically create Grib2Message class inheriting from supported
-    grid definition, product definition, and data representation
-    templates.  Each template is a dataclass with class variable
-    definitions for each attribute related to that template.
-
-    Parameters
-    ----------
-
-    **`gdtn : int`**
-
-    Grid Definition Template Number.
-
-    **`pdtn : int`**
-
-    Product Definition Template Number.
-
-    **`drtn : int`**
-
-    Data Representation Template Number.
-
-    Returns
-    -------
-
-    `Grib2Message` class that contains the appropriate inherited
-    section templates given by the input arguments.
-    """
-    bases = list()
-    if gdtn is not None:
-        Gdt = templates.gdt_class_by_gdtn(gdtn)
-        bases.append(Gdt)
-    if pdtn is not None:
-        Pdt = templates.pdt_class_by_pdtn(pdtn)
-        bases.append(Pdt)
-    if drtn is not None:
-        Drt = templates.drt_class_by_drtn(drtn)
-        bases.append(Drt)
-
-    @dataclass(init=False, repr=False)
-    class Msg(_Grib2Message, *bases):
-        pass
-    return Msg
-
-
 def set_auto_nans(value):
     """
     Handle missing values in GRIB2 message data.
@@ -1448,17 +1197,13 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     | 'spectral'         | 4             |
     | 'neighbor-budget'  | 6             |
 
-    **`grid_def_in : list or tuple`**
+    **`grid_def_in : grib2io.Grib2GridDef`**
 
-    Grid definition of the input gridded data. This can be a list or tuple where
-    the first item is the grid definition template number and the second item is
-    a list or 1-D array containing the grid definition template values.
+    Grib2GridDef object of the input grid.
 
-    **`grid_def_out : list or tuple`**
+    **`grid_def_out : grib2io.Grib2GridDef`**
 
-    Grid definition of the output gridded data. This can be a list or tuple where
-    the first item is the grid definition template number and the second item is
-    a list or 1-D array containing the grid definition template values.
+    Grib2GridDef object of the output grid.
 
     **`method_options : list of ints, optional`**
 
@@ -1483,42 +1228,38 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
         if method == 3:
             method_options[0:2] = -1
 
-    gdtn_in = grid_def_in.gdtn
-    gdt_in = grid_def_in.gdt
-    gdtn_out = grid_def_out.gdtn
-    gdt_out = grid_def_out.gdt
+    ni = grid_def_in.nx*grid_def_in.ny
+    no = grid_def_out.nx*grid_def_out.ny
 
-    nxi = grid_def_in.nx
-    nyi = grid_def_in.ny
-    nxo = grid_def_out.nx
-    nyo = grid_def_out.ny
-    ni = nxi*nyi
-    no = nxo*nyo
-
-    if len(a.shape) == 2 and a.shape == (nyi,nxi):
-        newshp = (nyo,nxo)
+    if len(a.shape) == 2 and a.shape == (grid_def_in.ny,grid_def_in.nx):
+        newshp = (grid_def_out.ny,grid_def_out.nx)
         a = np.expand_dims(a.flatten(),axis=0)
-    elif len(a.shape) == 3 and a.shape[-2:] == (nyi,nxi):
-        newshp = (a.shape[0],nyo,nxo)
+    elif len(a.shape) == 3 and a.shape[-2:] == (grid_def_in.ny,grid_def_in.nx):
+        newshp = (a.shape[0],grid_def_out.ny,grid_def_out.nx)
         a = a.reshape(*a.shape[:-2],-1)
     else:
         raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
 
     ibi = np.zeros((a.shape[0]),dtype=np.int32)
     li = np.zeros(a.shape,dtype=np.int32)
-    go = np.zeros((a.shape[0],nxo*nyo),dtype=np.float32)
+    go = np.zeros((a.shape[0],grid_def_out.ny*grid_def_out.nx),dtype=np.float32)
 
-    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,gdtn_in,gdt_in,
-                                              gdtn_out,gdt_out,ibi,li.T,a.T,go.T)
+    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,
+                                              grid_def_in.gdtn,grid_def_in.gdt,
+                                              grid_def_out.gdtn,grid_def_out.gdt,
+                                              ibi,li.T,a.T,go.T)
 
     return go.reshape(newshp)
 
 
-from dataclasses import dataclass
-import numpy as np
-
 @dataclass
 class Grib2GridDef:
+    """
+    Class to hold GRIB2 Grid Definition Template Number and Template as
+    class attributes. This allows for cleaner looking code when passing these
+    metadata around.  For example, the `grib2io._Grib2Message.interpolate`
+    method and `grib2io.interpolate` function accepts these objects.
+    """
     gdtn: int
     gdt: np.array
 
