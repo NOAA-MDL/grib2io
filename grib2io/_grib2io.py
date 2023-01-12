@@ -659,12 +659,13 @@ class _Grib2Message:
 
     @property
     def pdy(self):
-        return ''.join([str(i) for i in self.section1[5:10]])
+        return ''.join([str(i) for i in self.section1[5:8]])
 
 
     @property
     def griddef(self):
         return Grib2GridDef.from_section3(self.section3)
+
 
     def __repr__(self):
         info = ''
