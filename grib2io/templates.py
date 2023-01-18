@@ -9,31 +9,18 @@ from . import utils
 _section_attrs = {0:['discipline'],
                   1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
                      'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
-                     'refDate', 'validDate', 'productionStatus', 'typeOfData'],
+                     'refDate', 'productionStatus', 'typeOfData'],
                   2:[],
                   3:['gridDefinitionTemplateNumber','shapeOfEarth', 'earthRadius', 'earthMajorAxis', 'earthMinorAxis',
                      'resolutionAndComponentFlags', 'ny', 'nx', 'scanModeFlags'],
-                  4:['productDefinitionTemplateNumber','parameterCategory', 'parameterNumber', 'fullName', 'units', 'shortName',
-                     'typeOfGeneratingProcess', 'backgroundGeneratingProcessIdentifier', 'generatingProcess',
-                     'unitOfTimeRange', 'leadTime', 'typeOfFirstFixedSurface', 'scaleFactorOfFirstFixedSurface',
-                     'unitOfFirstFixedSurface', 'scaledValueOfFirstFixedSurface', 'valueOfFirstFixedSurface',
-                     'typeOfSecondFixedSurface', 'scaleFactorOfSecondFixedSurface', 'unitOfSecondFixedSurface',
-                     'scaledValueOfSecondFixedSurface', 'valueOfSecondFixedSurface','duration','level'],
+                  4:['productDefinitionTemplateNumber','fullName', 'units', 'shortName','leadTime',
+                     'unitOfFirstFixedSurface','valueOfFirstFixedSurface',
+                     'unitOfSecondFixedSurface','valueOfSecondFixedSurface',
+                     'validDate','duration','level'],
                   5:['dataRepresentationTemplateNumber','numberOfPackedValues','typeOfValues'],
                   6:['bitMapFlag'],
                   7:[],
                   8:[],}
-
-
-def _get_template_class_attrs(items):
-    """
-    Provide a list of public attributes for a template class.
-    """
-    attrs = []
-    for i in items:
-        if not i.startswith('_') and i != '_attrs':
-            attrs.append(i)
-    return attrs
 
 
 class Grib2Metadata():
@@ -58,7 +45,7 @@ class Grib2Metadata():
     def __hash__(self):
         return self.value
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.value}, table = {self.table}'
+        return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
     def __str__(self):
         return f'{self.value} - {self.definition}'
     def __eq__(self,other):
@@ -594,7 +581,7 @@ class GridDefinitionTemplate0():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate1():
@@ -612,7 +599,7 @@ class GridDefinitionTemplate1():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate10():
@@ -630,7 +617,7 @@ class GridDefinitionTemplate10():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate20():
@@ -647,7 +634,7 @@ class GridDefinitionTemplate20():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate30():
@@ -668,7 +655,7 @@ class GridDefinitionTemplate30():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate31():
@@ -688,7 +675,7 @@ class GridDefinitionTemplate31():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate40():
@@ -703,7 +690,7 @@ class GridDefinitionTemplate40():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate41():
@@ -721,7 +708,7 @@ class GridDefinitionTemplate41():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class GridDefinitionTemplate50():
@@ -731,7 +718,7 @@ class GridDefinitionTemplate50():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     1: GridDefinitionTemplate1,
@@ -825,11 +812,32 @@ class GeneratingProcess:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
+class HoursAfterDataCutoff:
+    _key = defaultdict(lambda: 5, {48:16})
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class MinutesAfterDataCutoff:
+    _key = defaultdict(lambda: 6, {48:17})
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
 class UnitOfTimeRange:
     _key = defaultdict(lambda: 7, {48:18})
     #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.4')
+    def __set__(self, obj, value):
+        obj.section4[self._key[obj.pdtn]+2] = value
+
+class ForecastTime:
+    _key = defaultdict(lambda: 8, {48:19})
+    def __get__(self, obj, objtype=None):
+        return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
@@ -1299,13 +1307,28 @@ class ScaledValueOfSecondWavelength:
 class ProductDefinitionTemplate0():
     _len = 15
     _num = 0
+    parameterCategory: int = field(init=False,repr=False,default=ParameterCategory())
+    parameterNumber: int = field(init=False,repr=False,default=ParameterNumber())
+    typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=TypeOfGeneratingProcess())
+    generatingProcess: Grib2Metadata = field(init=False, repr=False, default=GeneratingProcess())
+    backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=BackgroundGeneratingProcessIdentifier())
+    hoursAfterDataCutoff: int = field(init=False,repr=False,default=HoursAfterDataCutoff())
+    minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
+    unitOfTimeRange: Grib2Metadata = field(init=False,repr=False,default=UnitOfTimeRange())
+    forecastTime: int = field(init=False,repr=False,default=ForecastTime())
+    typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=False,default=TypeOfFirstFixedSurface())
+    scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaleFactorOfFirstFixedSurface())
+    scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaledValueOfFirstFixedSurface())
+    typeOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=False,default=TypeOfSecondFixedSurface())
+    scaleFactorOfSecondFixedSurface: int = field(init=False,repr=False,default=ScaleFactorOfSecondFixedSurface())
+    scaledValueOfSecondFixedSurface: int = field(init=False,repr=False,default=ScaledValueOfSecondFixedSurface())
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate1():
+class ProductDefinitionTemplate1(ProductDefinitionTemplate0):
     _len = 18
     _num = 1
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -1314,10 +1337,10 @@ class ProductDefinitionTemplate1():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate2():
+class ProductDefinitionTemplate2(ProductDefinitionTemplate0):
     _len = 17
     _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
@@ -1325,10 +1348,10 @@ class ProductDefinitionTemplate2():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate5():
+class ProductDefinitionTemplate5(ProductDefinitionTemplate0):
     _len = 22
     _num = 5
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
@@ -1340,20 +1363,20 @@ class ProductDefinitionTemplate5():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate6():
+class ProductDefinitionTemplate6(ProductDefinitionTemplate0):
     _len = 16
     _num = 6
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate8():
+class ProductDefinitionTemplate8(ProductDefinitionTemplate0):
     _len = 29
     _num = 8
     yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
@@ -1373,10 +1396,10 @@ class ProductDefinitionTemplate8():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate9():
+class ProductDefinitionTemplate9(ProductDefinitionTemplate0):
     _len = 36
     _num = 9
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
@@ -1402,10 +1425,10 @@ class ProductDefinitionTemplate9():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate10():
+class ProductDefinitionTemplate10(ProductDefinitionTemplate0):
     _len = 30
     _num = 10
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
@@ -1426,10 +1449,10 @@ class ProductDefinitionTemplate10():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate11():
+class ProductDefinitionTemplate11(ProductDefinitionTemplate0):
     _len = 32
     _num = 11
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -1452,10 +1475,10 @@ class ProductDefinitionTemplate11():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate12():
+class ProductDefinitionTemplate12(ProductDefinitionTemplate0):
     _len = 31
     _num = 12
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
@@ -1477,10 +1500,10 @@ class ProductDefinitionTemplate12():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate15():
+class ProductDefinitionTemplate15(ProductDefinitionTemplate0):
     _len = 18
     _num = 15
     statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
@@ -1489,10 +1512,10 @@ class ProductDefinitionTemplate15():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class ProductDefinitionTemplate48():
+class ProductDefinitionTemplate48(ProductDefinitionTemplate0):
     _len = 26
     _num = 48
     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
@@ -1509,7 +1532,7 @@ class ProductDefinitionTemplate48():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
@@ -1708,7 +1731,7 @@ class DataRepresentationTemplate0():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate2():
@@ -1732,7 +1755,7 @@ class DataRepresentationTemplate2():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate3():
@@ -1758,7 +1781,7 @@ class DataRepresentationTemplate3():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate4():
@@ -1769,7 +1792,7 @@ class DataRepresentationTemplate4():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate40():
@@ -1785,7 +1808,7 @@ class DataRepresentationTemplate40():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate41():
@@ -1799,7 +1822,7 @@ class DataRepresentationTemplate41():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
 class DataRepresentationTemplate50():
@@ -1814,7 +1837,7 @@ class DataRepresentationTemplate50():
     @classmethod
     @property
     def _attrs(cls):
-        return _get_template_class_attrs(cls.__dict__.keys())
+        return list(cls.__dataclass_fields__.keys())
 
 _drt_by_drtn = {
     0: DataRepresentationTemplate0,

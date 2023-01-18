@@ -511,26 +511,50 @@ class open():
 class Grib2Message:
     """
     """
-    def __new__(self, section0: np.array = None,
-                      section1: np.array = None,
+    def __new__(self, section0: np.array = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
+                      section1: np.array = np.zeros((13),dtype=np.int64),
                       section2: bytes = None,
                       section3: np.array = None,
                       section4: np.array = None,
-                      section5: np.array = None, *args):
+                      section5: np.array = None, *args, **kwargs):
 
         bases = list()
-        if section3 is not None:
+        if section3 is None:
+            if 'gdtn' in kwargs.keys():
+                Gdt = templates.gdt_class_by_gdtn(kwargs['gdtn'])
+                bases.append(Gdt)
+                section3 = np.array((Gdt._len+5),dtype=np.int64)
+            else:
+                raise ValueError("Must provide GRIB2 Grid Definition Template Number or section 3 array")
+        else:
             gdtn = section3[4]
             Gdt = templates.gdt_class_by_gdtn(gdtn)
             bases.append(Gdt)
-        if section4 is not None:
+
+        if section4 is None:
+            if 'pdtn' in kwargs.keys():
+                Pdt = templates.pdt_class_by_pdtn(kwargs['pdtn'])
+                bases.append(Pdt)
+                section4 = np.array((Pdt._len+2),dtype=np.int64)
+            else:
+                raise ValueError("Must provide GRIB2 Production Definition Template Number or section 4 array")
+        else:
             pdtn = section4[1]
             Pdt = templates.pdt_class_by_pdtn(pdtn)
             bases.append(Pdt)
-        if section5 is not None:
+
+        if section5 is None:
+            if 'drtn' in kwargs.keys():
+                Drt = templates.drt_class_by_drtn(kwargs['drtn'])
+                bases.append(Drt)
+                section5 = np.array((Drt._len+2),dtype=np.int64)
+            else:
+                raise ValueError("Must provide GRIB2 Data Representation Template Number or section 5 array")
+        else:
             drtn = section5[1]
             Drt = templates.drt_class_by_drtn(drtn)
             bases.append(Drt)
+
 
         @dataclass(init=False, repr=False)
         class Msg(_Grib2Message, *bases):
@@ -598,31 +622,19 @@ class _Grib2Message:
     scanModeFlags: list = field(init=False,repr=False,default=templates.ScanModeFlags())
     projParameters: dict = field(init=False,repr=False,default=templates.ProjParameters())
 
-    # Section 4 looked up common attributes.  Other looked up attributes are available according
-    # to the Product Definition Template.
+    # Section 4 attributes. Listed here are "extra" or "helper" attrs that use metadata from
+    # the given PDT, but not a formal part of the PDT.
     productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
     _varinfo: list = field(init=False, repr=False, default=templates.VarInfo())
     _fixedsfc1info: list = field(init=False, repr=False, default=templates.FixedSfc1Info())
     _fixedsfc2info: list = field(init=False, repr=False, default=templates.FixedSfc2Info())
-    parameterCategory: int = field(init=False,repr=False,default=templates.ParameterCategory())
-    parameterNumber: int = field(init=False,repr=False,default=templates.ParameterNumber())
     fullName: str = field(init=False, repr=False, default=templates.FullName())
     units: str = field(init=False, repr=False, default=templates.Units())
     shortName: str = field(init=False, repr=False, default=templates.ShortName())
-    typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfGeneratingProcess())
-    generatingProcess: Grib2Metadata = field(init=False, repr=False, default=templates.GeneratingProcess())
-    backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=templates.BackgroundGeneratingProcessIdentifier())
-    unitOfTimeRange: Grib2Metadata = field(init=False,repr=False,default=templates.UnitOfTimeRange())
     leadTime: datetime.timedelta = field(init=False,repr=False,default=templates.LeadTime())
-    typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfFirstFixedSurface())
-    scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfFirstFixedSurface())
-    scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfFirstFixedSurface())
     unitOfFirstFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfFirstFixedSurface())
     valueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfFirstFixedSurface())
-    typeOfSecondFixedSurface: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfSecondFixedSurface())
-    scaleFactorOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaleFactorOfSecondFixedSurface())
-    scaledValueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ScaledValueOfSecondFixedSurface())
     unitOfSecondFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfSecondFixedSurface())
     valueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfSecondFixedSurface())
     level: str = field(init=False, repr=False, default=templates.Level())
@@ -638,7 +650,11 @@ class _Grib2Message:
 
 
     def __post_init__(self):
-        self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
+        self._msgnum = -1
+        try:
+            self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
+        except(TypeError):
+            pass
         self.bitMapFlag = Grib2Metadata(self.bitMapFlag,table='6.0')
 
 
@@ -736,7 +752,7 @@ class _Grib2Message:
         self._sections += [0,1]
 
         # Add section 2 if present.
-        if len(self.section2) > 0 and isinstance(self.section2,bytes):
+        if isinstance(self.section2,bytes) and len(self.section2) > 0:
             self._msg,self._pos = g2clib.grib2_addlocal(self._msg,self.section2)
             self._sections.append(2)
 
