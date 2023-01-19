@@ -451,7 +451,8 @@ class open():
         if isinstance(msg,list):
             for m in msg:
                 self.write(m)
-        elif isinstance(msg,Grib2Message):
+
+        if issubclass(msg.__class__,_Grib2Message):
             if not hasattr(msg,'_msg'):
                 msg.pack()
             self._filehandle.write(msg._msg)
@@ -523,7 +524,7 @@ class Grib2Message:
             if 'gdtn' in kwargs.keys():
                 Gdt = templates.gdt_class_by_gdtn(kwargs['gdtn'])
                 bases.append(Gdt)
-                section3 = np.array((Gdt._len+5),dtype=np.int64)
+                section3 = np.zeros((Gdt._len+5),dtype=np.int64)
             else:
                 raise ValueError("Must provide GRIB2 Grid Definition Template Number or section 3 array")
         else:
@@ -535,7 +536,7 @@ class Grib2Message:
             if 'pdtn' in kwargs.keys():
                 Pdt = templates.pdt_class_by_pdtn(kwargs['pdtn'])
                 bases.append(Pdt)
-                section4 = np.array((Pdt._len+2),dtype=np.int64)
+                section4 = np.zeros((Pdt._len+2),dtype=np.int64)
             else:
                 raise ValueError("Must provide GRIB2 Production Definition Template Number or section 4 array")
         else:
@@ -547,7 +548,7 @@ class Grib2Message:
             if 'drtn' in kwargs.keys():
                 Drt = templates.drt_class_by_drtn(kwargs['drtn'])
                 bases.append(Drt)
-                section5 = np.array((Drt._len+2),dtype=np.int64)
+                section5 = np.zeros((Drt._len+2),dtype=np.int64)
             else:
                 raise ValueError("Must provide GRIB2 Data Representation Template Number or section 5 array")
         else:
@@ -651,6 +652,8 @@ class _Grib2Message:
 
     def __post_init__(self):
         self._msgnum = -1
+        self._deflist = None
+        self._coordlist = None
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
