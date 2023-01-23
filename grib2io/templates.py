@@ -751,6 +751,7 @@ class ProductDefinitionTemplate:
         pass
 
 class ParameterCategory:
+    _key = defaultdict(lambda: 0)
     #_key = {0:0, 1:0, 2:0, 5:0, 6:0, 8:0, 9:0, 10:0, 11:0, 12:0, 15:0, 48:0}
     def __get__(self, obj, objtype=None):
         return obj.section4[0+2]
@@ -758,6 +759,7 @@ class ParameterCategory:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ParameterNumber:
+    _key = defaultdict(lambda: 1)
     #_key = {0:1, 1:1, 2:1, 5:1, 6:1, 8:1, 9:1, 10:1, 11:1, 12:1, 15:1, 48:1}
     def __get__(self, obj, objtype=None):
         return obj.section4[1+2]
@@ -1603,7 +1605,7 @@ class TypeOfValues:
     def __set__(self, obj, value):
         obj.section5[4+2] = value
 
-class GroupSplitMethod:
+class GroupSplittingMethod:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[5+2],table='5.4')
     def __set__(self, obj, value):
@@ -1742,6 +1744,7 @@ class DataRepresentationTemplate2():
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
     priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
     secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
@@ -1766,6 +1769,7 @@ class DataRepresentationTemplate3():
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
     priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
     secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
