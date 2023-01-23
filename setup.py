@@ -1,7 +1,5 @@
 from setuptools import setup, Extension, find_packages, Command
 from os import environ
-from numpy.distutils.core import Extension as NPExtension
-from numpy.distutils.core import setup as NPsetup
 import configparser
 import glob
 import numpy
@@ -183,6 +181,9 @@ setup(name = 'grib2io',
 # Check for interpolation configuration and build accordingly.
 # ----------------------------------------------------------------------------------------
 # ----------------------------------------------------------------------------------------
+from numpy.distutils.core import Extension as NPExtension
+from numpy.distutils.core import setup as NPsetup
+
 interp_libdirs = []
 interp_incdirs = []
 interp_libraries = ['sp_4','ip_4']
