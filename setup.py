@@ -9,6 +9,14 @@ import sys
 
 VERSION = '1.1.0'
 
+build = False
+if 'build' in ''.join(sys.argv):
+    build = True
+
+if build:
+    args_save = sys.argv
+    sys.argv = [arg for arg in sys.argv if 'compiler' not in arg]
+
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
 # ----------------------------------------------------------------------------------------
@@ -219,6 +227,9 @@ if ip_incdir is None and ip_dir is not None:
     interp_incdirs.append(os.path.join(ip_dir,'include_4'))
 else:
     interp_incdirs.append(ip_incdir)
+
+if build:
+    sys.argv = args_save
 
 interpext = NPExtension(name='grib2io._interpolate',
                         sources=['interpolate.pyf','interpolate.f90'],
