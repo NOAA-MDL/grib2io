@@ -11,9 +11,9 @@ table_4_2_4_0  = {
 }
 table_4_2_4_1  = {
 '0':['Velocity Magnitude (Speed)','m s-1','SPEED'],
-'1':['1st Vector Component of Velocity  (Coordinate system dependent)','m s-1','VEL1'],
-'2':['2nd Vector Component of Velocity  (Coordinate system dependent)','m s-1','VEL2'],
-'3':['3rd Vector Component of Velocity  (Coordinate system dependent)','m s-1','VEL3'],
+'1':['1st Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL1'],
+'2':['2nd Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL2'],
+'3':['3rd Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL3'],
 '4-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
