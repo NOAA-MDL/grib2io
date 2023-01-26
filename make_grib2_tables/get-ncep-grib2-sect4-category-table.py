@@ -26,6 +26,7 @@ for df in tables:
         category = row['Category']
         description = row['Description'].strip().split('(')[0].strip()
         line = "'%s':'%s'," % (category,description)
+        line = line.replace('  ',' ')
         print(line)
     print("}")
     print("")

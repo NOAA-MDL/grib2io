@@ -71,6 +71,7 @@ for idx,row in df.iterrows():
     else:
         line = "'%s':'%s'," % (value,center)
     line = line.replace('nan','unknown')
+    line = line.replace('  ',' ')
     print(line)
 
     # For table 1.0, for some reason, I cannot figure out, a row is not present in the
