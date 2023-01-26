@@ -39,5 +39,6 @@ for idx,row in df.iterrows():
     abbrev = row['Abbrev'] if row['Abbrev'] != 'nan' else 'unknown'
     line = "'%s':['%s','%s','%s']," % (parmnum,parmname,units,abbrev)
     line = line.replace('nan','unknown')
+    line = line.replace('  ',' ')
     print(line)
 print("}")
