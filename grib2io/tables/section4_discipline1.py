@@ -30,7 +30,7 @@ table_4_2_1_1  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '192':['Probability of Freezing Precipitation','%','CPOZP'],
 '193':['Percent of Frozen Precipitation','%','CPOFP'],
-'194':['Probability of precipitation  exceeding flash flood guidance values','%','PPFFG'],
+'194':['Probability of precipitation exceeding flash flood guidance values','%','PPFFG'],
 '195':['Probability of Wetting Rain, exceeding in 0.10" in a given time period','%','CWR'],
 '255':['Missing','unknown','unknown'],
 }
