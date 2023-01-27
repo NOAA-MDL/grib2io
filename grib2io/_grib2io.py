@@ -93,6 +93,7 @@ class open():
         """
         if mode in {'a','r','w'}:
             mode = mode+'b'
+            if 'w' in mode: mode += '+'
         self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
         self._hasindex = False
         self._index = {}
@@ -111,9 +112,6 @@ class open():
                 self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
-        if self._hasindex:
-            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
-            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
 
 
     def __delete__(self, instance):
@@ -311,7 +309,7 @@ class open():
                                 dtype = 'int32'
                             if not no_data:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                    msg, _bmappos, _datapos)
+                                                                    msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             break
@@ -341,14 +339,20 @@ class open():
                                 dtype = 'int32'
                             if not no_data:
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
-                                                                    msg, _bmappos, _datapos)
+                                                                    msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
                             continue
 
             except(struct.error):
-                self._filehandle.seek(0)
+                if 'r' in self.mode:
+                    self._filehandle.seek(0)
                 break
+
+        # Index at end of _build_index()
+        if self._hasindex:
+            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
+            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
 
 
     def close(self):
@@ -451,17 +455,27 @@ class open():
         if isinstance(msg,list):
             for m in msg:
                 self.write(m)
+            return
 
         if issubclass(msg.__class__,_Grib2Message):
             if not hasattr(msg,'_msg'):
-                msg.pack()
-            self._filehandle.write(msg._msg)
+                if msg._signature != msg._generate_signature():
+                    msg.pack()
+                    self._filehandle.write(msg._msg)
+                else:
+                    if hasattr(msg._data,'filehandle'):
+                        msg._data.filehandle.seek(msg._data.offset)
+                        self._filehandle.write(msg._data.filehandle.read(msg.section0[-1]))
+                    else:
+                        msg.pack()
+                        self._filehandle.write(msg._msg)
+            self.flush()
             self.size = os.path.getsize(self.name)
-            self.messages += 1
-            self.current_message += 1
-            # TODO: Add ability to update dictionary
+            self._filehandle.seek(self.size-msg.section0[-1])
+            self._build_index()
         else:
             raise TypeError("msg must be a Grib2Message object.")
+        return
 
 
     def flush(self):
@@ -654,6 +668,7 @@ class _Grib2Message:
         self._msgnum = -1
         self._deflist = None
         self._coordlist = None
+        self._signature = self._generate_signature()
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
@@ -699,6 +714,12 @@ class _Grib2Message:
                 f'{self.fullName} ({self.units}):{self.level}:'
                 f'{self.leadTime}')
 
+
+    def _generate_signature(self):
+        return hashlib.sha1(np.concatenate((self.section0,self.section1,
+                                            self.section3,self.section4,
+                                            self.section5))).hexdigest()
+        
 
     def attrs_by_section(self, sect, values=False):
         """
@@ -802,11 +823,14 @@ class _Grib2Message:
         # Finalize GRIB2 message with section 8.
         self._msg, self._pos = g2clib.grib2_end(self._msg)
         self._sections.append(8)
+        self.section0[-1] = len(self._msg)
 
 
     @property
     def data(self) -> np.array:
-        ''' accessing the data attribute loads data into memmory '''
+        """
+        Accessing the data attribute loads data into memmory
+        """
         if not hasattr(self,'_auto_nans'): self._auto_nans = _AUTO_NANS
         if hasattr(self,'_data'):
             if self._auto_nans != _AUTO_NANS:
@@ -1059,6 +1083,7 @@ class Grib2MessageOnDiskArray:
     dtype: str
     filehandle: open
     msg: Grib2Message
+    offset: int
     bmap_offset: int
     data_offset: int
 
