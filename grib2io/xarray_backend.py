@@ -3,6 +3,7 @@
 # gribbackend is pre-release and the API is subject to change without backward compatability
 from pathlib import Path
 import shutil
+import time
 import datetime
 import numbers
 from dataclasses import dataclass, field, astuple
@@ -58,10 +59,11 @@ class GribBackendEntrypoint(BackendEntrypoint):
             file_index = pd.DataFrame(f._index)
 
         # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)
+        # parse_grib_index applies filters to index and expands metadata based on product definition template number
         file_index, non_geo_dims = parse_grib_index(file_index, filters)
 
-        # Apply filters and divide up records by variable
-        frames, cube, extra_geo = make_variables(file_index, filters, filename, non_geo_dims)
+        # Divide up records by variable
+        frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims)
         # return empty dataset if no data
         if frames is None:
             return xr.Dataset()
@@ -316,31 +318,29 @@ def parse_grib_index(index, filters):
     Apply filters; evaluate what dimesnions are possible (based on pdtn) and parse each out
     '''
 
-    # expand index
-    index = index.assign(shortName=index.msg.apply(lambda msg: msg.shortName))
-    index = index.assign(nx=index.msg.apply(lambda msg: msg.nx))
-    index = index.assign(ny=index.msg.apply(lambda msg: msg.ny))
-    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.section4[4]))
-    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.pdtn))
-    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface.definition[0]))
-    index = index.astype({'data_offset':'int', 'ny':'int','nx':'int'})
-    # apply common filters(to all definition templates) to reduce dataset to single cube
-
     # make a copy of filters, remove filters as they are applied
     filters = copy(filters)
 
     for k, v in filters.items():
         if k not in index.columns:
-            index[k] = index.msg.apply(lambda msg: getattr(msg, k))
+            kwarg = {k:index.msg.apply(lambda msg: getattr(msg, k))}
+            index = index.assign(**kwarg)
+        # adopt parts of xarray's sel logic  so that filters behave similarly
+        # allowed to filter to nothing to make empty dataset
         index = filter_index(index, k, v)
 
+    # expand index
+    index = index.assign(shortName=index.msg.apply(lambda msg: msg.shortName))
+    index = index.assign(nx=index.msg.apply(lambda msg: msg.nx))
+    index = index.assign(ny=index.msg.apply(lambda msg: msg.ny))
+    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.typeOfGeneratingProcess))
+    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber))
+    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface))
+    index = index.astype({'data_offset':'int', 'ny':'int','nx':'int'})
+    # apply common filters(to all definition templates) to reduce dataset to single cube
+
+
     # ensure only one of each of the below exists after filters applied
-    # apply product definition template number filter
-    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.pdtn))
-    if 'productDefinitionTemplateNumber' in filters:
-        if not isinstance(filters['productDefinitionTemplateNumber'], int):
-            raise TypeError('productDefinitionTemplateNumber filter must be of type int')
-        index = index.loc[index['productDefinitionTemplateNumber'] == filters['productDefinitionTemplateNumber']]
     unique_pdtn = index.productDefinitionTemplateNumber.unique()
     if len(index.productDefinitionTemplateNumber.unique()) > 1:
         raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {index.productDefinitionTemplateNumber.unique()}')
@@ -348,25 +348,13 @@ def parse_grib_index(index, filters):
         return index, list()
     pdtn = unique_pdtn[0]
 
-    # apply type of generating process filter
-    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.section4[4]))
-    field = 'typeOfGeneratingProcess'
-    if field in filters:
-        if not isinstance(filters[field], int):
-            raise TypeError(f'{field} filter must be of type int')
-        index = index.loc[index[field] == filters[field]]
-    unique = index[field].unique()
-    if len(unique) > 1:
-        raise ValueError(f'filter to a single {field}; found: {unique}')
+    unique = index.typeOfGeneratingProcess.unique()
+    if len(index.typeOfGeneratingProcess.unique()) > 1:
+        raise ValueError(f'filter to a single typeOfGeneratingProcess; found: {[str(i) for i in unique]}')
 
-    # apply type of first fixed surface filter
-    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface.definition[0]))
-    if 'typeOfFirstFixedSurface' in filters:
-        if not isinstance(filters['typeOfFirstFixedSurface'], str):
-            raise TypeError('typeOfFirstFixedSurface filter must be of type str')
-        index = index.loc[index['typeOfFirstFixedSurface'] == filters['typeOfFirstFixedSurface']]
+    unique = index.typeOfFirstFixedSurface.unique()
     if len(index.typeOfFirstFixedSurface.unique()) > 1:
-        raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {index.typeOfFirstFixedSurface.unique()}')
+        raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {[str(i) for i in unique]}')
 
     # determine which non geo dimensions can be created from data
     # by this point the index is filtered down to a single typeOfFirstFixedSurface and productDefinitionTemplateNumber
@@ -389,14 +377,8 @@ def parse_grib_index(index, filters):
     non_geo_dims.append(LeadTimeDim)
 
 
-    index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
-    if 'valueOfFirstFixedSurface' in filters:
-        index = filter_index(index, 'valueOfFirstFixedSurface', filters['valueOfFirstFixedSurface'])
-        del filters['valueOfFirstFixedSurface']
-
-    if len(index['valueOfFirstFixedSurface'].unique()) > 1:
-        # we have multiple levels
-        pass  # decided to always add ValueOfFirstFixedSurface
+    if 'valueOfFirstFixedSurface' not in index.columns:
+        index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
     @dataclass(init=False)
     class ValueOfFirstFixedSurfaceDim:
         valueOfFirstFixedSurface: pd.Index = PdIndex()
@@ -468,6 +450,7 @@ def parse_grib_index(index, filters):
         class Duration:
             duration: pd.Index = PdIndex()
         non_geo_dims.append(Duration)
+
 
     return index, non_geo_dims
 
@@ -559,18 +542,12 @@ def _asarray_tuplesafe(values):
 
     return result
 
-def make_variables(index, filters, f, non_geo_dims):
+def make_variables(index, f, non_geo_dims):
 
     ''' from index as dataframe, separate by variable
         create an individual dataframe index and cube for each variable'''
 
     # let shortName determine the variables
-
-    # adopt parts of xarray's sel logic  so that filters behave similarly
-    # allowed to filter to nothing to make empty dataset
-    if filters:
-        for k, v in filters.items():
-            index = filter_index(index, k, v)
 
     # set the index to the name
     index = index.set_index('shortName').sort_index()
@@ -661,6 +638,20 @@ def interp_nd(a,*, method, grid_def_in, grid_def_out):
     a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
     return a
 
+@xr.register_dataset_accessor("grib2io")
+class Grib2ioDataSet:
+
+    def __init__(self, xarray_obj):
+        self._obj = xarray_obj
+
+    def interp(self, method, grid_def_out):
+        da = self._obj.to_array()
+        da.attrs['GRIB2IO_section3'] = self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3']
+        da = da.grib2io.interp(method, grid_def_out)
+        ds = da.to_dataset(dim='variable')
+        return ds
+
+
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
@@ -677,7 +668,7 @@ class Grib2ioDataArray:
         s3_new = np.array([0,npoints,0,0,grid_def_out.gdtn] + grid_def_out.gdt)
 
         # make new lat lons
-        lats, lons = Grib2Message(section3=s3_new).grid()
+        lats, lons = Grib2Message(section3=s3_new, pdtn=0, drtn=0).grid()
         latitude = xr.DataArray(lats, dims=['y','x'])
         longitude = xr.DataArray(lons, dims=['y','x'])
 
@@ -690,7 +681,6 @@ class Grib2ioDataArray:
 
         # make grid def in from section3 on da attrs
         grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
-
 
         if da.chunks is None:
             data = interp_nd(da.data, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out)
