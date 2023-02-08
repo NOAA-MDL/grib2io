@@ -44,7 +44,9 @@ ONE_MB = 1048576 # 1 MB in units of bytes
 
 _AUTO_NANS = True
 
-_latlon_datastore = {}
+_latlon_datastore = dict()
+
+_msg_class_store = dict()
 
 class open():
     """
@@ -301,13 +303,13 @@ class open():
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
-                            shape = (msg.ny,msg.nx)
-                            ndim = 2
-                            if msg.typeOfValues == 0:
-                                dtype = 'float32'
-                            elif msg.typeOfValues == 1:
-                                dtype = 'int32'
                             if not no_data:
+                                shape = (msg.ny,msg.nx)
+                                ndim = 2
+                                if msg.typeOfValues == 0:
+                                    dtype = 'float32'
+                                elif msg.typeOfValues == 1:
+                                    dtype = 'int32'
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -331,13 +333,13 @@ class open():
                             msg._msgnum = self.messages-1
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
-                            shape = (msg.ny,msg.nx)
-                            ndim = 2
-                            if msg.typeOfValues == 0:
-                                dtype = 'float32'
-                            elif msg.typeOfValues == 1:
-                                dtype = 'int32'
                             if not no_data:
+                                shape = (msg.ny,msg.nx)
+                                ndim = 2
+                                if msg.typeOfValues == 0:
+                                    dtype = 'float32'
+                                elif msg.typeOfValues == 1:
+                                    dtype = 'int32'
                                 msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -350,9 +352,9 @@ class open():
                 break
 
         # Index at end of _build_index()
-        if self._hasindex:
-            self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
-            self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
+        if self._hasindex and not no_data:
+             self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
+             self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
 
 
     def close(self):
@@ -536,7 +538,8 @@ class Grib2Message:
         bases = list()
         if section3 is None:
             if 'gdtn' in kwargs.keys():
-                Gdt = templates.gdt_class_by_gdtn(kwargs['gdtn'])
+                gdtn = kwargs['gdtn']
+                Gdt = templates.gdt_class_by_gdtn(gdtn)
                 bases.append(Gdt)
                 section3 = np.zeros((Gdt._len+5),dtype=np.int64)
             else:
@@ -548,7 +551,8 @@ class Grib2Message:
 
         if section4 is None:
             if 'pdtn' in kwargs.keys():
-                Pdt = templates.pdt_class_by_pdtn(kwargs['pdtn'])
+                pdtn = kwargs['pdtn']
+                Pdt = templates.pdt_class_by_pdtn(pdtn)
                 bases.append(Pdt)
                 section4 = np.zeros((Pdt._len+2),dtype=np.int64)
             else:
@@ -560,7 +564,8 @@ class Grib2Message:
 
         if section5 is None:
             if 'drtn' in kwargs.keys():
-                Drt = templates.drt_class_by_drtn(kwargs['drtn'])
+                drtn = kwargs['drtn']
+                Drt = templates.drt_class_by_drtn(drtn)
                 bases.append(Drt)
                 section5 = np.zeros((Drt._len+2),dtype=np.int64)
             else:
@@ -570,10 +575,16 @@ class Grib2Message:
             Drt = templates.drt_class_by_drtn(drtn)
             bases.append(Drt)
 
+        # attempt to use existing Msg class if it has already been made with gdtn,pdtn,drtn combo
+        try:
+            Msg = _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"]
+        except KeyError:
+            @dataclass(init=False, repr=False)
+            class Msg(_Grib2Message, *bases):
+                pass
+            _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"] = Msg
 
-        @dataclass(init=False, repr=False)
-        class Msg(_Grib2Message, *bases):
-            pass
+
 
         return Msg(section0, section1, section2, section3, section4, section5, *args)
 
@@ -719,7 +730,7 @@ class _Grib2Message:
         return hashlib.sha1(np.concatenate((self.section0,self.section1,
                                             self.section3,self.section4,
                                             self.section5))).hexdigest()
-        
+
 
     def attrs_by_section(self, sect, values=False):
         """

@@ -43,13 +43,13 @@ class Grib2Metadata():
     def __call__(self):
         return self.value
     def __hash__(self):
-        return self.value
+        return hash(self.value)   # AS- added hash() to self.value as pandas was raising error about some non integer returns from hash method
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
     def __str__(self):
         return f'{self.value} - {self.definition}'
     def __eq__(self,other):
-        return self.value == other
+        return self.value == other or self.definition[0] == other
     def __gt__(self,other):
         return self.value > other
     def __ge__(self,other):
@@ -60,6 +60,8 @@ class Grib2Metadata():
         return self.value <= other
     def __contains__(self,other):
         return other in self.definition
+    def __hash__(self):
+        return hash(self.value)
     @property
     def definition(self):
         return tables.get_value_from_table(self.value,self.table)
