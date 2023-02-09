@@ -232,7 +232,7 @@ class GridDefinitionSection:
     def __get__(self, obj, objtype=None):
         return obj.section3[0:5]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class SourceOfGridDefinition:
     """Source of grid definition
@@ -241,14 +241,14 @@ class SourceOfGridDefinition:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[0],table='3.0')
     def __set__(self, obj, value):
-        pass
+        raise RuntimeError
 
 class NumberOfDataPoints:
     """Number of Data Points"""
     def __get__(self, obj, objtype=None):
         return obj.section3[1]
     def __set__(self, obj, value):
-        pass
+        raise RuntimeError
 
 class GridDefinitionTemplateNumber:
     """Grid definition template number
@@ -257,20 +257,22 @@ class GridDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[4],table='3.1')
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class GridDefinitionTemplate:
     """Grid definition template"""
     def __get__(self, obj, objtype=None):
         return obj.section3[5:]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class EarthParams:
     def __get__(self, obj, objtype=None):
         if obj.gridDefinitionSection[4] in {50,51,52,1200}:
             return None
         return tables.earth_params[str(obj.section3[5])]
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class DxSign:
     def __get__(self, obj, objtype=None):
@@ -278,6 +280,8 @@ class DxSign:
         obj.section3[17] > obj.section3[20]:
             return -1.0
         return 1.0
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class DySign:
     def __get__(self, obj, objtype=None):
@@ -285,6 +289,8 @@ class DySign:
         obj.section3[16] > obj.section3[19]:
             return -1.0
         return 1.0
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class LLScaleFactor:
     def __get__(self, obj, objtype=None):
@@ -294,6 +300,8 @@ class LLScaleFactor:
                 return 1
             return llscalefactor
         return 1
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class LLDivisor:
     def __get__(self, obj, objtype=None):
@@ -303,12 +311,16 @@ class LLDivisor:
                 return 1.e6
             return lldivisor
         return 1.e6
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class XYDivisor:
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769}:
             return obj._lldivisor
         return 1.e3
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class ShapeOfEarth:
     def __get__(self, obj, objtype=None):
@@ -329,6 +341,8 @@ class EarthRadius:
                 return obj.section3[7]/(10.**obj.section3[6])
             else:
                 return earthparams['radius']
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class EarthMajorAxis:
     def __get__(self, obj, objtype=None):
@@ -340,6 +354,8 @@ class EarthMajorAxis:
                 return obj.section3[9]/(10.**obj.section3[8])
             else:
                 return earthparams['major_axis']
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class EarthMinorAxis:
     def __get__(self, obj, objtype=None):
@@ -351,167 +367,142 @@ class EarthMinorAxis:
                 return obj.section3[11]/(10.**section3[10])
             else:
                 return earthparams['minor_axis']
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class Nx:
     def __get__(self, obj, objtype=None):
         return obj.section3[12]
     def __set__(self, obj, value):
-        pass
+        obj.section3[12] = value
+        obj.section3[1] = value * obj.section3[13]
 
 class Ny:
     def __get__(self, obj, objtype=None):
         return obj.section3[13]
     def __set__(self, obj, value):
-        pass
+        obj.section3[13] = value
+        obj.section3[1] = value * obj.section3[12]
 
 class ScanModeFlags:
     _key = {0:18, 1:18, 10:15, 20:17, 30:17, 31:17, 40:18, 41:18, 90:16, 110:15, 203:18, 204:18, 205:18, 32768:18, 32769:18}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        if gdtn == 50:
+        if obj.gdtn == 50:
             return [None, None, None, None]
         else:
-            return utils.int2bin(obj.section3[self._key[gdtn]+5],output=list)[0:4]
+            return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)[0:4]
     def __set__(self, obj, value):
-        pass
+        obj.section3[self._key[obj.gdtn]+5] = value
 
 class ResolutionAndComponentFlags:
     _key = {0:13, 1:13, 10:11, 20:11, 30:11, 31:11, 40:13, 41:13, 90:11, 110:11, 203:13, 204:13, 205:13, 32768:13, 32769:13}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        if gdtn == 50:
+        if obj.gdtn == 50:
             return [None for i in range(8)]
         else:
-            return utils.int2bin(obj.section3[self._key[gdtn]+5],output=list)
+            return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)
     def __set__(self, obj, value):
-        pass
+        obj.section3[self._key[obj.gdtn]+5] = value
 
 class LatitudeFirstGridpoint:
     _key = {0:11, 1:11, 10:9, 20:9, 30:9, 31:9, 40:11, 41:11, 110:9, 203:11, 204:11, 205:11, 32768:11, 32769:11}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeFirstGridpoint:
     _key = {0:12, 1:12, 10:10, 20:10, 30:10, 31:10, 40:12, 41:12, 110:10, 203:12, 204:12, 205:12, 32768:12, 32769:12}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LatitudeLastGridpoint:
     _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeLastGridpoint:
     _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class GridlengthXDirection:
     _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return (obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._xydivisor)*obj._dxsign
+        return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dxsign
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class GridlengthYDirection:
     _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return (obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._xydivisor)*obj._dysign
+        return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dysign
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class LatitudeSouthernPole:
     _key = {1:19, 30:20, 31:20, 41:19}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeSouthernPole:
     _key = {1:20, 30:21, 31:21, 41:20}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class AnglePoleRotation:
     _key = {1:21, 41:21}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj.section3[self._key[gdtn]+5]
+        return obj.section3[self._key[obj.gdtn]+5]
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value)
+        obj.section3[self._key[obj.gdtn]+5] = int(value)
 
 class LatitudeTrueScale:
     _key = {10:12, 20:12, 30:12, 31:12}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class GridOrientation:
     _key = {10:16, 20:13, 30:13, 31:13}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        if gdtn == 10 and (value < 0 or value > 90):
+        if obj.gdtn == 10 and (value < 0 or value > 90):
             raise ValueError("Grid orientation is limited to range of 0 to 90 degrees.")
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class ProjectionCenterFlag:
     _key = {20:16, 30:16, 31:16}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return utils.int2bin(obj.section3[self._key[gdtn]+5],output=list)[0]
+        return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)[0]
     def __set__(self, obj, value):
-        pass
+        obj.section3[self._key[obj.gdtn]+5] = value
 
 class StandardLatitude1:
     _key = {30:18, 31:18}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class StandardLatitude2:
     _key = {30:19, 31:19}
     def __get__(self, obj, objtype=None):
-        gdtn = obj.section3[4]
-        return obj._llscalefactor*obj.section3[self._key[gdtn]+5]/obj._lldivisor
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
-        gdtn = obj.section3[4]
-        obj.section3[self._key[gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class SpectralFunctionParameters:
     def __get__(self, obj, objtype=None):
@@ -530,20 +521,19 @@ class ProjParameters:
         else:
             if obj.earthMajorAxis is not None: projparams['a'] = obj.earthMajorAxis
             if obj.earthMajorAxis is not None: projparams['b'] = obj.earthMinorAxis
-        gdtn = obj.section3[4]
-        if gdtn == 0:
+        if obj.gdtn == 0:
             projparams['proj'] = 'longlat'
-        elif gdtn == 1:
+        elif obj.gdtn == 1:
             projparams['o_proj'] = 'longlat'
             projparams['proj'] = 'ob_tran'
             projparams['o_lat_p'] = -1.0*obj.latitudeSouthernPole
             projparams['o_lon_p'] = obj.angleOfRotation
             projparams['lon_0'] = obj.longitudeSouthernPole
-        elif gdtn == 10:
+        elif obj.gdtn == 10:
             projparams['proj'] = 'merc'
             projparams['lat_ts'] = obj.latitudeTrueScale
             projparams['lon_0'] = 0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)
-        elif gdtn == 20:
+        elif obj.gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
             elif obj.projectionCenterFlag == 1:
@@ -552,23 +542,23 @@ class ProjParameters:
             projparams['lat_ts'] = obj.latitudeTrueScale
             projparams['lat_0'] = lat0
             projparams['lon_0'] = obj.gridOrientation
-        elif gdtn == 30:
+        elif obj.gdtn == 30:
             projparams['proj'] = 'lcc'
             projparams['lat_1'] = obj.standardLatitude1
             projparams['lat_2'] = obj.standardLatitude2
             projparams['lat_0'] = obj.latitudeTrueScale
             projparams['lon_0'] = obj.gridOrientation
-        elif gdtn == 31:
+        elif obj.gdtn == 31:
             projparams['proj'] = 'aea'
             projparams['lat_1'] = obj.standardLatitude1
             projparams['lat_2'] = obj.standardLatitude2
             projparams['lat_0'] = obj.latitudeTrueScale
             projparams['lon_0'] = obj.gridOrientation
-        elif gdtn == 40:
+        elif obj.gdtn == 40:
             projparams['proj'] = 'eqc'
         return projparams
     def __set__(self, obj, value):
-        pass
+        raise RuntimeError
 
 @dataclass(init=False)
 class GridDefinitionTemplate0():
@@ -743,18 +733,17 @@ class ProductDefinitionTemplateNumber:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[1],table='4.0')
     def __set__(self, obj, value):
-        pass
+        raise RuntimeError
 
 #  since PDT begins at position 2 of section4, code written with +2 for added readability with grib2 documentation
 class ProductDefinitionTemplate:
     def __get__(self, obj, objtype=None):
         return obj.section4[2:]
     def __set__(self, obj, value):
-        pass
+        raise RuntimeError
 
 class ParameterCategory:
     _key = defaultdict(lambda: 0)
-    #_key = {0:0, 1:0, 2:0, 5:0, 6:0, 8:0, 9:0, 10:0, 11:0, 12:0, 15:0, 48:0}
     def __get__(self, obj, objtype=None):
         return obj.section4[0+2]
     def __set__(self, obj, value):
@@ -762,7 +751,6 @@ class ParameterCategory:
 
 class ParameterNumber:
     _key = defaultdict(lambda: 1)
-    #_key = {0:1, 1:1, 2:1, 5:1, 6:1, 8:1, 9:1, 10:1, 11:1, 12:1, 15:1, 48:1}
     def __get__(self, obj, objtype=None):
         return obj.section4[1+2]
     def __set__(self, obj, value):
@@ -772,25 +760,25 @@ class VarInfo:
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class FullName:
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class Units:
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[1]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class ShortName:
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        raise RuntimeError
 
 class TypeOfGeneratingProcess:
     _key = defaultdict(lambda: 2, {48:13})
