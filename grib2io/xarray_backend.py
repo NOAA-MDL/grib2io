@@ -195,9 +195,9 @@ class Cube:
         for k in keys:
             if k is not None:
                 if len(self[k]) > 1:
-                    coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k))
+                    coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(grib_name=k))
                 elif len(self[k]) == 1:
-                    coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(tdlp_name=k))
+                    coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(grib_name=k))
         #coords = {k: xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k)) for k in keys if self[k] is not None}
         return coords
 
@@ -226,6 +226,8 @@ class OnDiskArray:
                 self.shape = tuple([len(i) for i in self.index.index.levels]) + geo_shape
         self.ndim = len(self.shape)
 
+        cols = ['msg', 'data_offset','bitmap_offset']
+        self.index = self.index[cols]
 
     def __getitem__(self, item) -> np.array:
         # dimensions not in index are internal to tdlpack records; 2 dims for grids; 1 dim for stations
@@ -244,7 +246,7 @@ class OnDiskArray:
             index = self.index
         index = index.set_index(index.index)
 
-        # reset miloc to new relative locations in sub array
+        # set miloc to new relative locations in sub array
         index['miloc'] = list(zip(*[index.index.unique(level=dim).get_indexer(index.index.get_level_values(dim)) for dim in index.index.names]))
 
         if len(index_slicer_inclusive) == 1:
@@ -343,7 +345,7 @@ def parse_grib_index(index, filters):
     # ensure only one of each of the below exists after filters applied
     unique_pdtn = index.productDefinitionTemplateNumber.unique()
     if len(index.productDefinitionTemplateNumber.unique()) > 1:
-        raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {index.productDefinitionTemplateNumber.unique()}')
+        raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {[str(i) for i in unique_pdtn]}')
     if len(index) == 0:
         return index, list()
     pdtn = unique_pdtn[0]
@@ -597,13 +599,16 @@ def make_variables(index, f, non_geo_dims):
         else:
             cube = c
 
-        # miloc is multi-index integer location
+        # miloc is multi-index integer location of msg in nd DataArray
         miloc = list(zip(*[frame.index.unique(level=dim).get_indexer(frame.index.get_level_values(dim)) for dim in dims]))
-        if len(miloc) >= 1:  # miloc will be empty when no extra dims
-            frame = frame.assign(miloc=miloc)
-        dim_ix = tuple([n+'_ix' for n in dims])
-        if len(miloc) >= 1:  # miloc will be empty when no extra dims
-            frame = frame.set_index(pd.MultiIndex.from_tuples(frame.miloc, names=dim_ix))
+
+       #if len(miloc) >= 1:  # miloc will be empty when no extra dims  # removed as miloc is calculated and used in OnDiskArray __getitem__
+       #    frame = frame.assign(miloc=miloc)
+
+        # set frame multi index
+        if len(miloc) >= 1:  # miloc will be empty when no extra dims, thus no multiindex
+            dim_ix = tuple([n+'_ix' for n in dims])
+            frame = frame.set_index(pd.MultiIndex.from_tuples(miloc, names=dim_ix))
 
         ordered_frames.append(frame)
 
@@ -693,4 +698,5 @@ class Grib2ioDataArray:
             new_da = xr.DataArray(data, dims=da.dims, coords=new_coords, attrs=da.attrs)
 
         new_da.attrs['GRIB2IO_section3'] = s3_new
+        new_da.name = da.name
         return new_da
