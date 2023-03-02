@@ -460,7 +460,9 @@ class open():
             return
 
         if issubclass(msg.__class__,_Grib2Message):
-            if not hasattr(msg,'_msg'):
+            if hasattr(msg,'_msg'):
+                self._filehandle.write(msg._msg)
+            else:
                 if msg._signature != msg._generate_signature():
                     msg.pack()
                     self._filehandle.write(msg._msg)
