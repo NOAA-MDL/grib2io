@@ -1601,7 +1601,7 @@ class GroupSplittingMethod:
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
-class TypeOfMissingValue:
+class TypeOfMissingValueManagement:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[6+2],table='5.5')
     def __set__(self, obj, value):
@@ -1735,7 +1735,7 @@ class DataRepresentationTemplate2():
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
-    typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
+    typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
     priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
     secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
     nGroups: int = field(init=False, repr=False, default=NGroups())
@@ -1760,7 +1760,7 @@ class DataRepresentationTemplate3():
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
-    typeOfMissingValue: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValue())
+    typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
     priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
     secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
     nGroups: int = field(init=False, repr=False, default=NGroups())
