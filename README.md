@@ -50,7 +50,7 @@ pip install grib2io --user
 * Build and install.  Use `--user` to install into personal space (`$HOME/.local`).
 
 ```shell
-python setup.py build
+python setup.py build --fcompiler=[gnu95|intelem] # GNU or Intel compilers
 python setup.py install
 ```
 OR
