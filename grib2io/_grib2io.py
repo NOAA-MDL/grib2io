@@ -1127,8 +1127,8 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     if msg._auto_nans:
         fill_value = np.nan
     else:
-        if hasattr(msg,'priMissingValue'):
-            fill_value = msg.priMissingValue
+        if hasattr(msg,'typeOfMissingValueManagement'):
+            fill_value = msg.priMissingValue if hasattr(msg,'priMissingValue') else np.nan
         else:
             fill_value = np.nan
 
@@ -1171,11 +1171,15 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
         np.put(fld,np.nonzero(bmap),fld1)
     else:
         # No bitmap, check missing values
-        if msg._auto_nans:
-            if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
-                fld1 = np.where(fld1==msg.priMissingValue,fill_value,fld1)
-            if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
-                fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
+        if hasattr(msg,'typeOfMissingValueManagement'):
+            if msg.typeOfMissingValueManagement in {1,2}:
+                if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
+                    if msg._auto_nans: fill_value = np.nan
+                    fld1 = np.where(fld1==msg.priMissingValue,fill_value,fld1)
+            if msg.typeOfMissingValueManagement == 2:
+                if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
+                    if msg._auto_nans: fill_value = np.nan
+                    fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
         fld = fld1
 
     if nx is not None and ny is not None: # Rectangular grid.
