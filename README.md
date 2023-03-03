@@ -20,7 +20,7 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 * setuptools 34.0+
 * NumPy 1.22+
 * pyproj 1.9.6+
-* C Compiler: GCC, Intel, and Apple Clang have been tested.
+* C and Fortran Compiler: GNU, Intel, and Apple Clang have been tested.
 
 ## NCEPLIBS Libraries
 
