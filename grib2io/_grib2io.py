@@ -632,6 +632,7 @@ class _Grib2Message:
     gridDefinitionSection: np.array = field(init=False,repr=False,default=templates.GridDefinitionSection())
     sourceOfGridDefinition: int = field(init=False,repr=False,default=templates.SourceOfGridDefinition())
     numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
+    interpretationOfListOfNumbers: Grib2Metadata = field(init=False,repr=False,default=templates.InterpretationOfListOfNumbers())
     gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.GridDefinitionTemplateNumber())
     gridDefinitionTemplate: list = field(init=False,repr=False,default=templates.GridDefinitionTemplate())
     _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())

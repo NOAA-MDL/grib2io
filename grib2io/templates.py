@@ -250,6 +250,13 @@ class NumberOfDataPoints:
     def __set__(self, obj, value):
         raise RuntimeError
 
+class InterpretationOfListOfNumbers:
+    """Interpretation of List of Numbers"""
+    def __get__(self, obj, objtype=None):
+        return Grib2Metadata(obj.section3[3],table='3.11')
+    def __set__(self, obj, value):
+        raise RuntimeError
+
 class GridDefinitionTemplateNumber:
     """Grid definition template number
     [(See Table 3.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml
@@ -390,7 +397,7 @@ class ScanModeFlags:
         if obj.gdtn == 50:
             return [None, None, None, None]
         else:
-            return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)[0:4]
+            return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)[0:8]
     def __set__(self, obj, value):
         obj.section3[self._key[obj.gdtn]+5] = value
 

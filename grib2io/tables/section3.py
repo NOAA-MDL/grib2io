@@ -86,6 +86,15 @@ table_3_2 = {
 '255':'Missing',
 }
 
+table_3_11 = {
+'0':'There is no appended list',
+'1':'Numbers define number of points corresponding to full coordinate circles (i.e. parallels). Coordinate values on each circle are multiple of the circle mesh, and extreme coordinate values given in grid definition may not be reached in all rows.',
+'2':'Numbers define number of points corresponding to coordinate lines delimited by extreme coordinate values given in grid definition which are present in each row.',
+'3':'Numbers define the actual latitudes for each row in the grid. The list of numbers are integer values of the valid latitudes in microdegrees (scale by 106) or in unit equal to the ratio of the basic angle and the subdivisions number for each row, in the same order as specified in the "scanning mode flag" (bit no. 2)',
+'4-254':'Reserved',
+'255':'Missing',
+}
+
 earth_params = {
 '0':{'shape':'spherical','radius':6367470.0},
 '1':{'shape':'spherical','radius':None},
