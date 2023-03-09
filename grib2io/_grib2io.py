@@ -900,14 +900,18 @@ class _Grib2Message:
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             dlon = self.gridlengthXDirection
             dlat = self.gridlengthYDirection
-            lats = np.arange(lat1,lat2+dlat,dlat)
-            lons = np.arange(lon1,lon2+dlon,dlon)
+            if reggrid:
+                lats = np.arange(lat1,lat2+dlat,dlat)
+                lons = np.arange(lon1,lon2+dlon,dlon)
+            else:
+                lats = np.linspace(lat1,lat2,self.ny)
+                lons = np.linspace(lon1,lon2,self.ny*2)
             # flip if scan mode says to.
             #if self.scanModeFlags[0]:
             #    lons = lons[::-1]
             #if not self.scanModeFlags[1]:
             #    lats = lats[::-1]
-            lons,lats = np.meshgrid(lons,lats) # make 2-d arrays.
+            lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
         elif gdtn == 1: # Rotated Lat/Lon grid
             #pj = pyproj.Proj(self.projParameters)
             pass
@@ -1160,10 +1164,6 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,ipos,
                           np.empty,storageorder=storageorder)
 
-    #TEMPORARY
-    expand = False
-    #TEMPORARY
-
     # Handle the missing values
     if msg.bitMapFlag in {0,254}:
         # Bitmap
@@ -1183,16 +1183,13 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
                     fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
         fld = fld1
 
-    if nx is not None and ny is not None: # Rectangular grid.
-        fld = np.reshape(fld,(ny,nx))
-    else:
-        if gds[2] and gdtnum == 40: # Reduced global Gaussian grid.
-            if expand:
-                from . import redtoreg
-                nx = 2*ny
-                lonsperlat = msg.defList
-                fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.long),
-                                         fld.astype(np.double),fill_value)
+    # Check for reduced grid.
+    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist is not None:
+        from . import redtoreg
+        nx = 2*ny
+        lonsperlat = msg._deflist
+        fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.int64),
+                                 fld.astype(np.float64),fill_value)
 
     # Check scan modes for rect grids.
     if nx is not None and ny is not None:
