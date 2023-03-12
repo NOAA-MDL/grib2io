@@ -535,7 +535,7 @@ class ProjParameters:
             projparams['o_proj'] = 'longlat'
             projparams['proj'] = 'ob_tran'
             projparams['o_lat_p'] = -1.0*obj.latitudeSouthernPole
-            projparams['o_lon_p'] = obj.angleOfRotation
+            projparams['o_lon_p'] = obj.anglePoleRotation
             projparams['lon_0'] = obj.longitudeSouthernPole
         elif obj.gdtn == 10:
             projparams['proj'] = 'merc'
