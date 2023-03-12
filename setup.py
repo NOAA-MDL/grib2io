@@ -241,4 +241,6 @@ interpext = NPExtension(name='grib2io._interpolate',
                         library_dirs=interp_libdirs,
                         runtime_library_dirs=interp_libdirs,
                         libraries=interp_libraries)
-NPsetup(name='grib2io',ext_modules=[interpext])
+NPsetup(name='grib2io',
+        version = VERSION,
+        ext_modules=[interpext])

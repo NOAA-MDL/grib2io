@@ -7,7 +7,9 @@ import numpy as np
 
 def rotated_grid_transform(lats, lons, lat_sp, lon_sp, option=2):
     """
-    Construct latitudes for a Gaussian grid.
+    Transform latitude and longitude from regular to rotated and vice-versa.
+
+    Adapted from: https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform
 
     Parameters
     ----------
