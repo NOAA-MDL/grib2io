@@ -906,15 +906,17 @@ class _Grib2Message:
             else:
                 lats = np.linspace(lat1,lat2,self.ny)
                 lons = np.linspace(lon1,lon2,self.ny*2)
-            # flip if scan mode says to.
-            #if self.scanModeFlags[0]:
-            #    lons = lons[::-1]
-            #if not self.scanModeFlags[1]:
-            #    lats = lats[::-1]
             lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
         elif gdtn == 1: # Rotated Lat/Lon grid
-            #pj = pyproj.Proj(self.projParameters)
-            pass
+            pj = pyproj.Proj(self.projParameters)
+            from grib2io.utils import rotated_grid
+            lat1,lon1 = rotated_grid.rotated_grid_transform(self.latitudeFirstGridpoint,self.longitudeFirstGridpoint,
+                                                      self.latitudeSouthernPole,self.longitudeSouthernPole)
+            lat2,lon2 = rotated_grid.rotated_grid_transform(self.latitudeLastGridpoint,self.longitudeLastGridpoint,
+                                                      self.latitudeSouthernPole,self.longitudeSouthernPole)
+            lats = np.linspace(lat1,lat2,self.ny)
+            lons = np.linspace(lon1,lon2,self.nx)
+            lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
         elif gdtn == 40: # Gaussian grid (only works for global!)
             from utils.gauss_grids import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
@@ -931,11 +933,6 @@ class _Grib2Message:
             lats = gaussian_latitudes(nlats)
             if lat1 < lat2:  # reverse them if necessary
                 lats = lats[::-1]
-            # flip if scan mode says to.
-            #if self.scanModeFlags[0]:
-            #    lons = lons[::-1]
-            #if not self.scanModeFlags[1]:
-            #    lats = lats[::-1]
             lons,lats = np.meshgrid(lons,lats)
         elif gdtn in {10,20,30,31,110}:
             # Mercator, Lambert Conformal, Stereographic, Albers Equal Area, Azimuthal Equidistant
@@ -951,10 +948,6 @@ class _Grib2Message:
             # Satellite Projection
             dx = self.gridlengthXDirection
             dy = self.gridlengthYDirection
-            #self.projParameters['proj']=self.proj4_proj
-            #self.projParameters['lon_0']=self.proj4_lon_0
-            #self.projParameters['lat_0']=self.proj4_lat_0
-            #self.projParameters['h']=self.proj4_h
             pj = pyproj.Proj(self.projParameters)
             x = dx*np.indices((self.ny,self.nx),'f')[1,:,:]
             x -= 0.5*x.max()
@@ -1190,6 +1183,8 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
         lonsperlat = msg._deflist
         fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.int64),
                                  fld.astype(np.float64),fill_value)
+    else:
+        fld = np.reshape(fld,(ny,nx))
 
     # Check scan modes for rect grids.
     if nx is not None and ny is not None:
