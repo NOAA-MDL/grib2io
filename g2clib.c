@@ -6226,7 +6226,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   /* "g2clib.pyx":66
  *     g2int g2_gribend(unsigned char *)
  * 
- * __version__ = G2C_VERSION.decode("utf-8")[-5:]             # <<<<<<<<<<<<<<
+ * __version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+             # <<<<<<<<<<<<<<
  * 
  * _has_png = G2_PNG_ENABLED
  */
@@ -6668,11 +6668,11 @@ if (!__Pyx_RefNanny) {
   /* "g2clib.pyx":66
  *     g2int g2_gribend(unsigned char *)
  * 
- * __version__ = G2C_VERSION.decode("utf-8")[-5:]             # <<<<<<<<<<<<<<
+ * __version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+             # <<<<<<<<<<<<<<
  * 
  * _has_png = G2_PNG_ENABLED
  */
-  __pyx_t_1 = __Pyx_decode_c_string(G2C_VERSION, 0, strlen(G2C_VERSION), NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_decode_c_string(G2_VERSION, 0, strlen(G2_VERSION), NULL, NULL, PyUnicode_DecodeUTF8); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = __Pyx_PyUnicode_Substring(__pyx_t_1, -5L, PY_SSIZE_T_MAX); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
@@ -6681,7 +6681,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
   /* "g2clib.pyx":68
- * __version__ = G2C_VERSION.decode("utf-8")[-5:]
+ * __version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
  * 
  * _has_png = G2_PNG_ENABLED             # <<<<<<<<<<<<<<
  * _has_jpeg = G2_JPEG2000_ENABLED
