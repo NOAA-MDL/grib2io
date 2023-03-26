@@ -66,6 +66,65 @@ if os.path.exists(setup_cfg):
     sys.stdout.write('Reading from setup.cfg...')
     config.read(setup_cfg)
 
+# ----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+# Check for interpolation configuration and build accordingly.
+# ----------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------
+from numpy.distutils.core import Extension as NPExtension
+from numpy.distutils.core import setup as NPsetup
+
+interp_libdirs = []
+interp_incdirs = []
+interp_libraries = ['sp_4','ip_4']
+
+# ---------------------------------------------------------------------------------------- 
+# Get NCEPLIBS-sp library info. This library is a required for interpolation.
+# ---------------------------------------------------------------------------------------- 
+sp_dir = config.getq('directories', 'sp_dir', environ.get('SP_DIR'))
+sp_libdir = config.getq('directories', 'sp_libdir', environ.get('SP_LIBDIR'))
+sp_incdir = config.getq('directories', 'sp_incdir', environ.get('SP_INCDIR'))
+if sp_libdir is None and sp_dir is not None:
+    interp_libdirs.append(os.path.join(sp_dir,'lib'))
+    interp_libdirs.append(os.path.join(sp_dir,'lib64'))
+else:
+    interp_libdirs.append(sp_libdir)
+if sp_incdir is None and sp_dir is not None:
+    interp_incdirs.append(os.path.join(sp_dir,'include_4'))
+else:
+    interp_incdirs.append(sp_incdir)
+
+# ---------------------------------------------------------------------------------------- 
+# Get NCEPLIBS-ip library info. This library is a required for interpolation.
+# ---------------------------------------------------------------------------------------- 
+ip_dir = config.getq('directories', 'ip_dir', environ.get('IP_DIR'))
+ip_libdir = config.getq('directories', 'ip_libdir', environ.get('IP_LIBDIR'))
+ip_incdir = config.getq('directories', 'ip_incdir', environ.get('IP_INCDIR'))
+if ip_libdir is None and ip_dir is not None:
+    interp_libdirs.append(os.path.join(ip_dir,'lib'))
+    interp_libdirs.append(os.path.join(ip_dir,'lib64'))
+else:
+    interp_libdirs.append(ip_libdir)
+if ip_incdir is None and ip_dir is not None:
+    interp_incdirs.append(os.path.join(ip_dir,'include_4'))
+else:
+    interp_incdirs.append(ip_incdir)
+
+if build:
+    sys.argv = args_save
+
+interpext = NPExtension(name='grib2io._interpolate',
+                        sources=['interpolate.pyf','interpolate.f90'],
+                        extra_f77_compile_args=['-O3','-fopenmp'],
+                        extra_f90_compile_args=['-O3','-fopenmp'],
+                        include_dirs=interp_incdirs,
+                        library_dirs=interp_libdirs,
+                        runtime_library_dirs=interp_libdirs,
+                        libraries=interp_libraries)
+NPsetup(name='grib2io',
+        version = VERSION,
+        ext_modules=[interpext])
+
 # ---------------------------------------------------------------------------------------- 
 # Define lists for build
 # ---------------------------------------------------------------------------------------- 
@@ -178,69 +237,10 @@ setup(name = 'grib2io',
       scripts           = install_scripts,
       ext_modules       = install_ext_modules,
       py_modules        = install_py_modules,
-      entry_points      = {'xarray.backends':'grib2io=grib2io.xarray_backend:GribBackendEntrypoint'},
+      entry_points      = {'xarray.backends':['grib2io=grib2io.xarray_backend:GribBackendEntrypoint']},
       packages          = find_packages(),
       data_files        = data_files,
       install_requires  = ['setuptools>=41.5.0','numpy>=1.22.0','pyproj>=1.9.5'],
       python_requires   = '>=3.8',
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
-
-# ----------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------
-# Check for interpolation configuration and build accordingly.
-# ----------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------
-from numpy.distutils.core import Extension as NPExtension
-from numpy.distutils.core import setup as NPsetup
-
-interp_libdirs = []
-interp_incdirs = []
-interp_libraries = ['sp_4','ip_4']
-
-# ---------------------------------------------------------------------------------------- 
-# Get NCEPLIBS-sp library info. This library is a required for interpolation.
-# ---------------------------------------------------------------------------------------- 
-sp_dir = config.getq('directories', 'sp_dir', environ.get('SP_DIR'))
-sp_libdir = config.getq('directories', 'sp_libdir', environ.get('SP_LIBDIR'))
-sp_incdir = config.getq('directories', 'sp_incdir', environ.get('SP_INCDIR'))
-if sp_libdir is None and sp_dir is not None:
-    interp_libdirs.append(os.path.join(sp_dir,'lib'))
-    interp_libdirs.append(os.path.join(sp_dir,'lib64'))
-else:
-    interp_libdirs.append(sp_libdir)
-if sp_incdir is None and sp_dir is not None:
-    interp_incdirs.append(os.path.join(sp_dir,'include_4'))
-else:
-    interp_incdirs.append(sp_incdir)
-
-# ---------------------------------------------------------------------------------------- 
-# Get NCEPLIBS-ip library info. This library is a required for interpolation.
-# ---------------------------------------------------------------------------------------- 
-ip_dir = config.getq('directories', 'ip_dir', environ.get('IP_DIR'))
-ip_libdir = config.getq('directories', 'ip_libdir', environ.get('IP_LIBDIR'))
-ip_incdir = config.getq('directories', 'ip_incdir', environ.get('IP_INCDIR'))
-if ip_libdir is None and ip_dir is not None:
-    interp_libdirs.append(os.path.join(ip_dir,'lib'))
-    interp_libdirs.append(os.path.join(ip_dir,'lib64'))
-else:
-    interp_libdirs.append(ip_libdir)
-if ip_incdir is None and ip_dir is not None:
-    interp_incdirs.append(os.path.join(ip_dir,'include_4'))
-else:
-    interp_incdirs.append(ip_incdir)
-
-if build:
-    sys.argv = args_save
-
-interpext = NPExtension(name='grib2io._interpolate',
-                        sources=['interpolate.pyf','interpolate.f90'],
-                        extra_f77_compile_args=['-O3','-fopenmp'],
-                        extra_f90_compile_args=['-O3','-fopenmp'],
-                        include_dirs=interp_incdirs,
-                        library_dirs=interp_libdirs,
-                        runtime_library_dirs=interp_libdirs,
-                        libraries=interp_libraries)
-NPsetup(name='grib2io',
-        version = VERSION,
-        ext_modules=[interpext])
