@@ -1419,7 +1419,6 @@ static const char __pyx_k_gdstmpl[] = "gdstmpl";
 static const char __pyx_k_gribmsg[] = "gribmsg";
 static const char __pyx_k_has_png[] = "_has_png";
 static const char __pyx_k_ibitmap[] = "ibitmap";
-static const char __pyx_k_ibmapyy[] = "ibmapyy";
 static const char __pyx_k_idefnum[] = "idefnum";
 static const char __pyx_k_idrsnum[] = "idrsnum";
 static const char __pyx_k_igdsnum[] = "igdsnum";
@@ -1554,7 +1553,6 @@ static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_u_i8;
 static PyObject *__pyx_n_s_ibitmap;
 static PyObject *__pyx_n_s_ibmap;
-static PyObject *__pyx_n_s_ibmapyy;
 static PyObject *__pyx_n_s_icoordlist;
 static PyObject *__pyx_n_s_ideflist;
 static PyObject *__pyx_n_s_idefnum;
@@ -5383,6 +5381,7 @@ static PyObject *__pyx_pf_6g2clib_18grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   g2float *__pyx_v_fcoordlist;
   g2int *__pyx_v_bmap;
   g2int __pyx_v_ngrdpts;
+  g2int __pyx_v_ibmap;
   void *__pyx_v_pdtmpldat;
   void *__pyx_v_drtmpldat;
   void *__pyx_v_coordlistdat;
@@ -5390,7 +5389,6 @@ static PyObject *__pyx_pf_6g2clib_18grib2_addfield(CYTHON_UNUSED PyObject *__pyx
   void *__pyx_v_bitmapdat;
   Py_ssize_t __pyx_v_buflen;
   unsigned char *__pyx_v_cgrib;
-  g2int __pyx_v_ibmap;
   PyObject *__pyx_v_msg = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -6133,7 +6131,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_i8, __pyx_k_i8, sizeof(__pyx_k_i8), 0, 1, 0, 1},
   {&__pyx_n_s_ibitmap, __pyx_k_ibitmap, sizeof(__pyx_k_ibitmap), 0, 0, 1, 1},
   {&__pyx_n_s_ibmap, __pyx_k_ibmap, sizeof(__pyx_k_ibmap), 0, 0, 1, 1},
-  {&__pyx_n_s_ibmapyy, __pyx_k_ibmapyy, sizeof(__pyx_k_ibmapyy), 0, 0, 1, 1},
   {&__pyx_n_s_icoordlist, __pyx_k_icoordlist, sizeof(__pyx_k_icoordlist), 0, 0, 1, 1},
   {&__pyx_n_s_ideflist, __pyx_k_ideflist, sizeof(__pyx_k_ideflist), 0, 0, 1, 1},
   {&__pyx_n_s_idefnum, __pyx_k_idefnum, sizeof(__pyx_k_idefnum), 0, 0, 1, 1},
@@ -6349,10 +6346,10 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *                    drsnum,object drstmpl,object field,
  *                    ibitmap,object bitmap):
  */
-  __pyx_tuple__25 = PyTuple_Pack(29, __pyx_n_s_gribmsg, __pyx_n_s_pdsnum, __pyx_n_s_pdstmpl, __pyx_n_s_coordlist, __pyx_n_s_drsnum, __pyx_n_s_drstmpl, __pyx_n_s_field, __pyx_n_s_ibitmap, __pyx_n_s_bitmap, __pyx_n_s_ierr, __pyx_n_s_ipdsnum, __pyx_n_s_numcoord, __pyx_n_s_idrsnum, __pyx_n_s_ipdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_fcoordlist, __pyx_n_s_bmap, __pyx_n_s_ngrdpts, __pyx_n_s_ibmapyy, __pyx_n_s_pdtmpldat, __pyx_n_s_drtmpldat, __pyx_n_s_coordlistdat, __pyx_n_s_fielddat, __pyx_n_s_bitmapdat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_ibmap, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 626, __pyx_L1_error)
+  __pyx_tuple__25 = PyTuple_Pack(28, __pyx_n_s_gribmsg, __pyx_n_s_pdsnum, __pyx_n_s_pdstmpl, __pyx_n_s_coordlist, __pyx_n_s_drsnum, __pyx_n_s_drstmpl, __pyx_n_s_field, __pyx_n_s_ibitmap, __pyx_n_s_bitmap, __pyx_n_s_ierr, __pyx_n_s_ipdsnum, __pyx_n_s_numcoord, __pyx_n_s_idrsnum, __pyx_n_s_ipdstmpl, __pyx_n_s_idrstmpl, __pyx_n_s_fld, __pyx_n_s_fcoordlist, __pyx_n_s_bmap, __pyx_n_s_ngrdpts, __pyx_n_s_ibmap, __pyx_n_s_pdtmpldat, __pyx_n_s_drtmpldat, __pyx_n_s_coordlistdat, __pyx_n_s_fielddat, __pyx_n_s_bitmapdat, __pyx_n_s_buflen, __pyx_n_s_cgrib, __pyx_n_s_msg); if (unlikely(!__pyx_tuple__25)) __PYX_ERR(0, 626, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__25);
   __Pyx_GIVEREF(__pyx_tuple__25);
-  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(9, 0, 29, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addfield, 626, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 626, __pyx_L1_error)
+  __pyx_codeobj__26 = (PyObject*)__Pyx_PyCode_New(9, 0, 28, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__25, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_g2clib_pyx, __pyx_n_s_grib2_addfield, 626, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__26)) __PYX_ERR(0, 626, __pyx_L1_error)
 
   /* "g2clib.pyx":744
  * 

@@ -701,7 +701,7 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
     cdef g2float *fld
     cdef g2float *fcoordlist
     cdef g2int *bmap
-    cdef g2int ngrdpts, ibmapyy
+    cdef g2int ngrdpts, ibmap
     cdef void *pdtmpldat
     cdef void *drtmpldat
     cdef void *coordlistdat
