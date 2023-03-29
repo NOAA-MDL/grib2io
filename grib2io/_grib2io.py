@@ -438,7 +438,8 @@ class open():
         idxs = []
         nkeys = len(kwargs.keys())
         for k,v in kwargs.items():
-            idxs += [msg._msgnum for msg in self._index['msg'] if getattr(msg,k) == v]
+            for m in self._index['msg']:
+                if hasattr(m,k) and getattr(m,k) == v: idxs.append(m._msgnum)
         idxs = np.array(idxs,dtype=np.int32)
         return [self._index['msg'][i] for i in [ii[0] for ii in collections.Counter(idxs).most_common() if ii[1] == nkeys]]
 
@@ -800,18 +801,19 @@ class _Grib2Message:
                                                    self._deflist)
         self._sections.append(3)
 
-        # Prepare data and bitmap (optional).
+        # Prepare data.
         field = np.copy(self.data)
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
                 fieldsave = field.astype('f') # Casting makes a copy
                 field[1::2,:] = fieldsave[1::2,::-1]
         fld = field.astype('f')
-        if ma.isMA(field) and ma.count_masked(field) > 0:
-            bitmapflag = 0
-            bmap = 1-np.ravel(field.mask.astype(DEFAULT_NUMPY_INT))
+
+        # Prepare bitmap, if necessary
+        bitmapflag = self.bitMapFlag.value
+        if bitmapflag == 0:
+            bmap = np.ravel(np.where(np.isnan(fld),0,1)).astype(DEFAULT_NUMPY_INT)
         else:
-            bitmapflag = 255
             bmap = None
 
         # Prepare optional coordinate list
