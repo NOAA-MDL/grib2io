@@ -11,10 +11,6 @@ include setup.py
 include README.md
 recursive-include grib2io *
 recursive-include docs *
-include sampledata/*.grb
-include sampledata/*.grb2
-include sampledata/*.grib*
-include sampledata/*.bin
 recursive-include make_grib2_tables *
 include tests/README
 include tests/*py
