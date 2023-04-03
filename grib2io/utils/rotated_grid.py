@@ -2,81 +2,152 @@
 Tools for working with Rotated Lat/Lon Grids.
 """
 
-import math
 import numpy as np
 
-def rotated_grid_transform(lats, lons, lat_sp, lon_sp, option=2):
-    """
-    Transform latitude and longitude from regular to rotated and vice-versa.
+RAD2DEG = 57.29577951308232087684
+DEG2RAD = 0.01745329251994329576
 
-    Adapted from: https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform
+def rotate(latin, lonin, aor, splat, splon):
+    """ 
+    Perform grid rotation. This function is adapted from ECMWF's ecCodes library
+    void function, rotate().
+
+    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc
 
     Parameters
     ----------
 
-    **`lats : array_like`**:
+    **`latin`**: `float or array_like`
 
-    Input latitudes in degrees.
-    
-    **`lats : array_like`**:
+    Latitudes in units of degrees.
 
-    Input longitudes in degrees.
+    **`lonin`**: `float or array_like`
 
-    **`lat_sp : float`**:
+    Longitudes in units of degrees.
 
-    Latitude of the Southern Pole.
+    **`aor`**: `float`
 
-    **`lon_sp : float`**:
+    Angle of rotation as defined in GRIB2 GDTN 4.1.
 
-    Longitude of the Southern Pole.
+    **`splat`**: `float`
 
-    **`option : int`**:
+    Latitude of South Pole as defined in GRIB2 GDTN 4.1.
 
-    Transform regular to rotated (1) or rotated to regular (2) [DEFAULT].
+    **`splon`**: `float`
+
+    Longitude of South Pole as defined in GRIB2 GDTN 4.1.
 
     Returns
     -------
-    
-    Sequence of transformed latitude, longitude in degrees.
+
+    **`lats, lons : numpy.ndarray`**
+
+    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+    longitudes in units of degrees.
+    """ 
+    zsycen = np.sin(DEG2RAD * (splat + 90.))
+    zcycen = np.cos(DEG2RAD * (splat + 90.))
+    zxmxc  = DEG2RAD * (lonin - splon)
+    zsxmxc = np.sin(zxmxc)
+    zcxmxc = np.cos(zxmxc)
+    zsyreg = np.sin(DEG2RAD * latin)
+    zcyreg = np.cos(DEG2RAD * latin)
+    zsyrot = zcycen * zsyreg - zsycen * zcyreg * zcxmxc
+
+    zsyrot = np.where(zsyrot>1.0,1.0,zsyrot)
+    zsyrot = np.where(zsyrot<-1.0,-1.0,zsyrot)
+
+    pyrot = np.arcsin(zsyrot) * RAD2DEG
+
+    zcyrot = np.cos(pyrot * DEG2RAD)
+    zcxrot = (zcycen * zcyreg * zcxmxc + zsycen * zsyreg) / zcyrot
+    zcxrot = np.where(zcxrot>1.0,1.0,zcxrot)
+    zcxrot = np.where(zcxrot<-1.0,-1.0,zcxrot)
+    zsxrot = zcyreg * zsxmxc / zcyrot
+
+    pxrot = np.arccos(zcxrot) * RAD2DEG
+
+    pxrot = np.where(zsxrot<0.0,-pxrot,pxrot)
+
+    return pyrot, pxrot
+
+
+def unrotate(latin, lonin, aor, splat, splon):
+    """ 
+    Perform grid un-rotation. This function is adapted from ECMWF's ecCodes library
+    void function, unrotate().
+
+    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc
+
+    Parameters
+    ----------
+
+    **`latin`**: `float or array_like`
+
+    Latitudes in units of degrees.
+
+    **`lonin`**: `float or array_like`
+
+    Longitudes in units of degrees.
+
+    **`aor`**: `float`
+
+    Angle of rotation as defined in GRIB2 GDTN 4.1.
+
+    **`splat`**: `float`
+
+    Latitude of South Pole as defined in GRIB2 GDTN 4.1.
+
+    **`splon`**: `float`
+
+    Longitude of South Pole as defined in GRIB2 GDTN 4.1.
+
+    Returns
+    -------
+
+    **`lats, lons : numpy.ndarray`**
+
+    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+    longitudes in units of degrees.
     """
+    lon_x = lonin
+    lat_y = latin
 
-    # Convert lats and lons degress to radians
-    lons = (lons*math.pi) / 180.0
-    lats = (lats*math.pi) / 180.0
+    latr = lat_y * DEG2RAD
+    lonr = lon_x * DEG2RAD
 
-    theta = 90.0 + lat_sp # Rotation around y-axis
-    phi = lon_sp # Rotation around z-axis
+    xd = np.cos(lonr) * np.cos(latr)
+    yd = np.sin(lonr) * np.cos(latr)
+    zd = np.sin(latr)
 
-    # Convert to radians
-    theta = (theta*math.pi) / 180.0
-    phi = (phi*math.pi) / 180.0
+    t = -(90.0 + splat)
+    o = -splon
 
-    # Convert from spherical to cartesian coordinates
-    x = np.cos(lons)*np.cos(lats)
-    y = np.sin(lons)*np.cos(lats)
-    z = np.sin(lats)
+    sin_t = np.sin(DEG2RAD * t)
+    cos_t = np.cos(DEG2RAD * t)
+    sin_o = np.sin(DEG2RAD * o)
+    cos_o = np.cos(DEG2RAD * o)
 
-    if option == 1: # Regular -> Rotated
+    x = cos_t * cos_o * xd + sin_o * yd + sin_t * cos_o * zd
+    y = -cos_t * sin_o * xd + cos_o * yd - sin_t * sin_o * zd
+    z = -sin_t * xd + cos_t * zd
 
-        x_new = np.cos(theta)*np.cos(phi)*x + np.cos(theta)*np.sin(phi)*y + np.sin(theta)*z
-        y_new = -np.sin(phi)*x + np.cos(phi)*y
-        z_new = -np.sin(theta)*np.cos(phi)*x - np.sin(theta)*np.sin(phi)*y + np.cos(theta)*z
+    ret_lat = 0
+    ret_lon = 0
 
-    elif option == 2:  # Rotated -> Regular
+    # Then convert back to 'normal' (lat,lon)
+    # Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error
+    # avoid error on calculating e.g. asin(1.00000001)
+    z = np.where(z>1.0,1.0,z)
+    z = np.where(z<-1.0,-1.0,z)
 
-        phi = -phi
-        theta = -theta
+    ret_lat = np.arcsin(z) * RAD2DEG
+    ret_lon = np.arctan2(y, x) * RAD2DEG
 
-        x_new = np.cos(theta)*np.cos(phi)*x + np.sin(phi)*y + np.sin(theta)*np.cos(phi)*z
-        y_new = -np.cos(theta)*np.sin(phi)*x + np.cos(phi)*y - np.sin(theta)*np.sin(phi)*z
-        z_new = -np.sin(theta)*x + np.cos(theta)*z
+    # Still get a very small rounding error, round to 6 decimal places
+    ret_lat = np.round(ret_lat * 1000000.0) / 1000000.0
+    ret_lon = np.round(ret_lon * 1000000.0) / 1000000.0
 
-    # Convert cartesian back to spherical coordinates
-    lons_new = np.arctan2(y_new,x_new)
-    lats_new = np.arcsin(z_new)
+    ret_lon -= aor
 
-    # Convert radians back to degrees
-    lons_new = (lons_new*180.0) / math.pi # Convert radians back to degrees
-    lats_new = (lats_new*180.0) / math.pi
-
-    return lats_new, lons_new
+    return ret_lat, ret_lon

@@ -223,5 +223,3 @@ def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
     else:
         probstr = ''
     return probstr
-
-

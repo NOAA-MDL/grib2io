@@ -872,16 +872,24 @@ class _Grib2Message:
         raise NotImplementedError('assignment of data not supported via setitem')
 
 
-    def latlons(self):
+    def latlons(self, *args, **kwrgs):
         """Alias for `grib2io.Grib2Message.grid` method"""
-        return self.grid()
+        return self.grid(*args, **kwrgs)
 
 
-    def grid(self):
+    def grid(self, unrotate=True):
         """
         Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon,
         global Gaussian, mercator, stereographic, lambert conformal, albers equal-area,
         space-view and azimuthal equidistant grids.
+
+        Parameters
+        ----------
+
+        **`unrotate : bool`**
+
+        If `True` [DEFAULT], and grid is rotated lat/lon, then unrotate the grid,
+        otherwise `False`, do not.
 
         Returns
         -------
@@ -911,14 +919,18 @@ class _Grib2Message:
             lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
         elif gdtn == 1: # Rotated Lat/Lon grid
             pj = pyproj.Proj(self.projParameters)
-            from grib2io.utils import rotated_grid
-            lat1,lon1 = rotated_grid.rotated_grid_transform(self.latitudeFirstGridpoint,self.longitudeFirstGridpoint,
-                                                      self.latitudeSouthernPole,self.longitudeSouthernPole)
-            lat2,lon2 = rotated_grid.rotated_grid_transform(self.latitudeLastGridpoint,self.longitudeLastGridpoint,
-                                                      self.latitudeSouthernPole,self.longitudeSouthernPole)
+            lat1,lon1 = self.latitudeFirstGridpoint,self.longitudeFirstGridpoint
+            lat2,lon2 = self.latitudeLastGridpoint,self.longitudeLastGridpoint
+            if lon1 > 180.0: lon1 -= 360.0
+            if lon2 > 180.0: lon2 -= 360.0
             lats = np.linspace(lat1,lat2,self.ny)
             lons = np.linspace(lon1,lon2,self.nx)
             lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
+            if unrotate:
+                from grib2io.utils import rotated_grid
+                lats,lons = rotated_grid.unrotate(lats,lons,self.anglePoleRotation,
+                                                  self.latitudeSouthernPole,
+                                                  self.longitudeSouthernPole)
         elif gdtn == 40: # Gaussian grid (only works for global!)
             from utils.gauss_grids import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
