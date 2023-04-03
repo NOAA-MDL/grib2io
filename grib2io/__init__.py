@@ -1,5 +1,6 @@
 from ._grib2io import *
 from ._grib2io import __doc__
+from ._grib2io import _Grib2Message
 
 try:
     from . import __config__
@@ -7,7 +8,7 @@ try:
 except(ImportError):
     pass
 
-__all__ = ['open','Grib2Message','show_config','interpolate','tables','templates','utils',
+__all__ = ['open','Grib2Message','_Grib2Message','show_config','interpolate','tables','templates','utils',
            'Grib2GridDef']
 
 def show_config():
