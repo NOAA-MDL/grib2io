@@ -31,7 +31,10 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
-                    <a class="function" href="#rotated_grid_transform">rotated_grid_transform</a>
+                    <a class="function" href="#rotate">rotate</a>
+            </li>
+            <li>
+                    <a class="function" href="#unrotate">unrotate</a>
             </li>
     </ul>
 
@@ -56,210 +59,403 @@
 
                         <label class="view-source-button" for="mod-rotated_grid-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Tools for working with Rotated Lat/Lon Grids.</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="kn">import</span> <span class="nn">math</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="k">def</span> <span class="nf">rotated_grid_transform</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lat_sp</span><span class="p">,</span> <span class="n">lon_sp</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="sd">    Transform latitude and longitude from regular to rotated and vice-versa.</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="sd">    Adapted from: https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="sd">    Parameters</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="sd">    ----------</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="sd">    **`lats : array_like`**:</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="sd">    Input latitudes in degrees.</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="sd">    </span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="sd">    **`lats : array_like`**:</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="sd">    Input longitudes in degrees.</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="sd">    **`lat_sp : float`**:</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="sd">    Latitude of the Southern Pole.</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="sd">    **`lon_sp : float`**:</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="sd">    Longitude of the Southern Pole.</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="sd">    **`option : int`**:</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">    Transform regular to rotated (1) or rotated to regular (2) [DEFAULT].</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">    Returns</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    -------</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="sd">    </span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">    Sequence of transformed latitude, longitude in degrees.</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a>    <span class="c1"># Convert lats and lons degress to radians</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>    <span class="n">lons</span> <span class="o">=</span> <span class="p">(</span><span class="n">lons</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="n">lats</span> <span class="o">=</span> <span class="p">(</span><span class="n">lats</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>    <span class="n">theta</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="o">+</span> <span class="n">lat_sp</span> <span class="c1"># Rotation around y-axis</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="n">phi</span> <span class="o">=</span> <span class="n">lon_sp</span> <span class="c1"># Rotation around z-axis</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>    <span class="c1"># Convert to radians</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>    <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">phi</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="c1"># Convert from spherical to cartesian coordinates</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>
-</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>    <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># Regular -&gt; Rotated</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>
-</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>        <span class="n">x_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>        <span class="n">y_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>        <span class="n">z_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>
-</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Rotated -&gt; Regular</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>
-</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>        <span class="n">phi</span> <span class="o">=</span> <span class="o">-</span><span class="n">phi</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>        <span class="n">theta</span> <span class="o">=</span> <span class="o">-</span><span class="n">theta</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a>
-</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a>        <span class="n">x_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a>        <span class="n">y_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="L-72"><a href="#L-72"><span class="linenos">72</span></a>        <span class="n">z_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="L-73"><a href="#L-73"><span class="linenos">73</span></a>
-</span><span id="L-74"><a href="#L-74"><span class="linenos">74</span></a>    <span class="c1"># Convert cartesian back to spherical coordinates</span>
-</span><span id="L-75"><a href="#L-75"><span class="linenos">75</span></a>    <span class="n">lons_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y_new</span><span class="p">,</span><span class="n">x_new</span><span class="p">)</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos">76</span></a>    <span class="n">lats_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">z_new</span><span class="p">)</span>
-</span><span id="L-77"><a href="#L-77"><span class="linenos">77</span></a>
-</span><span id="L-78"><a href="#L-78"><span class="linenos">78</span></a>    <span class="c1"># Convert radians back to degrees</span>
-</span><span id="L-79"><a href="#L-79"><span class="linenos">79</span></a>    <span class="n">lons_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">lons_new</span><span class="o">*</span><span class="mf">180.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="c1"># Convert radians back to degrees</span>
-</span><span id="L-80"><a href="#L-80"><span class="linenos">80</span></a>    <span class="n">lats_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">lats_new</span><span class="o">*</span><span class="mf">180.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos">81</span></a>
-</span><span id="L-82"><a href="#L-82"><span class="linenos">82</span></a>    <span class="k">return</span> <span class="n">lats_new</span><span class="p">,</span> <span class="n">lons_new</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Tools for working with Rotated Lat/Lon Grids.</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a>
+</span><span id="L-5"><a href="#L-5"><span class="linenos">  5</span></a><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
+</span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="n">RAD2DEG</span> <span class="o">=</span> <span class="mf">57.29577951308232087684</span>
+</span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="n">DEG2RAD</span> <span class="o">=</span> <span class="mf">0.01745329251994329576</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
+</span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    Perform grid rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
+</span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    void function, rotate().</span>
+</span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
+</span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
+</span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="sd">    Parameters</span>
+</span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    ----------</span>
+</span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    **`latin`**: `float or array_like`</span>
+</span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a>
+</span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a><span class="sd">    Latitudes in units of degrees.</span>
+</span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a>
+</span><span id="L-24"><a href="#L-24"><span class="linenos"> 24</span></a><span class="sd">    **`lonin`**: `float or array_like`</span>
+</span><span id="L-25"><a href="#L-25"><span class="linenos"> 25</span></a>
+</span><span id="L-26"><a href="#L-26"><span class="linenos"> 26</span></a><span class="sd">    Longitudes in units of degrees.</span>
+</span><span id="L-27"><a href="#L-27"><span class="linenos"> 27</span></a>
+</span><span id="L-28"><a href="#L-28"><span class="linenos"> 28</span></a><span class="sd">    **`aor`**: `float`</span>
+</span><span id="L-29"><a href="#L-29"><span class="linenos"> 29</span></a>
+</span><span id="L-30"><a href="#L-30"><span class="linenos"> 30</span></a><span class="sd">    Angle of rotation as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-31"><a href="#L-31"><span class="linenos"> 31</span></a>
+</span><span id="L-32"><a href="#L-32"><span class="linenos"> 32</span></a><span class="sd">    **`splat`**: `float`</span>
+</span><span id="L-33"><a href="#L-33"><span class="linenos"> 33</span></a>
+</span><span id="L-34"><a href="#L-34"><span class="linenos"> 34</span></a><span class="sd">    Latitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-35"><a href="#L-35"><span class="linenos"> 35</span></a>
+</span><span id="L-36"><a href="#L-36"><span class="linenos"> 36</span></a><span class="sd">    **`splon`**: `float`</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a>
+</span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">    Longitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">    Returns</span>
+</span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a><span class="sd">    -------</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
+</span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">    **`lats, lons : numpy.ndarray`**</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
+</span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    longitudes in units of degrees.</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">    &quot;&quot;&quot;</span> 
+</span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="n">zxmxc</span>  <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos"> 51</span></a>    <span class="n">zsxmxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">zxmxc</span><span class="p">)</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos"> 52</span></a>    <span class="n">zcxmxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">zxmxc</span><span class="p">)</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos"> 53</span></a>    <span class="n">zsyreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">latin</span><span class="p">)</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos"> 54</span></a>    <span class="n">zcyreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">latin</span><span class="p">)</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos"> 55</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">zcycen</span> <span class="o">*</span> <span class="n">zsyreg</span> <span class="o">-</span> <span class="n">zsycen</span> <span class="o">*</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zcxmxc</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos"> 56</span></a>
+</span><span id="L-57"><a href="#L-57"><span class="linenos"> 57</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsyrot</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zsyrot</span><span class="p">)</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos"> 58</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsyrot</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zsyrot</span><span class="p">)</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos"> 59</span></a>
+</span><span id="L-60"><a href="#L-60"><span class="linenos"> 60</span></a>    <span class="n">pyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">zsyrot</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos"> 61</span></a>
+</span><span id="L-62"><a href="#L-62"><span class="linenos"> 62</span></a>    <span class="n">zcyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pyrot</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos"> 63</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="p">(</span><span class="n">zcycen</span> <span class="o">*</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zcxmxc</span> <span class="o">+</span> <span class="n">zsycen</span> <span class="o">*</span> <span class="n">zsyreg</span><span class="p">)</span> <span class="o">/</span> <span class="n">zcyrot</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos"> 64</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zcxrot</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zcxrot</span><span class="p">)</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos"> 65</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zcxrot</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zcxrot</span><span class="p">)</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos"> 66</span></a>    <span class="n">zsxrot</span> <span class="o">=</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zsxmxc</span> <span class="o">/</span> <span class="n">zcyrot</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos"> 67</span></a>
+</span><span id="L-68"><a href="#L-68"><span class="linenos"> 68</span></a>    <span class="n">pxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">zcxrot</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="L-69"><a href="#L-69"><span class="linenos"> 69</span></a>
+</span><span id="L-70"><a href="#L-70"><span class="linenos"> 70</span></a>    <span class="n">pxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsxrot</span><span class="o">&lt;</span><span class="mf">0.0</span><span class="p">,</span><span class="o">-</span><span class="n">pxrot</span><span class="p">,</span><span class="n">pxrot</span><span class="p">)</span>
+</span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
+</span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>    <span class="k">return</span> <span class="n">pyrot</span><span class="p">,</span> <span class="n">pxrot</span>
+</span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
+</span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="k">def</span> <span class="nf">unrotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    Perform grid un-rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
+</span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    void function, unrotate().</span>
+</span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
+</span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a>
+</span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    Parameters</span>
+</span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a><span class="sd">    ----------</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a>
+</span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    **`latin`**: `float or array_like`</span>
+</span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
+</span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    Latitudes in units of degrees.</span>
+</span><span id="L-88"><a href="#L-88"><span class="linenos"> 88</span></a>
+</span><span id="L-89"><a href="#L-89"><span class="linenos"> 89</span></a><span class="sd">    **`lonin`**: `float or array_like`</span>
+</span><span id="L-90"><a href="#L-90"><span class="linenos"> 90</span></a>
+</span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">    Longitudes in units of degrees.</span>
+</span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a>
+</span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">    **`aor`**: `float`</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a>
+</span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a><span class="sd">    Angle of rotation as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
+</span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a><span class="sd">    **`splat`**: `float`</span>
+</span><span id="L-98"><a href="#L-98"><span class="linenos"> 98</span></a>
+</span><span id="L-99"><a href="#L-99"><span class="linenos"> 99</span></a><span class="sd">    Latitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-100"><a href="#L-100"><span class="linenos">100</span></a>
+</span><span id="L-101"><a href="#L-101"><span class="linenos">101</span></a><span class="sd">    **`splon`**: `float`</span>
+</span><span id="L-102"><a href="#L-102"><span class="linenos">102</span></a>
+</span><span id="L-103"><a href="#L-103"><span class="linenos">103</span></a><span class="sd">    Longitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="L-104"><a href="#L-104"><span class="linenos">104</span></a>
+</span><span id="L-105"><a href="#L-105"><span class="linenos">105</span></a><span class="sd">    Returns</span>
+</span><span id="L-106"><a href="#L-106"><span class="linenos">106</span></a><span class="sd">    -------</span>
+</span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a>
+</span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">    **`lats, lons : numpy.ndarray`**</span>
+</span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
+</span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a><span class="sd">    longitudes in units of degrees.</span>
+</span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>    <span class="n">lon_x</span> <span class="o">=</span> <span class="n">lonin</span>
+</span><span id="L-114"><a href="#L-114"><span class="linenos">114</span></a>    <span class="n">lat_y</span> <span class="o">=</span> <span class="n">latin</span>
+</span><span id="L-115"><a href="#L-115"><span class="linenos">115</span></a>
+</span><span id="L-116"><a href="#L-116"><span class="linenos">116</span></a>    <span class="n">latr</span> <span class="o">=</span> <span class="n">lat_y</span> <span class="o">*</span> <span class="n">DEG2RAD</span>
+</span><span id="L-117"><a href="#L-117"><span class="linenos">117</span></a>    <span class="n">lonr</span> <span class="o">=</span> <span class="n">lon_x</span> <span class="o">*</span> <span class="n">DEG2RAD</span>
+</span><span id="L-118"><a href="#L-118"><span class="linenos">118</span></a>
+</span><span id="L-119"><a href="#L-119"><span class="linenos">119</span></a>    <span class="n">xd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lonr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="L-120"><a href="#L-120"><span class="linenos">120</span></a>    <span class="n">yd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lonr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="L-121"><a href="#L-121"><span class="linenos">121</span></a>    <span class="n">zd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="L-122"><a href="#L-122"><span class="linenos">122</span></a>
+</span><span id="L-123"><a href="#L-123"><span class="linenos">123</span></a>    <span class="n">t</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">90.0</span> <span class="o">+</span> <span class="n">splat</span><span class="p">)</span>
+</span><span id="L-124"><a href="#L-124"><span class="linenos">124</span></a>    <span class="n">o</span> <span class="o">=</span> <span class="o">-</span><span class="n">splon</span>
+</span><span id="L-125"><a href="#L-125"><span class="linenos">125</span></a>
+</span><span id="L-126"><a href="#L-126"><span class="linenos">126</span></a>    <span class="n">sin_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+</span><span id="L-127"><a href="#L-127"><span class="linenos">127</span></a>    <span class="n">cos_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+</span><span id="L-128"><a href="#L-128"><span class="linenos">128</span></a>    <span class="n">sin_o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">o</span><span class="p">)</span>
+</span><span id="L-129"><a href="#L-129"><span class="linenos">129</span></a>    <span class="n">cos_o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">o</span><span class="p">)</span>
+</span><span id="L-130"><a href="#L-130"><span class="linenos">130</span></a>
+</span><span id="L-131"><a href="#L-131"><span class="linenos">131</span></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">cos_t</span> <span class="o">*</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">yd</span> <span class="o">+</span> <span class="n">sin_t</span> <span class="o">*</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="L-132"><a href="#L-132"><span class="linenos">132</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="n">cos_t</span> <span class="o">*</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">yd</span> <span class="o">-</span> <span class="n">sin_t</span> <span class="o">*</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin_t</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">cos_t</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>
+</span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>
+</span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="c1"># Then convert back to &#39;normal&#39; (lat,lon)</span>
+</span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="c1"># Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error</span>
+</span><span id="L-140"><a href="#L-140"><span class="linenos">140</span></a>    <span class="c1"># avoid error on calculating e.g. asin(1.00000001)</span>
+</span><span id="L-141"><a href="#L-141"><span class="linenos">141</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+</span><span id="L-142"><a href="#L-142"><span class="linenos">142</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+</span><span id="L-143"><a href="#L-143"><span class="linenos">143</span></a>
+</span><span id="L-144"><a href="#L-144"><span class="linenos">144</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="L-145"><a href="#L-145"><span class="linenos">145</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="L-146"><a href="#L-146"><span class="linenos">146</span></a>
+</span><span id="L-147"><a href="#L-147"><span class="linenos">147</span></a>    <span class="c1"># Still get a very small rounding error, round to 6 decimal places</span>
+</span><span id="L-148"><a href="#L-148"><span class="linenos">148</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ret_lat</span> <span class="o">*</span> <span class="mf">1000000.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span>
+</span><span id="L-149"><a href="#L-149"><span class="linenos">149</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ret_lon</span> <span class="o">*</span> <span class="mf">1000000.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span>
+</span><span id="L-150"><a href="#L-150"><span class="linenos">150</span></a>
+</span><span id="L-151"><a href="#L-151"><span class="linenos">151</span></a>    <span class="n">ret_lon</span> <span class="o">-=</span> <span class="n">aor</span>
+</span><span id="L-152"><a href="#L-152"><span class="linenos">152</span></a>
+</span><span id="L-153"><a href="#L-153"><span class="linenos">153</span></a>    <span class="k">return</span> <span class="n">ret_lat</span><span class="p">,</span> <span class="n">ret_lon</span>
 </span></pre></div>
 
 
             </section>
-                <section id="rotated_grid_transform">
-                            <input id="rotated_grid_transform-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+                <section id="rotate">
+                            <input id="rotate-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">rotated_grid_transform</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">lats</span>, </span><span class="param"><span class="n">lons</span>, </span><span class="param"><span class="n">lat_sp</span>, </span><span class="param"><span class="n">lon_sp</span>, </span><span class="param"><span class="n">option</span><span class="o">=</span><span class="mi">2</span></span><span class="return-annotation">):</span></span>
+        <span class="name">rotate</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">latin</span>, </span><span class="param"><span class="n">lonin</span>, </span><span class="param"><span class="n">aor</span>, </span><span class="param"><span class="n">splat</span>, </span><span class="param"><span class="n">splon</span></span><span class="return-annotation">):</span></span>
 
-                <label class="view-source-button" for="rotated_grid_transform-view-source"><span>View Source</span></label>
+                <label class="view-source-button" for="rotate-view-source"><span>View Source</span></label>
 
     </div>
-    <a class="headerlink" href="#rotated_grid_transform"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="rotated_grid_transform-9"><a href="#rotated_grid_transform-9"><span class="linenos"> 9</span></a><span class="k">def</span> <span class="nf">rotated_grid_transform</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lat_sp</span><span class="p">,</span> <span class="n">lon_sp</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
-</span><span id="rotated_grid_transform-10"><a href="#rotated_grid_transform-10"><span class="linenos">10</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="rotated_grid_transform-11"><a href="#rotated_grid_transform-11"><span class="linenos">11</span></a><span class="sd">    Transform latitude and longitude from regular to rotated and vice-versa.</span>
-</span><span id="rotated_grid_transform-12"><a href="#rotated_grid_transform-12"><span class="linenos">12</span></a>
-</span><span id="rotated_grid_transform-13"><a href="#rotated_grid_transform-13"><span class="linenos">13</span></a><span class="sd">    Adapted from: https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform</span>
-</span><span id="rotated_grid_transform-14"><a href="#rotated_grid_transform-14"><span class="linenos">14</span></a>
-</span><span id="rotated_grid_transform-15"><a href="#rotated_grid_transform-15"><span class="linenos">15</span></a><span class="sd">    Parameters</span>
-</span><span id="rotated_grid_transform-16"><a href="#rotated_grid_transform-16"><span class="linenos">16</span></a><span class="sd">    ----------</span>
-</span><span id="rotated_grid_transform-17"><a href="#rotated_grid_transform-17"><span class="linenos">17</span></a>
-</span><span id="rotated_grid_transform-18"><a href="#rotated_grid_transform-18"><span class="linenos">18</span></a><span class="sd">    **`lats : array_like`**:</span>
-</span><span id="rotated_grid_transform-19"><a href="#rotated_grid_transform-19"><span class="linenos">19</span></a>
-</span><span id="rotated_grid_transform-20"><a href="#rotated_grid_transform-20"><span class="linenos">20</span></a><span class="sd">    Input latitudes in degrees.</span>
-</span><span id="rotated_grid_transform-21"><a href="#rotated_grid_transform-21"><span class="linenos">21</span></a><span class="sd">    </span>
-</span><span id="rotated_grid_transform-22"><a href="#rotated_grid_transform-22"><span class="linenos">22</span></a><span class="sd">    **`lats : array_like`**:</span>
-</span><span id="rotated_grid_transform-23"><a href="#rotated_grid_transform-23"><span class="linenos">23</span></a>
-</span><span id="rotated_grid_transform-24"><a href="#rotated_grid_transform-24"><span class="linenos">24</span></a><span class="sd">    Input longitudes in degrees.</span>
-</span><span id="rotated_grid_transform-25"><a href="#rotated_grid_transform-25"><span class="linenos">25</span></a>
-</span><span id="rotated_grid_transform-26"><a href="#rotated_grid_transform-26"><span class="linenos">26</span></a><span class="sd">    **`lat_sp : float`**:</span>
-</span><span id="rotated_grid_transform-27"><a href="#rotated_grid_transform-27"><span class="linenos">27</span></a>
-</span><span id="rotated_grid_transform-28"><a href="#rotated_grid_transform-28"><span class="linenos">28</span></a><span class="sd">    Latitude of the Southern Pole.</span>
-</span><span id="rotated_grid_transform-29"><a href="#rotated_grid_transform-29"><span class="linenos">29</span></a>
-</span><span id="rotated_grid_transform-30"><a href="#rotated_grid_transform-30"><span class="linenos">30</span></a><span class="sd">    **`lon_sp : float`**:</span>
-</span><span id="rotated_grid_transform-31"><a href="#rotated_grid_transform-31"><span class="linenos">31</span></a>
-</span><span id="rotated_grid_transform-32"><a href="#rotated_grid_transform-32"><span class="linenos">32</span></a><span class="sd">    Longitude of the Southern Pole.</span>
-</span><span id="rotated_grid_transform-33"><a href="#rotated_grid_transform-33"><span class="linenos">33</span></a>
-</span><span id="rotated_grid_transform-34"><a href="#rotated_grid_transform-34"><span class="linenos">34</span></a><span class="sd">    **`option : int`**:</span>
-</span><span id="rotated_grid_transform-35"><a href="#rotated_grid_transform-35"><span class="linenos">35</span></a>
-</span><span id="rotated_grid_transform-36"><a href="#rotated_grid_transform-36"><span class="linenos">36</span></a><span class="sd">    Transform regular to rotated (1) or rotated to regular (2) [DEFAULT].</span>
-</span><span id="rotated_grid_transform-37"><a href="#rotated_grid_transform-37"><span class="linenos">37</span></a>
-</span><span id="rotated_grid_transform-38"><a href="#rotated_grid_transform-38"><span class="linenos">38</span></a><span class="sd">    Returns</span>
-</span><span id="rotated_grid_transform-39"><a href="#rotated_grid_transform-39"><span class="linenos">39</span></a><span class="sd">    -------</span>
-</span><span id="rotated_grid_transform-40"><a href="#rotated_grid_transform-40"><span class="linenos">40</span></a><span class="sd">    </span>
-</span><span id="rotated_grid_transform-41"><a href="#rotated_grid_transform-41"><span class="linenos">41</span></a><span class="sd">    Sequence of transformed latitude, longitude in degrees.</span>
-</span><span id="rotated_grid_transform-42"><a href="#rotated_grid_transform-42"><span class="linenos">42</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="rotated_grid_transform-43"><a href="#rotated_grid_transform-43"><span class="linenos">43</span></a>
-</span><span id="rotated_grid_transform-44"><a href="#rotated_grid_transform-44"><span class="linenos">44</span></a>    <span class="c1"># Convert lats and lons degress to radians</span>
-</span><span id="rotated_grid_transform-45"><a href="#rotated_grid_transform-45"><span class="linenos">45</span></a>    <span class="n">lons</span> <span class="o">=</span> <span class="p">(</span><span class="n">lons</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="rotated_grid_transform-46"><a href="#rotated_grid_transform-46"><span class="linenos">46</span></a>    <span class="n">lats</span> <span class="o">=</span> <span class="p">(</span><span class="n">lats</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="rotated_grid_transform-47"><a href="#rotated_grid_transform-47"><span class="linenos">47</span></a>
-</span><span id="rotated_grid_transform-48"><a href="#rotated_grid_transform-48"><span class="linenos">48</span></a>    <span class="n">theta</span> <span class="o">=</span> <span class="mf">90.0</span> <span class="o">+</span> <span class="n">lat_sp</span> <span class="c1"># Rotation around y-axis</span>
-</span><span id="rotated_grid_transform-49"><a href="#rotated_grid_transform-49"><span class="linenos">49</span></a>    <span class="n">phi</span> <span class="o">=</span> <span class="n">lon_sp</span> <span class="c1"># Rotation around z-axis</span>
-</span><span id="rotated_grid_transform-50"><a href="#rotated_grid_transform-50"><span class="linenos">50</span></a>
-</span><span id="rotated_grid_transform-51"><a href="#rotated_grid_transform-51"><span class="linenos">51</span></a>    <span class="c1"># Convert to radians</span>
-</span><span id="rotated_grid_transform-52"><a href="#rotated_grid_transform-52"><span class="linenos">52</span></a>    <span class="n">theta</span> <span class="o">=</span> <span class="p">(</span><span class="n">theta</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="rotated_grid_transform-53"><a href="#rotated_grid_transform-53"><span class="linenos">53</span></a>    <span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">phi</span><span class="o">*</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">/</span> <span class="mf">180.0</span>
-</span><span id="rotated_grid_transform-54"><a href="#rotated_grid_transform-54"><span class="linenos">54</span></a>
-</span><span id="rotated_grid_transform-55"><a href="#rotated_grid_transform-55"><span class="linenos">55</span></a>    <span class="c1"># Convert from spherical to cartesian coordinates</span>
-</span><span id="rotated_grid_transform-56"><a href="#rotated_grid_transform-56"><span class="linenos">56</span></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="rotated_grid_transform-57"><a href="#rotated_grid_transform-57"><span class="linenos">57</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="rotated_grid_transform-58"><a href="#rotated_grid_transform-58"><span class="linenos">58</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="rotated_grid_transform-59"><a href="#rotated_grid_transform-59"><span class="linenos">59</span></a>
-</span><span id="rotated_grid_transform-60"><a href="#rotated_grid_transform-60"><span class="linenos">60</span></a>    <span class="k">if</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span> <span class="c1"># Regular -&gt; Rotated</span>
-</span><span id="rotated_grid_transform-61"><a href="#rotated_grid_transform-61"><span class="linenos">61</span></a>
-</span><span id="rotated_grid_transform-62"><a href="#rotated_grid_transform-62"><span class="linenos">62</span></a>        <span class="n">x_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="rotated_grid_transform-63"><a href="#rotated_grid_transform-63"><span class="linenos">63</span></a>        <span class="n">y_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span>
-</span><span id="rotated_grid_transform-64"><a href="#rotated_grid_transform-64"><span class="linenos">64</span></a>        <span class="n">z_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="rotated_grid_transform-65"><a href="#rotated_grid_transform-65"><span class="linenos">65</span></a>
-</span><span id="rotated_grid_transform-66"><a href="#rotated_grid_transform-66"><span class="linenos">66</span></a>    <span class="k">elif</span> <span class="n">option</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>  <span class="c1"># Rotated -&gt; Regular</span>
-</span><span id="rotated_grid_transform-67"><a href="#rotated_grid_transform-67"><span class="linenos">67</span></a>
-</span><span id="rotated_grid_transform-68"><a href="#rotated_grid_transform-68"><span class="linenos">68</span></a>        <span class="n">phi</span> <span class="o">=</span> <span class="o">-</span><span class="n">phi</span>
-</span><span id="rotated_grid_transform-69"><a href="#rotated_grid_transform-69"><span class="linenos">69</span></a>        <span class="n">theta</span> <span class="o">=</span> <span class="o">-</span><span class="n">theta</span>
-</span><span id="rotated_grid_transform-70"><a href="#rotated_grid_transform-70"><span class="linenos">70</span></a>
-</span><span id="rotated_grid_transform-71"><a href="#rotated_grid_transform-71"><span class="linenos">71</span></a>        <span class="n">x_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="rotated_grid_transform-72"><a href="#rotated_grid_transform-72"><span class="linenos">72</span></a>        <span class="n">y_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="rotated_grid_transform-73"><a href="#rotated_grid_transform-73"><span class="linenos">73</span></a>        <span class="n">z_new</span> <span class="o">=</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span><span class="o">*</span><span class="n">z</span>
-</span><span id="rotated_grid_transform-74"><a href="#rotated_grid_transform-74"><span class="linenos">74</span></a>
-</span><span id="rotated_grid_transform-75"><a href="#rotated_grid_transform-75"><span class="linenos">75</span></a>    <span class="c1"># Convert cartesian back to spherical coordinates</span>
-</span><span id="rotated_grid_transform-76"><a href="#rotated_grid_transform-76"><span class="linenos">76</span></a>    <span class="n">lons_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y_new</span><span class="p">,</span><span class="n">x_new</span><span class="p">)</span>
-</span><span id="rotated_grid_transform-77"><a href="#rotated_grid_transform-77"><span class="linenos">77</span></a>    <span class="n">lats_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">z_new</span><span class="p">)</span>
-</span><span id="rotated_grid_transform-78"><a href="#rotated_grid_transform-78"><span class="linenos">78</span></a>
-</span><span id="rotated_grid_transform-79"><a href="#rotated_grid_transform-79"><span class="linenos">79</span></a>    <span class="c1"># Convert radians back to degrees</span>
-</span><span id="rotated_grid_transform-80"><a href="#rotated_grid_transform-80"><span class="linenos">80</span></a>    <span class="n">lons_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">lons_new</span><span class="o">*</span><span class="mf">180.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="c1"># Convert radians back to degrees</span>
-</span><span id="rotated_grid_transform-81"><a href="#rotated_grid_transform-81"><span class="linenos">81</span></a>    <span class="n">lats_new</span> <span class="o">=</span> <span class="p">(</span><span class="n">lats_new</span><span class="o">*</span><span class="mf">180.0</span><span class="p">)</span> <span class="o">/</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
-</span><span id="rotated_grid_transform-82"><a href="#rotated_grid_transform-82"><span class="linenos">82</span></a>
-</span><span id="rotated_grid_transform-83"><a href="#rotated_grid_transform-83"><span class="linenos">83</span></a>    <span class="k">return</span> <span class="n">lats_new</span><span class="p">,</span> <span class="n">lons_new</span>
+    <a class="headerlink" href="#rotate"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="rotate-11"><a href="#rotate-11"><span class="linenos">11</span></a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
+</span><span id="rotate-12"><a href="#rotate-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="rotate-13"><a href="#rotate-13"><span class="linenos">13</span></a><span class="sd">    Perform grid rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
+</span><span id="rotate-14"><a href="#rotate-14"><span class="linenos">14</span></a><span class="sd">    void function, rotate().</span>
+</span><span id="rotate-15"><a href="#rotate-15"><span class="linenos">15</span></a>
+</span><span id="rotate-16"><a href="#rotate-16"><span class="linenos">16</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
+</span><span id="rotate-17"><a href="#rotate-17"><span class="linenos">17</span></a>
+</span><span id="rotate-18"><a href="#rotate-18"><span class="linenos">18</span></a><span class="sd">    Parameters</span>
+</span><span id="rotate-19"><a href="#rotate-19"><span class="linenos">19</span></a><span class="sd">    ----------</span>
+</span><span id="rotate-20"><a href="#rotate-20"><span class="linenos">20</span></a>
+</span><span id="rotate-21"><a href="#rotate-21"><span class="linenos">21</span></a><span class="sd">    **`latin`**: `float or array_like`</span>
+</span><span id="rotate-22"><a href="#rotate-22"><span class="linenos">22</span></a>
+</span><span id="rotate-23"><a href="#rotate-23"><span class="linenos">23</span></a><span class="sd">    Latitudes in units of degrees.</span>
+</span><span id="rotate-24"><a href="#rotate-24"><span class="linenos">24</span></a>
+</span><span id="rotate-25"><a href="#rotate-25"><span class="linenos">25</span></a><span class="sd">    **`lonin`**: `float or array_like`</span>
+</span><span id="rotate-26"><a href="#rotate-26"><span class="linenos">26</span></a>
+</span><span id="rotate-27"><a href="#rotate-27"><span class="linenos">27</span></a><span class="sd">    Longitudes in units of degrees.</span>
+</span><span id="rotate-28"><a href="#rotate-28"><span class="linenos">28</span></a>
+</span><span id="rotate-29"><a href="#rotate-29"><span class="linenos">29</span></a><span class="sd">    **`aor`**: `float`</span>
+</span><span id="rotate-30"><a href="#rotate-30"><span class="linenos">30</span></a>
+</span><span id="rotate-31"><a href="#rotate-31"><span class="linenos">31</span></a><span class="sd">    Angle of rotation as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="rotate-32"><a href="#rotate-32"><span class="linenos">32</span></a>
+</span><span id="rotate-33"><a href="#rotate-33"><span class="linenos">33</span></a><span class="sd">    **`splat`**: `float`</span>
+</span><span id="rotate-34"><a href="#rotate-34"><span class="linenos">34</span></a>
+</span><span id="rotate-35"><a href="#rotate-35"><span class="linenos">35</span></a><span class="sd">    Latitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="rotate-36"><a href="#rotate-36"><span class="linenos">36</span></a>
+</span><span id="rotate-37"><a href="#rotate-37"><span class="linenos">37</span></a><span class="sd">    **`splon`**: `float`</span>
+</span><span id="rotate-38"><a href="#rotate-38"><span class="linenos">38</span></a>
+</span><span id="rotate-39"><a href="#rotate-39"><span class="linenos">39</span></a><span class="sd">    Longitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="rotate-40"><a href="#rotate-40"><span class="linenos">40</span></a>
+</span><span id="rotate-41"><a href="#rotate-41"><span class="linenos">41</span></a><span class="sd">    Returns</span>
+</span><span id="rotate-42"><a href="#rotate-42"><span class="linenos">42</span></a><span class="sd">    -------</span>
+</span><span id="rotate-43"><a href="#rotate-43"><span class="linenos">43</span></a>
+</span><span id="rotate-44"><a href="#rotate-44"><span class="linenos">44</span></a><span class="sd">    **`lats, lons : numpy.ndarray`**</span>
+</span><span id="rotate-45"><a href="#rotate-45"><span class="linenos">45</span></a>
+</span><span id="rotate-46"><a href="#rotate-46"><span class="linenos">46</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
+</span><span id="rotate-47"><a href="#rotate-47"><span class="linenos">47</span></a><span class="sd">    longitudes in units of degrees.</span>
+</span><span id="rotate-48"><a href="#rotate-48"><span class="linenos">48</span></a><span class="sd">    &quot;&quot;&quot;</span> 
+</span><span id="rotate-49"><a href="#rotate-49"><span class="linenos">49</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
+</span><span id="rotate-50"><a href="#rotate-50"><span class="linenos">50</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
+</span><span id="rotate-51"><a href="#rotate-51"><span class="linenos">51</span></a>    <span class="n">zxmxc</span>  <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
+</span><span id="rotate-52"><a href="#rotate-52"><span class="linenos">52</span></a>    <span class="n">zsxmxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">zxmxc</span><span class="p">)</span>
+</span><span id="rotate-53"><a href="#rotate-53"><span class="linenos">53</span></a>    <span class="n">zcxmxc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">zxmxc</span><span class="p">)</span>
+</span><span id="rotate-54"><a href="#rotate-54"><span class="linenos">54</span></a>    <span class="n">zsyreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">latin</span><span class="p">)</span>
+</span><span id="rotate-55"><a href="#rotate-55"><span class="linenos">55</span></a>    <span class="n">zcyreg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">latin</span><span class="p">)</span>
+</span><span id="rotate-56"><a href="#rotate-56"><span class="linenos">56</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">zcycen</span> <span class="o">*</span> <span class="n">zsyreg</span> <span class="o">-</span> <span class="n">zsycen</span> <span class="o">*</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zcxmxc</span>
+</span><span id="rotate-57"><a href="#rotate-57"><span class="linenos">57</span></a>
+</span><span id="rotate-58"><a href="#rotate-58"><span class="linenos">58</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsyrot</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zsyrot</span><span class="p">)</span>
+</span><span id="rotate-59"><a href="#rotate-59"><span class="linenos">59</span></a>    <span class="n">zsyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsyrot</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zsyrot</span><span class="p">)</span>
+</span><span id="rotate-60"><a href="#rotate-60"><span class="linenos">60</span></a>
+</span><span id="rotate-61"><a href="#rotate-61"><span class="linenos">61</span></a>    <span class="n">pyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">zsyrot</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="rotate-62"><a href="#rotate-62"><span class="linenos">62</span></a>
+</span><span id="rotate-63"><a href="#rotate-63"><span class="linenos">63</span></a>    <span class="n">zcyrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">pyrot</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
+</span><span id="rotate-64"><a href="#rotate-64"><span class="linenos">64</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="p">(</span><span class="n">zcycen</span> <span class="o">*</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zcxmxc</span> <span class="o">+</span> <span class="n">zsycen</span> <span class="o">*</span> <span class="n">zsyreg</span><span class="p">)</span> <span class="o">/</span> <span class="n">zcyrot</span>
+</span><span id="rotate-65"><a href="#rotate-65"><span class="linenos">65</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zcxrot</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zcxrot</span><span class="p">)</span>
+</span><span id="rotate-66"><a href="#rotate-66"><span class="linenos">66</span></a>    <span class="n">zcxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zcxrot</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">zcxrot</span><span class="p">)</span>
+</span><span id="rotate-67"><a href="#rotate-67"><span class="linenos">67</span></a>    <span class="n">zsxrot</span> <span class="o">=</span> <span class="n">zcyreg</span> <span class="o">*</span> <span class="n">zsxmxc</span> <span class="o">/</span> <span class="n">zcyrot</span>
+</span><span id="rotate-68"><a href="#rotate-68"><span class="linenos">68</span></a>
+</span><span id="rotate-69"><a href="#rotate-69"><span class="linenos">69</span></a>    <span class="n">pxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arccos</span><span class="p">(</span><span class="n">zcxrot</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="rotate-70"><a href="#rotate-70"><span class="linenos">70</span></a>
+</span><span id="rotate-71"><a href="#rotate-71"><span class="linenos">71</span></a>    <span class="n">pxrot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">zsxrot</span><span class="o">&lt;</span><span class="mf">0.0</span><span class="p">,</span><span class="o">-</span><span class="n">pxrot</span><span class="p">,</span><span class="n">pxrot</span><span class="p">)</span>
+</span><span id="rotate-72"><a href="#rotate-72"><span class="linenos">72</span></a>
+</span><span id="rotate-73"><a href="#rotate-73"><span class="linenos">73</span></a>    <span class="k">return</span> <span class="n">pyrot</span><span class="p">,</span> <span class="n">pxrot</span>
 </span></pre></div>
 
 
-            <div class="docstring"><p>Transform latitude and longitude from regular to rotated and vice-versa.</p>
+            <div class="docstring"><p>Perform grid rotation. This function is adapted from ECMWF's ecCodes library
+void function, rotate().</p>
 
-<p>Adapted from: <a href="https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform">https://www.mathworks.com/matlabcentral/fileexchange/43435-rotated-grid-transform</a></p>
+<p><a href="https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc">https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</a></p>
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>lats : array_like</code></strong>:</p>
+<p><strong><code>latin</code></strong>: <code>float or array_like</code></p>
 
-<p>Input latitudes in degrees.</p>
+<p>Latitudes in units of degrees.</p>
 
-<p><strong><code>lats : array_like</code></strong>:</p>
+<p><strong><code>lonin</code></strong>: <code>float or array_like</code></p>
 
-<p>Input longitudes in degrees.</p>
+<p>Longitudes in units of degrees.</p>
 
-<p><strong><code>lat_sp : float</code></strong>:</p>
+<p><strong><code>aor</code></strong>: <code>float</code></p>
 
-<p>Latitude of the Southern Pole.</p>
+<p>Angle of rotation as defined in GRIB2 GDTN 4.1.</p>
 
-<p><strong><code>lon_sp : float</code></strong>:</p>
+<p><strong><code>splat</code></strong>: <code>float</code></p>
 
-<p>Longitude of the Southern Pole.</p>
+<p>Latitude of South Pole as defined in GRIB2 GDTN 4.1.</p>
 
-<p><strong><code>option : int</code></strong>:</p>
+<p><strong><code>splon</code></strong>: <code>float</code></p>
 
-<p>Transform regular to rotated (1) or rotated to regular (2) [DEFAULT].</p>
+<p>Longitude of South Pole as defined in GRIB2 GDTN 4.1.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p>Sequence of transformed latitude, longitude in degrees.</p>
+<p><strong><code>lats, lons : numpy.ndarray</code></strong></p>
+
+<p>Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+longitudes in units of degrees.</p>
+</div>
+
+
+                </section>
+                <section id="unrotate">
+                            <input id="unrotate-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">unrotate</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">latin</span>, </span><span class="param"><span class="n">lonin</span>, </span><span class="param"><span class="n">aor</span>, </span><span class="param"><span class="n">splat</span>, </span><span class="param"><span class="n">splon</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="unrotate-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#unrotate"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="unrotate-76"><a href="#unrotate-76"><span class="linenos"> 76</span></a><span class="k">def</span> <span class="nf">unrotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
+</span><span id="unrotate-77"><a href="#unrotate-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="unrotate-78"><a href="#unrotate-78"><span class="linenos"> 78</span></a><span class="sd">    Perform grid un-rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
+</span><span id="unrotate-79"><a href="#unrotate-79"><span class="linenos"> 79</span></a><span class="sd">    void function, unrotate().</span>
+</span><span id="unrotate-80"><a href="#unrotate-80"><span class="linenos"> 80</span></a>
+</span><span id="unrotate-81"><a href="#unrotate-81"><span class="linenos"> 81</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
+</span><span id="unrotate-82"><a href="#unrotate-82"><span class="linenos"> 82</span></a>
+</span><span id="unrotate-83"><a href="#unrotate-83"><span class="linenos"> 83</span></a><span class="sd">    Parameters</span>
+</span><span id="unrotate-84"><a href="#unrotate-84"><span class="linenos"> 84</span></a><span class="sd">    ----------</span>
+</span><span id="unrotate-85"><a href="#unrotate-85"><span class="linenos"> 85</span></a>
+</span><span id="unrotate-86"><a href="#unrotate-86"><span class="linenos"> 86</span></a><span class="sd">    **`latin`**: `float or array_like`</span>
+</span><span id="unrotate-87"><a href="#unrotate-87"><span class="linenos"> 87</span></a>
+</span><span id="unrotate-88"><a href="#unrotate-88"><span class="linenos"> 88</span></a><span class="sd">    Latitudes in units of degrees.</span>
+</span><span id="unrotate-89"><a href="#unrotate-89"><span class="linenos"> 89</span></a>
+</span><span id="unrotate-90"><a href="#unrotate-90"><span class="linenos"> 90</span></a><span class="sd">    **`lonin`**: `float or array_like`</span>
+</span><span id="unrotate-91"><a href="#unrotate-91"><span class="linenos"> 91</span></a>
+</span><span id="unrotate-92"><a href="#unrotate-92"><span class="linenos"> 92</span></a><span class="sd">    Longitudes in units of degrees.</span>
+</span><span id="unrotate-93"><a href="#unrotate-93"><span class="linenos"> 93</span></a>
+</span><span id="unrotate-94"><a href="#unrotate-94"><span class="linenos"> 94</span></a><span class="sd">    **`aor`**: `float`</span>
+</span><span id="unrotate-95"><a href="#unrotate-95"><span class="linenos"> 95</span></a>
+</span><span id="unrotate-96"><a href="#unrotate-96"><span class="linenos"> 96</span></a><span class="sd">    Angle of rotation as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="unrotate-97"><a href="#unrotate-97"><span class="linenos"> 97</span></a>
+</span><span id="unrotate-98"><a href="#unrotate-98"><span class="linenos"> 98</span></a><span class="sd">    **`splat`**: `float`</span>
+</span><span id="unrotate-99"><a href="#unrotate-99"><span class="linenos"> 99</span></a>
+</span><span id="unrotate-100"><a href="#unrotate-100"><span class="linenos">100</span></a><span class="sd">    Latitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="unrotate-101"><a href="#unrotate-101"><span class="linenos">101</span></a>
+</span><span id="unrotate-102"><a href="#unrotate-102"><span class="linenos">102</span></a><span class="sd">    **`splon`**: `float`</span>
+</span><span id="unrotate-103"><a href="#unrotate-103"><span class="linenos">103</span></a>
+</span><span id="unrotate-104"><a href="#unrotate-104"><span class="linenos">104</span></a><span class="sd">    Longitude of South Pole as defined in GRIB2 GDTN 4.1.</span>
+</span><span id="unrotate-105"><a href="#unrotate-105"><span class="linenos">105</span></a>
+</span><span id="unrotate-106"><a href="#unrotate-106"><span class="linenos">106</span></a><span class="sd">    Returns</span>
+</span><span id="unrotate-107"><a href="#unrotate-107"><span class="linenos">107</span></a><span class="sd">    -------</span>
+</span><span id="unrotate-108"><a href="#unrotate-108"><span class="linenos">108</span></a>
+</span><span id="unrotate-109"><a href="#unrotate-109"><span class="linenos">109</span></a><span class="sd">    **`lats, lons : numpy.ndarray`**</span>
+</span><span id="unrotate-110"><a href="#unrotate-110"><span class="linenos">110</span></a>
+</span><span id="unrotate-111"><a href="#unrotate-111"><span class="linenos">111</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
+</span><span id="unrotate-112"><a href="#unrotate-112"><span class="linenos">112</span></a><span class="sd">    longitudes in units of degrees.</span>
+</span><span id="unrotate-113"><a href="#unrotate-113"><span class="linenos">113</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="unrotate-114"><a href="#unrotate-114"><span class="linenos">114</span></a>    <span class="n">lon_x</span> <span class="o">=</span> <span class="n">lonin</span>
+</span><span id="unrotate-115"><a href="#unrotate-115"><span class="linenos">115</span></a>    <span class="n">lat_y</span> <span class="o">=</span> <span class="n">latin</span>
+</span><span id="unrotate-116"><a href="#unrotate-116"><span class="linenos">116</span></a>
+</span><span id="unrotate-117"><a href="#unrotate-117"><span class="linenos">117</span></a>    <span class="n">latr</span> <span class="o">=</span> <span class="n">lat_y</span> <span class="o">*</span> <span class="n">DEG2RAD</span>
+</span><span id="unrotate-118"><a href="#unrotate-118"><span class="linenos">118</span></a>    <span class="n">lonr</span> <span class="o">=</span> <span class="n">lon_x</span> <span class="o">*</span> <span class="n">DEG2RAD</span>
+</span><span id="unrotate-119"><a href="#unrotate-119"><span class="linenos">119</span></a>
+</span><span id="unrotate-120"><a href="#unrotate-120"><span class="linenos">120</span></a>    <span class="n">xd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lonr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="unrotate-121"><a href="#unrotate-121"><span class="linenos">121</span></a>    <span class="n">yd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lonr</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="unrotate-122"><a href="#unrotate-122"><span class="linenos">122</span></a>    <span class="n">zd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">latr</span><span class="p">)</span>
+</span><span id="unrotate-123"><a href="#unrotate-123"><span class="linenos">123</span></a>
+</span><span id="unrotate-124"><a href="#unrotate-124"><span class="linenos">124</span></a>    <span class="n">t</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="mf">90.0</span> <span class="o">+</span> <span class="n">splat</span><span class="p">)</span>
+</span><span id="unrotate-125"><a href="#unrotate-125"><span class="linenos">125</span></a>    <span class="n">o</span> <span class="o">=</span> <span class="o">-</span><span class="n">splon</span>
+</span><span id="unrotate-126"><a href="#unrotate-126"><span class="linenos">126</span></a>
+</span><span id="unrotate-127"><a href="#unrotate-127"><span class="linenos">127</span></a>    <span class="n">sin_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+</span><span id="unrotate-128"><a href="#unrotate-128"><span class="linenos">128</span></a>    <span class="n">cos_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">t</span><span class="p">)</span>
+</span><span id="unrotate-129"><a href="#unrotate-129"><span class="linenos">129</span></a>    <span class="n">sin_o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">o</span><span class="p">)</span>
+</span><span id="unrotate-130"><a href="#unrotate-130"><span class="linenos">130</span></a>    <span class="n">cos_o</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="n">o</span><span class="p">)</span>
+</span><span id="unrotate-131"><a href="#unrotate-131"><span class="linenos">131</span></a>
+</span><span id="unrotate-132"><a href="#unrotate-132"><span class="linenos">132</span></a>    <span class="n">x</span> <span class="o">=</span> <span class="n">cos_t</span> <span class="o">*</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">yd</span> <span class="o">+</span> <span class="n">sin_t</span> <span class="o">*</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="unrotate-133"><a href="#unrotate-133"><span class="linenos">133</span></a>    <span class="n">y</span> <span class="o">=</span> <span class="o">-</span><span class="n">cos_t</span> <span class="o">*</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">cos_o</span> <span class="o">*</span> <span class="n">yd</span> <span class="o">-</span> <span class="n">sin_t</span> <span class="o">*</span> <span class="n">sin_o</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="unrotate-134"><a href="#unrotate-134"><span class="linenos">134</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="o">-</span><span class="n">sin_t</span> <span class="o">*</span> <span class="n">xd</span> <span class="o">+</span> <span class="n">cos_t</span> <span class="o">*</span> <span class="n">zd</span>
+</span><span id="unrotate-135"><a href="#unrotate-135"><span class="linenos">135</span></a>
+</span><span id="unrotate-136"><a href="#unrotate-136"><span class="linenos">136</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="unrotate-137"><a href="#unrotate-137"><span class="linenos">137</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="unrotate-138"><a href="#unrotate-138"><span class="linenos">138</span></a>
+</span><span id="unrotate-139"><a href="#unrotate-139"><span class="linenos">139</span></a>    <span class="c1"># Then convert back to &#39;normal&#39; (lat,lon)</span>
+</span><span id="unrotate-140"><a href="#unrotate-140"><span class="linenos">140</span></a>    <span class="c1"># Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error</span>
+</span><span id="unrotate-141"><a href="#unrotate-141"><span class="linenos">141</span></a>    <span class="c1"># avoid error on calculating e.g. asin(1.00000001)</span>
+</span><span id="unrotate-142"><a href="#unrotate-142"><span class="linenos">142</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span><span class="o">&gt;</span><span class="mf">1.0</span><span class="p">,</span><span class="mf">1.0</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+</span><span id="unrotate-143"><a href="#unrotate-143"><span class="linenos">143</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span><span class="o">&lt;-</span><span class="mf">1.0</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">z</span><span class="p">)</span>
+</span><span id="unrotate-144"><a href="#unrotate-144"><span class="linenos">144</span></a>
+</span><span id="unrotate-145"><a href="#unrotate-145"><span class="linenos">145</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="unrotate-146"><a href="#unrotate-146"><span class="linenos">146</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="o">*</span> <span class="n">RAD2DEG</span>
+</span><span id="unrotate-147"><a href="#unrotate-147"><span class="linenos">147</span></a>
+</span><span id="unrotate-148"><a href="#unrotate-148"><span class="linenos">148</span></a>    <span class="c1"># Still get a very small rounding error, round to 6 decimal places</span>
+</span><span id="unrotate-149"><a href="#unrotate-149"><span class="linenos">149</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ret_lat</span> <span class="o">*</span> <span class="mf">1000000.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span>
+</span><span id="unrotate-150"><a href="#unrotate-150"><span class="linenos">150</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">ret_lon</span> <span class="o">*</span> <span class="mf">1000000.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">1000000.0</span>
+</span><span id="unrotate-151"><a href="#unrotate-151"><span class="linenos">151</span></a>
+</span><span id="unrotate-152"><a href="#unrotate-152"><span class="linenos">152</span></a>    <span class="n">ret_lon</span> <span class="o">-=</span> <span class="n">aor</span>
+</span><span id="unrotate-153"><a href="#unrotate-153"><span class="linenos">153</span></a>
+</span><span id="unrotate-154"><a href="#unrotate-154"><span class="linenos">154</span></a>    <span class="k">return</span> <span class="n">ret_lat</span><span class="p">,</span> <span class="n">ret_lon</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Perform grid un-rotation. This function is adapted from ECMWF's ecCodes library
+void function, unrotate().</p>
+
+<p><a href="https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc">https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</a></p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>latin</code></strong>: <code>float or array_like</code></p>
+
+<p>Latitudes in units of degrees.</p>
+
+<p><strong><code>lonin</code></strong>: <code>float or array_like</code></p>
+
+<p>Longitudes in units of degrees.</p>
+
+<p><strong><code>aor</code></strong>: <code>float</code></p>
+
+<p>Angle of rotation as defined in GRIB2 GDTN 4.1.</p>
+
+<p><strong><code>splat</code></strong>: <code>float</code></p>
+
+<p>Latitude of South Pole as defined in GRIB2 GDTN 4.1.</p>
+
+<p><strong><code>splon</code></strong>: <code>float</code></p>
+
+<p>Longitude of South Pole as defined in GRIB2 GDTN 4.1.</p>
+
+<h2 id="returns">Returns</h2>
+
+<p><strong><code>lats, lons : numpy.ndarray</code></strong></p>
+
+<p>Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
+longitudes in units of degrees.</p>
 </div>
 
 
