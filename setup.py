@@ -7,7 +7,7 @@ import os
 import platform
 import sys
 
-VERSION = '2.0.0b2'
+VERSION = '2.0.0b2.post1'
 
 build = False
 if 'build' in ''.join(sys.argv):
