@@ -46,7 +46,7 @@ pip install grib2io --user
 
 * Clone GitHub repository or download a source release from [GitHub](https://github.com/NOAA-MDL/grib2io) or [PyPI](https://pypi.python.org/pypi/grib2io).
 
-* Copy `setup.cfg.template` to `setup.cfg`, open in text editor, follow instructions in comments for editing **_OR_** in your shell environment, define the g2c, sp, and ip installation paths, `G2C_DIR`, `SP_DIR`, and `IP_DIR` respectively.
+* Edit `setup.cfg` to define the g2c, sp, and ip library installation paths __OR__ define `G2C_DIR`, `SP_DIR`, and `IP_DIR` environment variables.
 
 * Build and install.  Use `--user` to install into personal space (`$HOME/.local`).
 

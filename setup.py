@@ -15,7 +15,7 @@ if 'build' in ''.join(sys.argv):
 
 if build:
     args_save = sys.argv
-    sys.argv = [arg for arg in sys.argv if 'compiler' not in arg]
+    args_main = [arg for arg in sys.argv if 'compiler' not in arg]
 
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
@@ -215,6 +215,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py
 # ----------------------------------------------------------------------------------------
+if build:
+    sys.argv = args_main
 setup(name = 'grib2io',
       version = VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
