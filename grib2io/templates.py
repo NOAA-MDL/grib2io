@@ -1613,7 +1613,7 @@ class TypeOfMissingValueManagement:
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[6+2],table='5.5')
     def __set__(self, obj, value):
-        obj.section5[5+2] = value
+        obj.section5[6+2] = value
 
 class PriMissingValue:
     def __get__(self, obj, objtype=None):
