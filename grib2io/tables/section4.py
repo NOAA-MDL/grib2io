@@ -573,7 +573,6 @@ table_4_203 = {
 }
 
 table_4_204 = {
-'0':'None',
 '1':'Isolated (1-2%)',
 '2':'Few (3-5%)',
 '3':'Scattered (16-45%)',
@@ -600,7 +599,6 @@ table_4_206 = {
 }
 
 table_4_207 = {
-'0':'None',
 '1':'Light',
 '2':'Moderate',
 '3':'Severe',
@@ -612,7 +610,6 @@ table_4_207 = {
 }
 
 table_4_208 = {
-'0':'None',
 '1':'Light',
 '2':'Moderate',
 '3':'Severe',
@@ -804,7 +801,6 @@ table_4_224 = {
 }
 
 table_4_227 = {
-'0':'None',
 '1':'General',
 '2':'Convective',
 '3':'Stratiform',
@@ -815,7 +811,6 @@ table_4_227 = {
 }
 
 table_4_228 = {
-'0':'None',
 '1':'Trace',
 '2':'Light',
 '3':'Moderate',
@@ -1041,7 +1036,6 @@ table_4_248 = {
 }
 
 table_4_249 = {
-'0':'None',
 '1':'Showers',
 '2':'Intermittent',
 '3':'Continuous',
