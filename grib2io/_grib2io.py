@@ -255,6 +255,7 @@ class open():
                                     # Unpack Section 5
                                     _drt,_drtn,_npts,self._pos = g2clib.unpack5(_grbmsg,_grbpos,np.empty)
                                     section5 = np.concatenate((np.array((_npts,_drtn)),_drt))
+                                    section5 = np.where(section5==4294967295,-1,section5)
                                 elif secnum == 6:
                                     # Unpack Section 6. Not really...just get the flag value.
                                     _bmapflag = struct.unpack('>B',self._filehandle.read(1))[0]
@@ -822,13 +823,19 @@ class _Grib2Message:
         else:
             crdlist = None
 
+        # Prepare data for packing if nans are present
+        fld = np.ravel(fld)
+        if np.isnan(fld).any() and hasattr(self,'_missvalmap'):
+            fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
+            fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
+
         # Add sections 4, 5, 6 (if present), and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
                                                     self.productDefinitionTemplate,
                                                     crdlist,
                                                     self.drtn,
                                                     self.dataRepresentationTemplate,
-                                                    np.ravel(fld),
+                                                    fld,
                                                     bitmapflag,
                                                     bmap)
         self._sections.append(4)
@@ -1181,12 +1188,15 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
         # No bitmap, check missing values
         if hasattr(msg,'typeOfMissingValueManagement'):
             if msg.typeOfMissingValueManagement in {1,2}:
+                msg._missvalmap = np.zeros(fld1.shape,dtype=np.int8)
                 if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
+                    msg._missvalmap = np.where(fld1==msg.priMissingValue,1,msg._missvalmap)
                     fld1 = np.where(fld1==msg.priMissingValue,fill_value,fld1)
             if msg.typeOfMissingValueManagement == 2:
                 if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
+                    msg._missvalmap = np.where(fld1==msg.secMissingValue,2,msg._missvalmap)
                     fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
         fld = fld1
 
