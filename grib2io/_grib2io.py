@@ -1192,12 +1192,12 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
                 if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
                     msg._missvalmap = np.where(fld1==msg.priMissingValue,1,msg._missvalmap)
-                    fld1 = np.where(fld1==msg.priMissingValue,fill_value,fld1)
+                    fld1 = np.where(msg._missvalmap==1,fill_value,fld1)
             if msg.typeOfMissingValueManagement == 2:
                 if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
                     msg._missvalmap = np.where(fld1==msg.secMissingValue,2,msg._missvalmap)
-                    fld1 = np.where(fld1==msg.secMissingValue,fill_value,fld1)
+                    fld1 = np.where(msg._missvalmap==2,fill_value,fld1)
         fld = fld1
 
     # Check for reduced grid.
