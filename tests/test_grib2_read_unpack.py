@@ -1,24 +1,21 @@
 #!/usr/bin/env python3
 
 import glob
-import numpy as np
-import setuptools
+import sysconfig
 import sys
 
-platform = setuptools.distutils.util.get_platform()
-build_path = './build/lib.'+platform+'-'+str(sys.version_info.major)+'.'+str(sys.version_info.minor)
-sys.path.insert(0,build_path)
+def get_build_libdir():
+    f = 'lib.{A}-{B}'
+    return f.format(A=sysconfig.get_platform(),
+                    B=sys.implementation.cache_tag)
 
-import grib2io
-
-grib2io.show_config()
-
-for f in sorted(glob.glob('./data/*.grib2')):
-
-    g2file = grib2io.open(f)
-
-    for msg in g2file:
-
-        msg.data()
-
-    g2file.close()
+if __name__  == '__main__':
+    import glob
+    sys.path.insert(0,'../build/'+get_build_libdir())
+    import grib2io
+    print(grib2io.show_config())
+    g = grib2io.open('./data/gfs.t00z.pgrb2.1p00.f024')
+    for msg in g:
+        print(msg)
+        msg.data
+    g.close()
