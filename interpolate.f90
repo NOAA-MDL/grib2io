@@ -1,7 +1,7 @@
 subroutine interpolate(ip,ipopt,igdtnumi,igdtmpli,igdtleni, &
                        igdtnumo,igdtmplo,igdtleno, &
                        mi,mo,km,ibi,li,gi, &
-                       no,ibo,lo,go,iret)
+                       no,ibo,lo,go,rlat,rlon,iret)
 use ipolates_mod
 implicit none
 
@@ -26,13 +26,9 @@ integer, intent(out) :: no
 integer, intent(out), dimension(km) :: ibo
 logical(kind=1), intent(out), dimension(mo,km) :: lo
 real, intent(out), dimension(mo,km) :: go
+real, intent(inout), dimension(mo) :: rlat
+real, intent(inout), dimension(mo) :: rlon
 integer, intent(out) :: iret 
-
-! ---------------------------------------------------------------------------------------- 
-! Local variables
-! ---------------------------------------------------------------------------------------- 
-real, allocatable, dimension(:) :: rlat
-real, allocatable, dimension(:) :: rlon
 
 ! ---------------------------------------------------------------------------------------- 
 ! Initialize
@@ -41,25 +37,11 @@ iret=0
 no=0
 
 ! ---------------------------------------------------------------------------------------- 
-! Allocate lat lon arrays.
-! ---------------------------------------------------------------------------------------- 
-if(allocated(rlat))deallocate(rlat)
-allocate(rlat(mo))
-if(allocated(rlon))deallocate(rlon)
-allocate(rlon(mo))
-
-! ---------------------------------------------------------------------------------------- 
 ! Call NCEPLIBS-ip subroutine, ipolates_grib2 to perform interpolation of scalar fields
 ! using GRIB2 metadata.
 ! ---------------------------------------------------------------------------------------- 
 call ipolates_grib2(ip,ipopt,igdtnumi,igdtmpli,igdtleni,igdtnumo,igdtmplo,igdtleno, &
                     mi,mo,km,ibi,li,gi,no,rlat,rlon,ibo,lo,go,iret)
-
-! ---------------------------------------------------------------------------------------- 
-! Deallocate lat lon arrays.
-! ---------------------------------------------------------------------------------------- 
-if(allocated(rlat))deallocate(rlat)
-if(allocated(rlon))deallocate(rlon)
 
 return
 end subroutine interpolate
