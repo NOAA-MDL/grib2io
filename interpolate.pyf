@@ -3,7 +3,7 @@
 
 python module _interpolate ! in 
     interface  ! in :interpolate
-        subroutine interpolate(ip,ipopt,igdtnumi,igdtmpli,igdtleni,igdtnumo,igdtmplo,igdtleno,mi,mo,km,ibi,li,gi,no,ibo,lo,go,iret) ! in :interpolate:interpolate.f90
+        subroutine interpolate(ip,ipopt,igdtnumi,igdtmpli,igdtleni,igdtnumo,igdtmplo,igdtleno,mi,mo,km,ibi,li,gi,no,ibo,lo,go,rlat,rlon,iret) ! in :interpolate:interpolate.f90
             threadsafe
             use ipolates_mod
             integer intent(in) :: ip
@@ -24,6 +24,8 @@ python module _interpolate ! in
             integer dimension(km),intent(out),depend(km) :: ibo
             logical(kind=1) dimension(mo,km),intent(out),depend(mo,km) :: lo
             real dimension(mo,km),intent(inout),depend(mo,km) :: go
+            real dimension(mo),intent(inout),depend(mo) :: rlat
+            real dimension(mo),intent(inout),depend(mo) :: rlon
             integer intent(out) :: iret
         end subroutine interpolate
     end interface 

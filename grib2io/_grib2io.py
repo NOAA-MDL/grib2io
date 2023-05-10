@@ -1302,7 +1302,7 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
 
     if method_options is None:
         method_options = np.zeros((20),dtype=np.int32)
-        if method == 3:
+        if method in {3,6}:
             method_options[0:2] = -1
 
     ni = grid_def_in.nx*grid_def_in.ny
@@ -1320,11 +1320,113 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     ibi = np.zeros((a.shape[0]),dtype=np.int32)
     li = np.zeros(a.shape,dtype=np.int32)
     go = np.zeros((a.shape[0],grid_def_out.ny*grid_def_out.nx),dtype=np.float32)
+    rlat = np.zeros((no),dtype=np.float32)
+    rlon = np.zeros((no),dtype=np.float32)
 
     no,ibo,lo,iret = _interpolate.interpolate(method,method_options,
                                               grid_def_in.gdtn,grid_def_in.gdt,
                                               grid_def_out.gdtn,grid_def_out.gdt,
-                                              ibi,li.T,a.T,go.T)
+                                              ibi,li.T,a.T,go.T,rlat,rlon)
+    del rlat
+    del rlon
+
+    return go.reshape(newshp)
+
+
+def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=None):
+    """
+    Perform spatial interpolation to station points.
+
+    Parameters
+    ----------
+
+    **`a : numpy.ndarray`**
+
+    Array data to interpolate from. These data are expected to be in
+    2-dimensional form with shape (ny, nx) or 3-dimensional where the
+    3rd dimension represents another spatial, temporal, or classification
+    (i.e. ensemble members) dimension. The function will properly flatten
+    the array that is acceptable for the NCEPLIBS-ip interpolation
+    subroutines.
+
+    **`method : int or str`**
+
+    Interpolate method to use. This can either be an integer or string using
+    the following mapping:
+
+    | Interpolate Scheme | Integer Value |
+    | :---:              | :---:         |
+    | 'bilinear'         | 0             |
+    | 'bicubic'          | 1             |
+    | 'neighbor'         | 2             |
+    | 'budget'           | 3             |
+    | 'spectral'         | 4             |
+    | 'neighbor-budget'  | 6             |
+
+    **`grid_def_in : grib2io.Grib2GridDef`**
+
+    Grib2GridDef object of the input grid.
+
+    **`lats : sequence of floats`**
+
+    Latitudes of the station points.
+
+    **`lons : sequence of floats`**
+
+    Longitudes of the station points.
+
+    Grib2GridDef object of the output grid.
+
+    **`method_options : list of ints, optional`**
+
+    Interpolation options. See the NCEPLIBS-ip doucmentation for
+    more information on how these are used.
+    """
+    from . import _interpolate
+
+    interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
+                      'budget':3, 'spectral':4, 'neighbor-budget':6}
+
+    if isinstance(method,int) and method not in interp_schemes.values():
+        raise ValueError('Invalid interpolation method.')
+    elif isinstance(method,str):
+        if method in interp_schemes.keys():
+            method = interp_schemes[method]
+        else:
+            raise ValueError('Invalid interpolation method.')
+
+    if method_options is None:
+        method_options = np.zeros((20),dtype=np.int32)
+        if method in {3,6}:
+            method_options[0:2] = -1
+
+    ni = grid_def_in.nx*grid_def_in.ny
+    no = len(lats)
+
+    if len(a.shape) == 2 and a.shape == (grid_def_in.ny,grid_def_in.nx):
+        newshp = (no)
+        a = np.expand_dims(a.flatten(),axis=0)
+    elif len(a.shape) == 3 and a.shape[-2:] == (grid_def_in.ny,grid_def_in.nx):
+        newshp = (a.shape[0],no)
+        a = a.reshape(*a.shape[:-2],-1)
+    else:
+        raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
+
+    if len(lats) != len(lons):
+        raise ValueError("lats and lons must be same length.")
+
+    ibi = np.zeros((a.shape[0]),dtype=np.int32)
+    li = np.zeros(a.shape,dtype=np.int32)
+    go = np.zeros((a.shape[0],no),dtype=np.float32)
+    rlat = np.array(lats,dtype=np.float32)
+    rlon = np.array(lons,dtype=np.float32)
+
+    grid_def_out = Grib2GridDef(-1,np.zeros((grid_def_in.gdt.shape),np.int32))
+
+    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,
+                                              grid_def_in.gdtn,grid_def_in.gdt,
+                                              grid_def_out.gdtn,grid_def_out.gdt,
+                                              ibi,li.T,a.T,go.T,rlat,rlon)
 
     return go.reshape(newshp)
 
