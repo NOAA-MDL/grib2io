@@ -187,6 +187,9 @@
                     <a class="function" href="#interpolate">interpolate</a>
             </li>
             <li>
+                    <a class="function" href="#interpolate_to_stations">interpolate_to_stations</a>
+            </li>
+            <li>
                     <a class="class" href="#Grib2GridDef">Grib2GridDef</a>
                             <ul class="memberlist">
                         <li>
@@ -240,8 +243,8 @@ are a part of the grib2io module.</p>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="k">except</span><span class="p">(</span><span class="ne">ImportError</span><span class="p">):</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a>    <span class="k">pass</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">,</span><span class="s1">&#39;Grib2Message&#39;</span><span class="p">,</span><span class="s1">&#39;_Grib2Message&#39;</span><span class="p">,</span><span class="s1">&#39;show_config&#39;</span><span class="p">,</span><span class="s1">&#39;interpolate&#39;</span><span class="p">,</span><span class="s1">&#39;tables&#39;</span><span class="p">,</span><span class="s1">&#39;templates&#39;</span><span class="p">,</span><span class="s1">&#39;utils&#39;</span><span class="p">,</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>           <span class="s1">&#39;Grib2GridDef&#39;</span><span class="p">]</span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;open&#39;</span><span class="p">,</span><span class="s1">&#39;Grib2Message&#39;</span><span class="p">,</span><span class="s1">&#39;_Grib2Message&#39;</span><span class="p">,</span><span class="s1">&#39;show_config&#39;</span><span class="p">,</span><span class="s1">&#39;interpolate&#39;</span><span class="p">,</span><span class="s1">&#39;interpolate_to_stations&#39;</span><span class="p">,</span>
+</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a>           <span class="s1">&#39;tables&#39;</span><span class="p">,</span><span class="s1">&#39;templates&#39;</span><span class="p">,</span><span class="s1">&#39;utils&#39;</span><span class="p">,</span><span class="s1">&#39;Grib2GridDef&#39;</span><span class="p">]</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a>
 </span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="k">def</span> <span class="nf">show_config</span><span class="p">():</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
@@ -2912,6 +2915,191 @@ the following mapping:</p>
 <p>Grib2GridDef object of the input grid.</p>
 
 <p><strong><code>grid_def_out : <a href="#Grib2GridDef">grib2io.Grib2GridDef</a></code></strong></p>
+
+<p>Grib2GridDef object of the output grid.</p>
+
+<p><strong><code>method_options : list of ints, optional</code></strong></p>
+
+<p>Interpolation options. See the NCEPLIBS-ip doucmentation for
+more information on how these are used.</p>
+</div>
+
+
+                </section>
+                <section id="interpolate_to_stations">
+                            <input id="interpolate_to_stations-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">interpolate_to_stations</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">a</span>, </span><span class="param"><span class="n">method</span>, </span><span class="param"><span class="n">grid_def_in</span>, </span><span class="param"><span class="n">lats</span>, </span><span class="param"><span class="n">lons</span>, </span><span class="param"><span class="n">method_options</span><span class="o">=</span><span class="kc">None</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="interpolate_to_stations-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#interpolate_to_stations"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="interpolate_to_stations-1337"><a href="#interpolate_to_stations-1337"><span class="linenos">1337</span></a><span class="k">def</span> <span class="nf">interpolate_to_stations</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">grid_def_in</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">method_options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="interpolate_to_stations-1338"><a href="#interpolate_to_stations-1338"><span class="linenos">1338</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="interpolate_to_stations-1339"><a href="#interpolate_to_stations-1339"><span class="linenos">1339</span></a><span class="sd">    Perform spatial interpolation to station points.</span>
+</span><span id="interpolate_to_stations-1340"><a href="#interpolate_to_stations-1340"><span class="linenos">1340</span></a>
+</span><span id="interpolate_to_stations-1341"><a href="#interpolate_to_stations-1341"><span class="linenos">1341</span></a><span class="sd">    Parameters</span>
+</span><span id="interpolate_to_stations-1342"><a href="#interpolate_to_stations-1342"><span class="linenos">1342</span></a><span class="sd">    ----------</span>
+</span><span id="interpolate_to_stations-1343"><a href="#interpolate_to_stations-1343"><span class="linenos">1343</span></a>
+</span><span id="interpolate_to_stations-1344"><a href="#interpolate_to_stations-1344"><span class="linenos">1344</span></a><span class="sd">    **`a : numpy.ndarray`**</span>
+</span><span id="interpolate_to_stations-1345"><a href="#interpolate_to_stations-1345"><span class="linenos">1345</span></a>
+</span><span id="interpolate_to_stations-1346"><a href="#interpolate_to_stations-1346"><span class="linenos">1346</span></a><span class="sd">    Array data to interpolate from. These data are expected to be in</span>
+</span><span id="interpolate_to_stations-1347"><a href="#interpolate_to_stations-1347"><span class="linenos">1347</span></a><span class="sd">    2-dimensional form with shape (ny, nx) or 3-dimensional where the</span>
+</span><span id="interpolate_to_stations-1348"><a href="#interpolate_to_stations-1348"><span class="linenos">1348</span></a><span class="sd">    3rd dimension represents another spatial, temporal, or classification</span>
+</span><span id="interpolate_to_stations-1349"><a href="#interpolate_to_stations-1349"><span class="linenos">1349</span></a><span class="sd">    (i.e. ensemble members) dimension. The function will properly flatten</span>
+</span><span id="interpolate_to_stations-1350"><a href="#interpolate_to_stations-1350"><span class="linenos">1350</span></a><span class="sd">    the array that is acceptable for the NCEPLIBS-ip interpolation</span>
+</span><span id="interpolate_to_stations-1351"><a href="#interpolate_to_stations-1351"><span class="linenos">1351</span></a><span class="sd">    subroutines.</span>
+</span><span id="interpolate_to_stations-1352"><a href="#interpolate_to_stations-1352"><span class="linenos">1352</span></a>
+</span><span id="interpolate_to_stations-1353"><a href="#interpolate_to_stations-1353"><span class="linenos">1353</span></a><span class="sd">    **`method : int or str`**</span>
+</span><span id="interpolate_to_stations-1354"><a href="#interpolate_to_stations-1354"><span class="linenos">1354</span></a>
+</span><span id="interpolate_to_stations-1355"><a href="#interpolate_to_stations-1355"><span class="linenos">1355</span></a><span class="sd">    Interpolate method to use. This can either be an integer or string using</span>
+</span><span id="interpolate_to_stations-1356"><a href="#interpolate_to_stations-1356"><span class="linenos">1356</span></a><span class="sd">    the following mapping:</span>
+</span><span id="interpolate_to_stations-1357"><a href="#interpolate_to_stations-1357"><span class="linenos">1357</span></a>
+</span><span id="interpolate_to_stations-1358"><a href="#interpolate_to_stations-1358"><span class="linenos">1358</span></a><span class="sd">    | Interpolate Scheme | Integer Value |</span>
+</span><span id="interpolate_to_stations-1359"><a href="#interpolate_to_stations-1359"><span class="linenos">1359</span></a><span class="sd">    | :---:              | :---:         |</span>
+</span><span id="interpolate_to_stations-1360"><a href="#interpolate_to_stations-1360"><span class="linenos">1360</span></a><span class="sd">    | &#39;bilinear&#39;         | 0             |</span>
+</span><span id="interpolate_to_stations-1361"><a href="#interpolate_to_stations-1361"><span class="linenos">1361</span></a><span class="sd">    | &#39;bicubic&#39;          | 1             |</span>
+</span><span id="interpolate_to_stations-1362"><a href="#interpolate_to_stations-1362"><span class="linenos">1362</span></a><span class="sd">    | &#39;neighbor&#39;         | 2             |</span>
+</span><span id="interpolate_to_stations-1363"><a href="#interpolate_to_stations-1363"><span class="linenos">1363</span></a><span class="sd">    | &#39;budget&#39;           | 3             |</span>
+</span><span id="interpolate_to_stations-1364"><a href="#interpolate_to_stations-1364"><span class="linenos">1364</span></a><span class="sd">    | &#39;spectral&#39;         | 4             |</span>
+</span><span id="interpolate_to_stations-1365"><a href="#interpolate_to_stations-1365"><span class="linenos">1365</span></a><span class="sd">    | &#39;neighbor-budget&#39;  | 6             |</span>
+</span><span id="interpolate_to_stations-1366"><a href="#interpolate_to_stations-1366"><span class="linenos">1366</span></a>
+</span><span id="interpolate_to_stations-1367"><a href="#interpolate_to_stations-1367"><span class="linenos">1367</span></a><span class="sd">    **`grid_def_in : grib2io.Grib2GridDef`**</span>
+</span><span id="interpolate_to_stations-1368"><a href="#interpolate_to_stations-1368"><span class="linenos">1368</span></a>
+</span><span id="interpolate_to_stations-1369"><a href="#interpolate_to_stations-1369"><span class="linenos">1369</span></a><span class="sd">    Grib2GridDef object of the input grid.</span>
+</span><span id="interpolate_to_stations-1370"><a href="#interpolate_to_stations-1370"><span class="linenos">1370</span></a>
+</span><span id="interpolate_to_stations-1371"><a href="#interpolate_to_stations-1371"><span class="linenos">1371</span></a><span class="sd">    **`lats : sequence of floats`**</span>
+</span><span id="interpolate_to_stations-1372"><a href="#interpolate_to_stations-1372"><span class="linenos">1372</span></a>
+</span><span id="interpolate_to_stations-1373"><a href="#interpolate_to_stations-1373"><span class="linenos">1373</span></a><span class="sd">    Latitudes of the station points.</span>
+</span><span id="interpolate_to_stations-1374"><a href="#interpolate_to_stations-1374"><span class="linenos">1374</span></a>
+</span><span id="interpolate_to_stations-1375"><a href="#interpolate_to_stations-1375"><span class="linenos">1375</span></a><span class="sd">    **`lons : sequence of floats`**</span>
+</span><span id="interpolate_to_stations-1376"><a href="#interpolate_to_stations-1376"><span class="linenos">1376</span></a>
+</span><span id="interpolate_to_stations-1377"><a href="#interpolate_to_stations-1377"><span class="linenos">1377</span></a><span class="sd">    Longitudes of the station points.</span>
+</span><span id="interpolate_to_stations-1378"><a href="#interpolate_to_stations-1378"><span class="linenos">1378</span></a>
+</span><span id="interpolate_to_stations-1379"><a href="#interpolate_to_stations-1379"><span class="linenos">1379</span></a><span class="sd">    Grib2GridDef object of the output grid.</span>
+</span><span id="interpolate_to_stations-1380"><a href="#interpolate_to_stations-1380"><span class="linenos">1380</span></a>
+</span><span id="interpolate_to_stations-1381"><a href="#interpolate_to_stations-1381"><span class="linenos">1381</span></a><span class="sd">    **`method_options : list of ints, optional`**</span>
+</span><span id="interpolate_to_stations-1382"><a href="#interpolate_to_stations-1382"><span class="linenos">1382</span></a>
+</span><span id="interpolate_to_stations-1383"><a href="#interpolate_to_stations-1383"><span class="linenos">1383</span></a><span class="sd">    Interpolation options. See the NCEPLIBS-ip doucmentation for</span>
+</span><span id="interpolate_to_stations-1384"><a href="#interpolate_to_stations-1384"><span class="linenos">1384</span></a><span class="sd">    more information on how these are used.</span>
+</span><span id="interpolate_to_stations-1385"><a href="#interpolate_to_stations-1385"><span class="linenos">1385</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="interpolate_to_stations-1386"><a href="#interpolate_to_stations-1386"><span class="linenos">1386</span></a>    <span class="kn">from</span> <span class="nn">.</span> <span class="kn">import</span> <span class="n">_interpolate</span>
+</span><span id="interpolate_to_stations-1387"><a href="#interpolate_to_stations-1387"><span class="linenos">1387</span></a>
+</span><span id="interpolate_to_stations-1388"><a href="#interpolate_to_stations-1388"><span class="linenos">1388</span></a>    <span class="n">interp_schemes</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;bilinear&#39;</span><span class="p">:</span><span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;bicubic&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;neighbor&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span>
+</span><span id="interpolate_to_stations-1389"><a href="#interpolate_to_stations-1389"><span class="linenos">1389</span></a>                      <span class="s1">&#39;budget&#39;</span><span class="p">:</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;spectral&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;neighbor-budget&#39;</span><span class="p">:</span><span class="mi">6</span><span class="p">}</span>
+</span><span id="interpolate_to_stations-1390"><a href="#interpolate_to_stations-1390"><span class="linenos">1390</span></a>
+</span><span id="interpolate_to_stations-1391"><a href="#interpolate_to_stations-1391"><span class="linenos">1391</span></a>    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span><span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">method</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">interp_schemes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+</span><span id="interpolate_to_stations-1392"><a href="#interpolate_to_stations-1392"><span class="linenos">1392</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid interpolation method.&#39;</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1393"><a href="#interpolate_to_stations-1393"><span class="linenos">1393</span></a>    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">method</span><span class="p">,</span><span class="nb">str</span><span class="p">):</span>
+</span><span id="interpolate_to_stations-1394"><a href="#interpolate_to_stations-1394"><span class="linenos">1394</span></a>        <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">interp_schemes</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+</span><span id="interpolate_to_stations-1395"><a href="#interpolate_to_stations-1395"><span class="linenos">1395</span></a>            <span class="n">method</span> <span class="o">=</span> <span class="n">interp_schemes</span><span class="p">[</span><span class="n">method</span><span class="p">]</span>
+</span><span id="interpolate_to_stations-1396"><a href="#interpolate_to_stations-1396"><span class="linenos">1396</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="interpolate_to_stations-1397"><a href="#interpolate_to_stations-1397"><span class="linenos">1397</span></a>            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid interpolation method.&#39;</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1398"><a href="#interpolate_to_stations-1398"><span class="linenos">1398</span></a>
+</span><span id="interpolate_to_stations-1399"><a href="#interpolate_to_stations-1399"><span class="linenos">1399</span></a>    <span class="k">if</span> <span class="n">method_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="interpolate_to_stations-1400"><a href="#interpolate_to_stations-1400"><span class="linenos">1400</span></a>        <span class="n">method_options</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">20</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1401"><a href="#interpolate_to_stations-1401"><span class="linenos">1401</span></a>        <span class="k">if</span> <span class="n">method</span> <span class="ow">in</span> <span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="mi">6</span><span class="p">}:</span>
+</span><span id="interpolate_to_stations-1402"><a href="#interpolate_to_stations-1402"><span class="linenos">1402</span></a>            <span class="n">method_options</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+</span><span id="interpolate_to_stations-1403"><a href="#interpolate_to_stations-1403"><span class="linenos">1403</span></a>
+</span><span id="interpolate_to_stations-1404"><a href="#interpolate_to_stations-1404"><span class="linenos">1404</span></a>    <span class="n">ni</span> <span class="o">=</span> <span class="n">grid_def_in</span><span class="o">.</span><span class="n">nx</span><span class="o">*</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">ny</span>
+</span><span id="interpolate_to_stations-1405"><a href="#interpolate_to_stations-1405"><span class="linenos">1405</span></a>    <span class="n">no</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1406"><a href="#interpolate_to_stations-1406"><span class="linenos">1406</span></a>
+</span><span id="interpolate_to_stations-1407"><a href="#interpolate_to_stations-1407"><span class="linenos">1407</span></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">nx</span><span class="p">):</span>
+</span><span id="interpolate_to_stations-1408"><a href="#interpolate_to_stations-1408"><span class="linenos">1408</span></a>        <span class="n">newshp</span> <span class="o">=</span> <span class="p">(</span><span class="n">no</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1409"><a href="#interpolate_to_stations-1409"><span class="linenos">1409</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1410"><a href="#interpolate_to_stations-1410"><span class="linenos">1410</span></a>    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span> <span class="ow">and</span> <span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span> <span class="o">==</span> <span class="p">(</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">nx</span><span class="p">):</span>
+</span><span id="interpolate_to_stations-1411"><a href="#interpolate_to_stations-1411"><span class="linenos">1411</span></a>        <span class="n">newshp</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">no</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1412"><a href="#interpolate_to_stations-1412"><span class="linenos">1412</span></a>        <span class="n">a</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">],</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1413"><a href="#interpolate_to_stations-1413"><span class="linenos">1413</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="interpolate_to_stations-1414"><a href="#interpolate_to_stations-1414"><span class="linenos">1414</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Array shape must be either (ny,nx) or (:,ny,nx).&quot;</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1415"><a href="#interpolate_to_stations-1415"><span class="linenos">1415</span></a>
+</span><span id="interpolate_to_stations-1416"><a href="#interpolate_to_stations-1416"><span class="linenos">1416</span></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">):</span>
+</span><span id="interpolate_to_stations-1417"><a href="#interpolate_to_stations-1417"><span class="linenos">1417</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;lats and lons must be same length.&quot;</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1418"><a href="#interpolate_to_stations-1418"><span class="linenos">1418</span></a>
+</span><span id="interpolate_to_stations-1419"><a href="#interpolate_to_stations-1419"><span class="linenos">1419</span></a>    <span class="n">ibi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1420"><a href="#interpolate_to_stations-1420"><span class="linenos">1420</span></a>    <span class="n">li</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1421"><a href="#interpolate_to_stations-1421"><span class="linenos">1421</span></a>    <span class="n">go</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">no</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1422"><a href="#interpolate_to_stations-1422"><span class="linenos">1422</span></a>    <span class="n">rlat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1423"><a href="#interpolate_to_stations-1423"><span class="linenos">1423</span></a>    <span class="n">rlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1424"><a href="#interpolate_to_stations-1424"><span class="linenos">1424</span></a>
+</span><span id="interpolate_to_stations-1425"><a href="#interpolate_to_stations-1425"><span class="linenos">1425</span></a>    <span class="n">grid_def_out</span> <span class="o">=</span> <span class="n">Grib2GridDef</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">gdt</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">))</span>
+</span><span id="interpolate_to_stations-1426"><a href="#interpolate_to_stations-1426"><span class="linenos">1426</span></a>
+</span><span id="interpolate_to_stations-1427"><a href="#interpolate_to_stations-1427"><span class="linenos">1427</span></a>    <span class="n">no</span><span class="p">,</span><span class="n">ibo</span><span class="p">,</span><span class="n">lo</span><span class="p">,</span><span class="n">iret</span> <span class="o">=</span> <span class="n">_interpolate</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">method</span><span class="p">,</span><span class="n">method_options</span><span class="p">,</span>
+</span><span id="interpolate_to_stations-1428"><a href="#interpolate_to_stations-1428"><span class="linenos">1428</span></a>                                              <span class="n">grid_def_in</span><span class="o">.</span><span class="n">gdtn</span><span class="p">,</span><span class="n">grid_def_in</span><span class="o">.</span><span class="n">gdt</span><span class="p">,</span>
+</span><span id="interpolate_to_stations-1429"><a href="#interpolate_to_stations-1429"><span class="linenos">1429</span></a>                                              <span class="n">grid_def_out</span><span class="o">.</span><span class="n">gdtn</span><span class="p">,</span><span class="n">grid_def_out</span><span class="o">.</span><span class="n">gdt</span><span class="p">,</span>
+</span><span id="interpolate_to_stations-1430"><a href="#interpolate_to_stations-1430"><span class="linenos">1430</span></a>                                              <span class="n">ibi</span><span class="p">,</span><span class="n">li</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">a</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">go</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">rlat</span><span class="p">,</span><span class="n">rlon</span><span class="p">)</span>
+</span><span id="interpolate_to_stations-1431"><a href="#interpolate_to_stations-1431"><span class="linenos">1431</span></a>
+</span><span id="interpolate_to_stations-1432"><a href="#interpolate_to_stations-1432"><span class="linenos">1432</span></a>    <span class="k">return</span> <span class="n">go</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">newshp</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Perform spatial interpolation to station points.</p>
+
+<h2 id="parameters">Parameters</h2>
+
+<p><strong><code>a : numpy.ndarray</code></strong></p>
+
+<p>Array data to interpolate from. These data are expected to be in
+2-dimensional form with shape (ny, nx) or 3-dimensional where the
+3rd dimension represents another spatial, temporal, or classification
+(i.e. ensemble members) dimension. The function will properly flatten
+the array that is acceptable for the NCEPLIBS-ip interpolation
+subroutines.</p>
+
+<p><strong><code>method : int or str</code></strong></p>
+
+<p>Interpolate method to use. This can either be an integer or string using
+the following mapping:</p>
+
+<table>
+<thead>
+<tr>
+  <th style="text-align:center;">Interpolate Scheme</th>
+  <th style="text-align:center;">Integer Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:center;">'bilinear'</td>
+  <td style="text-align:center;">0</td>
+</tr>
+<tr>
+  <td style="text-align:center;">'bicubic'</td>
+  <td style="text-align:center;">1</td>
+</tr>
+<tr>
+  <td style="text-align:center;">'neighbor'</td>
+  <td style="text-align:center;">2</td>
+</tr>
+<tr>
+  <td style="text-align:center;">'budget'</td>
+  <td style="text-align:center;">3</td>
+</tr>
+<tr>
+  <td style="text-align:center;">'spectral'</td>
+  <td style="text-align:center;">4</td>
+</tr>
+<tr>
+  <td style="text-align:center;">'neighbor-budget'</td>
+  <td style="text-align:center;">6</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong><code>grid_def_in : <a href="#Grib2GridDef">grib2io.Grib2GridDef</a></code></strong></p>
+
+<p>Grib2GridDef object of the input grid.</p>
+
+<p><strong><code>lats : sequence of floats</code></strong></p>
+
+<p>Latitudes of the station points.</p>
+
+<p><strong><code>lons : sequence of floats</code></strong></p>
+
+<p>Longitudes of the station points.</p>
 
 <p>Grib2GridDef object of the output grid.</p>
 
