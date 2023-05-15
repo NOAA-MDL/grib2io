@@ -35,14 +35,9 @@ Beginning with grib2io v1.1.0, the [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NC
 The NCEP Spectral Interpolation (NCEPLIBS-sp) library is a dependency for the NCEP Interpolation (NCEPLIBS-ip) library.  Both of these libraries are Fortran-based and contains OpenMP directives.
 
 ## Installation
-
-For system installations:
+If NCEPLIBS-g2c, NCEPLIBS-sp, and NCEPLIBS-ip libraries have been installed to custom locations (i.e. not default paths), then please define the root of these installations via environment variables `G2C_DIR`, `SP_DIR`, and `IP_DIR`, respectively.
 ```shell
-sudo pip install grib2io
-```
-For user installations:
-```shell
-pip install grib2io --user
+pip install grib2io
 ```
 
 ## Build and Install from Source
