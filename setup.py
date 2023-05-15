@@ -1,4 +1,5 @@
 from setuptools import setup, Extension, find_packages, Command
+from setuptools.command.install_egg_info import install_egg_info
 from os import environ
 import configparser
 import glob
@@ -6,6 +7,7 @@ import numpy
 import os
 import platform
 import sys
+import sysconfig
 
 VERSION = '2.0.0b2.post1'
 
@@ -82,17 +84,11 @@ interp_libraries = ['sp_4','ip_4']
 # Get NCEPLIBS-sp library info. This library is a required for interpolation.
 # ---------------------------------------------------------------------------------------- 
 sp_dir = config.getq('directories', 'sp_dir', environ.get('SP_DIR'))
-sp_libdir = config.getq('directories', 'sp_libdir', environ.get('SP_LIBDIR'))
-sp_incdir = config.getq('directories', 'sp_incdir', environ.get('SP_INCDIR'))
-if sp_libdir is None and sp_dir is not None:
-    interp_libdirs.append(os.path.join(sp_dir,'lib'))
-    interp_libdirs.append(os.path.join(sp_dir,'lib64'))
-else:
-    interp_libdirs.append(sp_libdir)
-if sp_incdir is None and sp_dir is not None:
-    interp_incdirs.append(os.path.join(sp_dir,'include_4'))
-else:
-    interp_incdirs.append(sp_incdir)
+if os.path.exists(os.path.join(sp_dir,'lib')):
+    sp_libdir = os.path.join(sp_dir,'lib')
+elif os.path.exists(os.path.join(sp_dir,'lib64')):
+    sp_libdir = os.path.join(sp_dir,'lib64')
+interp_libdirs.append(sp_libdir)
 
 # ---------------------------------------------------------------------------------------- 
 # Get NCEPLIBS-ip library info. This library is a required for interpolation.
@@ -113,7 +109,12 @@ else:
 if build:
     sys.argv = args_save
 
-interpext = NPExtension(name='grib2io._interpolate',
+# ---------------------------------------------------------------------------------------- 
+# Define interpolation NumPy extension module.
+# ---------------------------------------------------------------------------------------- 
+interpext_name_base = '_interpolate'
+interpext_soname = interpext_name_base+sysconfig.get_config_var('EXT_SUFFIX')
+interpext = NPExtension(name='grib2io.'+interpext_name_base,
                         sources=['interpolate.pyf','interpolate.f90'],
                         extra_f77_compile_args=['-O3','-fopenmp'],
                         extra_f90_compile_args=['-O3','-fopenmp'],
@@ -204,6 +205,16 @@ class TestCommand(Command):
         for f in glob.glob('./tests/*.py'):
             raise SystemExit(subprocess.call([sys.executable,f]))
 cmdclass['test'] = TestCommand
+
+# ----------------------------------------------------------------------------------------
+# Customize install_egg_info to insert the _interpolate NumPy extension module shared-
+# object file name into installed-files.txt.
+# ----------------------------------------------------------------------------------------
+class customize_install_egg_info(install_egg_info):
+    def run(self):
+        install_egg_info.run(self)
+        self.outputs.append(os.path.join(self.install_dir,'grib2io',interpext_soname))
+cmdclass['install_egg_info'] = customize_install_egg_info
 
 # ----------------------------------------------------------------------------------------
 # Import README.md as PyPi long_description
