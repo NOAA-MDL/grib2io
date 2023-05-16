@@ -33,7 +33,7 @@ jobs:
         tar -xzvf v1.7.0.tar.gz
         cd NCEPLIBS-g2c-1.7.0
         mkdir build && cd build
-        cmake -DBUILD_SHARED_LIBS=ON ..
+        cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
         sudo make install
         
