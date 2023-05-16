@@ -59,4 +59,5 @@ jobs:
         
     - name: Install grib2io
       run: |
-        pip install .
+        python setup.py build
+        python setup.py install
