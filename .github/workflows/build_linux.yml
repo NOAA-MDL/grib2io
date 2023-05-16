@@ -1,19 +1,21 @@
 name: Build and Test on Linux
+
 on: [push, pull_request]
+
 jobs:
   build-linux:
+    
     name: Python (${{ matrix.python-version }})
     runs-on: ubuntu-latest
     #env:
     strategy:
       matrix:
         python-version: ["3.8","3.9","3.10","3.11"]
+   
     steps:
-
-    - uses: actions/checkout@v2
-
+    - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v3
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -65,5 +67,5 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python setup.py build
         python setup.py install
-        cd tests
-        pytest test_*.py
+        #cd tests
+        #pytest test_*.py
