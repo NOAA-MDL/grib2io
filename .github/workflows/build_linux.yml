@@ -68,6 +68,6 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python setup.py build
         python setup.py install
+        cd tests
         python -c "import xarray; print(xarray.backends.list_engines())"
-        #cd tests
         #pytest test_*.py
