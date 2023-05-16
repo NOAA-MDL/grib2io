@@ -192,21 +192,6 @@ finally:
     a.close()
 
 # ----------------------------------------------------------------------------------------
-# Define testing class
-# ----------------------------------------------------------------------------------------
-class TestCommand(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import sys, subprocess
-        for f in glob.glob('./tests/*.py'):
-            raise SystemExit(subprocess.call([sys.executable,f]))
-cmdclass['test'] = TestCommand
-
-# ----------------------------------------------------------------------------------------
 # Customize install_egg_info to insert the _interpolate NumPy extension module shared-
 # object file name into installed-files.txt.
 # ----------------------------------------------------------------------------------------
