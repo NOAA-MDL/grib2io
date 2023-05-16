@@ -51,9 +51,9 @@ jobs:
         
     - name: Install NCEPLIBS-ip
       run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/9013476aa6968a88b38db6ebc88bec26dfaa2b9f.zip
-        unzip 9013476aa6968a88b38db6ebc88bec26dfaa2b9f.zip
-        cd NCEPLIBS-ip-9013476aa6968a88b38db6ebc88bec26dfaa2b9f
+        wget https://github.com/EricEngle-NOAA/NCEPLIBS-ip/archive/refs/heads/fix-interp-to-stations.zip
+        unzip fix-interp-to-stations.zip
+        cd NCEPLIBS-ip-fix-interp-to-stations
         mkdir build && cd build
         cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
@@ -67,5 +67,5 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python setup.py build
         python setup.py install
-        #cd tests
-        #pytest test_*.py
+        cd tests
+        pytest test_*.py
