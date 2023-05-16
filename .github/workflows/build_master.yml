@@ -1,0 +1,62 @@
+name: Build and Test on Linux
+on: [push, pull_request]
+jobs:
+  build-linux:
+    name: Python (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    env:
+    strategy:
+      matrix:
+        python-version: ["3.11"]
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Ubuntu Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install cmake gfortran python3-dev libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev
+
+    - name: Install python dependencies via pip
+      run: |
+        python -m pip install --upgrade pip
+        pip install numpy cython pytest xarray pyproj
+
+    - name: Install NCEPLIBS-g2c
+      run: |
+        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.7.0.tar.gz
+        tar -xzvf v1.7.0.tar.gz
+        cd NCEPLIBS-g2c-1.7.0
+        mkdir build && cd build
+        cmake -DBUILD_SHARED_LIBS=ON ..
+        make -j2
+        sudo make install
+        
+    - name: Install NCEPLIBS-sp
+      run: |
+        wget https://github.com/NOAA-EMC/NCEPLIBS-sp/archive/refs/tags/v2.4.0.tar.gz
+        tar -xzvf v2.4.0.tar.gz
+        cd NCEPLIBS-sp-2.4.0
+        mkdir build && cd build
+        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
+        make -j2
+        sudo make install
+        
+    - name: Install NCEPLIBS-ip
+      run: |
+        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/9013476aa6968a88b38db6ebc88bec26dfaa2b9f.zip
+        unzip 9013476aa6968a88b38db6ebc88bec26dfaa2b9f.zip
+        cd NCEPLIBS-ip-9013476aa6968a88b38db6ebc88bec26dfaa2b9f
+        mkdir build && cd build
+        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
+        make -j2
+        sudo make install
+        
+    - name: Install grib2io
+      run: |
+        pip install .
