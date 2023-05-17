@@ -11,14 +11,6 @@ import sysconfig
 
 VERSION = '2.0.0b2.post1'
 
-build = False
-if 'build' in ''.join(sys.argv):
-    build = True
-
-if build:
-    args_save = sys.argv
-    args_main = [arg for arg in sys.argv if 'compiler' not in arg]
-
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
 # ----------------------------------------------------------------------------------------
@@ -105,9 +97,6 @@ if ip_incdir is None and ip_dir is not None:
     interp_incdirs.append(os.path.join(ip_dir,'include_4'))
 else:
     interp_incdirs.append(ip_incdir)
-
-if build:
-    sys.argv = args_save
 
 # ---------------------------------------------------------------------------------------- 
 # Define interpolation NumPy extension module.
@@ -211,8 +200,6 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py
 # ----------------------------------------------------------------------------------------
-if build:
-    sys.argv = args_main
 setup(name = 'grib2io',
       version = VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
@@ -240,6 +227,5 @@ setup(name = 'grib2io',
       data_files        = data_files,
       install_requires  = ['setuptools>=41.5.0','numpy>=1.22.0','pyproj>=1.9.5'],
       python_requires   = '>=3.8',
-      zip_safe          = False,
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
