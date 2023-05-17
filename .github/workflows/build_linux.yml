@@ -70,9 +70,9 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python setup.py build
         find build/
-        #python setup.py install
+        python setup.py install
         #python -m pip install .
         #cd tests
         #python -c "import xarray; print(xarray.backends.list_engines())"
         #pytest test_*.py
-        #find /opt/hostedtoolcache/Python/3.11.3/x64/lib/python3.11/site-packages/grib2io*
+        find /opt/hostedtoolcache/Python/3.11.3/x64/lib/python3.11/site-packages/grib2io*
