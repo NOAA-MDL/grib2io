@@ -11,6 +11,14 @@ import sysconfig
 
 VERSION = '2.0.0b2.post1'
 
+build = False
+if 'build' in ''.join(sys.argv):
+    build = True
+
+if build:
+    args_save = sys.argv
+    args_main = [arg for arg in sys.argv if 'compiler' not in arg]
+
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
 # ----------------------------------------------------------------------------------------
@@ -98,6 +106,9 @@ if ip_incdir is None and ip_dir is not None:
 else:
     interp_incdirs.append(ip_incdir)
 
+if build:
+    sys.argv = args_save
+
 # ---------------------------------------------------------------------------------------- 
 # Define interpolation NumPy extension module.
 # ---------------------------------------------------------------------------------------- 
@@ -181,6 +192,21 @@ finally:
     a.close()
 
 # ----------------------------------------------------------------------------------------
+# Define testing class
+# ----------------------------------------------------------------------------------------
+class TestCommand(Command):
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        import sys, subprocess
+        for f in glob.glob('./tests/*.py'):
+            raise SystemExit(subprocess.call([sys.executable,f]))
+cmdclass['test'] = TestCommand
+
+# ----------------------------------------------------------------------------------------
 # Customize install_egg_info to insert the _interpolate NumPy extension module shared-
 # object file name into installed-files.txt.
 # ----------------------------------------------------------------------------------------
@@ -200,6 +226,8 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py
 # ----------------------------------------------------------------------------------------
+if build:
+    sys.argv = args_main
 setup(name = 'grib2io',
       version = VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
@@ -225,7 +253,8 @@ setup(name = 'grib2io',
       entry_points      = {'xarray.backends':['grib2io=grib2io.xarray_backend:GribBackendEntrypoint']},
       packages          = find_packages(),
       data_files        = data_files,
-      install_requires  = ['setuptools>=41.5.0','numpy>=1.22.0','pyproj>=1.9.5'],
+      setup_requires    = ['setuptools>=41.5.0,<67'],
+      install_requires  = ['setuptools>=41.5.0,<67','numpy>=1.22.0','pyproj>=1.9.5'],
       python_requires   = '>=3.8',
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
