@@ -31,6 +31,7 @@ jobs:
         which python
         which pip
         pip install numpy cython pytest xarray pyproj dask cmake
+        pip list -v
 
     - name: Install NCEPLIBS-g2c
       run: |
