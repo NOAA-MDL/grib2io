@@ -69,5 +69,6 @@ jobs:
         export IP_DIR=/usr/local
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python setup.py build
+        find ./build
         #pip install .
         #python setup.py install
