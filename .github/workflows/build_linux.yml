@@ -66,4 +66,5 @@ jobs:
         export SP_DIR=/usr/local
         export IP_DIR=/usr/local
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-        pip install .
+        #pip install .
+        python setup.py install
