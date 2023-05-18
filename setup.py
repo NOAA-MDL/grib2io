@@ -1,5 +1,6 @@
 from setuptools import setup, Extension, find_packages, Command
 from setuptools.command.install_egg_info import install_egg_info
+from setuptools.command.build_ext import build_ext
 from os import environ
 import configparser
 import glob
@@ -122,9 +123,9 @@ interpext = NPExtension(name='grib2io.'+interpext_name_base,
                         library_dirs=interp_libdirs,
                         runtime_library_dirs=interp_libdirs,
                         libraries=interp_libraries)
-NPsetup(name='grib2io',
-        version = VERSION,
-        ext_modules=[interpext])
+
+def build_numpy_interp_extmodule():
+    NPsetup(name='grib2io',version = VERSION,ext_modules=[interpext])
 
 # ---------------------------------------------------------------------------------------- 
 # Define lists for build
@@ -215,6 +216,12 @@ class customize_install_egg_info(install_egg_info):
         install_egg_info.run(self)
         self.outputs.append(os.path.join(self.install_dir,'grib2io',interpext_soname))
 cmdclass['install_egg_info'] = customize_install_egg_info
+
+class customize_build_ext(build_ext):
+    def run(self):
+        build_numpy_interp_extmodule()
+        build_ext.run(self)
+cmdclass['build_ext'] = customize_build_ext
 
 # ----------------------------------------------------------------------------------------
 # Import README.md as PyPi long_description
