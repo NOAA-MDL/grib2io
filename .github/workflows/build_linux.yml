@@ -29,9 +29,8 @@ jobs:
         python -m pip install --upgrade pip
         #python -m pip install --upgrade setuptools
         pip install numpy cython pytest xarray pyproj dask cmake
-
-    - name: Install wheels
-      uses: pypa/cibuildwheel@v2.12.3
+        python -c "import numpy; print(numpy)"
+        exit 1
 
     - name: Install NCEPLIBS-g2c
       run: |
