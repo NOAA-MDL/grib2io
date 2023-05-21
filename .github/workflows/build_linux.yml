@@ -30,6 +30,7 @@ jobs:
         python -m pip install --upgrade setuptools
         python -m pip uninstall wheel
         pip install numpy cython pytest xarray pyproj dask cmake
+        python -c "import numpy; print(numpy.__version__); print(numpy)"
 
     - name: Install NCEPLIBS-g2c
       run: |
