@@ -70,5 +70,5 @@ jobs:
         python --version
         pip list -v | grep setuptools
         python -c "import sys; print(sys.path)"
-        python -c "import numpy: print(numpy)"
+        python -c "import numpy; print(numpy)"
         python -m pip install .
