@@ -26,12 +26,10 @@ jobs:
 
     - name: Install python dependencies via pip
       run: |
-        #python -m pip install --upgrade pip
-        #python -m pip install --upgrade setuptools
-        which python
-        which pip
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools
+        python -m pip uninstall wheel
         pip install numpy cython pytest xarray pyproj dask cmake
-        pip list -v
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -69,7 +67,6 @@ jobs:
         export SP_DIR=/usr/local
         export IP_DIR=/usr/local
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
-        python setup.py build
-        find ./build
-        #pip install .
-        #python setup.py install
+        python --version
+        pip list -v | grep setuptools
+        python -m pip install .
