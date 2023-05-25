@@ -71,4 +71,4 @@ jobs:
         pip list -v | grep setuptools
         python -c "import sys; print(sys.path)"
         python -c "import numpy; print(numpy)"
-        python -m pip install .
+        python -m pip install --use-pep517 .
