@@ -388,7 +388,7 @@ def parse_grib_index(index, filters):
 
     # logic for parsing possible dims from specific product definition section
     if pdtn == 1:
-        ''' productDefinitionTemplateNumber = 1 - Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time. (see Template 4.1) '''
+        '''Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time. (see Template 4.1)'''
         if 'perturbationNumber' not in index.columns:
             index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
         @dataclass(init=False)
@@ -396,10 +396,20 @@ def parse_grib_index(index, filters):
             perturbationNumber: pd.Index = PdIndex()
         non_geo_dims.append(perturbationNumber)
 
+    elif pdtn == 8:
+        '''Average, accumulation, extreme values or other statistically processed values at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval. (see Template 4.8)'''
+        if 'duration' not in index.columns:
+            index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
+
+        @dataclass(init=False)
+        class Duration:
+            duration: pd.Index = PdIndex()
+        non_geo_dims.append(Duration)
+
     elif pdtn == 9:
+        '''Probability forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.  (see Template 4.9)'''
         index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
         index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
-
 
         if index['thresholdLowerLimit'].nunique() > 1:
             @dataclass(init=False)
@@ -413,6 +423,7 @@ def parse_grib_index(index, filters):
             non_geo_dims.append(ThresholdUpperLimitDim)
 
     elif pdtn == 10:
+        '''Percentile forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.  (see Template 4.10)'''
         index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
 
         @dataclass(init=False)
@@ -420,7 +431,8 @@ def parse_grib_index(index, filters):
             percentileValue: pd.Index = PdIndex()
         non_geo_dims.append(PercentileValueDim)
 
-    elif pdtn == 10:
+    elif pdtn == 11:
+        '''Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval.  (see Template 4.11)'''
         if 'perturbationNumber' not in index.columns:
             index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
         @dataclass(init=False)
@@ -435,24 +447,6 @@ def parse_grib_index(index, filters):
         class Duration:
             duration: pd.Index = PdIndex()
         non_geo_dims.append(Duration)
-
-    if pdtn == 11:
-        # productDefinitionTemplateNumber = 11 - Individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer, in a continuous or non-continuous time interval.  (see Template 4.11)
-        if 'perturbationNumber' not in index.columns:
-            index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
-        @dataclass(init=False)
-        class perturbationNumber:
-            perturbationNumber: pd.Index = PdIndex()
-        non_geo_dims.append(perturbationNumber)
-
-        if 'duration' not in index.columns:
-            index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
-
-        @dataclass(init=False)
-        class Duration:
-            duration: pd.Index = PdIndex()
-        non_geo_dims.append(Duration)
-
 
     return index, non_geo_dims
 
@@ -466,6 +460,14 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     lock = LOCK
     data = GribBackendArray(data, lock)
     data = indexing.LazilyIndexedArray(data)
+    if len(dim_names) != len(data.shape):
+        raise ValueError(
+            "different number of dimensions on data "
+            f"and dims: {len(data.shape)} vs {len(dim_names)}\n"
+            "Grib2 messages could not be formed into a data cube; "
+            "It's possible extra messages exist along a non-accounted for dimension based on PDTN\n"
+            "It might be possible to get around this by applying a filter on the non-accounted for dimension"
+            )
     da = xr.DataArray(data, dims=dim_names)
 
     da.encoding['original_shape'] = data.shape
@@ -476,6 +478,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     da.attrs['GRIB2IO_section1'] = msg1.section1
     da.attrs['GRIB2IO_section3'] = msg1.section3
     da.attrs['GRIB2IO_section4'] = msg1.section4
+    da.attrs['units'] = msg1.units
 #   for attr, field in msg1.__dataclass_fields__.items():
 #       print(field)
 #       if field.repr:
