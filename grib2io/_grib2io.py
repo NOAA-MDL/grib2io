@@ -1287,8 +1287,7 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
     """
-    try:
-        from grib2io_interp import interpolate
+    from grib2io_interp import interpolate
 
     interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
                       'budget':3, 'spectral':4, 'neighbor-budget':6}
@@ -1383,8 +1382,7 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
     """
-    try:
-        from grib2io_interp import interpolate
+    from grib2io_interp import interpolate
 
     interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
                       'budget':3, 'spectral':4, 'neighbor-budget':6}
