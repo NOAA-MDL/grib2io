@@ -47,5 +47,6 @@ jobs:
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python --version
         pip install .
+        cd /tmp # Get out out source package
         python -c "import grib2io; print(grib2io)"
         python -c "import xarray; print(xarray.backends.list_engines().keys())"
