@@ -1287,7 +1287,8 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
     """
-    from . import _interpolate
+    try:
+        from grib2io_interp import interpolate
 
     interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
                       'budget':3, 'spectral':4, 'neighbor-budget':6}
@@ -1323,10 +1324,10 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     rlat = np.zeros((no),dtype=np.float32)
     rlon = np.zeros((no),dtype=np.float32)
 
-    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,
-                                              grid_def_in.gdtn,grid_def_in.gdt,
-                                              grid_def_out.gdtn,grid_def_out.gdt,
-                                              ibi,li.T,a.T,go.T,rlat,rlon)
+    no,ibo,lo,iret = interpolate.interpolate(method,method_options,
+                                             grid_def_in.gdtn,grid_def_in.gdt,
+                                             grid_def_out.gdtn,grid_def_out.gdt,
+                                             ibi,li.T,a.T,go.T,rlat,rlon)
     del rlat
     del rlon
 
@@ -1382,7 +1383,8 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
     """
-    from . import _interpolate
+    try:
+        from grib2io_interp import interpolate
 
     interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
                       'budget':3, 'spectral':4, 'neighbor-budget':6}
@@ -1423,10 +1425,10 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
 
     grid_def_out = Grib2GridDef(-1,np.zeros((grid_def_in.gdt.shape),np.int32))
 
-    no,ibo,lo,iret = _interpolate.interpolate(method,method_options,
-                                              grid_def_in.gdtn,grid_def_in.gdt,
-                                              grid_def_out.gdtn,grid_def_out.gdt,
-                                              ibi,li.T,a.T,go.T,rlat,rlon)
+    no,ibo,lo,iret = interpolate.interpolate(method,method_options,
+                                             grid_def_in.gdtn,grid_def_in.gdt,
+                                             grid_def_out.gdtn,grid_def_out.gdt,
+                                             ibi,li.T,a.T,go.T,rlat,rlon)
 
     return go.reshape(newshp)
 
