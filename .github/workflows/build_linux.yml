@@ -10,7 +10,7 @@ jobs:
     #env:
     strategy:
       matrix:
-        python-version: ["3.10"] #["3.8","3.9","3.10","3.11"]
+        python-version: ["3.11"] #["3.8","3.9","3.10","3.11"]
    
     steps:
     - uses: actions/checkout@v3
@@ -28,8 +28,8 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install --upgrade setuptools
-        python -m pip install -r requirements.txt
         python -m pip install --upgrade wheel
+        python -m pip install -r requirements.txt
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -41,34 +41,9 @@ jobs:
         make -j2
         sudo make install
         
-    - name: Install NCEPLIBS-sp
-      run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-sp/archive/refs/tags/v2.4.0.tar.gz
-        tar -xzvf v2.4.0.tar.gz
-        cd NCEPLIBS-sp-2.4.0
-        mkdir build && cd build
-        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
-        make -j2
-        sudo make install
-        
-    - name: Install NCEPLIBS-ip
-      run: |
-        wget https://github.com/EricEngle-NOAA/NCEPLIBS-ip/archive/refs/heads/fix-interp-to-stations.zip
-        unzip fix-interp-to-stations.zip
-        cd NCEPLIBS-ip-fix-interp-to-stations
-        mkdir build && cd build
-        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
-        make -j2
-        sudo make install
-        
     - name: Install grib2io and test
       run: |
         export G2C_DIR=/usr/local
-        export SP_DIR=/usr/local
-        export IP_DIR=/usr/local
         export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python --version
-        pip list -v | grep setuptools
-        python -c "import sys; print(sys.path)"
-        python -c "import numpy; print(numpy)"
-        python -m pip install --use-pep517 .
+        pip install .
