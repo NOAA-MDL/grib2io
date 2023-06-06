@@ -12,14 +12,6 @@ import sysconfig
 
 VERSION = '2.0.0b2.post1'
 
-build = False
-if 'build' in ''.join(sys.argv):
-    build = True
-
-if build:
-    args_save = sys.argv
-    args_main = [arg for arg in sys.argv if 'compiler' not in arg]
-
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
 # ----------------------------------------------------------------------------------------
@@ -68,64 +60,6 @@ config = _ConfigParser()
 if os.path.exists(setup_cfg):
     sys.stdout.write('Reading from setup.cfg...')
     config.read(setup_cfg)
-
-# ----------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------
-# Check for interpolation configuration and build accordingly.
-# ----------------------------------------------------------------------------------------
-# ----------------------------------------------------------------------------------------
-from numpy.distutils.core import Extension as NPExtension
-from numpy.distutils.core import setup as NPsetup
-
-interp_libdirs = []
-interp_incdirs = []
-interp_libraries = ['sp_4','ip_4']
-
-# ---------------------------------------------------------------------------------------- 
-# Get NCEPLIBS-sp library info. This library is a required for interpolation.
-# ---------------------------------------------------------------------------------------- 
-sp_dir = config.getq('directories', 'sp_dir', environ.get('SP_DIR'))
-if os.path.exists(os.path.join(sp_dir,'lib')):
-    sp_libdir = os.path.join(sp_dir,'lib')
-elif os.path.exists(os.path.join(sp_dir,'lib64')):
-    sp_libdir = os.path.join(sp_dir,'lib64')
-interp_libdirs.append(sp_libdir)
-
-# ---------------------------------------------------------------------------------------- 
-# Get NCEPLIBS-ip library info. This library is a required for interpolation.
-# ---------------------------------------------------------------------------------------- 
-ip_dir = config.getq('directories', 'ip_dir', environ.get('IP_DIR'))
-ip_libdir = config.getq('directories', 'ip_libdir', environ.get('IP_LIBDIR'))
-ip_incdir = config.getq('directories', 'ip_incdir', environ.get('IP_INCDIR'))
-if ip_libdir is None and ip_dir is not None:
-    interp_libdirs.append(os.path.join(ip_dir,'lib'))
-    interp_libdirs.append(os.path.join(ip_dir,'lib64'))
-else:
-    interp_libdirs.append(ip_libdir)
-if ip_incdir is None and ip_dir is not None:
-    interp_incdirs.append(os.path.join(ip_dir,'include_4'))
-else:
-    interp_incdirs.append(ip_incdir)
-
-if build:
-    sys.argv = args_save
-
-# ---------------------------------------------------------------------------------------- 
-# Define interpolation NumPy extension module.
-# ---------------------------------------------------------------------------------------- 
-interpext_name_base = '_interpolate'
-interpext_soname = interpext_name_base+sysconfig.get_config_var('EXT_SUFFIX')
-interpext = NPExtension(name='grib2io.'+interpext_name_base,
-                        sources=['interpolate.pyf','interpolate.f90'],
-                        extra_f77_compile_args=['-O3','-fopenmp'],
-                        extra_f90_compile_args=['-O3','-fopenmp'],
-                        include_dirs=interp_incdirs,
-                        library_dirs=interp_libdirs,
-                        runtime_library_dirs=interp_libdirs,
-                        libraries=interp_libraries)
-
-def build_numpy_interp_extmodule():
-    NPsetup(name='grib2io',version = VERSION,ext_modules=[interpext])
 
 # ---------------------------------------------------------------------------------------- 
 # Define lists for build
@@ -208,22 +142,6 @@ class TestCommand(Command):
 cmdclass['test'] = TestCommand
 
 # ----------------------------------------------------------------------------------------
-# Customize install_egg_info to insert the _interpolate NumPy extension module shared-
-# object file name into installed-files.txt.
-# ----------------------------------------------------------------------------------------
-class customize_install_egg_info(install_egg_info):
-    def run(self):
-        install_egg_info.run(self)
-        self.outputs.append(os.path.join(self.install_dir,'grib2io',interpext_soname))
-cmdclass['install_egg_info'] = customize_install_egg_info
-
-class customize_build_ext(build_ext):
-    def run(self):
-        build_numpy_interp_extmodule()
-        build_ext.run(self)
-cmdclass['build_ext'] = customize_build_ext
-
-# ----------------------------------------------------------------------------------------
 # Import README.md as PyPi long_description
 # ----------------------------------------------------------------------------------------
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -233,8 +151,6 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py
 # ----------------------------------------------------------------------------------------
-if build:
-    sys.argv = args_main
 setup(name = 'grib2io',
       version = VERSION,
       description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
@@ -260,8 +176,9 @@ setup(name = 'grib2io',
       entry_points      = {'xarray.backends':['grib2io=grib2io.xarray_backend:GribBackendEntrypoint']},
       packages          = find_packages(),
       data_files        = data_files,
-      setup_requires    = ['setuptools>=41.5.0,<67'],
-      install_requires  = ['setuptools>=41.5.0,<67','numpy>=1.22.0','pyproj>=1.9.5'],
+      setup_requires    = ['cython','setuptools'],
+      install_requires  = ['setuptools','numpy>=1.22.0','pyproj>=1.9.5'],
       python_requires   = '>=3.8',
+      zip_safe          = False,
       long_description  = long_description,
       long_description_content_type = 'text/markdown')
