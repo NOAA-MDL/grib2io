@@ -10,7 +10,7 @@ import platform
 import sys
 import sysconfig
 
-VERSION = '2.0.0b2.post1'
+VERSION = '2.0.0b3'
 
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
