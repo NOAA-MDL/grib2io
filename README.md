@@ -6,7 +6,6 @@
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![PyPI version](https://badge.fury.io/py/grib2io.svg)](https://badge.fury.io/py/grib2io)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/eengl/grib2io/HEAD)
 
 ## Introduction
 
@@ -18,44 +17,36 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 [NOAA-MDL/grib2io](https://noaa-mdl.github.io/grib2io/grib2io.html)
 
 ## Required Software
-* Python 3.8+
+* [Python](https://python.org) 3.8+
 * [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
-* [NCEPLIBS-sp](https://github.com/NOAA-EMC/NCEPLIBS-sp) 2.4.0+ _(required for interpolation)_
-* [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) 4.1.0+ _(required for interpolation)_
 * setuptools 34.0+
 * NumPy 1.22+
 * pyproj 1.9.6+
 * C and Fortran Compiler: GNU, Intel, and Apple Clang have been tested.
+
+## Optional Software
+* [grib2io-interp](https://github.com/NOAA-MDL/grib2io-interp) 1.0.0+ - Provides ability to perform spatial interpolation via the [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
 
 ## NCEPLIBS Libraries
 
 ### g2c
 Beginning with grib2io v1.1.0, the [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is no longer bundled with grib2io.  Instead, grib2io will link to an external installation of g2c, which as of v1.7.0, includes the ability to build shared-object library files.  Therefore, the previous "optional" compression software is no longer needed to build grib2io.  The caveat to this is you are at the mercy of how g2c was built.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).
 
-### sp and ip
-The NCEP Spectral Interpolation (NCEPLIBS-sp) library is a dependency for the NCEP Interpolation (NCEPLIBS-ip) library.  Both of these libraries are Fortran-based and contains OpenMP directives.
-
-## Installation
-If NCEPLIBS-g2c, NCEPLIBS-sp, and NCEPLIBS-ip libraries have been installed to custom locations (i.e. not default paths), then please define the root of these installations via environment variables `G2C_DIR`, `SP_DIR`, and `IP_DIR`, respectively.
-```shell
-pip install grib2io
-```
-
 ## Build and Install from Source
 
 * Clone GitHub repository or download a source release from [GitHub](https://github.com/NOAA-MDL/grib2io) or [PyPI](https://pypi.python.org/pypi/grib2io).
 
-* Edit `setup.cfg` to define the g2c, sp, and ip library installation paths __OR__ define `G2C_DIR`, `SP_DIR`, and `IP_DIR` environment variables.
+* Edit `setup.cfg` to define the g2c library installation path __OR__ define the `G2C_DIR` environment variable.
 
 * Build and install.  Use `--user` to install into personal space (`$HOME/.local`).
 
 ```shell
-python setup.py build --fcompiler=[gnu95|intelem] # GNU or Intel compilers
+python setup.py build
 python setup.py install
 ```
 OR
 ```shell
-pip install . --global-option="build" --global-option="--fcompiler=[gnu95|intelem]"
+pip install .
 ```
 
 ## Development
