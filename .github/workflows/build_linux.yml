@@ -48,4 +48,4 @@ jobs:
         python --version
         pip install .
         python -c "import grib2io; print(grib2io)"
-	python -c "import xarray; print(xarray.backends.list_engines().keys())"
+        python -c "import xarray; print(xarray.backends.list_engines().keys())"
