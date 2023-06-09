@@ -21,14 +21,17 @@ def test_multi_lead(request):
 
 
 def test_interp(request):
-    from grib2io._grib2io import Grib2GridDef
-    gdtn_nbm = 30
-    gdt_nbm = [1, 0, 6371200, 255, 255, 255, 255, 2345, 1597, 19229000, 233723400,
+    try:
+        from grib2io._grib2io import Grib2GridDef
+        gdtn_nbm = 30
+        gdt_nbm = [1, 0, 6371200, 255, 255, 255, 255, 2345, 1597, 19229000, 233723400,
                                                  48, 25000000, 265000000, 2539703, 2539703, 0, 64, 25000000,
                                                  25000000, -90000000, 0]
-    nbm_grid_def = Grib2GridDef(gdtn_nbm, gdt_nbm)
-    data = request.config.rootdir / 'tests' / 'data'
-    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
-    ds = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f024', engine='grib2io', filters=filters)
-    da = ds.grib2io.interp('neighbor', nbm_grid_def).to_array()
-    assert da.shape == (33, 1597, 2345)
+        nbm_grid_def = Grib2GridDef(gdtn_nbm, gdt_nbm)
+        data = request.config.rootdir / 'tests' / 'data'
+        filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
+        ds = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f024', engine='grib2io', filters=filters)
+        da = ds.grib2io.interp('neighbor', nbm_grid_def).to_array()
+        assert da.shape == (33, 1597, 2345)
+    except(ModuleNotFoundError):
+        pytest.skip()
