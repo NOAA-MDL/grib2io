@@ -917,11 +917,11 @@ class _Grib2Message:
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             dlon = self.gridlengthXDirection
             dlat = self.gridlengthYDirection
+            if lon2 < lon1 and dlon < 0: lon1 = -lon1
+            lats = np.linspace(lat1,lat2,self.ny)
             if reggrid:
-                lats = np.arange(lat1,lat2+dlat,dlat)
-                lons = np.arange(lon1,lon2+dlon,dlon)
+                lons = np.linspace(lon1,lon2,self.nx)
             else:
-                lats = np.linspace(lat1,lat2,self.ny)
                 lons = np.linspace(lon1,lon2,self.ny*2)
             lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
         elif gdtn == 1: # Rotated Lat/Lon grid
