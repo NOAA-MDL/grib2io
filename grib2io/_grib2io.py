@@ -531,6 +531,7 @@ class open():
 
 class Grib2Message:
     """
+    Creation class for a GRIB2 message.
     """
     def __new__(self, section0: np.array = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
                       section1: np.array = np.zeros((13),dtype=np.int64),
@@ -595,6 +596,7 @@ class Grib2Message:
 
 @dataclass
 class _Grib2Message:
+    """GRIB2 Message base class"""
     # GRIB2 Sections
     section0: np.array = field(init=True,repr=False)
     section1: np.array = field(init=True,repr=False)
@@ -627,6 +629,7 @@ class _Grib2Message:
 
     @property
     def _isNDFD(self):
+        """Check if GRIB2 message is from NWS NDFD"""
         return np.all(self.section1[0:2]==[8,65535])
 
     # Section 3 looked up common attributes.  Other looked up attributes are available according
@@ -681,6 +684,7 @@ class _Grib2Message:
 
 
     def __post_init__(self):
+        """Set some attributes after init"""
         self._msgnum = -1
         self._deflist = None
         self._coordlist = None
@@ -694,26 +698,31 @@ class _Grib2Message:
 
     @property
     def gdtn(self):
+        """Return Grid Definition Template Number"""
         return self.section3[4]
 
 
     @property
     def pdtn(self):
+        """Return Product Definition Template Number"""
         return self.section4[1]
 
 
     @property
     def drtn(self):
+        """Return Data Representation Template Number"""
         return self.section5[1]
 
 
     @property
     def pdy(self):
+        """Return the PDY ('YYYYMMDD')"""
         return ''.join([str(i) for i in self.section1[5:8]])
 
 
     @property
     def griddef(self):
+        """Return a Grib2GridDef instance for a GRIB2 message"""
         return Grib2GridDef.from_section3(self.section3)
 
 
@@ -732,6 +741,7 @@ class _Grib2Message:
 
 
     def _generate_signature(self):
+        """Generature SHA-1 hash string from GRIB2 integer sections"""
         return hashlib.sha1(np.concatenate((self.section0,self.section1,
                                             self.section3,self.section4,
                                             self.section5))).hexdigest()
