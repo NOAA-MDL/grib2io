@@ -1,14 +1,10 @@
-from setuptools import setup, Extension, find_packages, Command
-from setuptools.command.install_egg_info import install_egg_info
-from setuptools.command.build_ext import build_ext
+from setuptools import setup, Extension
 from os import environ
 import configparser
-import glob
 import numpy
 import os
 import platform
 import sys
-import sysconfig
 
 VERSION = '2.0.0rc1'
 
@@ -47,7 +43,7 @@ try:
     cmdclass = {'build_ext': build_ext}
     redtoreg_pyx = 'redtoreg.pyx'
     g2clib_pyx  = 'g2clib.pyx'
-except ImportError:
+except(ImportError):
     cmdclass = {}
     redtoreg_pyx = 'redtoreg.c'
     g2clib_pyx  = 'g2clib.c'
@@ -62,14 +58,10 @@ if os.path.exists(setup_cfg):
     config.read(setup_cfg)
 
 # ---------------------------------------------------------------------------------------- 
-# Define lists for build
+# Get NCEPLIBS-g2c library info
 # ---------------------------------------------------------------------------------------- 
 incdirs=[]
 libdirs=[]
-
-# ---------------------------------------------------------------------------------------- 
-# Get NCEPLIBS-g2c library info
-# ---------------------------------------------------------------------------------------- 
 g2c_dir = config.getq('directories', 'g2c_dir', environ.get('G2C_DIR'))
 g2c_libdir = config.getq('directories', 'g2c_libdir', environ.get('G2C_LIBDIR'))
 g2c_incdir = config.getq('directories', 'g2c_incdir', environ.get('G2C_INCDIR'))
@@ -99,18 +91,6 @@ g2clibext = Extension('grib2io.g2clib',[g2clib_pyx],include_dirs=incdirs,\
 redtoregext = Extension('grib2io.redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])
 
 # ----------------------------------------------------------------------------------------
-# Data files to install
-# ----------------------------------------------------------------------------------------
-data_files = None
-
-# ----------------------------------------------------------------------------------------
-# Define installable entities
-# ----------------------------------------------------------------------------------------
-install_scripts = []
-install_ext_modules = [g2clibext,redtoregext]
-install_py_modules = []
-
-# ----------------------------------------------------------------------------------------
 # Create __config__.py
 # ----------------------------------------------------------------------------------------
 cnt = \
@@ -127,21 +107,6 @@ finally:
     a.close()
 
 # ----------------------------------------------------------------------------------------
-# Define testing class
-# ----------------------------------------------------------------------------------------
-class TestCommand(Command):
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
-    def run(self):
-        import sys, subprocess
-        for f in glob.glob('./tests/*.py'):
-            raise SystemExit(subprocess.call([sys.executable,f]))
-cmdclass['test'] = TestCommand
-
-# ----------------------------------------------------------------------------------------
 # Import README.md as PyPi long_description
 # ----------------------------------------------------------------------------------------
 this_directory = os.path.abspath(os.path.dirname(__file__))
@@ -149,36 +114,9 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # ----------------------------------------------------------------------------------------
-# Run setup.py
+# Run setup.py.  See pyproject.toml for package metadata.
 # ----------------------------------------------------------------------------------------
-setup(name = 'grib2io',
-      version = VERSION,
-      description       = 'Python interface to the NCEP G2C Library for reading/writing GRIB2 files.',
-      author            = 'Eric Engle',
-      author_email      = 'eric.engle@noaa.gov',
-      url               = 'https://github.com/NOAA-MDL/grib2io',
-      download_url      = 'http://python.org/pypi/grib2io',
-      classifiers       = ['Development Status :: 4 - Beta',
-                           'Environment :: Console',
-                           'Programming Language :: Python :: 3',
-                           'Programming Language :: Python :: 3 :: Only',
-                           'Programming Language :: Python :: 3.8',
-                           'Programming Language :: Python :: 3.9',
-                           'Programming Language :: Python :: 3.10',
-                           'Programming Language :: Python :: 3.11',
-                           'Intended Audience :: Science/Research',
-                           'License :: OSI Approved',
-                           'Topic :: Software Development :: Libraries :: Python Modules'],
-      cmdclass          = cmdclass,
-      scripts           = install_scripts,
-      ext_modules       = install_ext_modules,
-      py_modules        = install_py_modules,
-      entry_points      = {'xarray.backends':['grib2io=grib2io.xarray_backend:GribBackendEntrypoint']},
-      packages          = find_packages(),
-      data_files        = data_files,
-      setup_requires    = ['cython','setuptools'],
-      install_requires  = ['setuptools','numpy>=1.22.0','pyproj>=1.9.5'],
-      python_requires   = '>=3.8',
-      zip_safe          = False,
-      long_description  = long_description,
+setup(ext_modules = [g2clibext,redtoregext],
+      cmdclass = cmdclass,
+      long_description = long_description,
       long_description_content_type = 'text/markdown')
