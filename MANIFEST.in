@@ -4,7 +4,9 @@ include g2clib.c
 include redtoreg.pyx
 include redtoreg.c
 include setup.py
+include pyproject.toml
 include README.md
+include LICENSE
 recursive-include grib2io *
 recursive-include docs *
 recursive-include make_grib2_tables *
