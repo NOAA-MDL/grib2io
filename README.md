@@ -31,21 +31,25 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 ## NCEPLIBS Libraries
 
 ### g2c
-Beginning with grib2io v1.1.0, the [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is no longer bundled with grib2io.  Instead, grib2io will link to an external installation of g2c, which as of v1.7.0, includes the ability to build shared-object library files.  Therefore, the previous "optional" compression software is no longer needed to build grib2io.  The caveat to this is you are at the mercy of how g2c was built.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).
+Beginning with grib2io v1.1.0, the [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is no longer bundled with grib2io.  Instead, grib2io will link to an external installation of g2c, which as of v1.7.0, includes the ability to build shared-object library files.  Therefore, the previous "optional" compression software is no longer needed to build grib2io.  The caveat to this is you are at the mercy of how g2c was built.
 
-## Build and Install from Source
+For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).
 
-* Clone GitHub repository or download a source release from [GitHub](https://github.com/NOAA-MDL/grib2io) or [PyPI](https://pypi.python.org/pypi/grib2io).
+## Install
 
-* Edit `setup.cfg` to define the g2c library installation path __OR__ define the `G2C_DIR` environment variable.
+* From [PyPI](https://pypi.python.org/pypi/grib2io) via pip
 
-* Build and install.  Use `--user` to install into personal space (`$HOME/.local`).
-
-```shell
-python setup.py build
-python setup.py install
 ```
-OR
+pip install grib2io
+```
+* From conda-forge via conda *__...COMING SOON__*
+
+```
+conda install -c conda-forge grib2io
+```
+
+* From source.  Download or clone from [GitHub](https://github.com/NOAA-MDL/grib2io).  Then edit `setup.cfg` to define the g2c library installation path __OR__ define the `G2C_DIR` environment variable.
+
 ```shell
 pip install .
 ```
