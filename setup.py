@@ -19,23 +19,6 @@ class _ConfigParser(configparser.ConfigParser):
             return fallback
 
 # ----------------------------------------------------------------------------------------
-# Setup find_library functions according system.
-# ----------------------------------------------------------------------------------------
-system = platform.system()
-if system == 'Linux':
-    def _find_library_linux(name):
-        import subprocess
-        result = subprocess.run(['/sbin/ldconfig','-p'],stdout=subprocess.PIPE)
-        libs = [i.replace(' => ','#').split('#')[1] for i in result.stdout.decode('utf-8').splitlines()[1:-1]]
-        try:
-            return [l for l in libs if name in l][0]
-        except IndexError:
-            return None
-    find_library = _find_library_linux
-elif system == 'Darwin':
-    from ctypes.util import find_library
-
-# ----------------------------------------------------------------------------------------
 # Build time dependancy
 # ----------------------------------------------------------------------------------------
 try:
