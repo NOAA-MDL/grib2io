@@ -337,6 +337,9 @@
                                 <a class="variable" href="#Grib2GridDef.gdt">gdt</a>
                         </li>
                         <li>
+                                <a class="variable" href="#Grib2GridDef.stations">stations</a>
+                        </li>
+                        <li>
                                 <a class="variable" href="#Grib2GridDef.lats">lats</a>
                         </li>
                         <li>
@@ -3735,45 +3738,46 @@ is the interpolated v.</p>
 </span><span id="Grib2GridDef-1405"><a href="#Grib2GridDef-1405"><span class="linenos">1405</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="Grib2GridDef-1406"><a href="#Grib2GridDef-1406"><span class="linenos">1406</span></a>    <span class="n">gdtn</span><span class="p">:</span> <span class="nb">int</span>
 </span><span id="Grib2GridDef-1407"><a href="#Grib2GridDef-1407"><span class="linenos">1407</span></a>    <span class="n">gdt</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="Grib2GridDef-1408"><a href="#Grib2GridDef-1408"><span class="linenos">1408</span></a>    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="Grib2GridDef-1409"><a href="#Grib2GridDef-1409"><span class="linenos">1409</span></a>    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
-</span><span id="Grib2GridDef-1410"><a href="#Grib2GridDef-1410"><span class="linenos">1410</span></a>
-</span><span id="Grib2GridDef-1411"><a href="#Grib2GridDef-1411"><span class="linenos">1411</span></a>    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1412"><a href="#Grib2GridDef-1412"><span class="linenos">1412</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1413"><a href="#Grib2GridDef-1413"><span class="linenos">1413</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">200</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
-</span><span id="Grib2GridDef-1414"><a href="#Grib2GridDef-1414"><span class="linenos">1414</span></a>        <span class="c1"># TODO: Check shape of lats and lons.  Must be same.</span>
-</span><span id="Grib2GridDef-1415"><a href="#Grib2GridDef-1415"><span class="linenos">1415</span></a>
-</span><span id="Grib2GridDef-1416"><a href="#Grib2GridDef-1416"><span class="linenos">1416</span></a>    <span class="nd">@classmethod</span>
-</span><span id="Grib2GridDef-1417"><a href="#Grib2GridDef-1417"><span class="linenos">1417</span></a>    <span class="k">def</span> <span class="nf">from_section3</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">section3</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1418"><a href="#Grib2GridDef-1418"><span class="linenos">1418</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section3</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">section3</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
-</span><span id="Grib2GridDef-1419"><a href="#Grib2GridDef-1419"><span class="linenos">1419</span></a>
-</span><span id="Grib2GridDef-1420"><a href="#Grib2GridDef-1420"><span class="linenos">1420</span></a>    <span class="nd">@property</span>
-</span><span id="Grib2GridDef-1421"><a href="#Grib2GridDef-1421"><span class="linenos">1421</span></a>    <span class="k">def</span> <span class="nf">nx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1422"><a href="#Grib2GridDef-1422"><span class="linenos">1422</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1423"><a href="#Grib2GridDef-1423"><span class="linenos">1423</span></a>            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
-</span><span id="Grib2GridDef-1424"><a href="#Grib2GridDef-1424"><span class="linenos">1424</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1425"><a href="#Grib2GridDef-1425"><span class="linenos">1425</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
-</span><span id="Grib2GridDef-1426"><a href="#Grib2GridDef-1426"><span class="linenos">1426</span></a>
-</span><span id="Grib2GridDef-1427"><a href="#Grib2GridDef-1427"><span class="linenos">1427</span></a>    <span class="nd">@property</span>
-</span><span id="Grib2GridDef-1428"><a href="#Grib2GridDef-1428"><span class="linenos">1428</span></a>    <span class="k">def</span> <span class="nf">ny</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1429"><a href="#Grib2GridDef-1429"><span class="linenos">1429</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1430"><a href="#Grib2GridDef-1430"><span class="linenos">1430</span></a>            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
-</span><span id="Grib2GridDef-1431"><a href="#Grib2GridDef-1431"><span class="linenos">1431</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1432"><a href="#Grib2GridDef-1432"><span class="linenos">1432</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
-</span><span id="Grib2GridDef-1433"><a href="#Grib2GridDef-1433"><span class="linenos">1433</span></a>
-</span><span id="Grib2GridDef-1434"><a href="#Grib2GridDef-1434"><span class="linenos">1434</span></a>    <span class="nd">@property</span>
-</span><span id="Grib2GridDef-1435"><a href="#Grib2GridDef-1435"><span class="linenos">1435</span></a>    <span class="k">def</span> <span class="nf">npoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1436"><a href="#Grib2GridDef-1436"><span class="linenos">1436</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1437"><a href="#Grib2GridDef-1437"><span class="linenos">1437</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="c1"># Can be either nx or ny</span>
-</span><span id="Grib2GridDef-1438"><a href="#Grib2GridDef-1438"><span class="linenos">1438</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1439"><a href="#Grib2GridDef-1439"><span class="linenos">1439</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
-</span><span id="Grib2GridDef-1440"><a href="#Grib2GridDef-1440"><span class="linenos">1440</span></a>
-</span><span id="Grib2GridDef-1441"><a href="#Grib2GridDef-1441"><span class="linenos">1441</span></a>    <span class="nd">@property</span>
-</span><span id="Grib2GridDef-1442"><a href="#Grib2GridDef-1442"><span class="linenos">1442</span></a>    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-</span><span id="Grib2GridDef-1443"><a href="#Grib2GridDef-1443"><span class="linenos">1443</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1444"><a href="#Grib2GridDef-1444"><span class="linenos">1444</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
-</span><span id="Grib2GridDef-1445"><a href="#Grib2GridDef-1445"><span class="linenos">1445</span></a>        <span class="k">else</span><span class="p">:</span>
-</span><span id="Grib2GridDef-1446"><a href="#Grib2GridDef-1446"><span class="linenos">1446</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
+</span><span id="Grib2GridDef-1408"><a href="#Grib2GridDef-1408"><span class="linenos">1408</span></a>    <span class="n">stations</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="Grib2GridDef-1409"><a href="#Grib2GridDef-1409"><span class="linenos">1409</span></a>    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="Grib2GridDef-1410"><a href="#Grib2GridDef-1410"><span class="linenos">1410</span></a>    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="Grib2GridDef-1411"><a href="#Grib2GridDef-1411"><span class="linenos">1411</span></a>
+</span><span id="Grib2GridDef-1412"><a href="#Grib2GridDef-1412"><span class="linenos">1412</span></a>    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1413"><a href="#Grib2GridDef-1413"><span class="linenos">1413</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1414"><a href="#Grib2GridDef-1414"><span class="linenos">1414</span></a>            <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">200</span><span class="p">),</span><span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+</span><span id="Grib2GridDef-1415"><a href="#Grib2GridDef-1415"><span class="linenos">1415</span></a>        <span class="c1"># TODO: Check shape of lats and lons.  Must be same.</span>
+</span><span id="Grib2GridDef-1416"><a href="#Grib2GridDef-1416"><span class="linenos">1416</span></a>
+</span><span id="Grib2GridDef-1417"><a href="#Grib2GridDef-1417"><span class="linenos">1417</span></a>    <span class="nd">@classmethod</span>
+</span><span id="Grib2GridDef-1418"><a href="#Grib2GridDef-1418"><span class="linenos">1418</span></a>    <span class="k">def</span> <span class="nf">from_section3</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">section3</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1419"><a href="#Grib2GridDef-1419"><span class="linenos">1419</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section3</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">section3</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+</span><span id="Grib2GridDef-1420"><a href="#Grib2GridDef-1420"><span class="linenos">1420</span></a>
+</span><span id="Grib2GridDef-1421"><a href="#Grib2GridDef-1421"><span class="linenos">1421</span></a>    <span class="nd">@property</span>
+</span><span id="Grib2GridDef-1422"><a href="#Grib2GridDef-1422"><span class="linenos">1422</span></a>    <span class="k">def</span> <span class="nf">nx</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1423"><a href="#Grib2GridDef-1423"><span class="linenos">1423</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1424"><a href="#Grib2GridDef-1424"><span class="linenos">1424</span></a>            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+</span><span id="Grib2GridDef-1425"><a href="#Grib2GridDef-1425"><span class="linenos">1425</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1426"><a href="#Grib2GridDef-1426"><span class="linenos">1426</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span>
+</span><span id="Grib2GridDef-1427"><a href="#Grib2GridDef-1427"><span class="linenos">1427</span></a>
+</span><span id="Grib2GridDef-1428"><a href="#Grib2GridDef-1428"><span class="linenos">1428</span></a>    <span class="nd">@property</span>
+</span><span id="Grib2GridDef-1429"><a href="#Grib2GridDef-1429"><span class="linenos">1429</span></a>    <span class="k">def</span> <span class="nf">ny</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1430"><a href="#Grib2GridDef-1430"><span class="linenos">1430</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1431"><a href="#Grib2GridDef-1431"><span class="linenos">1431</span></a>            <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+</span><span id="Grib2GridDef-1432"><a href="#Grib2GridDef-1432"><span class="linenos">1432</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1433"><a href="#Grib2GridDef-1433"><span class="linenos">1433</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+</span><span id="Grib2GridDef-1434"><a href="#Grib2GridDef-1434"><span class="linenos">1434</span></a>
+</span><span id="Grib2GridDef-1435"><a href="#Grib2GridDef-1435"><span class="linenos">1435</span></a>    <span class="nd">@property</span>
+</span><span id="Grib2GridDef-1436"><a href="#Grib2GridDef-1436"><span class="linenos">1436</span></a>    <span class="k">def</span> <span class="nf">npoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1437"><a href="#Grib2GridDef-1437"><span class="linenos">1437</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1438"><a href="#Grib2GridDef-1438"><span class="linenos">1438</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span> <span class="c1"># Can be either nx or ny</span>
+</span><span id="Grib2GridDef-1439"><a href="#Grib2GridDef-1439"><span class="linenos">1439</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1440"><a href="#Grib2GridDef-1440"><span class="linenos">1440</span></a>            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdt</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>
+</span><span id="Grib2GridDef-1441"><a href="#Grib2GridDef-1441"><span class="linenos">1441</span></a>
+</span><span id="Grib2GridDef-1442"><a href="#Grib2GridDef-1442"><span class="linenos">1442</span></a>    <span class="nd">@property</span>
+</span><span id="Grib2GridDef-1443"><a href="#Grib2GridDef-1443"><span class="linenos">1443</span></a>    <span class="k">def</span> <span class="nf">shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="Grib2GridDef-1444"><a href="#Grib2GridDef-1444"><span class="linenos">1444</span></a>        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gdtn</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1445"><a href="#Grib2GridDef-1445"><span class="linenos">1445</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">npoints</span><span class="p">)</span>
+</span><span id="Grib2GridDef-1446"><a href="#Grib2GridDef-1446"><span class="linenos">1446</span></a>        <span class="k">else</span><span class="p">:</span>
+</span><span id="Grib2GridDef-1447"><a href="#Grib2GridDef-1447"><span class="linenos">1447</span></a>            <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ny</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">nx</span><span class="p">)</span>
 </span></pre></div>
 
 
@@ -3791,7 +3795,7 @@ passing in lats and lons for the station points.</p>
                             <div id="Grib2GridDef.__init__" class="classattr">
                                 <div class="attr function">
             
-        <span class="name">Grib2GridDef</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">gdtn</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">gdt</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">function</span> <span class="n">array</span><span class="o">&gt;</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">lats</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">lons</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
+        <span class="name">Grib2GridDef</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">gdtn</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">gdt</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">built</span><span class="o">-</span><span class="ow">in</span> <span class="n">function</span> <span class="n">array</span><span class="o">&gt;</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">stations</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">lats</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span>,</span><span class="param">	<span class="n">lons</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="kc">None</span></span>)</span>
 
         
     </div>
@@ -3819,6 +3823,18 @@ passing in lats and lons for the station points.</p>
         
     </div>
     <a class="headerlink" href="#Grib2GridDef.gdt"></a>
+    
+    
+
+                            </div>
+                            <div id="Grib2GridDef.stations" class="classattr">
+                                <div class="attr variable">
+            <span class="name">stations</span><span class="annotation">: list</span>        =
+<span class="default_value">None</span>
+
+        
+    </div>
+    <a class="headerlink" href="#Grib2GridDef.stations"></a>
     
     
 
@@ -3859,9 +3875,9 @@ passing in lats and lons for the station points.</p>
 
     </div>
     <a class="headerlink" href="#Grib2GridDef.from_section3"></a>
-            <div class="pdoc-code codehilite"><pre><span></span><span id="Grib2GridDef.from_section3-1416"><a href="#Grib2GridDef.from_section3-1416"><span class="linenos">1416</span></a>    <span class="nd">@classmethod</span>
-</span><span id="Grib2GridDef.from_section3-1417"><a href="#Grib2GridDef.from_section3-1417"><span class="linenos">1417</span></a>    <span class="k">def</span> <span class="nf">from_section3</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">section3</span><span class="p">):</span>
-</span><span id="Grib2GridDef.from_section3-1418"><a href="#Grib2GridDef.from_section3-1418"><span class="linenos">1418</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section3</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">section3</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="Grib2GridDef.from_section3-1417"><a href="#Grib2GridDef.from_section3-1417"><span class="linenos">1417</span></a>    <span class="nd">@classmethod</span>
+</span><span id="Grib2GridDef.from_section3-1418"><a href="#Grib2GridDef.from_section3-1418"><span class="linenos">1418</span></a>    <span class="k">def</span> <span class="nf">from_section3</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">section3</span><span class="p">):</span>
+</span><span id="Grib2GridDef.from_section3-1419"><a href="#Grib2GridDef.from_section3-1419"><span class="linenos">1419</span></a>        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">section3</span><span class="p">[</span><span class="mi">4</span><span class="p">],</span><span class="n">section3</span><span class="p">[</span><span class="mi">5</span><span class="p">:])</span>
 </span></pre></div>
 
 
