@@ -1404,6 +1404,7 @@ class Grib2GridDef:
     """
     gdtn: int
     gdt: np.array = None
+    stations: list = None
     lats: list = None
     lons: list = None
 
