@@ -8,7 +8,7 @@ try:
 except(ImportError):
     pass
 
-__all__ = ['open','Grib2Message','_Grib2Message','show_config','interpolate','interpolate_to_stations',
+__all__ = ['open','Grib2Message','_Grib2Message','show_config','interpolate',
            'tables','templates','utils','Grib2GridDef']
 
 def show_config():
