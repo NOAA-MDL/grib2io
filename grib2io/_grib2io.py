@@ -20,9 +20,6 @@ import hashlib
 import os
 import re
 import struct
-import math
-import warnings
-import typing
 import sys
 
 from dataclasses import dataclass, field
@@ -33,7 +30,6 @@ import pyproj
 from . import g2clib
 from . import tables
 from . import templates
-from grib2io.templates import Grib2Metadata
 from . import utils
 
 DEFAULT_DRT_LEN = 20
@@ -604,19 +600,19 @@ class _Grib2Message:
     section3: np.array = field(init=True,repr=False)
     section4: np.array = field(init=True,repr=False)
     section5: np.array = field(init=True,repr=False)
-    bitMapFlag: Grib2Metadata = field(init=True,repr=False,default=255)
+    bitMapFlag: templates.Grib2Metadata = field(init=True,repr=False,default=255)
 
     # Section 0 looked up attributes
     indicatorSection: np.array = field(init=False,repr=False,default=templates.IndicatorSection())
-    discipline: Grib2Metadata = field(init=False,repr=False,default=templates.Discipline())
+    discipline: templates.Grib2Metadata = field(init=False,repr=False,default=templates.Discipline())
 
     # Section 1 looked up attributes
     identificationSection: np.array = field(init=False,repr=False,default=templates.IdentificationSection())
-    originatingCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingCenter())
-    originatingSubCenter: Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingSubCenter())
-    masterTableInfo: Grib2Metadata = field(init=False,repr=False,default=templates.MasterTableInfo())
-    localTableInfo: Grib2Metadata = field(init=False,repr=False,default=templates.LocalTableInfo())
-    significanceOfReferenceTime: Grib2Metadata = field(init=False,repr=False,default=templates.SignificanceOfReferenceTime())
+    originatingCenter: templates.Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingCenter())
+    originatingSubCenter: templates.Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingSubCenter())
+    masterTableInfo: templates.Grib2Metadata = field(init=False,repr=False,default=templates.MasterTableInfo())
+    localTableInfo: templates.Grib2Metadata = field(init=False,repr=False,default=templates.LocalTableInfo())
+    significanceOfReferenceTime: templates.Grib2Metadata = field(init=False,repr=False,default=templates.SignificanceOfReferenceTime())
     year: int = field(init=False,repr=False,default=templates.Year())
     month: int = field(init=False,repr=False,default=templates.Month())
     day: int = field(init=False,repr=False,default=templates.Day())
@@ -624,8 +620,8 @@ class _Grib2Message:
     minute: int = field(init=False,repr=False,default=templates.Minute())
     second: int = field(init=False,repr=False,default=templates.Second())
     refDate: datetime.datetime = field(init=False,repr=False,default=templates.RefDate())
-    productionStatus: Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
-    typeOfData: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
+    productionStatus: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
+    typeOfData: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
 
     @property
     def _isNDFD(self):
@@ -637,8 +633,8 @@ class _Grib2Message:
     gridDefinitionSection: np.array = field(init=False,repr=False,default=templates.GridDefinitionSection())
     sourceOfGridDefinition: int = field(init=False,repr=False,default=templates.SourceOfGridDefinition())
     numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
-    interpretationOfListOfNumbers: Grib2Metadata = field(init=False,repr=False,default=templates.InterpretationOfListOfNumbers())
-    gridDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.GridDefinitionTemplateNumber())
+    interpretationOfListOfNumbers: templates.Grib2Metadata = field(init=False,repr=False,default=templates.InterpretationOfListOfNumbers())
+    gridDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.GridDefinitionTemplateNumber())
     gridDefinitionTemplate: list = field(init=False,repr=False,default=templates.GridDefinitionTemplate())
     _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
     _dxsign: float = field(init=False,repr=False,default=templates.DxSign())
@@ -646,7 +642,7 @@ class _Grib2Message:
     _llscalefactor: float = field(init=False,repr=False,default=templates.LLScaleFactor())
     _lldivisor: float = field(init=False,repr=False,default=templates.LLDivisor())
     _xydivisor: float = field(init=False,repr=False,default=templates.XYDivisor())
-    shapeOfEarth: Grib2Metadata = field(init=False,repr=False,default=templates.ShapeOfEarth())
+    shapeOfEarth: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ShapeOfEarth())
     earthRadius: float = field(init=False,repr=False,default=templates.EarthRadius())
     earthMajorAxis: float = field(init=False,repr=False,default=templates.EarthMajorAxis())
     earthMinorAxis: float = field(init=False,repr=False,default=templates.EarthMinorAxis())
@@ -658,7 +654,7 @@ class _Grib2Message:
 
     # Section 4 attributes. Listed here are "extra" or "helper" attrs that use metadata from
     # the given PDT, but not a formal part of the PDT.
-    productDefinitionTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
+    productDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
     _varinfo: list = field(init=False, repr=False, default=templates.VarInfo())
     _fixedsfc1info: list = field(init=False, repr=False, default=templates.FixedSfc1Info())
@@ -678,9 +674,9 @@ class _Grib2Message:
     # Section 5 looked up common attributes.  Other looked up attributes are available according
     # to the Data Representation Template.
     numberOfPackedValues: int = field(init=False,repr=False,default=templates.NumberOfPackedValues())
-    dataRepresentationTemplateNumber: Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
+    dataRepresentationTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
-    typeOfValues: Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
+    typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
 
 
     def __post_init__(self):
@@ -693,7 +689,7 @@ class _Grib2Message:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
             pass
-        self.bitMapFlag = Grib2Metadata(self.bitMapFlag,table='6.0')
+        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
 
 
     @property
@@ -1066,6 +1062,9 @@ class _Grib2Message:
         """
         Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
+        **IMPORTANT:**  This interpolate method only supports scalar interpolation. If you
+        need to perform vector interpolation, use the module-level `grib2io.interpolate` function.
+
         Parameters
         ----------
 
@@ -1091,30 +1090,44 @@ class _Grib2Message:
 
         Interpolation options. See the NCEPLIBS-ip doucmentation for
         more information on how these are used.
-        """
-        section0 = self.section0
-        section0[-1] = 0
-        gds = [0, grid_def_out.nx*grid_def_out.ny, 0, 255, grid_def_out.gdtn]
-        section3 = np.concatenate((gds,grid_def_out.gdt))
 
-        msg = Grib2Message(section0,
-                           self.section1,
-                           self.section2,
-                           section3,
-                           self.section4,
-                           self.section5,
-                           self.bitMapFlag.value)
-        msg._msgnum = -1
-        msg._deflist = self._deflist
-        msg._coordlist = self._coordlist
-        shape = (msg.ny,msg.nx)
-        ndim = 2
-        if msg.typeOfValues == 0:
-            dtype = 'float32'
-        elif msg.typeOfValues == 1:
-            dtype = 'int32'
-        msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
-                                method_options=method_options).reshape(msg.ny,msg.nx)
+        Returns
+        -------
+
+        If interpolating to a grid, a new Grib2Message object is returned.  The GRIB2 metadata of
+        the new Grib2Message object is indentical to the input except where required to be different
+        because of the new grid specs.
+
+        If interpolating to station points, the interpolated data values are returned as a numpy.ndarray.
+        """
+        if grid_def_out.gdtn >= 0:
+            section0 = self.section0
+            section0[-1] = 0
+            gds = [0, grid_def_out.npoints, 0, 255, grid_def_out.gdtn]
+            section3 = np.concatenate((gds,grid_def_out.gdt))
+
+            msg = Grib2Message(section0,
+                               self.section1,
+                               self.section2,
+                               section3,
+                               self.section4,
+                            self.section5,
+                            self.bitMapFlag.value)
+            msg._msgnum = -1
+            msg._deflist = self._deflist
+            msg._coordlist = self._coordlist
+            shape = (msg.ny,msg.nx)
+            ndim = 2
+            if msg.typeOfValues == 0:
+                dtype = 'float32'
+            elif msg.typeOfValues == 1:
+                dtype = 'int32'
+            msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
+                                    method_options=method_options).reshape(msg.ny,msg.nx)
+        elif grid_def_out.gdtn == -1:
+            msg = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
+                                    method_options=method_options)
+
         return msg
 
 
@@ -1256,19 +1269,26 @@ def set_auto_nans(value):
 
 def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     """
-    Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+    This is the module-level interpolation function that interfaces with the grib2io_interp
+    component pakcage that interfaces to the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+    It supports scalar and vector interpolation according to the type of object a.  It also 
+    supports scalar and vector interpolation to station points when grid_def_out is set up
+    properly for station interpolation.
 
     Parameters
     ----------
 
-    **`a : numpy.ndarray`**
+    **`a : numpy.ndarray or tuple`**
 
-    Array data to interpolate from. These data are expected to be in
-    2-dimensional form with shape (ny, nx) or 3-dimensional where the
-    3rd dimension represents another spatial, temporal, or classification
-    (i.e. ensemble members) dimension. The function will properly flatten
-    the array that is acceptable for the NCEPLIBS-ip interpolation
-    subroutines.
+    Input data.  If `a` is a `numpy.ndarray`, scalar interpolation will be
+    performed.  If `a` is a `tuple`, then vector interpolation will be performed
+    with the assumption that u = a[0] and v = a[1] and are both `numpy.ndarray`.
+
+    These data are expected to be in 2-dimensional form with shape (ny, nx) or 
+    3-dimensional (:, ny, nx) where the 1st dimension represents another spatial, 
+    temporal, or classification (i.e. ensemble members) dimension. The function will 
+    properly flatten the (ny,nx) dimensions into (nx * ny) acceptable for input into
+    the interpolation subroutines.
 
     **`method : int or str`**
 
@@ -1286,16 +1306,24 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
 
     **`grid_def_in : grib2io.Grib2GridDef`**
 
-    Grib2GridDef object of the input grid.
+    Grib2GridDef object for the input grid.
 
     **`grid_def_out : grib2io.Grib2GridDef`**
 
-    Grib2GridDef object of the output grid.
+    Grib2GridDef object for the output grid or station points.
 
     **`method_options : list of ints, optional`**
 
     Interpolation options. See the NCEPLIBS-ip doucmentation for
     more information on how these are used.
+
+    Returns
+    -------
+
+    Returns a `numpy.ndarray` when scalar interpolation is performed or
+    a `tuple` of `numpy.ndarray`s when vector interpolation is performed
+    with the assumptions that 0-index is the interpolated u and 1-index
+    is the interpolated v.
     """
     from grib2io_interp import interpolate
 
@@ -1315,130 +1343,51 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
         if method in {3,6}:
             method_options[0:2] = -1
 
-    ni = grid_def_in.nx*grid_def_in.ny
-    no = grid_def_out.nx*grid_def_out.ny
+    ni = grid_def_in.npoints
+    no = grid_def_out.npoints
 
-    if len(a.shape) == 2 and a.shape == (grid_def_in.ny,grid_def_in.nx):
-        newshp = (grid_def_out.ny,grid_def_out.nx)
-        a = np.expand_dims(a.flatten(),axis=0)
-    elif len(a.shape) == 3 and a.shape[-2:] == (grid_def_in.ny,grid_def_in.nx):
-        newshp = (a.shape[0],grid_def_out.ny,grid_def_out.nx)
-        a = a.reshape(*a.shape[:-2],-1)
+    # Adjust shape of input array(s)
+    a,newshp = _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out)
+
+    # Set lats and lons if stations, else create array for grids.
+    if grid_def_out.gdtn == -1:
+        rlat = np.array(grid_def_out.lats,dtype=np.float32)
+        rlon = np.array(grid_def_out.lons,dtype=np.float32)
     else:
-        raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
+        rlat = np.zeros((no),dtype=np.float32)
+        rlon = np.zeros((no),dtype=np.float32)
 
-    ibi = np.zeros((a.shape[0]),dtype=np.int32)
-    li = np.zeros(a.shape,dtype=np.int32)
-    go = np.zeros((a.shape[0],grid_def_out.ny*grid_def_out.nx),dtype=np.float32)
-    rlat = np.zeros((no),dtype=np.float32)
-    rlon = np.zeros((no),dtype=np.float32)
+    # Call interpolation subroutines according to type of a.
+    if isinstance(a,np.ndarray):
+        # Scalar
+        ibi = np.zeros((a.shape[0]),dtype=np.int32)
+        li = np.zeros(a.shape,dtype=np.int32)
+        go = np.zeros((a.shape[0],no),dtype=np.float32)
+        no,ibo,lo,iret = interpolate.interpolate_scalar(method,method_options,
+                                                 grid_def_in.gdtn,grid_def_in.gdt,
+                                                 grid_def_out.gdtn,grid_def_out.gdt,
+                                                 ibi,li.T,a.T,go.T,rlat,rlon)
+        out = go.reshape(newshp)
+    elif isinstance(a,tuple):
+        # Vector
+        ibi = np.zeros((a[0].shape[0]),dtype=np.int32)
+        li = np.zeros(a[0].shape,dtype=np.int32)
+        uo = np.zeros((a[0].shape[0],no),dtype=np.float32)
+        vo = np.zeros((a[1].shape[0],no),dtype=np.float32)
+        crot = np.ones((no),dtype=np.float32)
+        srot = np.zeros((no),dtype=np.float32)
+        no,ibo,lo,iret = interpolate.interpolate_vector(method,method_options,
+                                                 grid_def_in.gdtn,grid_def_in.gdt,
+                                                 grid_def_out.gdtn,grid_def_out.gdt,
+                                                 ibi,li.T,a[0].T,a[1].T,uo.T,vo.T,
+                                                 rlat,rlon,crot,srot)
+        del crot
+        del srot
+        out = (uo.reshape(newshp),vo.reshape(newshp))
 
-    no,ibo,lo,iret = interpolate.interpolate(method,method_options,
-                                             grid_def_in.gdtn,grid_def_in.gdt,
-                                             grid_def_out.gdtn,grid_def_out.gdt,
-                                             ibi,li.T,a.T,go.T,rlat,rlon)
     del rlat
     del rlon
-
-    return go.reshape(newshp)
-
-
-def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=None):
-    """
-    Perform spatial interpolation to station points.
-
-    Parameters
-    ----------
-
-    **`a : numpy.ndarray`**
-
-    Array data to interpolate from. These data are expected to be in
-    2-dimensional form with shape (ny, nx) or 3-dimensional where the
-    3rd dimension represents another spatial, temporal, or classification
-    (i.e. ensemble members) dimension. The function will properly flatten
-    the array that is acceptable for the NCEPLIBS-ip interpolation
-    subroutines.
-
-    **`method : int or str`**
-
-    Interpolate method to use. This can either be an integer or string using
-    the following mapping:
-
-    | Interpolate Scheme | Integer Value |
-    | :---:              | :---:         |
-    | 'bilinear'         | 0             |
-    | 'bicubic'          | 1             |
-    | 'neighbor'         | 2             |
-    | 'budget'           | 3             |
-    | 'spectral'         | 4             |
-    | 'neighbor-budget'  | 6             |
-
-    **`grid_def_in : grib2io.Grib2GridDef`**
-
-    Grib2GridDef object of the input grid.
-
-    **`lats : sequence of floats`**
-
-    Latitudes of the station points.
-
-    **`lons : sequence of floats`**
-
-    Longitudes of the station points.
-
-    Grib2GridDef object of the output grid.
-
-    **`method_options : list of ints, optional`**
-
-    Interpolation options. See the NCEPLIBS-ip doucmentation for
-    more information on how these are used.
-    """
-    from grib2io_interp import interpolate
-
-    interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                      'budget':3, 'spectral':4, 'neighbor-budget':6}
-
-    if isinstance(method,int) and method not in interp_schemes.values():
-        raise ValueError('Invalid interpolation method.')
-    elif isinstance(method,str):
-        if method in interp_schemes.keys():
-            method = interp_schemes[method]
-        else:
-            raise ValueError('Invalid interpolation method.')
-
-    if method_options is None:
-        method_options = np.zeros((20),dtype=np.int32)
-        if method in {3,6}:
-            method_options[0:2] = -1
-
-    ni = grid_def_in.nx*grid_def_in.ny
-    no = len(lats)
-
-    if len(a.shape) == 2 and a.shape == (grid_def_in.ny,grid_def_in.nx):
-        newshp = (no)
-        a = np.expand_dims(a.flatten(),axis=0)
-    elif len(a.shape) == 3 and a.shape[-2:] == (grid_def_in.ny,grid_def_in.nx):
-        newshp = (a.shape[0],no)
-        a = a.reshape(*a.shape[:-2],-1)
-    else:
-        raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
-
-    if len(lats) != len(lons):
-        raise ValueError("lats and lons must be same length.")
-
-    ibi = np.zeros((a.shape[0]),dtype=np.int32)
-    li = np.zeros(a.shape,dtype=np.int32)
-    go = np.zeros((a.shape[0],no),dtype=np.float32)
-    rlat = np.array(lats,dtype=np.float32)
-    rlon = np.array(lons,dtype=np.float32)
-
-    grid_def_out = Grib2GridDef(-1,np.zeros((grid_def_in.gdt.shape),np.int32))
-
-    no,ibo,lo,iret = interpolate.interpolate(method,method_options,
-                                             grid_def_in.gdtn,grid_def_in.gdt,
-                                             grid_def_out.gdtn,grid_def_out.gdt,
-                                             ibi,li.T,a.T,go.T,rlat,rlon)
-
-    return go.reshape(newshp)
+    return out 
 
 
 @dataclass
@@ -1448,9 +1397,20 @@ class Grib2GridDef:
     class attributes. This allows for cleaner looking code when passing these
     metadata around.  For example, the `grib2io._Grib2Message.interpolate`
     method and `grib2io.interpolate` function accepts these objects.
+
+    **NOTE:** This object supports a "Grid Definition" for station points
+    (i.e.) irregularly spaced points when you instantiate with a gdtn = -1 and
+    passing in lats and lons for the station points.
     """
     gdtn: int
-    gdt: np.array
+    gdt: np.array = None
+    lats: list = None
+    lons: list = None
+
+    def __post_init__(self):
+        if self.gdtn == -1:
+            self.gdt = np.zeros((200),dtype=np.int32)
+        # TODO: Check shape of lats and lons.  Must be same.
 
     @classmethod
     def from_section3(cls, section3):
@@ -1458,12 +1418,57 @@ class Grib2GridDef:
 
     @property
     def nx(self):
-        return self.gdt[7]
+        if self.gdtn == -1:
+            return len(self.lons)
+        else:
+            return self.gdt[7]
 
     @property
     def ny(self):
-        return self.gdt[8]
+        if self.gdtn == -1:
+            return len(self.lats)
+        else:
+            return self.gdt[8]
 
     @property
     def npoints(self):
-        return self.gdt[7] * self.gdt[8]
+        if self.gdtn == -1:
+            return self.nx # Can be either nx or ny
+        else:
+            return self.gdt[7] * self.gdt[8]
+
+    @property
+    def shape(self):
+        if self.gdtn == -1:
+            return (self.npoints)
+        else:
+            return (self.ny, self.nx)
+
+
+def _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out):
+    """
+    Adjust shape of input data array to conform to the dimensionality
+    the NCEPLIBS-ip interpolation subroutine arguments.
+    """
+    if isinstance(a,tuple):
+        a0,newshp = _adjust_array_shape_for_interp(a[0],grid_def_in,grid_def_out)
+        a1,newshp = _adjust_array_shape_for_interp(a[1],grid_def_in,grid_def_out)
+        return (a0,a1),newshp
+
+    if isinstance(a,np.ndarray):
+        if len(a.shape) == 2 and a.shape == grid_def_in.shape:
+            if grid_def_out.gdtn == -1:
+                newshp = (grid_def_out.npoints)
+            else:
+                newshp = (grid_def_out.ny,grid_def_out.nx)
+            a = np.expand_dims(a.flatten(),axis=0)
+        elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
+            if grid_def_out.gdtn == -1:
+                newshp = (a.shape[0],grid_def_out.npoints)
+            else:
+                newshp = (a.shape[0],grid_def_out.ny,grid_def_out.nx)
+            a = a.reshape(*a.shape[:-2],-1)
+        else:
+            raise ValueError("Array shape must be either (ny,nx) or (:,ny,nx).")
+
+    return a,newshp
