@@ -639,19 +639,17 @@ def make_variables(index, f, non_geo_dims):
 
     return ordered_frames, cube, extra_geo
 
+
 def interp_nd(a,*, method, grid_def_in, grid_def_out):
     front_shape = a.shape[:-2]
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
     a = grib2io.interpolate(a, method, grid_def_in, grid_def_out)
-    a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
+    if grid_def_out >= 0:
+        a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
+    elif grid_def_out == -1:
+        a = a.reshape(front_shape + (len(lats),))
     return a
 
-def interp_nd_stations(a,*, method, grid_def_in, lats, lons):
-    front_shape = a.shape[:-2]
-    a = a.reshape(-1,a.shape[-2],a.shape[-1])
-    a = grib2io.interpolate_to_stations(a, method, grid_def_in, lats, lons)
-    a = a.reshape(front_shape + (len(lats),))
-    return a
 
 @xr.register_dataset_accessor("grib2io")
 class Grib2ioDataSet:
@@ -678,21 +676,38 @@ class Grib2ioDataArray:
         da = self._obj
         # ensure that y, x are rightmost dims; they should be if opening with grib2io engine
 
-        # gdtn and gdt is not the entirety of the new s3
-        npoints = grid_def_out.npoints
-        s3_new = np.array([0,npoints,0,0,grid_def_out.gdtn] + list(grid_def_out.gdt))
+        if grid_def_out.gdtn >= 0:
 
-        # make new lat lons
-        lats, lons = Grib2Message(section3=s3_new, pdtn=0, drtn=0).grid()
-        latitude = xr.DataArray(lats, dims=['y','x'])
-        longitude = xr.DataArray(lons, dims=['y','x'])
+            # gdtn and gdt is not the entirety of the new s3
+            npoints = grid_def_out.npoints
+            s3_new = np.array([0,npoints,0,0,grid_def_out.gdtn] + list(grid_def_out.gdt))
 
-        # create new coords
-        new_coords = dict(da.coords)
-        del new_coords['latitude']
-        del new_coords['longitude']
-        new_coords['longitude'] = longitude
-        new_coords['latitude'] = latitude
+            # make new lat lons
+            lats, lons = Grib2Message(section3=s3_new, pdtn=0, drtn=0).grid()
+            latitude = xr.DataArray(lats, dims=['y','x'])
+            longitude = xr.DataArray(lons, dims=['y','x'])
+
+            # create new coords
+            new_coords = dict(da.coords)
+            del new_coords['latitude']
+            del new_coords['longitude']
+            new_coords['longitude'] = longitude
+            new_coords['latitude'] = latitude
+
+        elif grid_def_out.gdtn == -1:
+
+            latitude = xr.DataArray(grid_def_out.lats, dims=['station'])
+            longitude = xr.DataArray(grid_def_out.lons, dims=['station'])
+
+            # create new coords
+            new_coords = dict(da.coords)
+            del new_coords['latitude']
+            del new_coords['longitude']
+            new_coords['longitude'] = longitude
+            new_coords['latitude'] = latitude
+            new_coords['station'] = grid_def_out.stations
+
+            new_dims = da.dims[:-2] + ('station',)
 
         # make grid def in from section3 on da attrs
         grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
@@ -701,44 +716,15 @@ class Grib2ioDataArray:
             data = interp_nd(da.data, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out)
         else:
             import dask
-            front_shape = da.shape[:-2]
-            data = da.data.map_blocks(interp_nd, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out, chunks=da.chunks[:-2]+latitude.shape, dtype=da.dtype)
+            if grid_def_out.gdtn >= 0:
+                front_shape = da.shape[:-2]
+                data = da.data.map_blocks(interp_nd, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out, chunks=da.chunks[:-2]+latitude.shape, dtype=da.dtype)
+            elif grid_def_out.gdtn == -1:
+                front_shape = da.shape[:-1]
+                data = da.data.map_blocks(interp_nd, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out, chunks=da.chunks[:-1]+latitude.shape, dtype=da.dtype)
+
         new_da = xr.DataArray(data, dims=da.dims, coords=new_coords, attrs=da.attrs)
 
-        new_da.attrs['GRIB2IO_section3'] = s3_new
-        new_da.name = da.name
-        return new_da
-
-
-    def interp_to_stations(self, method, call, lats, lons):
-
-        da = self._obj
-        # ensure that y, x are rightmost dims; they should be if opening with grib2io engine
-
-        latitude = xr.DataArray(lats, dims=['station'])
-        longitude = xr.DataArray(lons, dims=['station'])
-
-        # create new coords
-        new_coords = dict(da.coords)
-        del new_coords['latitude']
-        del new_coords['longitude']
-        new_coords['longitude'] = longitude
-        new_coords['latitude'] = latitude
-        new_coords['station'] = call
-
-        new_dims = da.dims[:-2] + ('station',)
-
-        # make grid def in from section3 on da attrs
-        grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
-
-        if da.chunks is None:
-            data = interp_nd_stations(da.data, method=method, grid_def_in=grid_def_in, lats=latitude, lons=longitude)
-        else:
-            import dask
-            front_shape = da.shape[:-1]
-            data = da.data.map_blocks(interp_nd_stations, method=method, grid_def_in=grid_def_in, lats=latitude, lons=longitude, chunks=da.chunks[:-1]+latitude.shape, dtype=da.dtype)
-
-        new_da = xr.DataArray(data, dims=new_dims, coords=new_coords, attrs=da.attrs)
-
+        if grid_def_out.gdtn >= 0: new_da.attrs['GRIB2IO_section3'] = s3_new
         new_da.name = da.name
         return new_da
