@@ -75,7 +75,7 @@
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="n">DEG2RAD</span> <span class="o">=</span> <span class="mf">0.01745329251994329576</span>
 </span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a><span class="sd">    Perform grid rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
 </span><span id="L-13"><a href="#L-13"><span class="linenos"> 13</span></a><span class="sd">    void function, rotate().</span>
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>
@@ -111,7 +111,7 @@
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
 </span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    longitudes in units of degrees.</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">    &quot;&quot;&quot;</span> 
+</span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
 </span><span id="L-50"><a href="#L-50"><span class="linenos"> 50</span></a>    <span class="n">zxmxc</span>  <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
@@ -140,7 +140,7 @@
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a>
 </span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="k">def</span> <span class="nf">unrotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
-</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    Perform grid un-rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a><span class="sd">    void function, unrotate().</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>
@@ -258,7 +258,7 @@
     </div>
     <a class="headerlink" href="#rotate"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="rotate-11"><a href="#rotate-11"><span class="linenos">11</span></a><span class="k">def</span> <span class="nf">rotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
-</span><span id="rotate-12"><a href="#rotate-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="rotate-12"><a href="#rotate-12"><span class="linenos">12</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="rotate-13"><a href="#rotate-13"><span class="linenos">13</span></a><span class="sd">    Perform grid rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
 </span><span id="rotate-14"><a href="#rotate-14"><span class="linenos">14</span></a><span class="sd">    void function, rotate().</span>
 </span><span id="rotate-15"><a href="#rotate-15"><span class="linenos">15</span></a>
@@ -294,7 +294,7 @@
 </span><span id="rotate-45"><a href="#rotate-45"><span class="linenos">45</span></a>
 </span><span id="rotate-46"><a href="#rotate-46"><span class="linenos">46</span></a><span class="sd">    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and</span>
 </span><span id="rotate-47"><a href="#rotate-47"><span class="linenos">47</span></a><span class="sd">    longitudes in units of degrees.</span>
-</span><span id="rotate-48"><a href="#rotate-48"><span class="linenos">48</span></a><span class="sd">    &quot;&quot;&quot;</span> 
+</span><span id="rotate-48"><a href="#rotate-48"><span class="linenos">48</span></a><span class="sd">    &quot;&quot;&quot;</span>
 </span><span id="rotate-49"><a href="#rotate-49"><span class="linenos">49</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
 </span><span id="rotate-50"><a href="#rotate-50"><span class="linenos">50</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.</span><span class="p">))</span>
 </span><span id="rotate-51"><a href="#rotate-51"><span class="linenos">51</span></a>    <span class="n">zxmxc</span>  <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
@@ -372,7 +372,7 @@ longitudes in units of degrees.</p>
     </div>
     <a class="headerlink" href="#unrotate"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="unrotate-76"><a href="#unrotate-76"><span class="linenos"> 76</span></a><span class="k">def</span> <span class="nf">unrotate</span><span class="p">(</span><span class="n">latin</span><span class="p">,</span> <span class="n">lonin</span><span class="p">,</span> <span class="n">aor</span><span class="p">,</span> <span class="n">splat</span><span class="p">,</span> <span class="n">splon</span><span class="p">):</span>
-</span><span id="unrotate-77"><a href="#unrotate-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot; </span>
+</span><span id="unrotate-77"><a href="#unrotate-77"><span class="linenos"> 77</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="unrotate-78"><a href="#unrotate-78"><span class="linenos"> 78</span></a><span class="sd">    Perform grid un-rotation. This function is adapted from ECMWF&#39;s ecCodes library</span>
 </span><span id="unrotate-79"><a href="#unrotate-79"><span class="linenos"> 79</span></a><span class="sd">    void function, unrotate().</span>
 </span><span id="unrotate-80"><a href="#unrotate-80"><span class="linenos"> 80</span></a>
