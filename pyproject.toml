@@ -32,6 +32,8 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "License :: OSI Approved",
   "Topic :: Software Development :: Libraries :: Python Modules",
+  "Operating System :: POSIX",
+  "Operating System :: MacOS",
 ]
 dependencies = [
   "numpy",
@@ -39,8 +41,8 @@ dependencies = [
 ] 
 dynamic = ["version"]
 
-#[project.optional-dependencies]
-#interp = ["grib2io-interp>=1.0.0"]
+[project.optional-dependencies]
+interp = ["grib2io-interp >= 1.0.0"]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"

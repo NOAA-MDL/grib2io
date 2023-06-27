@@ -6,7 +6,7 @@ import os
 import platform
 import sys
 
-VERSION = '2.0.0rc2'
+VERSION = '2.0.0rc3'
 
 # ----------------------------------------------------------------------------------------
 # Class to parse the setup.cfg
