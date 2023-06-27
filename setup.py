@@ -31,7 +31,7 @@ except(ImportError):
     redtoreg_pyx = 'redtoreg.c'
     g2clib_pyx  = 'g2clib.c'
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Read setup.cfg. Contents of setup.cfg will override env vars.
 # ----------------------------------------------------------------------------------------
 setup_cfg = environ.get('GRIB2IO_SETUP_CONFIG', 'setup.cfg')
@@ -40,9 +40,9 @@ if os.path.exists(setup_cfg):
     sys.stdout.write('Reading from setup.cfg...')
     config.read(setup_cfg)
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Get NCEPLIBS-g2c library info
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 incdirs=[]
 libdirs=[]
 g2c_dir = config.getq('directories', 'g2c_dir', environ.get('G2C_DIR'))
@@ -68,7 +68,7 @@ incdirs.append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 g2clibext = Extension('grib2io.g2clib',[g2clib_pyx],include_dirs=incdirs,\
             library_dirs=libdirs,libraries=['g2c'],runtime_library_dirs=runtime_libdirs)
 redtoregext = Extension('grib2io.redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])

@@ -36,10 +36,10 @@ def gaussian_latitudes(nlat):
     ----------
 
     **`nlat`**: The number of latitudes in the Gaussian grid.
-    
+
     Returns
     -------
-    
+
     Numpy array of latitudes (in degrees) with a length of `nlat`.
     """
     if abs(int(nlat)) != nlat:

@@ -8,7 +8,7 @@ RAD2DEG = 57.29577951308232087684
 DEG2RAD = 0.01745329251994329576
 
 def rotate(latin, lonin, aor, splat, splon):
-    """ 
+    """
     Perform grid rotation. This function is adapted from ECMWF's ecCodes library
     void function, rotate().
 
@@ -44,7 +44,7 @@ def rotate(latin, lonin, aor, splat, splon):
 
     Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
     longitudes in units of degrees.
-    """ 
+    """
     zsycen = np.sin(DEG2RAD * (splat + 90.))
     zcycen = np.cos(DEG2RAD * (splat + 90.))
     zxmxc  = DEG2RAD * (lonin - splon)
@@ -73,7 +73,7 @@ def rotate(latin, lonin, aor, splat, splon):
 
 
 def unrotate(latin, lonin, aor, splat, splon):
-    """ 
+    """
     Perform grid un-rotation. This function is adapted from ECMWF's ecCodes library
     void function, unrotate().
 
