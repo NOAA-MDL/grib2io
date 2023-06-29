@@ -43,8 +43,6 @@ jobs:
         
     - name: Install grib2io and test
       run: |
-        export G2C_DIR=/usr/local
-        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
         python --version
         pip install .
         cd /tmp # Get out out source package
