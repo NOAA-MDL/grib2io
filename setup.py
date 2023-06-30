@@ -15,17 +15,22 @@ libraries = ['g2c']
 # ----------------------------------------------------------------------------------------
 # find_library.
 # ----------------------------------------------------------------------------------------
-def find_library(name):
+def find_library(name, dirs=None):
     out = []
     sysinfo = (os.name, sys.platform)
     if sysinfo == ('posix', 'darwin'):
         libext = '.dylib'
     elif sysinfo == ('posix', 'linux'):
         libext = '.so'
-    DIRS_TO_SEARCH = ['/usr/local', '/sw', '/opt', '/opt/local', '/opt/homebrew', '/usr']
-    for d in DIRS_TO_SEARCH:
+    if dirs is None:
+        if os.environ.get('CONDA_PREFIX'):
+            dirs = [os.environ['CONDA_PREFIX']]
+        else:
+            dirs = ['/usr/local', '/sw', '/opt', '/opt/local', '/opt/homebrew', '/usr']
+    for d in dirs:
         libs = pathlib.Path(d).rglob('lib*'+name+libext)
-        for l in libs: out.append(l.as_posix())
+        for l in libs:
+            out.append(l.absolute().resolve().as_posix())
     return list(set(out))[0]
 
 # ----------------------------------------------------------------------------------------
