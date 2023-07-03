@@ -1,10 +1,10 @@
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Source: https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c
 #
 # The dictionary key is the Section 4.5 coded value.  The value is a list where the
 # index 0 is the string to use for level and index 1 is the string for a layer.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 table_wgrib2_level_string = {
 '0': ["reserved","reserved"],
 '1': ["surface","reserved"],
