@@ -1021,10 +1021,12 @@ class _Grib2Message:
             u,inv = np.unique(self.data,return_inverse=True)
             fld = np.array([keys[x] for x in u])[inv].reshape(self.data.shape)
         else:
-            # For data whose units are defined in a code table
-            tbl = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
-            for k,v in tables.get_table(tbl).items():
-                fld = np.where(fld==k,v,fld)
+            # For data whose units are defined in a code table (i.e. classification or mask)
+            tblname = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
+            fld = self.data.astype(np.int32).astype(str)
+            tbl = tables.get_table(tblname,expand=True)
+            for val in np.unique(fld):
+                fld = np.where(fld==val,tbl[val],fld)
         set_auto_nans(hold_auto_nans)
         return fld
 
