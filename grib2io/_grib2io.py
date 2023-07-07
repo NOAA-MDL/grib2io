@@ -10,6 +10,8 @@ GRIB2 file IO is performed directly in Python.  The unpacking/packing of GRIB2 i
 by the g2c library functions via the g2clib Cython wrapper module.  The decoding/encoding of GRIB2 metadata is translated into more
 descriptive, plain language metadata by looking up the integer code values against the appropriate GRIB2 code tables.  These code tables
 are a part of the grib2io module.
+
+For example usage of grib2io, please see the [Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/grib2io-v2-demo.ipynb).
 """
 
 import builtins
