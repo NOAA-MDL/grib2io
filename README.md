@@ -38,19 +38,20 @@ For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://g
 
 ## Install
 
-* From [PyPI](https://pypi.python.org/pypi/grib2io) via pip
+Once again, this assumes that NCEPLIBS-g2c has been installed.  If NCEPLIBS-g2c has been installed into a "common" installation path, then it will be found, otherwise define environment variable `G2C_DIR` with the installation path.
+
+* From [PyPI](https://pypi.python.org/pypi/grib2io) via pip:
 
 ```
 pip install grib2io
 ```
-* From conda-forge via conda *__...COMING SOON__*
+* From conda-forge via conda: *__...COMING SOON__*
 
 ```
 conda install -c conda-forge grib2io
 ```
 
-* From source.  Download or clone from [GitHub](https://github.com/NOAA-MDL/grib2io).  Then edit `setup.cfg` to define the g2c library installation path __OR__ define the `G2C_DIR` environment variable.
-
+* From source:
 ```shell
 pip install .
 ```
