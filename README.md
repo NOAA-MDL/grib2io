@@ -24,7 +24,7 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 * setuptools 34.0+
 * NumPy 1.22+
 * pyproj 1.9.6+
-* C and Fortran Compiler: GNU, Intel, and Apple Clang have been tested.
+* C compiler: GNU, Intel, and Apple Clang have been tested.
 
 ## Optional Software
 * [grib2io-interp](https://github.com/NOAA-MDL/grib2io-interp) 1.0.0+ - Provides ability to perform spatial interpolation via the [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
