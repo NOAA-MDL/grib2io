@@ -45,7 +45,7 @@ Once again, this assumes that NCEPLIBS-g2c has been installed.  If NCEPLIBS-g2c 
 ```
 pip install grib2io
 ```
-* From conda-forge via conda: *__...COMING SOON__*
+* From conda-forge via conda:
 
 ```
 conda install -c conda-forge grib2io
