@@ -3,7 +3,6 @@ Collection of utility functions to assist in the encoding and decoding
 of GRIB2 Messages.
 """
 
-import g2clib
 import datetime
 import numpy as np
 import struct
