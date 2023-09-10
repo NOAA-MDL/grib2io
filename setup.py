@@ -62,6 +62,7 @@ if os.environ.get('G2C_DIR'):
         g2c_libdir = os.path.join(g2c_dir,'lib')
     elif os.path.exists(os.path.join(g2c_dir,'lib64')):
         g2c_libdir = os.path.join(g2c_dir,'lib64')
+    g2c_incdir = os.path.join(g2c_dir,'include')
 else:
     g2c_dir = config.get('directories','g2c_dir',fallback=None)
     if g2c_dir is None:
