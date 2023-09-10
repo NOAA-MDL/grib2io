@@ -1719,6 +1719,24 @@ class RealOfCoefficient:
     def __set__(self, obj, value):
         obj.section5[4+2] = utils.ieee_float_to_int(float(value))
 
+class CCSDSCompressionOptionsMask:
+    def __get__(self, obj, objtype=None):
+        return obj.section5[5+2]
+    def __set__(self, obj, value):
+        obj.section5[5+2] = value
+
+class CCSDSBlockSize:
+    def __get__(self, obj, objtype=None):
+        return obj.section5[6+2]
+    def __set__(self, obj, value):
+        obj.section5[6+2] = value
+
+class CCSDSRefSampleInterval:
+    def __get__(self, obj, objtype=None):
+        return obj.section5[7+2]
+    def __set__(self, obj, value):
+        obj.section5[7+2] = value
+
 @dataclass(init=False)
 class DataRepresentationTemplate0():
     _len = 5
@@ -1827,6 +1845,23 @@ class DataRepresentationTemplate41():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
+class DataRepresentationTemplate42():
+    _len = 8
+    _num = 42
+    _packingScheme = 'ccsds' # or 'aec'
+    refValue: float = field(init=False, repr=False, default=RefValue())
+    binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
+    decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
+    nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    ccsdsCompressionOptionsMask: int = field(init=False, repr=False, default=CCSDSCompressionOptionsMask())
+    ccsdsBlockSize: int = field(init=False, repr=False, default=CCSDSBlockSize())
+    ccsdsRefSampleInterval: int = field(init=False, repr=False, default=CCSDSRefSampleInterval())
+    @classmethod
+    @property
+    def _attrs(cls):
+        return list(cls.__dataclass_fields__.keys())
+
+@dataclass(init=False)
 class DataRepresentationTemplate50():
     _len = 5
     _num = 0
@@ -1848,6 +1883,7 @@ _drt_by_drtn = {
     4: DataRepresentationTemplate4,
     40: DataRepresentationTemplate40,
     41: DataRepresentationTemplate41,
+    42: DataRepresentationTemplate42,
     50: DataRepresentationTemplate50,
     }
 
