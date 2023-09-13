@@ -568,7 +568,8 @@ def make_variables(index, f, non_geo_dims):
     extra_geo = None
     msg = index.msg[0]
 
-    # we want the lat lons; make them via accessing a record; we are asuming all records are the same grid because they have the same shape;
+    # we want the lat lons; make them via accessing a record; we are asuming
+    # all records are the same grid because they have the same shape;
     # may want a unique grid identifier from grib2io to avoid assuming this
     latitude, longitude = msg.latlons()
     latitude = xr.DataArray(latitude, dims=['y','x'])
@@ -580,18 +581,18 @@ def make_variables(index, f, non_geo_dims):
     return ordered_frames, cube, extra_geo
 
 
-def interp_nd(a,*, method, grid_def_in, grid_def_out):
+def interp_nd(a,*, method, grid_def_in, grid_def_out, method_options=None):
     front_shape = a.shape[:-2]
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
-    a = grib2io.interpolate(a, method, grid_def_in, grid_def_out)
+    a = grib2io.interpolate(a, method, grid_def_in, grid_def_out, method_options=method_options)
     a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
     return a
 
 
-def interp_nd_stations(a,*, method, grid_def_in, lats, lons):
+def interp_nd_stations(a,*, method, grid_def_in, lats, lons, method_options=None):
     front_shape = a.shape[:-2]
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
-    a = grib2io.interpolate_to_stations(a, method, grid_def_in, lats, lons)
+    a = grib2io.interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=method_options)
     a = a.reshape(front_shape + (len(lats),))
     return a
 
@@ -603,20 +604,20 @@ class Grib2ioDataSet:
         self._obj = xarray_obj
 
 
-    def interp(self, method, grid_def_out) -> xr.Dataset:
+    def interp(self, method, grid_def_out, method_options=None) -> xr.Dataset:
         # see interp method of class Grib2ioDataArray
         da = self._obj.to_array()
         da.attrs['GRIB2IO_section3'] = self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3']
-        da = da.grib2io.interp(method, grid_def_out)
+        da = da.grib2io.interp(method, grid_def_out, method_options=method_options)
         ds = da.to_dataset(dim='variable')
         return ds
 
 
-    def interp_to_stations(self, method, calls, lats, lons) -> xr.Dataset:
+    def interp_to_stations(self, method, calls, lats, lons, method_options=None) -> xr.Dataset:
         # see interp_to_stations method of class Grib2ioDataArray
         da = self._obj.to_array()
         da.attrs['GRIB2IO_section3'] = self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3']
-        da = da.grib2io.interp_to_stations(method, calls, lats, lons)
+        da = da.grib2io.interp_to_stations(method, calls, lats, lons, method_options=method_options)
         ds = da.to_dataset(dim='variable')
         return ds
 
@@ -628,7 +629,7 @@ class Grib2ioDataArray:
         self._obj = xarray_obj
 
 
-    def interp(self, method, grid_def_out) -> xr.DataArray:
+    def interp(self, method, grid_def_out, method_options=None) -> xr.DataArray:
         """
         Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
@@ -684,11 +685,15 @@ class Grib2ioDataArray:
         grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
 
         if da.chunks is None:
-            data = interp_nd(da.data, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out)
+            data = interp_nd(da.data, method=method, grid_def_in=grid_def_in,
+                             grid_def_out=grid_def_out,
+                             method_options=method_options)
         else:
             import dask
             front_shape = da.shape[:-2]
-            data = da.data.map_blocks(interp_nd, method=method, grid_def_in=grid_def_in, grid_def_out=grid_def_out, chunks=da.chunks[:-2]+latitude.shape, dtype=da.dtype)
+            data = da.data.map_blocks(interp_nd, method=method, grid_def_in=grid_def_in,
+                                      grid_def_out=grid_def_out, method_options=method_options,
+                                      chunks=da.chunks[:-2]+latitude.shape, dtype=da.dtype)
 
         new_da = xr.DataArray(data, dims=da.dims, coords=new_coords, attrs=da.attrs)
 
@@ -697,7 +702,7 @@ class Grib2ioDataArray:
         return new_da
 
 
-    def interp_to_stations(self, method, calls, lats, lons) -> xr.DataArray:
+    def interp_to_stations(self, method, calls, lats, lons, method_options=None) -> xr.DataArray:
         """
         Perform spatial interpolation to station points.
 
@@ -760,11 +765,15 @@ class Grib2ioDataArray:
         grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
 
         if da.chunks is None:
-            data = interp_nd_stations(da.data, method=method, grid_def_in=grid_def_in, lats=lats, lons=lons)
+            data = interp_nd_stations(da.data, method=method, grid_def_in=grid_def_in, lats=lats,
+                                      lons=lons, method_options=method_options)
         else:
             import dask
             front_shape = da.shape[:-1]
-            data = da.data.map_blocks(interp_nd_stations, method=method, grid_def_in=grid_def_in, lats=lats, lons=lons, drop_axis=-1, chunks=da.chunks[:-2]+latitude.shape, dtype=da.dtype)
+            data = da.data.map_blocks(interp_nd_stations, method=method, grid_def_in=grid_def_in,
+                                      lats=lats, lons=lons, method_options=method_options,
+                                      drop_axis=-1, chunks=da.chunks[:-2]+latitude.shape,
+                                      dtype=da.dtype)
 
         new_da = xr.DataArray(data, dims=new_dims, coords=new_coords, attrs=da.attrs)
 
