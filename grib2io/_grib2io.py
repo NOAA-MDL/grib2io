@@ -988,6 +988,10 @@ class _Grib2Message:
             abslats = np.fabs(lats)
             lons = np.where(abslons < 1.e20, lons, 1.e30)
             lats = np.where(abslats < 1.e20, lats, 1.e30)
+        elif gdtn == 32769:
+            # Special NCEP Grid, Rotated Lat/Lon, Arakawa E-Grid (Non-Staggered)
+            # TODO: Work in progress...
+            lons, lats= None, None
         else:
             raise ValueError('Unsupported grid')
 
