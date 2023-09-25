@@ -538,6 +538,9 @@ class Grib2Message:
                       section4: np.array = None,
                       section5: np.array = None, *args, **kwargs):
 
+        if np.all(section1==0):
+            section1[5:11] = datetime.datetime.utcfromtimestamp(0).timetuple()[:6]
+
         bases = list()
         if section3 is None:
             if 'gdtn' in kwargs.keys():
@@ -586,8 +589,6 @@ class Grib2Message:
             class Msg(_Grib2Message, *bases):
                 pass
             _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"] = Msg
-
-
 
         return Msg(section0, section1, section2, section3, section4, section5, *args)
 
