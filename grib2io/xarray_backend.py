@@ -72,6 +72,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         ds = ds.assign_coords(cube.coords())
         # assign extra geo coords
         ds = ds.assign_coords(extra_geo)
+        # assign attributes
+        ds.attrs['engine'] = 'grib2io'
 
         return ds
 
@@ -604,6 +606,10 @@ class Grib2ioDataSet:
         self._obj = xarray_obj
 
 
+    def griddef(self):
+        return Grib2GridDef.from_section3(self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3'])
+
+
     def interp(self, method, grid_def_out, method_options=None) -> xr.Dataset:
         # see interp method of class Grib2ioDataArray
         da = self._obj.to_array()
@@ -627,6 +633,10 @@ class Grib2ioDataArray:
 
     def __init__(self, xarray_obj):
         self._obj = xarray_obj
+
+
+    def griddef(self):
+        return Grib2GridDef.from_section3(self._obj.attrs['GRIB2IO_section3'])
 
 
     def interp(self, method, grid_def_out, method_options=None) -> xr.DataArray:
@@ -682,7 +692,7 @@ class Grib2ioDataArray:
         new_coords['latitude'] = latitude
 
         # make grid def in from section3 on da attrs
-        grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
+        grid_def_in = self.griddef()
 
         if da.chunks is None:
             data = interp_nd(da.data, method=method, grid_def_in=grid_def_in,
@@ -762,7 +772,7 @@ class Grib2ioDataArray:
         new_dims = da.dims[:-2] + ('station',)
 
         # make grid def in from section3 on da attrs
-        grid_def_in = Grib2GridDef.from_section3(da.attrs['GRIB2IO_section3'])
+        grid_def_in = self.griddef()
 
         if da.chunks is None:
             data = interp_nd_stations(da.data, method=method, grid_def_in=grid_def_in, lats=lats,
