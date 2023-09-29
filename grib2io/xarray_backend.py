@@ -72,6 +72,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         ds = ds.assign_coords(cube.coords())
         # assign extra geo coords
         ds = ds.assign_coords(extra_geo)
+        # assign valid date coords
+        ds = ds.assign_coords(dict(validDate=ds.coords['refDate']+ds.coords['leadTime']))
         # assign attributes
         ds.attrs['engine'] = 'grib2io'
 
@@ -459,6 +461,8 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     da.attrs['GRIB2IO_section1'] = msg1.section1
     da.attrs['GRIB2IO_section3'] = msg1.section3
     da.attrs['GRIB2IO_section4'] = msg1.section4
+    da.attrs['fullName'] = msg1.fullName
+    da.attrs['shortName'] = msg1.shortName
     da.attrs['units'] = msg1.units
 
     da.name = index.shortName.iloc[0]
@@ -568,7 +572,7 @@ def make_variables(index, f, non_geo_dims):
     cube.x = range(int(index.nx.iloc[0]))
 
     extra_geo = None
-    msg = index.msg[0]
+    msg = index.msg.iloc[0]
 
     # we want the lat lons; make them via accessing a record; we are asuming
     # all records are the same grid because they have the same shape;
