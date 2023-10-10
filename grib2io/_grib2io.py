@@ -548,6 +548,7 @@ class Grib2Message:
                 Gdt = templates.gdt_class_by_gdtn(gdtn)
                 bases.append(Gdt)
                 section3 = np.zeros((Gdt._len+5),dtype=np.int64)
+                section3[4] = gdtn
             else:
                 raise ValueError("Must provide GRIB2 Grid Definition Template Number or section 3 array")
         else:
@@ -561,6 +562,7 @@ class Grib2Message:
                 Pdt = templates.pdt_class_by_pdtn(pdtn)
                 bases.append(Pdt)
                 section4 = np.zeros((Pdt._len+2),dtype=np.int64)
+                section4[1] = pdtn
             else:
                 raise ValueError("Must provide GRIB2 Production Definition Template Number or section 4 array")
         else:
@@ -574,6 +576,7 @@ class Grib2Message:
                 Drt = templates.drt_class_by_drtn(drtn)
                 bases.append(Drt)
                 section5 = np.zeros((Drt._len+2),dtype=np.int64)
+                section5[1] = drtn
             else:
                 raise ValueError("Must provide GRIB2 Data Representation Template Number or section 5 array")
         else:
@@ -702,15 +705,33 @@ class _Grib2Message:
 
 
     @property
+    def gdt(self):
+        """Return Grid Definition Template"""
+        return self.gridDefinitionTemplate
+
+
+    @property
     def pdtn(self):
         """Return Product Definition Template Number"""
         return self.section4[1]
 
 
     @property
+    def pdt(self):
+        """Return Product Definition Template"""
+        return self.productDefinitionTemplate
+
+
+    @property
     def drtn(self):
         """Return Data Representation Template Number"""
         return self.section5[1]
+
+
+    @property
+    def drt(self):
+        """Return Data Representation Template"""
+        return self.dataRepresentationTemplate
 
 
     @property
