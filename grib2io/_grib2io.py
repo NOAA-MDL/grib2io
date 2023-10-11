@@ -827,6 +827,7 @@ class _Grib2Message:
             self._sections.append(2)
 
         # Add section 3.
+        self.section3[1] = self.nx * self.ny
         self._msg,self._pos = g2clib.grib2_addgrid(self._msg,self.gridDefinitionSection,
                                                    self.gridDefinitionTemplate,
                                                    self._deflist)
