@@ -1719,19 +1719,19 @@ class RealOfCoefficient:
     def __set__(self, obj, value):
         obj.section5[4+2] = utils.ieee_float_to_int(float(value))
 
-class CCSDSCompressionOptionsMask:
+class CompressionOptionsMask:
     def __get__(self, obj, objtype=None):
         return obj.section5[5+2]
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
-class CCSDSBlockSize:
+class BlockSize:
     def __get__(self, obj, objtype=None):
         return obj.section5[6+2]
     def __set__(self, obj, value):
         obj.section5[6+2] = value
 
-class CCSDSRefSampleInterval:
+class RefSampleInterval:
     def __get__(self, obj, objtype=None):
         return obj.section5[7+2]
     def __set__(self, obj, value):
@@ -1848,14 +1848,14 @@ class DataRepresentationTemplate41():
 class DataRepresentationTemplate42():
     _len = 8
     _num = 42
-    _packingScheme = 'ccsds' # or 'aec'
+    _packingScheme = 'aec'
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
-    ccsdsCompressionOptionsMask: int = field(init=False, repr=False, default=CCSDSCompressionOptionsMask())
-    ccsdsBlockSize: int = field(init=False, repr=False, default=CCSDSBlockSize())
-    ccsdsRefSampleInterval: int = field(init=False, repr=False, default=CCSDSRefSampleInterval())
+    compressionOptionsMask: int = field(init=False, repr=False, default=ompressionOptionsMask())
+    blockSize: int = field(init=False, repr=False, default=BlockSize())
+    refSampleInterval: int = field(init=False, repr=False, default=RefSampleInterval())
     @classmethod
     @property
     def _attrs(cls):
