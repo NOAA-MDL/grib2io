@@ -18,7 +18,9 @@ def show_config():
     from .g2clib import __version__ as g2clib_version
     from .g2clib import _has_png as have_png
     from .g2clib import _has_jpeg as have_jpeg
+    from .g2clib import _has_aec as have_aec
     print("grib2io version %s Configuration:\n"%(__version__))
     print("\tg2c library version:".expandtabs(4),g2clib_version)
     print("\tJPEG compression support:".expandtabs(4),bool(have_jpeg))
     print("\tPNG compression support:".expandtabs(4),bool(have_png))
+    print("\tAEC compression support:".expandtabs(4),bool(have_aec))

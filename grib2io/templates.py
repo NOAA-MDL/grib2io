@@ -1853,7 +1853,7 @@ class DataRepresentationTemplate42():
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
-    compressionOptionsMask: int = field(init=False, repr=False, default=ompressionOptionsMask())
+    compressionOptionsMask: int = field(init=False, repr=False, default=CompressionOptionsMask())
     blockSize: int = field(init=False, repr=False, default=BlockSize())
     refSampleInterval: int = field(init=False, repr=False, default=RefSampleInterval())
     @classmethod
