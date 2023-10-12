@@ -41,8 +41,7 @@ cdef extern from "grib2.h":
         #define G2_JPEG2000_ENABLED 0
     #endif
     """
-    #cdef char *G2_VERSION # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
-    cdef char *G2C_VERSION # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
+    cdef char *G2_VERSION # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
     cdef int G2_PNG_ENABLED
     cdef int G2_JPEG2000_ENABLED
     ctypedef long g2int      # 64-bit signed integer
@@ -64,8 +63,7 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
 
-#__version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
-__version__ = G2C_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
+__version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
 
 _has_png = G2_PNG_ENABLED
 _has_jpeg = G2_JPEG2000_ENABLED
