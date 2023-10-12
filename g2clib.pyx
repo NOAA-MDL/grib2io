@@ -30,7 +30,12 @@ cdef extern from "stdlib.h":
     void free(void *ptr)
 
 # ----------------------------------------------------------------------------------------
-# Definitions from g2c lib.
+# Definitions from NCEPLIBS-g2c.
+#
+# IMPORTANT: The preprocessing directives inside the cdef triple quotes allows for custom
+# definitions to be set from the parent "grib2.h". The definition of the g2c version
+# string will change from G2_VERSION to G2C_VERSION from g2c v1.7.0 to v1.8.0. The ifdef
+# check accommodates before and after the change.
 # ----------------------------------------------------------------------------------------
 cdef extern from "grib2.h":
     """
@@ -40,10 +45,17 @@ cdef extern from "grib2.h":
     #ifndef G2_JPEG2000_ENABLED
         #define G2_JPEG2000_ENABLED 0
     #endif
+    #ifndef G2_AEC_ENABLED
+        #define G2_AEC_ENABLED 0
+    #endif
+    #ifdef G2_VERSION
+        #define G2C_VERSION G2_VERSION
+    #endif
     """
-    cdef char *G2_VERSION # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
+    cdef char *G2C_VERSION
     cdef int G2_PNG_ENABLED
     cdef int G2_JPEG2000_ENABLED
+    cdef int G2_AEC_ENABLED
     ctypedef long g2int      # 64-bit signed integer
     ctypedef float g2float   # 32-bit floating-point
     g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
@@ -63,10 +75,11 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
 
-__version__ = G2_VERSION.decode("utf-8")[-5:] # IMPORTANT: Change to *G2C_VERSION for g2c v1.7.0+
+__version__ = G2C_VERSION.decode("utf-8")[-5:]
 
 _has_png = G2_PNG_ENABLED
 _has_jpeg = G2_JPEG2000_ENABLED
+_has_aec = G2_AEC_ENABLED
 
 # ----------------------------------------------------------------------------------------
 # Python wrappers for g2c functions.
