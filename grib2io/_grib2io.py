@@ -95,7 +95,6 @@ class open():
             mode = mode+'b'
             if 'w' in mode: mode += '+'
             if 'a' in mode: mode += '+'
-                
         self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
         self._hasindex = False
         self._index = {}
