@@ -1029,6 +1029,24 @@ class ScaledValueOfThresholdLowerLimit:
         pdtn = obj.section4[1]
         obj.section4[self._key[pdtn]+2] = value
 
+class ScaleFactorOfThresholdUpperLimit:
+    _key = {5:20, 9:20}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
+    def __set__(self, obj, value):
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
+
+class ScaledValueOfThresholdUpperLimit:
+    _key = {5:21, 9:21}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2]
+    def __set__(self, obj, value):
+        pdtn = obj.section4[1]
+        obj.section4[self._key[pdtn]+2] = value
+
 class ThresholdLowerLimit:
     def __get__(self, obj, objtype=None):
         if obj.section4[18+2] == -127 and \
@@ -1357,6 +1375,10 @@ class ProductDefinitionTemplate5(ProductDefinitionTemplate0):
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=False, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=False, default=TypeOfProbability())
+    scaleFactorOfThresholdLowerLimit: float = field(init=False, repr=False, default=ScaleFactorOfThresholdLowerLimit())
+    scaledValueOfThresholdLowerLimit: float = field(init=False, repr=False, default=ScaledValueOfThresholdLowerLimit())
+    scaleFactorOfThresholdUpperLimit: float = field(init=False, repr=False, default=ScaleFactorOfThresholdUpperLimit())
+    scaledValueOfThresholdUpperLimit: float = field(init=False, repr=False, default=ScaledValueOfThresholdUpperLimit())
     thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
     thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=False, default=Threshold())
@@ -1405,6 +1427,10 @@ class ProductDefinitionTemplate9(ProductDefinitionTemplate0):
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
     totalNumberOfForecastProbabilities: int = field(init=False, repr=False, default=TotalNumberOfForecastProbabilities())
     typeOfProbability: Grib2Metadata = field(init=False, repr=False, default=TypeOfProbability())
+    scaleFactorOfThresholdLowerLimit: float = field(init=False, repr=False, default=ScaleFactorOfThresholdLowerLimit())
+    scaledValueOfThresholdLowerLimit: float = field(init=False, repr=False, default=ScaledValueOfThresholdLowerLimit())
+    scaleFactorOfThresholdUpperLimit: float = field(init=False, repr=False, default=ScaleFactorOfThresholdUpperLimit())
+    scaledValueOfThresholdUpperLimit: float = field(init=False, repr=False, default=ScaledValueOfThresholdUpperLimit())
     thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
     thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=False, default=Threshold())
