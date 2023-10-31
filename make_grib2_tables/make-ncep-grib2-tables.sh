@@ -48,7 +48,7 @@ earth_params = {
 '2':{'shape':'oblateSpheriod','major_axis':6378160.0,'minor_axis':6356775.0,'flattening':1.0/297.0},
 '3':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None},
 '4':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.314,'flattening':1.0/298.257222101},
-'5':{'shape':'oblateSpheriod','major_axis':6378137.0,'minor_axis':6356752.3142,'flattening':1.0/298.257223563},
+'5':{'shape':'ellipsoid','major_axis':6378137.0,'minor_axis':6356752.3142,'flattening':1.0/298.257222101},
 '6':{'shape':'spherical','radius':6371229.0},
 '7':{'shape':'oblateSpheriod','major_axis':None,'minor_axis':None,'flattening':None},
 '8':{'shape':'spherical','radius':6371200.0},
@@ -67,9 +67,9 @@ echo " -- Making section4.py"
 if [ -f section4.py ]; then rm -f section4.py; fi
 echo "\t - Parameter category tables"
 ./get-ncep-grib2-sect4-category-table.py > section4.py
-for table in 4.0 4.3 4.4 4.5 4.6 4.7 4.8 4.9 4.10 4.11 4.15 4.91 4.201 4.202 4.203 4.204 4.205 4.206 \
-             4.207 4.208 4.209 4.210 4.211 4.212 4.213 4.215 4.216 4.217 4.218 4.222 \
-             4.223 4.224 4.227 4.228 4.233 4.243 4.246 4.247 4.248 4.249 4.250
+for table in 4.0   4.3   4.4   4.5   4.6   4.7   4.8   4.9   4.10  4.11  4.15  4.91  4.201 4.202 4.203 4.204 4.205 4.206 \
+             4.207 4.208 4.209 4.210 4.211 4.212 4.213 4.215 4.216 4.217 4.218 4.222 4.223 4.224 4.227 4.228 4.233 4.234 \
+             4.235 4.236 4.238 4.239 4.243 4.244 4.246 4.247 4.248 4.249 4.250 4.251
 do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
@@ -146,6 +146,14 @@ if [ -f section4_discipline10.py ]; then rm -f section4_discipline10.py; fi
 for table in 0 1 2 3 4 191
 do
    ./get-ncep-grib2-sect4-parameters-table.py 10 $table >> section4_discipline10.py
+done
+
+# Discipline 20
+echo " -- Making section4_discipline20.py"
+if [ -f section4_discipline20.py ]; then rm -f section4_discipline20.py; fi
+for table in 0 1 2
+do
+   ./get-ncep-grib2-sect4-parameters-table.py 20 $table >> section4_discipline20.py
 done
 
 # ---------------------------------------------------------------------------------------- 
