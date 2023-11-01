@@ -1,3 +1,5 @@
+g2clib.c
+redtoreg.c
 *.so
 .idea
 .DS_Store
