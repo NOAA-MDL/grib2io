@@ -101,7 +101,8 @@ table_4_2_4_8  = {
 '5':['White Light Coronagraph Radiance','W sr-1 m-2','WHTCOR'],
 '6':['Heliospheric Radiance','W sr-1 m-2','HELCOR'],
 '7':['Thematic Mask','Numeric','MASK'],
-'8-191':['Reserved','unknown','unknown'],
+'8':['Solar Induced Chlorophyll Fluorscence','W sr-1 m-2','SICFL'],
+'9-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }

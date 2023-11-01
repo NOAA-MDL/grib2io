@@ -33,7 +33,7 @@ name = 'table_4_2_'+discipline+'_'+parmcat
 print(name," = {")
 for idx,row in df.iterrows():
     parmnum = row['Number']
-    parmname = row['Parameter'].replace('*','').replace('- Parameter deprecated','').strip()
+    parmname = str(row['Parameter']).replace('*','').replace('- Parameter deprecated','').strip()
     parmname = parmname.replace("\'",'')
     units = row['Units'] if row['Units'] != 'nan' else 'unknown'
     abbrev = row['Abbrev'] if row['Abbrev'] != 'nan' else 'unknown'

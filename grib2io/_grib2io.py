@@ -650,6 +650,7 @@ class _Grib2Message:
     _lldivisor: float = field(init=False,repr=False,default=templates.LLDivisor())
     _xydivisor: float = field(init=False,repr=False,default=templates.XYDivisor())
     shapeOfEarth: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ShapeOfEarth())
+    earthShape: str = field(init=False,repr=False,default=templates.EarthShape())
     earthRadius: float = field(init=False,repr=False,default=templates.EarthRadius())
     earthMajorAxis: float = field(init=False,repr=False,default=templates.EarthMajorAxis())
     earthMinorAxis: float = field(init=False,repr=False,default=templates.EarthMinorAxis())
