@@ -35,17 +35,12 @@ def find_library(name, dirs=None):
     return list(set(out))[0]
 
 # ----------------------------------------------------------------------------------------
-# Build time dependancy
+# Build Cython sources
 # ----------------------------------------------------------------------------------------
-try:
-    from Cython.Distutils import build_ext
-    cmdclass = {'build_ext': build_ext}
-    redtoreg_pyx = 'redtoreg.pyx'
-    g2clib_pyx  = 'g2clib.pyx'
-except(ImportError):
-    cmdclass = {}
-    redtoreg_pyx = 'redtoreg.c'
-    g2clib_pyx  = 'g2clib.c'
+from Cython.Distutils import build_ext
+cmdclass = {'build_ext': build_ext}
+redtoreg_pyx = 'redtoreg.pyx'
+g2clib_pyx  = 'g2clib.pyx'
 
 # ---------------------------------------------------------------------------------------- 
 # Read setup.cfg
