@@ -6,7 +6,8 @@ import pathlib
 import platform
 import sys
 
-VERSION = '2.0.2'
+with open("VERSION","rt") as f:
+    VERSION = f.readline().strip()
 
 libdirs = []
 incdirs = []
