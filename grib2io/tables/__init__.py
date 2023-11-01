@@ -1,7 +1,8 @@
 """
 Functions for retreiving data from NCEP GRIB2 Tables.
 """
-from functools import cache
+#from functools import cache # USE WHEN Python 3.9+ only
+from functools import lru_cache
 
 from .section0 import *
 from .section1 import *
@@ -121,7 +122,8 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
         return ['Unknown','Unknown','Unknown']
 
 
-@cache
+#@cache# USE WHEN Python 3.9+ only
+@lru_cache(maxsize=None)
 def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
     """
     Returns a list of variable shortNames given GRIB2 discipline, parameter
@@ -170,7 +172,8 @@ def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
     return shortnames
 
 
-@cache
+#@cache# USE WHEN Python 3.9+ only
+@lru_cache(maxsize=None)
 def get_metadata_from_shortname(shortname):
     """
     Provide GRIB2 variable metadata attributes given a GRIB2 shortName.

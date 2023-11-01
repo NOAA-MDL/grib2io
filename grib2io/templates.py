@@ -336,16 +336,9 @@ class ShapeOfEarth:
     def __set__(self, obj, value):
         obj.section3[5] = value
 
-class EarthRadius:
+class EarthShape:
     def __get__(self, obj, objtype=None):
-        ep = obj._earthparams
-        if ep['shape'] == 'spherical':
-            if ep['radius'] is None:
-                return obj.section3[7]/(10.**obj.section3[6])
-            else:
-                return ep['radius']
-        elif ep['shape'] in {'ellipsoid','oblateSpheriod'}:
-            return None
+        return obj._earthparams['shape']
     def __set__(self, obj, value):
         raise RuntimeError
 
