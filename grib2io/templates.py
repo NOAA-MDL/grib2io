@@ -276,9 +276,9 @@ class GridDefinitionTemplate:
 
 class EarthParams:
     def __get__(self, obj, objtype=None):
-        if obj.gridDefinitionSection[4] in {50,51,52,1200}:
+        if obj.section3[5] in {50,51,52,1200}:
             return None
-        return tables.earth_params[str(obj.section3[5])]
+        return tables.get_table('earth_params')[str(obj.section3[5])]
     def __set__(self, obj, value):
         raise RuntimeError
 
@@ -336,45 +336,48 @@ class ShapeOfEarth:
     def __set__(self, obj, value):
         obj.section3[5] = value
 
+class EarthShape:
+    def __get__(self, obj, objtype=None):
+        return obj._earthparams['shape']
+    def __set__(self, obj, value):
+        raise RuntimeError
+
 class EarthRadius:
     def __get__(self, obj, objtype=None):
-        earthparams = obj._earthparams
-        if earthparams['shape'] == 'spherical':
-            if earthparams['radius'] is None:
+        ep = obj._earthparams
+        if ep['shape'] == 'spherical':
+            if ep['radius'] is None:
                 return obj.section3[7]/(10.**obj.section3[6])
             else:
-                return earthparams['radius']
-        if earthparams['shape'] == 'oblateSpheriod':
-            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
-                return obj.section3[7]/(10.**obj.section3[6])
-            else:
-                return earthparams['radius']
+                return ep['radius']
+        elif ep['shape'] in {'ellipsoid','oblateSpheriod'}:
+            return None
     def __set__(self, obj, value):
         raise RuntimeError
 
 class EarthMajorAxis:
     def __get__(self, obj, objtype=None):
-        earthparams = obj._earthparams
-        if earthparams['shape'] == 'spherical':
+        ep = obj._earthparams
+        if ep['shape'] == 'spherical':
             return None
-        if earthparams['shape'] == 'oblateSpheriod':
-            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+        elif ep['shape'] in {'ellipsoid','oblateSpheriod'}:
+            if ep['major_axis'] is None and ep['minor_axis'] is None:
                 return obj.section3[9]/(10.**obj.section3[8])
             else:
-                return earthparams['major_axis']
+                return ep['major_axis']
     def __set__(self, obj, value):
         raise RuntimeError
 
 class EarthMinorAxis:
     def __get__(self, obj, objtype=None):
-        earthparams = obj._earthparams
-        if earthparams['shape'] == 'spherical':
+        ep = obj._earthparams
+        if ep['shape'] == 'spherical':
             return None
-        if earthparams['shape'] == 'oblateSpheriod':
-            if earthparams['radius'] is None and earthparams['major_axis'] is None and earthparams['minor_axis'] is None:
+        if ep['shape'] in {'ellipsoid','oblateSpheriod'}:
+            if ep['major_axis'] is None and ep['minor_axis'] is None:
                 return obj.section3[11]/(10.**section3[10])
             else:
-                return earthparams['minor_axis']
+                return ep['minor_axis']
     def __set__(self, obj, value):
         raise RuntimeError
 
