@@ -42,7 +42,7 @@ done
 # Store the Earth params table here.  This is custom to grib2io.
 echo "\t - Earth params table"
 cat << EOF >> section3.py
-earth_params = {
+table_earth_params = {
 '0':{'shape':'spherical','radius':6367470.0},
 '1':{'shape':'spherical','radius':None},
 '2':{'shape':'oblateSpheriod','major_axis':6378160.0,'minor_axis':6356775.0,'flattening':1.0/297.0},
@@ -54,7 +54,7 @@ earth_params = {
 '8':{'shape':'spherical','radius':6371200.0},
 }
 for i in range(9,256):
-    earth_params[str(i)] = {'shape':'unknown','radius':None}
+    table_earth_params[str(i)] = {'shape':'unknown','radius':None}
 EOF
 
 # ---------------------------------------------------------------------------------------- 
