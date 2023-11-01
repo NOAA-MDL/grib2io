@@ -1,6 +1,7 @@
 """
 Functions for retreiving data from NCEP GRIB2 Tables.
 """
+from functools import cache
 
 from .section0 import *
 from .section1 import *
@@ -10,6 +11,7 @@ from .section5 import *
 from .section6 import *
 from .originating_centers import *
 
+GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20]
 
 def get_table(table, expand=False):
     """
@@ -17,7 +19,6 @@ def get_table(table, expand=False):
 
     Parameters
     ----------
-
     **`table`**: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value
     representing the product discipline (e.g. '4.1.0').
 
@@ -25,7 +26,6 @@ def get_table(table, expand=False):
 
     Returns
     -------
-
     **`dict`**
     """
     if len(table) == 3 and table == '4.1':
@@ -55,15 +55,14 @@ def get_value_from_table(value, table, expand=False):
 
     Parameters
     ----------
-
     **`value`**: `int` or `str` code table value.
 
     **`table`**: `str` code table number.
 
     **`expand`**: If `True`, expand output dictionary where keys are a range.
+
     Returns
     -------
-
     Table value or `None` if not found.
     """
     try:
@@ -87,7 +86,6 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
 
     Parameters
     ----------
-
     **`discipline`**: `int` or `str` of Discipline code value of a GRIB2 message.
 
     **`parmcat`**: `int` or `str` of Parameter Category value of a GRIB2 message.
@@ -99,7 +97,6 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
 
     Returns
     -------
-
     **`list`**: containing variable information. "Unknown" is given for item of
     information if variable is not found.
     - list[0] = full name
@@ -124,6 +121,82 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
         return ['Unknown','Unknown','Unknown']
 
 
+@cache
+def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
+    """
+    Returns a list of variable shortNames given GRIB2 discipline, parameter
+    category, and parameter number.  If all 3 args are None, then shortNames
+    from all disciplines, parameter categories, and numbers will be returned.
+
+    Parameters
+    ----------
+    **`discipline : int`** GRIB2 discipline code value.
+
+    **`parmcat : int`** GRIB2 parameter category value.
+
+    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.
+
+    Returns
+    -------
+    **`list`** of GRIB2 shortNames.
+    """
+    shortnames = list()
+    if discipline is None:
+        discipline = GRIB2_DISCIPLINES
+    else:
+        discipline = [discipline]
+    if parmcat is None:
+        parmcat = list()
+        for d in discipline:
+            parmcat += list(get_table(f'4.1.{d}').keys())
+    else:
+        parmcat = [parmcat]
+    if parmnum is None:
+        parmnum = list(range(256))
+    else:
+        parmnum = [parmnum]
+    for d in discipline:
+
+        for pc in parmcat:
+            for pn in parmnum:
+                shortnames.append(get_varinfo_from_table(d,pc,pn,isNDFD)[2])
+
+    shortnames = sorted(set(shortnames))
+    try:
+        shortnames.remove('unknown')
+        shortnames.remove('Unknown')
+    except(ValueError):
+        pass
+    return shortnames
+
+
+@cache
+def get_metadata_from_shortname(shortname):
+    """
+    Provide GRIB2 variable metadata attributes given a GRIB2 shortName.
+
+    Parameters
+    ----------
+    **`shortname : str`** GRIB2 variable shortName.
+
+    Returns
+    -------
+    **`list`** of dictionary items where each dictionary items contains the variable
+    metadata key:value pairs. **NOTE:** Some variable shortNames will exist in multiple
+    parameter category/number tables according to the GRIB2 discipline.
+    """
+    metadata = []
+    for d in GRIB2_DISCIPLINES:
+        parmcat = list(get_table(f'4.1.{d}').keys())
+        for pc in parmcat:
+            for pn in range(256):
+                varinfo = get_varinfo_from_table(d,pc,pn,False)
+                if shortname == varinfo[2]:
+                    metadata.append(dict(discipline=d,parameterCategory=pc,parameterNumber=pn,
+                                         fullName=varinfo[0],units=varinfo[1]))
+    return metadata
+
+
 def get_wgrib2_level_string(pdtn,pdt):
     """
     Return a string that describes the level or layer of the GRIB2 message. The
@@ -136,14 +209,12 @@ def get_wgrib2_level_string(pdtn,pdt):
 
     Parameters
     ----------
-
     **`pdtn`**: GRIB2 Product Definition Template Number
 
     **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
-
     **`str`**: wgrib2-formatted level/layer string.
     """
     if pdtn == 48:
