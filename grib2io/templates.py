@@ -884,7 +884,7 @@ class MinutesAfterDataCutoff:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
-class UnitOfTimeRange:
+class UnitOfForecastTime:
     _key = defaultdict(lambda: 7, {48:18})
     #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
@@ -892,7 +892,7 @@ class UnitOfTimeRange:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
-class ForecastTime:
+class ValueOfForecastTime:
     _key = defaultdict(lambda: 8, {48:19})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1390,8 +1390,8 @@ class ProductDefinitionTemplate0():
     backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=BackgroundGeneratingProcessIdentifier())
     hoursAfterDataCutoff: int = field(init=False,repr=False,default=HoursAfterDataCutoff())
     minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
-    unitOfTimeRange: Grib2Metadata = field(init=False,repr=False,default=UnitOfTimeRange())
-    forecastTime: int = field(init=False,repr=False,default=ForecastTime())
+    unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
+    valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
     typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=False,default=TypeOfFirstFixedSurface())
     scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaleFactorOfFirstFixedSurface())
     scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaledValueOfFirstFixedSurface())
