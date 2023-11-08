@@ -940,7 +940,8 @@ class _Grib2Message:
         longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
-            return _latlon_datastore[self._sha1_section3]
+            return (_latlon_datastore[self._sha1_section3]['latitude'],
+                    _latlon_datastore[self._sha1_section3]['longitude'])
         gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
@@ -1020,7 +1021,8 @@ class _Grib2Message:
         else:
             raise ValueError('Unsupported grid')
 
-        _latlon_datastore[self._sha1_section3] = (lats,lons)
+        _latlon_datastore[self._sha1_section3] = dict(latitude=lats,
+                                                      longitude=lons)
 
         return lats, lons
 
