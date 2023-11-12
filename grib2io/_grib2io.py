@@ -940,7 +940,10 @@ class _Grib2Message:
         longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
-            return _latlon_datastore[self._sha1_section3]
+            return (_latlon_datastore[self._sha1_section3]['latitude'],
+                    _latlon_datastore[self._sha1_section3]['longitude'])
+        else:
+            _latlon_datastore[self._sha1_section3] = {}
         gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
@@ -1013,10 +1016,70 @@ class _Grib2Message:
             abslats = np.fabs(lats)
             lons = np.where(abslons < 1.e20, lons, 1.e30)
             lats = np.where(abslats < 1.e20, lats, 1.e30)
+        elif gdtn == 32769:
+            # Special NCEP Grid, Rotated Lat/Lon, Arakawa E-Grid (Non-Staggered)
+            from grib2io.utils import arakawa_rotated_grid
+            from grib2io.utils.rotated_grid import DEG2RAD
+            di, dj = 0.0, 0.0
+            do_180 = False
+            idir = 1 if self.scanModeFlags[0] == 0 else -1
+            jdir = -1 if self.scanModeFlags[1] == 0 else 1
+            grid_oriented = 0 if self.resolutionAndComponentFlags[4] == 0 else 1
+            do_rot = 1 if grid_oriented == 1 else 0
+            la1 = self.latitudeFirstGridpoint
+            lo1 = self.longitudeFirstGridpoint
+            clon = self.longitudeCenterGridpoint
+            clat = self.latitudeCenterGridpoint
+            lasp = clat - 90.0
+            losp = clon
+            llat, llon = arakawa_rotated_grid.ll2rot(la1,lo1,lasp,losp)
+            la2, lo2 = arakawa_rotated_grid.rot2ll(-llat,-llon,lasp,losp)
+            rlat = -llat
+            rlon = -llon
+            if self.nx == 1:
+                di = 0.0
+            elif idir == 1:
+                ti = rlon
+                while ti < llon:
+                    ti += 360.0
+                di = (ti - llon)/float(self.nx-1)
+            else:
+                ti = llon
+                while ti < rlon:
+                    ti += 360.0
+                di = (ti - rlon)/float(self.nx-1)
+            if self.ny == 1:
+               dj = 0.0
+            else:
+                dj = (rlat - llat)/float(self.ny-1)
+                if dj < 0.0:
+                    dj = -dj
+            if idir == 1:
+                if llon > rlon:
+                    llon -= 360.0
+                if llon < 0 and rlon > 0:
+                    do_180 = True
+            else:
+                if rlon > llon:
+                    rlon -= 360.0
+                if rlon < 0 and llon > 0:
+                    do_180 = True
+            xlat1d = llat + (np.arange(self.ny)*jdir*dj)
+            xlon1d = llon + (np.arange(self.nx)*idir*di)
+            xlons, xlats = np.meshgrid(xlon1d,xlat1d)
+            rot2ll_vectorized = np.vectorize(arakawa_rotated_grid.rot2ll)
+            lats, lons = rot2ll_vectorized(xlats,xlons,lasp,losp)
+            if do_180:
+                lons = np.where(lons>180.0,lons-360.0,lons)
+            vector_rotation_angles_vectorized = np.vectorize(arakawa_rotated_grid.vector_rotation_angles)
+            rots = vector_rotation_angles_vectorized(lats, lons, clat, losp, xlats)
+            _latlon_datastore[self._sha1_section3]['vector_rotation_angles'] = rots
+            del xlat1d, xlon1d, xlats, xlons
         else:
             raise ValueError('Unsupported grid')
 
-        _latlon_datastore[self._sha1_section3] = (lats,lons)
+        _latlon_datastore[self._sha1_section3]['latitude'] = lats
+        _latlon_datastore[self._sha1_section3]['longitude'] = lons
 
         return lats, lons
 

@@ -430,14 +430,28 @@ class LongitudeFirstGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LatitudeLastGridpoint:
-    _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:14}
+    _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:19}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeLastGridpoint:
-    _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:15}
+    _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:20}
+    def __get__(self, obj, objtype=None):
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
+    def __set__(self, obj, value):
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+
+class LatitudeCenterGridpoint:
+    _key = {32768:14, 32769:14}
+    def __get__(self, obj, objtype=None):
+        return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
+    def __set__(self, obj, value):
+        obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
+
+class LongitudeCenterGridpoint:
+    _key = {32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
     def __set__(self, obj, value):
@@ -567,6 +581,13 @@ class ProjParameters:
             projparams['lon_0'] = obj.gridOrientation
         elif obj.gdtn == 40:
             projparams['proj'] = 'eqc'
+        elif obj.gdtn == 32769:
+            projparams['o_proj'] = 'longlat'
+            projparams['proj'] = 'ob_tran'
+            projparams['o_lat_p'] = 90.0 - obj.latitudeCenterGridpoint
+            #projparams['o_lon_p'] = obj.longitudeCenterGridpoint - 360.0 if obj.longitudeCenterGridpoint > 180.0 else obj.longitudeCenterGridpoint
+            #projparams['o_lon_p'] = 180.0 - (360. - obj.longitudeCenterGridpoint)
+            projparams['o_lon_p'] = 0
         return projparams
     def __set__(self, obj, value):
         raise RuntimeError
@@ -723,6 +744,38 @@ class GridDefinitionTemplate50():
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
+@dataclass(init=False)
+class GridDefinitionTemplate32768():
+    _len = 19
+    _num = 32768
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeCenterGridpoint: float = field(init=False, repr=False, default=LatitudeCenterGridpoint())
+    longitudeCenterGridpoint: float = field(init=False, repr=False, default=LongitudeCenterGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    @classmethod
+    @property
+    def _attrs(cls):
+        return list(cls.__dataclass_fields__.keys())
+
+@dataclass(init=False)
+class GridDefinitionTemplate32769():
+    _len = 19
+    _num = 32769
+    latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
+    longitudeFirstGridpoint: float = field(init=False, repr=False, default=LongitudeFirstGridpoint())
+    latitudeCenterGridpoint: float = field(init=False, repr=False, default=LatitudeCenterGridpoint())
+    longitudeCenterGridpoint: float = field(init=False, repr=False, default=LongitudeCenterGridpoint())
+    gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
+    gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
+    longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+    @classmethod
+    @property
+    def _attrs(cls):
+        return list(cls.__dataclass_fields__.keys())
+
 _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     1: GridDefinitionTemplate1,
     10: GridDefinitionTemplate10,
@@ -732,6 +785,8 @@ _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     40: GridDefinitionTemplate40,
     41: GridDefinitionTemplate41,
     50: GridDefinitionTemplate50,
+    32768: GridDefinitionTemplate32768,
+    32769: GridDefinitionTemplate32769,
     }
 
 def gdt_class_by_gdtn(gdtn):
@@ -829,7 +884,7 @@ class MinutesAfterDataCutoff:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
-class UnitOfTimeRange:
+class UnitOfForecastTime:
     _key = defaultdict(lambda: 7, {48:18})
     #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
@@ -837,7 +892,7 @@ class UnitOfTimeRange:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
-class ForecastTime:
+class ValueOfForecastTime:
     _key = defaultdict(lambda: 8, {48:19})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1335,8 +1390,8 @@ class ProductDefinitionTemplate0():
     backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=BackgroundGeneratingProcessIdentifier())
     hoursAfterDataCutoff: int = field(init=False,repr=False,default=HoursAfterDataCutoff())
     minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
-    unitOfTimeRange: Grib2Metadata = field(init=False,repr=False,default=UnitOfTimeRange())
-    forecastTime: int = field(init=False,repr=False,default=ForecastTime())
+    unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
+    valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
     typeOfFirstFixedSurface: Grib2Metadata = field(init=False,repr=False,default=TypeOfFirstFixedSurface())
     scaleFactorOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaleFactorOfFirstFixedSurface())
     scaledValueOfFirstFixedSurface: int = field(init=False,repr=False,default=ScaledValueOfFirstFixedSurface())
