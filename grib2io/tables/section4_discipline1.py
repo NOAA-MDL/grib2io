@@ -32,6 +32,8 @@ table_4_2_1_1  = {
 '193':['Percent of Frozen Precipitation','%','CPOFP'],
 '194':['Probability of precipitation exceeding flash flood guidance values','%','PPFFG'],
 '195':['Probability of Wetting Rain, exceeding in 0.10" in a given time period','%','CWR'],
+'196':['Binary Probability of precipitation exceeding average recurrence intervals (ARI)','see Code table 4.222','QPFARI'],
+'197':['Binary Probability of precipitation exceeding flash flood guidance values','see Code table 4.222','QPFFFG'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_1_2  = {

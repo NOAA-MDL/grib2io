@@ -23,7 +23,7 @@ table_4_2_4_2  = {
 '1':['Electron Density','m-3','ELCDEN'],
 '2':['Proton Density','m-3','PROTDEN'],
 '3':['Ion Density','m-3','IONDEN'],
-'4':['Vertical Electron Content','m-2','VTEC'],
+'4':['Vertical Total Electron Content','TECU','VTEC'],
 '5':['HF Absorption Frequency','Hz','ABSFRQ'],
 '6':['HF Absorption','dB','ABSRB'],
 '7':['Spread F','m','SPRDF'],
@@ -84,10 +84,10 @@ table_4_2_4_6  = {
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_4_7  = {
-'0':['Limb Intensity','m-2 s-1','LMBINT'],
-'1':['Disk Intensity','m-2 s-1','DSKINT'],
-'2':['Disk Intensity Day','m-2 s-1','DSKDAY'],
-'3':['Disk Intensity Night','m-2 s-1','DSKNGT'],
+'0':['Limb Intensity','J m-2 s-1','LMBINT'],
+'1':['Disk Intensity','J m-2 s-1','DSKINT'],
+'2':['Disk Intensity Day','J m-2 s-1','DSKDAY'],
+'3':['Disk Intensity Night','J m-2 s-1','DSKNGT'],
 '4-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
