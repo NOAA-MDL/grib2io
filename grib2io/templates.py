@@ -582,12 +582,9 @@ class ProjParameters:
         elif obj.gdtn == 40:
             projparams['proj'] = 'eqc'
         elif obj.gdtn == 32769:
-            projparams['o_proj'] = 'longlat'
-            projparams['proj'] = 'ob_tran'
-            projparams['o_lat_p'] = 90.0 - obj.latitudeCenterGridpoint
-            #projparams['o_lon_p'] = obj.longitudeCenterGridpoint - 360.0 if obj.longitudeCenterGridpoint > 180.0 else obj.longitudeCenterGridpoint
-            #projparams['o_lon_p'] = 180.0 - (360. - obj.longitudeCenterGridpoint)
-            projparams['o_lon_p'] = 0
+            projparams['proj'] = 'aeqd'
+            projparams['lon_0'] = obj.longitudeCenterGridpoint
+            projparams['lat_0'] = obj.latitudeCenterGridpoint
         return projparams
     def __set__(self, obj, value):
         raise RuntimeError
