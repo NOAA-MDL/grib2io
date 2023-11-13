@@ -11,7 +11,13 @@ by the g2c library functions via the g2clib Cython wrapper module.  The decoding
 descriptive, plain language metadata by looking up the integer code values against the appropriate GRIB2 code tables.  These code tables
 are a part of the grib2io module.
 
-For example usage of grib2io, please see the [Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/grib2io-v2-demo.ipynb).
+Tutorials
+=========
+
+The following Jupyter Notebooks are available as tutorials:
+
+* [General Usage](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
+* [Plotting Arakawa Rotated Lat/Lon Grids](https://github.com/NOAA-MDL/grib2io/blob/master/demos/plot-arakawa-rotlatlon-grids.ipynb)
 """
 
 import builtins
