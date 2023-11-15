@@ -82,7 +82,7 @@ class Grib2Metadata():
 # ----------------------------------------------------------------------------------------
 class IndicatorSection:
     """
-    GRIB2 Section 0, [Indicator Section](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect0.shtml)
+    [GRIB2 Indicator Section (0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_sect0.shtml)
     """
     def __get__(self, obj, objtype=None):
         return obj.section0
@@ -90,9 +90,7 @@ class IndicatorSection:
         obj.section0 = value
 
 class Discipline:
-    """
-    Discipline [From Table 0.0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)
-    """
+    """[Discipline](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table0-0.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.indicatorSection[2],table='0.0')
     def __set__(self, obj, value):
@@ -112,42 +110,35 @@ class IdentificationSection:
         obj.section1 = value
 
 class OriginatingCenter:
-    """Identification of originating/generating center
-    [(See Table 0)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)
-    """
+    """[Originating Center](https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[0],table='originating_centers')
     def __set__(self, obj, value):
         obj.section1[0] = value
 
 class OriginatingSubCenter:
-    """Identification of originating/generating subcenter
-    [(See Table C)](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)
-    """
+    """[Originating SubCenter](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablec.html)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[1],table='originating_subcenters')
     def __set__(self, obj, value):
         obj.section1[1] = value
 
 class MasterTableInfo:
-    """GRIB master tables version number (currently 2)
-    [(See Table 1.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)
-    """
+    """[GRIB2 Master Table Version](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-0.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[2],table='1.0')
     def __set__(self, obj, value):
         obj.section1[2] = value
 
 class LocalTableInfo:
-    """Version number of GRIB local tables used to augment Master Tables
-    [(See Table 1.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)"""
+    """[GRIB2 Local Tables Version Number](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-1.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[3],table='1.1')
     def __set__(self, obj, value):
         obj.section1[3] = value
 
 class SignificanceOfReferenceTime:
-    """Significance of reference time [(See Table 1.2)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)"""
+    """[Significance of Reference Time](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-2.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[4],table='1.2')
     def __set__(self, obj, value):
@@ -212,18 +203,14 @@ class RefDate:
             raise TypeError(msg)
 
 class ProductionStatus:
-    """Production Status of Processed data in the GRIB message
-    [(See Table 1.3)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)
-    """
+    """[Production Status of Processed Data](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-3.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[11],table='1.3')
     def __set__(self, obj, value):
         obj.section1[11] = value
 
 class TypeOfData:
-    """Type of processed data in this GRIB message
-    [(See Table 1.4)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)
-    """
+    """[Type of Processed Data in this GRIB message](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table1-4.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section1[12],table='1.4')
     def __set__(self, obj, value):
@@ -246,9 +233,7 @@ class GridDefinitionSection:
         raise RuntimeError
 
 class SourceOfGridDefinition:
-    """Source of grid definition
-    [(See Table 3.0)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml
-    """
+    """[Source of Grid Definition](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-0.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[0],table='3.0')
     def __set__(self, obj, value):
@@ -269,9 +254,7 @@ class InterpretationOfListOfNumbers:
         raise RuntimeError
 
 class GridDefinitionTemplateNumber:
-    """Grid definition template number
-    [(See Table 3.1)](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml
-    """
+    """[Grid Definition Template Number](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-1.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[4],table='3.1')
     def __set__(self, obj, value):
@@ -1371,7 +1354,7 @@ class TypeOfTimeIncrementOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfStatisticalProcess:
-    """Unit of Time Range of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
+    """[Unit of Time Range of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
     _key = {8:25, 9:32, 10:26, 11:28, 12:27}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
