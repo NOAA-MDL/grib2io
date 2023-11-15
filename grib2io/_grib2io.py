@@ -63,22 +63,29 @@ class open():
 
     Attributes
     ----------
+    **`mode : str`**
+        File IO mode of opening the file.
 
-    **`mode`** File IO mode of opening the file.
+    **`name : str`**
+        Full path name of the GRIB2 file.
 
-    **`name`** Full path name of the GRIB2 file.
+    **`messages : int`**
+        Count of GRIB2 Messages contained in the file.
 
-    **`messages`** Count of GRIB2 Messages contained in the file.
+    **`current_message : int`**
+        Current position of the file in units of GRIB2 Messages.
 
-    **`current_message`** Current position of the file in units of GRIB2 Messages.
+    **`size : int`**
+        Size of the file in units of bytes.
 
-    **`size`** Size of the file in units of bytes.
+    **`closed : bool`**
+        `True` is file handle is close; `False` otherwise.
 
-    **`closed`** `True` is file handle is close; `False` otherwise.
+    **`variables : tuple`**
+        Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
 
-    **`variables`** Tuple containing a unique list of variable short names (i.e. GRIB2 abbreviation names).
-
-    **`levels`** Tuple containing a unique list of wgrib2-formatted level/layer strings.
+    **`levels : tuple`**
+        Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
     __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
                  'current_message','size','closed','variables','levels','_pos')
@@ -90,12 +97,10 @@ class open():
         ----------
 
         **`filename : str`**
-
-        File name containing GRIB2 messages.
+            File name containing GRIB2 messages.
 
         **`mode : str, optional`**
-
-        File access mode where `r` opens the files for reading only; `w` opens the file for writing.
+            File access mode where `r` opens the files for reading only; `w` opens the file for writing.
         """
         if mode in {'a','r','w'}:
             mode = mode+'b'
@@ -384,15 +389,12 @@ class open():
 
         Parameters
         ----------
-
         **`size : int, optional`**
-
-        The number of GRIB2 messages to read from the current position. If no argument is
-        give, the default value is `None` and remainder of the file is read.
+            The number of GRIB2 messages to read from the current position. If no argument is
+            give, the default value is `None` and remainder of the file is read.
 
         Returns
         -------
-
         `Grib2Message` object when size = 1 or a `list` of Grib2Messages when
         size > 1.
         """
@@ -419,10 +421,8 @@ class open():
 
         Parameters
         ----------
-
         **`pos : int`**
-
-        The GRIB2 Message number to set the file pointer to.
+            The GRIB2 Message number to set the file pointer to.
         """
         if self._hasindex:
             self._filehandle.seek(self._index['offset'][pos])
@@ -456,10 +456,8 @@ class open():
 
         Parameters
         ----------
-
         **`msg : Grib2Message or sequence of Grib2Messages`**
-
-        GRIB2 message objects to write to file.
+            GRIB2 message objects to write to file.
         """
         if isinstance(msg,list):
             for m in msg:
@@ -502,14 +500,11 @@ class open():
 
         Parameters
         ----------
-
         **`name : str`**
-
-        Grib2Message variable shortName
+            Grib2Message variable shortName
 
         Returns
         -------
-
         A list of strings of unique level strings.
         """
         return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
@@ -521,14 +516,11 @@ class open():
 
         Parameters
         ----------
-
         **`level : str`**
-
-        Grib2Message variable level
+            Grib2Message variable level
 
         Returns
         -------
-
         A list of strings of variable shortName strings.
         """
         return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
@@ -781,18 +773,14 @@ class _Grib2Message:
 
         Parameters
         ----------
-
         **`sect : int`**
-
-        The GRIB2 section number.
+            The GRIB2 section number.
 
         **`values : bool, optional`**
-
-        Optional (default is `False`) arugment to return attributes values.
+            Optional (default is `False`) arugment to return attributes values.
 
         Returns
         -------
-
         A List attribute names or Dict if `values = True`.
         """
         if sect in {0,1,6}:
@@ -931,19 +919,15 @@ class _Grib2Message:
 
         Parameters
         ----------
-
         **`unrotate : bool`**
-
-        If `True` [DEFAULT], and grid is rotated lat/lon, then unrotate the grid,
-        otherwise `False`, do not.
+            If `True` [DEFAULT], and grid is rotated lat/lon, then unrotate the grid,
+            otherwise `False`, do not.
 
         Returns
         -------
-
         **`lats, lons : numpy.ndarray`**
-
-        Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
-        longitudes in units of degrees.
+            Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and 
+            longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
             return (_latlon_datastore[self._sha1_section3]['latitude'],
@@ -1102,7 +1086,6 @@ class _Grib2Message:
 
         Returns
         -------
-
         **`numpy.ndarray`** of string values per element.
         """
         hold_auto_nans = _AUTO_NANS
@@ -1136,15 +1119,12 @@ class _Grib2Message:
 
         Parameters
         ----------
-
         **`validate : bool, optional`**
-
-        If `True` (DEFAULT), validates first/last four bytes for proper
-        formatting, else returns None. If `False`, message is output as is.
+            If `True` (DEFAULT), validates first/last four bytes for proper
+            formatting, else returns None. If `False`, message is output as is.
 
         Returns
         -------
-
         Returns GRIB2 formatted message as bytes.
         """
         if validate:
@@ -1165,11 +1145,9 @@ class _Grib2Message:
 
         Parameters
         ----------
-
         **`method : int or str`**
-
-        Interpolate method to use. This can either be an integer or string using
-        the following mapping:
+            Interpolate method to use. This can either be an integer or string using
+            the following mapping:
 
         | Interpolate Scheme | Integer Value |
         | :---:              | :---:         |
@@ -1181,17 +1159,14 @@ class _Grib2Message:
         | 'neighbor-budget'  | 6             |
 
         **`grid_def_out : grib2io.Grib2GridDef`**
-
-        Grib2GridDef object of the output grid.
+            Grib2GridDef object of the output grid.
 
         **`method_options : list of ints, optional`**
-
-        Interpolation options. See the NCEPLIBS-ip doucmentation for
-        more information on how these are used.
+            Interpolation options. See the NCEPLIBS-ip doucmentation for
+            more information on how these are used.
 
         Returns
         -------
-
         If interpolating to a grid, a new Grib2Message object is returned.  The GRIB2 metadata of
         the new Grib2Message object is indentical to the input except where required to be different
         because of the new grid specs.
@@ -1243,9 +1218,8 @@ def _data(filehandle: open, msg: Grib2Message, bmap_offset: int, data_offset: in
     -------
 
     **`numpy.ndarray`**
-
-    A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
-    could be np.int32 if Grib2Message.typeOfValues is integer.
+        A numpy.ndarray with shape (ny,nx). By default the array dtype=np.float32, but
+        could be np.int32 if Grib2Message.typeOfValues is integer.
     """
     gds = msg.section3[0:5]
     gdt = msg.section3[5:]
@@ -1342,12 +1316,10 @@ def set_auto_nans(value):
 
     Parameters
     ----------
-
     **`value : bool`**
-
-    If `True` [DEFAULT], missing values in GRIB2 message data will be set to `np.nan` and
-    if `False`, missing values will present in the data array.  If a bitmap is used, then `np.nan`
-    will be used regardless of this setting.
+        If `True` [DEFAULT], missing values in GRIB2 message data will be set to `np.nan` and
+        if `False`, missing values will present in the data array.  If a bitmap is used, then 
+        `np.nan` will be used regardless of this setting.
     """
     global _AUTO_NANS
     if isinstance(value,bool):
@@ -1368,21 +1340,19 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     ----------
 
     **`a : numpy.ndarray or tuple`**
+        Input data.  If `a` is a `numpy.ndarray`, scalar interpolation will be
+        performed.  If `a` is a `tuple`, then vector interpolation will be performed
+        with the assumption that u = a[0] and v = a[1] and are both `numpy.ndarray`.
 
-    Input data.  If `a` is a `numpy.ndarray`, scalar interpolation will be
-    performed.  If `a` is a `tuple`, then vector interpolation will be performed
-    with the assumption that u = a[0] and v = a[1] and are both `numpy.ndarray`.
-
-    These data are expected to be in 2-dimensional form with shape (ny, nx) or
-    3-dimensional (:, ny, nx) where the 1st dimension represents another spatial,
-    temporal, or classification (i.e. ensemble members) dimension. The function will
-    properly flatten the (ny,nx) dimensions into (nx * ny) acceptable for input into
-    the interpolation subroutines.
+        These data are expected to be in 2-dimensional form with shape (ny, nx) or
+        3-dimensional (:, ny, nx) where the 1st dimension represents another spatial,
+        temporal, or classification (i.e. ensemble members) dimension. The function will
+        properly flatten the (ny,nx) dimensions into (nx * ny) acceptable for input into
+        the interpolation subroutines.
 
     **`method : int or str`**
-
-    Interpolate method to use. This can either be an integer or string using
-    the following mapping:
+        Interpolate method to use. This can either be an integer or string using
+        the following mapping:
 
     | Interpolate Scheme | Integer Value |
     | :---:              | :---:         |
@@ -1394,21 +1364,17 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     | 'neighbor-budget'  | 6             |
 
     **`grid_def_in : grib2io.Grib2GridDef`**
-
-    Grib2GridDef object for the input grid.
+        Grib2GridDef object for the input grid.
 
     **`grid_def_out : grib2io.Grib2GridDef`**
-
-    Grib2GridDef object for the output grid or station points.
+        Grib2GridDef object for the output grid or station points.
 
     **`method_options : list of ints, optional`**
-
-    Interpolation options. See the NCEPLIBS-ip doucmentation for
-    more information on how these are used.
+        Interpolation options. See the NCEPLIBS-ip doucmentation for
+        more information on how these are used.
 
     Returns
     -------
-
     Returns a `numpy.ndarray` when scalar interpolation is performed or
     a `tuple` of `numpy.ndarray`s when vector interpolation is performed
     with the assumptions that 0-index is the interpolated u and 1-index
@@ -1488,23 +1454,20 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
 
     Parameters
     ----------
-
     **`a : numpy.ndarray or tuple`**
+        Input data.  If `a` is a `numpy.ndarray`, scalar interpolation will be
+        performed.  If `a` is a `tuple`, then vector interpolation will be performed
+        with the assumption that u = a[0] and v = a[1] and are both `numpy.ndarray`.
 
-    Input data.  If `a` is a `numpy.ndarray`, scalar interpolation will be
-    performed.  If `a` is a `tuple`, then vector interpolation will be performed
-    with the assumption that u = a[0] and v = a[1] and are both `numpy.ndarray`.
-
-    These data are expected to be in 2-dimensional form with shape (ny, nx) or
-    3-dimensional (:, ny, nx) where the 1st dimension represents another spatial,
-    temporal, or classification (i.e. ensemble members) dimension. The function will
-    properly flatten the (ny,nx) dimensions into (nx * ny) acceptable for input into
-    the interpolation subroutines.
+        These data are expected to be in 2-dimensional form with shape (ny, nx) or
+        3-dimensional (:, ny, nx) where the 1st dimension represents another spatial,
+        temporal, or classification (i.e. ensemble members) dimension. The function will
+        properly flatten the (ny,nx) dimensions into (nx * ny) acceptable for input into
+        the interpolation subroutines.
 
     **`method : int or str`**
-
-    Interpolate method to use. This can either be an integer or string using
-    the following mapping:
+        Interpolate method to use. This can either be an integer or string using
+        the following mapping:
 
     | Interpolate Scheme | Integer Value |
     | :---:              | :---:         |
@@ -1516,25 +1479,20 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
     | 'neighbor-budget'  | 6             |
 
     **`grid_def_in : grib2io.Grib2GridDef`**
-
-    Grib2GridDef object for the input grid.
+        Grib2GridDef object for the input grid.
 
     **`lats : numpy.ndarray or list`**
-
-    Latitudes for station points
+        Latitudes for station points
 
     **`lons : numpy.ndarray or list`**
-
-    Longitudes for station points
+        Longitudes for station points
 
     **`method_options : list of ints, optional`**
-
-    Interpolation options. See the NCEPLIBS-ip doucmentation for
-    more information on how these are used.
+        Interpolation options. See the NCEPLIBS-ip doucmentation for
+        more information on how these are used.
 
     Returns
     -------
-
     Returns a `numpy.ndarray` when scalar interpolation is performed or
     a `tuple` of `numpy.ndarray`s when vector interpolation is performed
     with the assumptions that 0-index is the interpolated u and 1-index
