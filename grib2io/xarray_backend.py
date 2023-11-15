@@ -1,5 +1,8 @@
-# grib2io xarray backend is a backend entrypoint for decoding grib files with xarray engine 'grib2io'
-# API is experimental and is subject to change without backward compatability
+"""
+grib2io xarray backend is a backend entrypoint for decoding grib files with xarray 
+engine 'grib2io' API is experimental and is subject to change without backward 
+compatability.
+"""
 from copy import copy
 from dataclasses import dataclass, field, astuple
 import logging
@@ -34,11 +37,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
             This backend is experimental and the API/behavior may change without backward comaptability.
 
     Parameters
-    __________
+    ----------
+    **`filename : str, Path, file-like`**
+        GRIB2 file to be opened
 
-    filename: str, Path, file-like
-        grib file to be opened
-    filters: dict, optional for filtering grib2 msgs to single hypercube
+    **`filters : dict, optional`**
+        Filter GRIB2 messages to single hypercube. Dict keys can be any GRIB2 metadata attribute name.
     """
     def open_dataset(
         self,
@@ -120,6 +124,7 @@ def exclusive_slice_to_inclusive(item):
     s = slice(item.start, item.stop - step, step)
     return s
 
+
 class Validator:
     def __set_name__(self, owner, name):
         self.private_name = f'_{name}'
@@ -132,6 +137,7 @@ class Validator:
             value = None
         return value
 
+
 class PdIndex(Validator):
 
     def __set__(self, obj, value):
@@ -140,6 +146,7 @@ class PdIndex(Validator):
         except TypeError:
             value = pd.Index([value])
         setattr(obj, self.private_name, value)
+
 
 def array_safe_eq(a, b) -> bool:
     """Check if a and b are equal, even if they are numpy arrays"""
@@ -155,6 +162,7 @@ def array_safe_eq(a, b) -> bool:
         return a == b
     except TypeError:
         return NotImplementedError
+
 
 def dc_eq(dc1, dc2) -> bool:
     """checks if two dataclasses which hold numpy arrays are equal"""
@@ -198,6 +206,7 @@ class Cube:
                     coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(grib_name=k))
         #coords = {k: xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k)) for k in keys if self[k] is not None}
         return coords
+
 
 @dataclass
 class OnDiskArray:

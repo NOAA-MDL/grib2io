@@ -436,7 +436,7 @@ class open():
         return self.current_message
 
 
-    def select(self,**kwargs):
+    def select(self, **kwargs):
         """
         Select GRIB2 messages by `Grib2Message` attributes.
         """
@@ -494,7 +494,7 @@ class open():
         self._filehandle.flush()
 
 
-    def levels_by_var(self,name):
+    def levels_by_var(self, name):
         """
         Return a list of level strings given a variable shortName.
 
@@ -510,7 +510,7 @@ class open():
         return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
 
 
-    def vars_by_level(self,level):
+    def vars_by_level(self, level):
         """
         Return a list of variable shortName strings given a level.
 
@@ -1611,7 +1611,7 @@ class Grib2GridDef:
         return (self.ny, self.nx)
 
 
-def _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out):
+def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
     """
     Adjust shape of input data array to conform to the dimensionality
     the NCEPLIBS-ip interpolation subroutine arguments for grids.

@@ -9,23 +9,23 @@ import struct
 
 from .. import tables
 
-def int2bin(i,nbits=8,output=str):
+def int2bin(i, nbits=8, output=str):
     """
     Convert integer to binary string or list
 
     Parameters
     ----------
+    **`i : int`**
+        Integer value to convert to binary representation.
 
-    **`i`**: Integer value to convert to binary representation.
+    **`nbits : int, optional`**
+        Number of bits to return.  Valid values are 8 [DEFAULT], 16, 32, and 64.
 
-    **`nbits`**: Number of bits to return.  Valid values are 8 [DEFAULT], 16,
-    32, and 64.
-
-    **`output`**: Return data as `str` [DEFAULT] or `list` (list of ints).
+    **`output : type`**
+        Return data as `str` [DEFAULT] or `list` (list of ints).
 
     Returns
     -------
-
     `str` or `list` (list of ints) of binary representation of the integer value.
     """
     i = int(i) if not isinstance(i,int) else i
@@ -43,13 +43,12 @@ def ieee_float_to_int(f):
 
     Parameters
     ----------
-
-    **`f`**: Float value.
+    **`f : float`**
+        Floating-point value.
 
     Returns
     -------
-
-    Numpy Int32 representation of an IEEE 32-bit float.
+    `numpy.int32` representation of an IEEE 32-bit float.
     """
     i = struct.unpack('>i',struct.pack('>f',np.float32(f)))[0]
     return np.int32(i)
@@ -61,19 +60,18 @@ def ieee_int_to_float(i):
 
     Parameters
     ----------
-
-    **`i`**: Integer value.
+    **`i : int`**
+        Integer value.
 
     Returns
     -------
-
-    Numpy float32
+    `numpy.float32` representation of a 32-bit int.
     """
     f = struct.unpack('>f',struct.pack('>i',np.int32(i)))[0]
     return np.float32(f)
 
 
-def get_leadtime(idsec,pdtn,pdt):
+def get_leadtime(idsec, pdtn, pdt):
     """
     Computes lead time as a datetime.timedelta object using information from
     GRIB2 Identification Section (Section 1), Product Definition Template
@@ -81,16 +79,17 @@ def get_leadtime(idsec,pdtn,pdt):
 
     Parameters
     ----------
+    **`idsec : list or array_like`**
+        Seqeunce containing GRIB2 Identification Section (Section 1).
 
-    **`idsec`**: seqeunce containing GRIB2 Identification Section (Section 1).
+    **`pdtn : int`**
+        GRIB2 Product Definition Template Number
 
-    **`pdtn`**: GRIB2 Product Definition Template Number
-
-    **`idsec`**: seqeunce containing GRIB2 Product Definition Template (Section 4).
+    **`pdt : list or array_like`**
+        Seqeunce containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
-
     **`datetime.timedelta`** object representing the lead time of the GRIB2 message.
     """
     _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
@@ -104,21 +103,21 @@ def get_leadtime(idsec,pdtn,pdt):
             return datetime.timedelta(hours=pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours')))
 
 
-def get_duration(pdtn,pdt):
+def get_duration(pdtn, pdt):
     """
     Computes a time duration as a datetime.timedelta using information from
     Product Definition Template Number, and Product Definition Template (Section 4).
 
     Parameters
     ----------
+    **`pdtn : int`**
+        GRIB2 Product Definition Template Number
 
-    **`pdtn`**: GRIB2 Product Definition Template Number
-
-    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).
+    **`pdt : list or array_like`**
+        Sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
-
     **`datetime.timedelta`** object representing the time duration of the GRIB2 message.
     """
     _key = {8:25, 9:32, 10:26, 11:28, 12:27}
@@ -135,15 +134,14 @@ def decode_wx_strings(lus):
 
     Parameters
     ----------
-
-    **`lus`**: GRIB2 Local Use Section containing NDFD weather strings.
+    **`lus : bytes`**
+        GRIB2 Local Use Section containing NDFD weather strings.
 
     Returns
     -------
-
-    **`dict`**: Dictionary of NDFD/MDL weather strings. Keys are an integer
-    value that represent the sequential order of the key in the packed loca
-    use section and the value is the weather key.
+    **`dict`** of NDFD/MDL weather strings. Keys are an integer value that represent 
+    the sequential order of the key in the packed local use section and the value is 
+    the weather key.
     """
     assert lus[0] == 1
     # Unpack information related to the simple packing method
@@ -185,21 +183,24 @@ def get_wgrib2_prob_string(probtype,sfacl,svall,sfacu,svalu):
 
     Parameters
     ----------
+    **`probtype : int`**
+        Type of probability (Code Table 4.9).
 
-    **`probtype`**: `int` type of probability (Code Table 4.9).
+    **`sfacl : int`**
+        Scale factor of lower limit.
 
-    **`sfacl`**: `int` scale factor of lower limit.
+    **`svall : int`**
+        Scaled value of lower limit.
 
-    **`svall`**: `int` scaled value of lower limit.
+    **`sfacu : int`**
+        Scale factor of upper limit.
 
-    **`sfacu`**: `int` scale factor of upper limit.
-
-    **`svalu`**: `int` scaled value of upper limit.
+    **`svalu : int`**
+        Scaled value of upper limit.
 
     Returns
     -------
-
-    **`str`**: wgrib2-formatted string of probability threshold.
+    wgrib2-formatted string of probability threshold.
     """
     probstr = ''
     if sfacl == -127: sfacl = 0

@@ -17,33 +17,26 @@ def rotate(latin, lonin, aor, splat, splon):
     Parameters
     ----------
 
-    **`latin`**: `float or array_like`
+    **`latin : float or array_like`**
+        Latitudes in units of degrees.
 
-    Latitudes in units of degrees.
+    **`lonin : float or array_like`**
+        Longitudes in units of degrees.
 
-    **`lonin`**: `float or array_like`
+    **`aor : float`**
+        Angle of rotation as defined in GRIB2 GDTN 4.1.
 
-    Longitudes in units of degrees.
+    **`splat : float`**
+        Latitude of South Pole as defined in GRIB2 GDTN 4.1.
 
-    **`aor`**: `float`
-
-    Angle of rotation as defined in GRIB2 GDTN 4.1.
-
-    **`splat`**: `float`
-
-    Latitude of South Pole as defined in GRIB2 GDTN 4.1.
-
-    **`splon`**: `float`
-
-    Longitude of South Pole as defined in GRIB2 GDTN 4.1.
+    **`splon : float`**
+        Longitude of South Pole as defined in GRIB2 GDTN 4.1.
 
     Returns
     -------
-
     **`lats, lons : numpy.ndarray`**
-
-    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
-    longitudes in units of degrees.
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes and
+        longitudes in units of degrees.
     """
     zsycen = np.sin(DEG2RAD * (splat + 90.))
     zcycen = np.cos(DEG2RAD * (splat + 90.))
@@ -81,34 +74,26 @@ def unrotate(latin, lonin, aor, splat, splon):
 
     Parameters
     ----------
+    **`latin : float or array_like`**
+        Latitudes in units of degrees.
 
-    **`latin`**: `float or array_like`
+    **`lonin : float or array_like`**
+        Longitudes in units of degrees.
 
-    Latitudes in units of degrees.
+    **`aor : float`**
+        Angle of rotation as defined in GRIB2 GDTN 4.1.
 
-    **`lonin`**: `float or array_like`
+    **`splat : float`**
+        Latitude of South Pole as defined in GRIB2 GDTN 4.1.
 
-    Longitudes in units of degrees.
-
-    **`aor`**: `float`
-
-    Angle of rotation as defined in GRIB2 GDTN 4.1.
-
-    **`splat`**: `float`
-
-    Latitude of South Pole as defined in GRIB2 GDTN 4.1.
-
-    **`splon`**: `float`
-
-    Longitude of South Pole as defined in GRIB2 GDTN 4.1.
+    **`splon : float`**
+        Longitude of South Pole as defined in GRIB2 GDTN 4.1.
 
     Returns
     -------
-
     **`lats, lons : numpy.ndarray`**
-
-    Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
-    longitudes in units of degrees.
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes and
+        longitudes in units of degrees.
     """
     lon_x = lonin
     lat_y = latin

@@ -1,10 +1,12 @@
+"""
+GRIB2 section templates classes and metadata descriptor classes
+"""
 from dataclasses import dataclass, field
-import datetime
 from collections import defaultdict
+import datetime
 
 from . import tables
 from . import utils
-
 
 _section_attrs = {0:['discipline'],
                   1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
@@ -29,13 +31,16 @@ class Grib2Metadata():
     Class to hold GRIB2 metadata both as numeric code value as stored in
     GRIB2 and its plain langauge definition.
 
+    Attributes
+    ----------
     **`value : int`**
-
-    GRIB2 metadata integer code value.
+        GRIB2 metadata integer code value.
 
     **`table : str, optional`**
+        GRIB2 table to lookup the `value`. Default is None.
 
-    GRIB2 table to lookup the `value`. Default is None.
+    **`definition : str`**
+        Plain language description of numeric metadata.
     """
     __slots__ = ('value','table')
     def __init__(self, value, table=None):
@@ -66,6 +71,11 @@ class Grib2Metadata():
     @property
     def definition(self):
         return tables.get_value_from_table(self.value,self.table)
+    def show_table(self):
+        """
+        Provide the table related to this metadata.
+        """
+        return tables.get_table(self.table)
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 0 metadata.
@@ -186,7 +196,7 @@ class Second:
         obj.section1[10] = value
 
 class RefDate:
-    """Reference date as a `datetime.datetime` object"""
+    """Reference Date. NOTE: This is a `datetime.datetime` object."""
     def __get__(self, obj, objtype=None):
         return datetime.datetime(*obj.section1[5:11])
     def __set__(self, obj, value):
@@ -275,6 +285,7 @@ class GridDefinitionTemplate:
         raise RuntimeError
 
 class EarthParams:
+    """Metadata about the shape of the Earth"""
     def __get__(self, obj, objtype=None):
         if obj.section3[5] in {50,51,52,1200}:
             return None
@@ -283,6 +294,7 @@ class EarthParams:
         raise RuntimeError
 
 class DxSign:
+    """Sign of Grid Length in X-Direction"""
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769} and \
         obj.section3[17] > obj.section3[20]:
@@ -292,6 +304,7 @@ class DxSign:
         raise RuntimeError
 
 class DySign:
+    """Sign of Grid Length in Y-Direction"""
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769} and \
         obj.section3[16] > obj.section3[19]:
@@ -301,6 +314,7 @@ class DySign:
         raise RuntimeError
 
 class LLScaleFactor:
+    """Scale Factor for Lats/Lons"""
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769}:
             llscalefactor = float(obj.section3[14])
@@ -312,6 +326,7 @@ class LLScaleFactor:
         raise RuntimeError
 
 class LLDivisor:
+    """Divisor Value for scaling Lats/Lons"""
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769}:
             lldivisor = float(obj.section3[15])
@@ -323,6 +338,7 @@ class LLDivisor:
         raise RuntimeError
 
 class XYDivisor:
+    """Divisor Value for scaling grid lengths"""
     def __get__(self, obj, objtype=None):
         if obj.section3[4] in {0,1,203,205,32768,32769}:
             return obj._lldivisor
@@ -331,18 +347,21 @@ class XYDivisor:
         raise RuntimeError
 
 class ShapeOfEarth:
+    """[Shape of the Reference System](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-2.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section3[5],table='3.2')
     def __set__(self, obj, value):
         obj.section3[5] = value
 
 class EarthShape:
+    """Description of the shape of the Earth"""
     def __get__(self, obj, objtype=None):
         return obj._earthparams['shape']
     def __set__(self, obj, value):
         raise RuntimeError
 
 class EarthRadius:
+    """Radius of the Earth (Assumes "spherical")"""
     def __get__(self, obj, objtype=None):
         ep = obj._earthparams
         if ep['shape'] == 'spherical':
@@ -356,6 +375,7 @@ class EarthRadius:
         raise RuntimeError
 
 class EarthMajorAxis:
+    """Major Axis of the Earth (Assumes "oblate spheroid" or "ellipsoid")"""
     def __get__(self, obj, objtype=None):
         ep = obj._earthparams
         if ep['shape'] == 'spherical':
@@ -369,6 +389,7 @@ class EarthMajorAxis:
         raise RuntimeError
 
 class EarthMinorAxis:
+    """Minor Axis of the Earth (Assumes "oblate spheroid" or "ellipsoid")"""
     def __get__(self, obj, objtype=None):
         ep = obj._earthparams
         if ep['shape'] == 'spherical':
@@ -382,6 +403,7 @@ class EarthMinorAxis:
         raise RuntimeError
 
 class Nx:
+    """Number of grid points in the X-direction (generally East-West)"""
     def __get__(self, obj, objtype=None):
         return obj.section3[12]
     def __set__(self, obj, value):
@@ -389,6 +411,7 @@ class Nx:
         obj.section3[1] = value * obj.section3[13]
 
 class Ny:
+    """Number of grid points in the Y-direction (generally North-South)"""
     def __get__(self, obj, objtype=None):
         return obj.section3[13]
     def __set__(self, obj, value):
@@ -396,6 +419,7 @@ class Ny:
         obj.section3[1] = value * obj.section3[12]
 
 class ScanModeFlags:
+    """[Scanning Mode](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-4.shtml)"""
     _key = {0:18, 1:18, 10:15, 20:17, 30:17, 31:17, 40:18, 41:18, 90:16, 110:15, 203:18, 204:18, 205:18, 32768:18, 32769:18}
     def __get__(self, obj, objtype=None):
         if obj.gdtn == 50:
@@ -406,6 +430,7 @@ class ScanModeFlags:
         obj.section3[self._key[obj.gdtn]+5] = value
 
 class ResolutionAndComponentFlags:
+    """[Resolution and Component Flags](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-3.shtml)"""
     _key = {0:13, 1:13, 10:11, 20:11, 30:11, 31:11, 40:13, 41:13, 90:11, 110:11, 203:13, 204:13, 205:13, 32768:13, 32769:13}
     def __get__(self, obj, objtype=None):
         if obj.gdtn == 50:
@@ -416,6 +441,7 @@ class ResolutionAndComponentFlags:
         obj.section3[self._key[obj.gdtn]+5] = value
 
 class LatitudeFirstGridpoint:
+    """Latitude of first gridpoint"""
     _key = {0:11, 1:11, 10:9, 20:9, 30:9, 31:9, 40:11, 41:11, 110:9, 203:11, 204:11, 205:11, 32768:11, 32769:11}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -423,6 +449,7 @@ class LatitudeFirstGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeFirstGridpoint:
+    """Longitude of first gridpoint"""
     _key = {0:12, 1:12, 10:10, 20:10, 30:10, 31:10, 40:12, 41:12, 110:10, 203:12, 204:12, 205:12, 32768:12, 32769:12}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -430,6 +457,7 @@ class LongitudeFirstGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LatitudeLastGridpoint:
+    """Latitude of last gridpoint"""
     _key = {0:14, 1:14, 10:13, 40:14, 41:14, 203:14, 204:14, 205:14, 32768:14, 32769:19}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -437,6 +465,7 @@ class LatitudeLastGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeLastGridpoint:
+    """Longitude of last gridpoint"""
     _key = {0:15, 1:15, 10:14, 40:15, 41:15, 203:15, 204:15, 205:15, 32768:15, 32769:20}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -444,6 +473,7 @@ class LongitudeLastGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LatitudeCenterGridpoint:
+    """Latitude of center gridpoint"""
     _key = {32768:14, 32769:14}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -451,6 +481,7 @@ class LatitudeCenterGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeCenterGridpoint:
+    """Longitude of center gridpoint"""
     _key = {32768:15, 32769:15}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -458,6 +489,7 @@ class LongitudeCenterGridpoint:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class GridlengthXDirection:
+    """Grid lenth in the X-Direction"""
     _key = {0:16, 1:16, 10:17, 20:14, 30:14, 31:14, 40:16, 41:16, 203:16, 204:16, 205:16, 32768:16, 32769:16}
     def __get__(self, obj, objtype=None):
         return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dxsign
@@ -465,6 +497,7 @@ class GridlengthXDirection:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class GridlengthYDirection:
+    """Grid lenth in the Y-Direction"""
     _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
         return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dysign
@@ -472,6 +505,7 @@ class GridlengthYDirection:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
 
 class LatitudeSouthernPole:
+    """Latitude of the Southern Pole for a Rotated Lat/Lon Grid"""
     _key = {1:19, 30:20, 31:20, 41:19}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -479,6 +513,7 @@ class LatitudeSouthernPole:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class LongitudeSouthernPole:
+    """Longitude of the Southern Pole for a Rotated Lat/Lon Grid"""
     _key = {1:20, 30:21, 31:21, 41:20}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -486,6 +521,7 @@ class LongitudeSouthernPole:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class AnglePoleRotation:
+    """Angle of Pole Rotation for a Rotated Lat/Lon Grid"""
     _key = {1:21, 41:21}
     def __get__(self, obj, objtype=None):
         return obj.section3[self._key[obj.gdtn]+5]
@@ -493,6 +529,7 @@ class AnglePoleRotation:
         obj.section3[self._key[obj.gdtn]+5] = int(value)
 
 class LatitudeTrueScale:
+    """Latitude at which grid lengths are specified"""
     _key = {10:12, 20:12, 30:12, 31:12}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -500,6 +537,7 @@ class LatitudeTrueScale:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class GridOrientation:
+    """Longitude at which the grid is oriented"""
     _key = {10:16, 20:13, 30:13, 31:13}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -509,6 +547,7 @@ class GridOrientation:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class ProjectionCenterFlag:
+    """[Projection Center](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-5.shtml)"""
     _key = {20:16, 30:16, 31:16}
     def __get__(self, obj, objtype=None):
         return utils.int2bin(obj.section3[self._key[obj.gdtn]+5],output=list)[0]
@@ -516,6 +555,7 @@ class ProjectionCenterFlag:
         obj.section3[self._key[obj.gdtn]+5] = value
 
 class StandardLatitude1:
+    """First Standard Latitude (from the pole at which the secant cone cuts the sphere)"""
     _key = {30:18, 31:18}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -523,6 +563,7 @@ class StandardLatitude1:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class StandardLatitude2:
+    """Second Standard Latitude (from the pole at which the secant cone cuts the sphere)"""
     _key = {30:19, 31:19}
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._lldivisor
@@ -530,12 +571,14 @@ class StandardLatitude2:
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._lldivisor/obj._llscalefactor)
 
 class SpectralFunctionParameters:
+    """Spectral Function Parameters"""
     def __get__(self, obj, objtype=None):
         return obj.section3[0:3]
     def __set__(self, obj, value):
         obj.section3[0:3] = value[0:3]
 
 class ProjParameters:
+    """PROJ Parameters to define the reference system"""
     def __get__(self, obj, objtype=None):
         projparams = {}
         projparams['a'] = 1.0
@@ -591,6 +634,7 @@ class ProjParameters:
 
 @dataclass(init=False)
 class GridDefinitionTemplate0():
+    """[Grid Definition Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-0.shtml)"""
     _len = 19
     _num = 0
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -606,6 +650,7 @@ class GridDefinitionTemplate0():
 
 @dataclass(init=False)
 class GridDefinitionTemplate1():
+    """[Grid Definition Template 1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-1.shtml)"""
     _len = 22
     _num = 1
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -624,6 +669,7 @@ class GridDefinitionTemplate1():
 
 @dataclass(init=False)
 class GridDefinitionTemplate10():
+    """[Grid Definition Template 10](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-10.shtml)"""
     _len = 19
     _num = 10
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -642,6 +688,7 @@ class GridDefinitionTemplate10():
 
 @dataclass(init=False)
 class GridDefinitionTemplate20():
+    """[Grid Definition Template 20](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-20.shtml)"""
     _len = 18
     _num = 20
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -659,6 +706,7 @@ class GridDefinitionTemplate20():
 
 @dataclass(init=False)
 class GridDefinitionTemplate30():
+    """[Grid Definition Template 30](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-30.shtml)"""
     _len = 22
     _num = 30
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -680,6 +728,7 @@ class GridDefinitionTemplate30():
 
 @dataclass(init=False)
 class GridDefinitionTemplate31():
+    """[Grid Definition Template 31](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-31.shtml)"""
     _len = 22
     _num = 31
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -700,6 +749,7 @@ class GridDefinitionTemplate31():
 
 @dataclass(init=False)
 class GridDefinitionTemplate40():
+    """[Grid Definition Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-40.shtml)"""
     _len = 19
     _num = 40
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -715,6 +765,7 @@ class GridDefinitionTemplate40():
 
 @dataclass(init=False)
 class GridDefinitionTemplate41():
+    """[Grid Definition Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-41.shtml)"""
     _len = 22
     _num = 41
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -733,6 +784,7 @@ class GridDefinitionTemplate41():
 
 @dataclass(init=False)
 class GridDefinitionTemplate50():
+    """[Grid Definition Template 50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-50.shtml)"""
     _len = 5
     _num = 50
     spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
@@ -743,6 +795,7 @@ class GridDefinitionTemplate50():
 
 @dataclass(init=False)
 class GridDefinitionTemplate32768():
+    """[Grid Definition Template 32768](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-32768.shtml)"""
     _len = 19
     _num = 32768
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -758,6 +811,7 @@ class GridDefinitionTemplate32768():
 
 @dataclass(init=False)
 class GridDefinitionTemplate32769():
+    """[Grid Definition Template 32769](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-32769.shtml)"""
     _len = 19
     _num = 32769
     latitudeFirstGridpoint: float = field(init=False, repr=False, default=LatitudeFirstGridpoint())
@@ -787,12 +841,25 @@ _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     }
 
 def gdt_class_by_gdtn(gdtn):
+    """
+    Provides a Grid Definition Template class via the template number
+
+    Parameters
+    ----------
+    **`gdtn : int`**
+        Grid definition template number.
+
+    Returns
+    -------
+    Grid definition template class object (not an instance).
+    """
     return _gdt_by_gdtn[gdtn]
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 4 metadata.
 # ----------------------------------------------------------------------------------------
 class ProductDefinitionTemplateNumber:
+    """[Product Definition Template Number](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-0.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[1],table='4.0')
     def __set__(self, obj, value):
@@ -800,12 +867,14 @@ class ProductDefinitionTemplateNumber:
 
 #  since PDT begins at position 2 of section4, code written with +2 for added readability with grib2 documentation
 class ProductDefinitionTemplate:
+    """Product Definition Template"""
     def __get__(self, obj, objtype=None):
         return obj.section4[2:]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class ParameterCategory:
+    """[Parameter Category](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-1.shtml)"""
     _key = defaultdict(lambda: 0)
     def __get__(self, obj, objtype=None):
         return obj.section4[0+2]
@@ -813,6 +882,7 @@ class ParameterCategory:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ParameterNumber:
+    """[Parameter Number](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-2.shtml)"""
     _key = defaultdict(lambda: 1)
     def __get__(self, obj, objtype=None):
         return obj.section4[1+2]
@@ -820,30 +890,38 @@ class ParameterNumber:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class VarInfo:
+    """
+    Variable Information.  These are the metadata returned for a specific variable according
+    to discipline, parameter category, and parameter number.
+    """ 
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)
     def __set__(self, obj, value):
         raise RuntimeError
 
 class FullName:
+    """Full name of the Variable"""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class Units:
+    """Units of the Variable"""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[1]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class ShortName:
+    """ Short name of the variable (i.e. the variable abbreviation)"""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class TypeOfGeneratingProcess:
+    """[Type of Generating Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-3.shtml)"""
     _key = defaultdict(lambda: 2, {48:13})
     #_key = {0:2, 1:2, 2:2, 5:2, 6:2, 8:2, 9:2, 10:2, 11:2, 12:2, 15:2, 48:13}
     def __get__(self, obj, objtype=None):
@@ -852,6 +930,7 @@ class TypeOfGeneratingProcess:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class BackgroundGeneratingProcessIdentifier:
+    """Background Generating Process Identifier"""
     _key = defaultdict(lambda: 3, {48:14})
     #_key = {0:3, 1:3, 2:3, 5:3, 6:3, 8:3, 9:3, 10:3, 11:3, 12:3, 15:3, 48:14}
     def __get__(self, obj, objtype=None):
@@ -860,6 +939,7 @@ class BackgroundGeneratingProcessIdentifier:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class GeneratingProcess:
+    """[Generating Process](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablea.html)"""
     _key = defaultdict(lambda: 4, {48:15})
     #_key = {0:4, 1:4, 2:4, 5:4, 6:4, 8:4, 9:4, 10:4, 11:4, 12:4, 15:4, 48:15}
     def __get__(self, obj, objtype=None):
@@ -868,6 +948,7 @@ class GeneratingProcess:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class HoursAfterDataCutoff:
+    """Hours of observational data cutoff after reference time"""
     _key = defaultdict(lambda: 5, {48:16})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -875,6 +956,7 @@ class HoursAfterDataCutoff:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class MinutesAfterDataCutoff:
+    """Minutes of observational data cutoff after reference time"""
     _key = defaultdict(lambda: 6, {48:17})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -882,6 +964,7 @@ class MinutesAfterDataCutoff:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfForecastTime:
+    """[Units of Forecast Time](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-4.shtml)"""
     _key = defaultdict(lambda: 7, {48:18})
     #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
@@ -890,6 +973,7 @@ class UnitOfForecastTime:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ValueOfForecastTime:
+    """Value of forecast time in units defined by `UnitofForecastTime`"""
     _key = defaultdict(lambda: 8, {48:19})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -897,6 +981,7 @@ class ValueOfForecastTime:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class LeadTime:
+    """Forecast Lead Time. NOTE: This is a `datetime.timedelta` object."""
     def __get__(self, obj, objtype=None):
         return utils.get_leadtime(obj.section1,obj.section4[1],
                                   obj.section4[2:])
@@ -904,6 +989,7 @@ class LeadTime:
         raise NotImplementedError
 
 class FixedSfc1Info:
+    """Information of the first fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 9, {48:20})
     #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
@@ -914,6 +1000,7 @@ class FixedSfc1Info:
         raise NotImplementedError
 
 class FixedSfc2Info:
+    """Information of the seconds fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 12, {48:23})
     #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
@@ -924,6 +1011,7 @@ class FixedSfc2Info:
         raise NotImplementedError
 
 class TypeOfFirstFixedSurface:
+    """[Type of First Fixed Surface](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 9, {48:20})
     #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
@@ -932,6 +1020,7 @@ class TypeOfFirstFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfFirstFixedSurface:
+    """Scale Factor of First Fixed Surface"""
     _key = defaultdict(lambda: 10, {48:21})
     #_key = {0:10, 1:10, 2:10, 5:10, 6:10, 8:10, 9:10, 10:10, 11:10, 12:10, 15:10, 48:21}
     def __get__(self, obj, objtype=None):
@@ -940,6 +1029,7 @@ class ScaleFactorOfFirstFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfFirstFixedSurface:
+    """Scaled Value Of First Fixed Surface"""
     _key = defaultdict(lambda: 11, {48:22})
     #_key = {0:11, 1:11, 2:11, 5:11, 6:11, 8:11, 9:11, 10:11, 11:11, 12:11, 15:11, 48:22}
     def __get__(self, obj, objtype=None):
@@ -948,12 +1038,14 @@ class ScaledValueOfFirstFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfFirstFixedSurface:
+    """Units of First Fixed Surface"""
     def __get__(self, obj, objtype=None):
         return obj._fixedsfc1info[1]
     def __set__(self, obj, value):
         pass
 
 class ValueOfFirstFixedSurface:
+    """Value of First Fixed Surface"""
     def __get__(self, obj, objtype=None):
         return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/\
                             (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
@@ -961,6 +1053,7 @@ class ValueOfFirstFixedSurface:
         pass
 
 class TypeOfSecondFixedSurface:
+    """[Type of Second Fixed Surface](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 12, {48:23})
     #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
@@ -969,6 +1062,7 @@ class TypeOfSecondFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfSecondFixedSurface:
+    """Scale Factor of Second Fixed Surface"""
     _key = defaultdict(lambda: 13, {48:24})
     #_key = {0:13, 1:13, 2:13, 5:13, 6:13, 8:13, 9:13, 10:13, 11:13, 12:13, 15:13, 48:24}
     def __get__(self, obj, objtype=None):
@@ -977,6 +1071,7 @@ class ScaleFactorOfSecondFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfSecondFixedSurface:
+    """Scaled Value Of Second Fixed Surface"""
     _key = defaultdict(lambda: 14, {48:25})
     #_key = {0:14, 1:14, 2:14, 5:14, 6:14, 8:14, 9:14, 10:14, 11:14, 12:14, 15:14, 48:25}
     def __get__(self, obj, objtype=None):
@@ -985,12 +1080,14 @@ class ScaledValueOfSecondFixedSurface:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class UnitOfSecondFixedSurface:
+    """Units of Second Fixed Surface"""
     def __get__(self, obj, objtype=None):
         return obj._fixedsfc2info[1]
     def __set__(self, obj, value):
         pass
 
 class ValueOfSecondFixedSurface:
+    """Value of Second Fixed Surface"""
     def __get__(self, obj, objtype=None):
         return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/\
                             (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
@@ -998,12 +1095,14 @@ class ValueOfSecondFixedSurface:
         pass
 
 class Level:
+    """Level (same as provided by [wgrib2](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c))"""
     def __get__(self, obj, objtype=None):
         return tables.get_wgrib2_level_string(obj.pdtn,obj.section4[2:])
     def __set__(self, obj, value):
         pass
 
 class TypeOfEnsembleForecast:
+    """[Type of Ensemble Forecast](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-6.shtml)"""
     _key = {1:15, 11:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1013,6 +1112,7 @@ class TypeOfEnsembleForecast:
         obj.section4[self._key[pdtn]+2] = value
 
 class PerturbationNumber:
+    """Ensemble Perturbation Number"""
     _key = {1:16, 11:16}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1022,6 +1122,7 @@ class PerturbationNumber:
         obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfEnsembleForecasts:
+    """Total Number of Ensemble Forecasts"""
     _key = {1:17, 2:16, 11:17, 12:16}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1031,6 +1132,7 @@ class NumberOfEnsembleForecasts:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfDerivedForecast:
+    """[Type of Derived Forecast](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-7.shtml)"""
     _key = {2:15, 12:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1040,6 +1142,7 @@ class TypeOfDerivedForecast:
         obj.section4[self._key[pdtn]+2] = value
 
 class ForecastProbabilityNumber:
+    """Forecast Probability Number"""
     _key = {5:15, 9:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1049,6 +1152,7 @@ class ForecastProbabilityNumber:
         obj.section4[self._key[pdtn]+2] = value
 
 class TotalNumberOfForecastProbabilities:
+    """Total Number of Forecast Probabilities"""
     _key = {5:16, 9:16}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1058,6 +1162,7 @@ class TotalNumberOfForecastProbabilities:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfProbability:
+    """[Type of Probability](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-9.shtml)"""
     _key = {5:17, 9:17}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1067,6 +1172,7 @@ class TypeOfProbability:
         obj.section4[self._key[pdtn]+2] = value
 
 class ScaleFactorOfThresholdLowerLimit:
+    """Scale Factor of Threshold Lower Limit"""
     _key = {5:18, 9:18}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1076,6 +1182,7 @@ class ScaleFactorOfThresholdLowerLimit:
         obj.section4[self._key[pdtn]+2] = value
 
 class ScaledValueOfThresholdLowerLimit:
+    """Scaled Value of Threshold Lower Limit"""
     _key = {5:19, 9:19}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1085,6 +1192,7 @@ class ScaledValueOfThresholdLowerLimit:
         obj.section4[self._key[pdtn]+2] = value
 
 class ScaleFactorOfThresholdUpperLimit:
+    """Scale Factor of Threshold Upper Limit"""
     _key = {5:20, 9:20}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1094,6 +1202,7 @@ class ScaleFactorOfThresholdUpperLimit:
         obj.section4[self._key[pdtn]+2] = value
 
 class ScaledValueOfThresholdUpperLimit:
+    """Scaled Value of Threshold Upper Limit"""
     _key = {5:21, 9:21}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1103,6 +1212,7 @@ class ScaledValueOfThresholdUpperLimit:
         obj.section4[self._key[pdtn]+2] = value
 
 class ThresholdLowerLimit:
+    """Threshold Lower Limit"""
     def __get__(self, obj, objtype=None):
         if obj.section4[18+2] == -127 and \
            obj.section4[19+2] == 255:
@@ -1113,6 +1223,7 @@ class ThresholdLowerLimit:
         pass
 
 class ThresholdUpperLimit:
+    """Threshold Upper Limit"""
     def __get__(self, obj, objtype=None):
         if obj.section4[20+2] == -127 and \
            obj.section4[21+2] == 255:
@@ -1123,12 +1234,14 @@ class ThresholdUpperLimit:
         pass
 
 class Threshold:
+    """Threshold string (same as [wgrib2](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Prob.c))"""
     def __get__(self, obj, objtype=None):
         return utils.get_wgrib2_prob_string(*obj.section4[17+2:22+2])
     def __set__(self, obj, value):
         pass
 
 class PercentileValue:
+    """Percentile Value"""
     _key = {6:15, 10:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1138,6 +1251,7 @@ class PercentileValue:
         obj.section4[self._key[pdtn]+2] = value
 
 class YearOfEndOfTimePeriod:
+    """Year of End of Forecast Time Period"""
     _key = {8:15, 9:22, 10:16, 11:18, 12:17}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1147,6 +1261,7 @@ class YearOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class MonthOfEndOfTimePeriod:
+    """Month Year of End of Forecast Time Period"""
     _key = {8:16, 9:23, 10:17, 11:19, 12:18}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1156,6 +1271,7 @@ class MonthOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class DayOfEndOfTimePeriod:
+    """Day Year of End of Forecast Time Period"""
     _key = {8:17, 9:24, 10:18, 11:20, 12:19}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1165,6 +1281,7 @@ class DayOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class HourOfEndOfTimePeriod:
+    """Hour Year of End of Forecast Time Period"""
     _key = {8:18, 9:25, 10:19, 11:21, 12:20}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1174,6 +1291,7 @@ class HourOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class MinuteOfEndOfTimePeriod:
+    """Minute Year of End of Forecast Time Period"""
     _key = {8:19, 9:26, 10:20, 11:22, 12:21}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1183,6 +1301,7 @@ class MinuteOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class SecondOfEndOfTimePeriod:
+    """Second Year of End of Forecast Time Period"""
     _key = {8:20, 9:27, 10:21, 11:23, 12:22}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1192,12 +1311,14 @@ class SecondOfEndOfTimePeriod:
         obj.section4[self._key[pdtn]+2] = value
 
 class Duration:
+    """Duration of time period. NOTE: This is a `datetime.timedelta` object."""
     def __get__(self, obj, objtype=None):
         return utils.get_duration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
         pass
 
 class ValidDate:
+    """Valid Date of the forecast. NOTE: This is a `datetime.datetime` object."""
     _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1210,6 +1331,7 @@ class ValidDate:
         pass
 
 class NumberOfTimeRanges:
+    """Number of time ranges specifications describing the time intervals used to calculate the statistically-processed field"""
     _key = {8:21, 9:28, 10:22, 11:24, 12:23}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1219,6 +1341,7 @@ class NumberOfTimeRanges:
         obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfMissingValues:
+    """Total number of data values missing in statistical process"""
     _key = {8:22, 9:29, 10:23, 11:25, 12:24}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1228,6 +1351,7 @@ class NumberOfMissingValues:
         obj.section4[self._key[pdtn]+2] = value
 
 class StatisticalProcess:
+    """[Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-10.shtml)"""
     _key = {8:23, 9:30, 10:24, 11:26, 12:25, 15:15}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1237,6 +1361,7 @@ class StatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfTimeIncrementOfStatisticalProcess:
+    """[Type of Time Increment of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
     _key = {8:24, 9:31, 10:25, 11:27, 12:26}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1246,6 +1371,7 @@ class TypeOfTimeIncrementOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfStatisticalProcess:
+    """Unit of Time Range of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
     _key = {8:25, 9:32, 10:26, 11:28, 12:27}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1255,6 +1381,7 @@ class UnitOfTimeRangeOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class TimeRangeOfStatisticalProcess:
+    """Time Range of Statistical Process"""
     _key = {8:26, 9:33, 10:27, 11:29, 12:28}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1264,6 +1391,7 @@ class TimeRangeOfStatisticalProcess:
         obj.section4[self._key[pdtn]+2] = value
 
 class UnitOfTimeRangeOfSuccessiveFields:
+    """[Unit of Time Range of Successive Fields](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-4.shtml)"""
     _key = {8:27, 9:34, 10:28, 11:30, 12:29}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1273,6 +1401,7 @@ class UnitOfTimeRangeOfSuccessiveFields:
         obj.section4[self._key[pdtn]+2] = value
 
 class TimeIncrementOfSuccessiveFields:
+    """Time Increment of Successive Fields"""
     _key = {8:28, 9:35, 10:29, 11:31, 12:30}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1282,6 +1411,7 @@ class TimeIncrementOfSuccessiveFields:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfStatisticalProcessing:
+    """[Type of Statistical Processing](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-15.shtml)"""
     _key = {15:16}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1291,6 +1421,7 @@ class TypeOfStatisticalProcessing:
         obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfDataPointsForSpatialProcessing:
+    """Number of Data Points for Spatial Processing"""
     _key = {15:17}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1300,6 +1431,7 @@ class NumberOfDataPointsForSpatialProcessing:
         obj.section4[self._key[pdtn]+2] = value
 
 class TypeOfAerosol:
+    """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
     _key = {48:2}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.233')
@@ -1307,6 +1439,7 @@ class TypeOfAerosol:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class TypeOfIntervalForAerosolSize:
+    """[Type of Interval for Aerosol Size](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-91.shtml)"""
     _key = {48:3}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.91')
@@ -1314,6 +1447,7 @@ class TypeOfIntervalForAerosolSize:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfFirstSize:
+    """Scale Factor of First Size"""
     _key = {48:4}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1321,6 +1455,7 @@ class ScaleFactorOfFirstSize:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfFirstSize:
+    """Scaled Value of First Size"""
     _key = {48:5}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1328,6 +1463,7 @@ class ScaledValueOfFirstSize:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfSecondSize:
+    """Scale Factor of Second Size"""
     _key = {48:6}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1335,6 +1471,7 @@ class ScaleFactorOfSecondSize:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfSecondSize:
+    """Scaled Value of Second Size"""
     _key = {48:7}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1342,6 +1479,7 @@ class ScaledValueOfSecondSize:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class TypeOfIntervalForAerosolWavelength:
+    """[Type of Interval for Aerosol Wavelength](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-91.shtml)"""
     _key = {48:8}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.91')
@@ -1349,6 +1487,7 @@ class TypeOfIntervalForAerosolWavelength:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfFirstWavelength:
+    """Scale Factor of First Wavelength"""
     _key = {48:9}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1356,6 +1495,7 @@ class ScaleFactorOfFirstWavelength:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfFirstWavelength:
+    """Scaled Value of First Wavelength"""
     _key = {48:10}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1363,6 +1503,7 @@ class ScaledValueOfFirstWavelength:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaleFactorOfSecondWavelength:
+    """Scale Factor of Second Wavelength"""
     _key = {48:11}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1370,6 +1511,7 @@ class ScaleFactorOfSecondWavelength:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ScaledValueOfSecondWavelength:
+    """Scaled Value of Second Wavelength"""
     _key = {48:12}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -1378,6 +1520,7 @@ class ScaledValueOfSecondWavelength:
 
 @dataclass(init=False)
 class ProductDefinitionTemplate0():
+    """[Product Definition Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-0.shtml)"""
     _len = 15
     _num = 0
     parameterCategory: int = field(init=False,repr=False,default=ParameterCategory())
@@ -1402,6 +1545,7 @@ class ProductDefinitionTemplate0():
 
 @dataclass(init=False)
 class ProductDefinitionTemplate1(ProductDefinitionTemplate0):
+    """[Product Definition Template 1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-1.shtml)"""
     _len = 18
     _num = 1
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -1414,6 +1558,7 @@ class ProductDefinitionTemplate1(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate2(ProductDefinitionTemplate0):
+    """[Product Definition Template 2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-2.shtml)"""
     _len = 17
     _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
@@ -1425,6 +1570,7 @@ class ProductDefinitionTemplate2(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate5(ProductDefinitionTemplate0):
+    """[Product Definition Template 5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-5.shtml)"""
     _len = 22
     _num = 5
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
@@ -1444,6 +1590,7 @@ class ProductDefinitionTemplate5(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate6(ProductDefinitionTemplate0):
+    """[Product Definition Template 6](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-6.shtml)"""
     _len = 16
     _num = 6
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
@@ -1454,6 +1601,7 @@ class ProductDefinitionTemplate6(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate8(ProductDefinitionTemplate0):
+    """[Product Definition Template 8](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-8.shtml)"""
     _len = 29
     _num = 8
     yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
@@ -1477,6 +1625,7 @@ class ProductDefinitionTemplate8(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate9(ProductDefinitionTemplate0):
+    """[Product Definition Template 9](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-9.shtml)"""
     _len = 36
     _num = 9
     forecastProbabilityNumber: int = field(init=False, repr=False, default=ForecastProbabilityNumber())
@@ -1510,6 +1659,7 @@ class ProductDefinitionTemplate9(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate10(ProductDefinitionTemplate0):
+    """[Product Definition Template 10](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-10.shtml)"""
     _len = 30
     _num = 10
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
@@ -1534,6 +1684,7 @@ class ProductDefinitionTemplate10(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate11(ProductDefinitionTemplate0):
+    """[Product Definition Template 11](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-11.shtml)"""
     _len = 32
     _num = 11
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -1560,6 +1711,7 @@ class ProductDefinitionTemplate11(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate12(ProductDefinitionTemplate0):
+    """[Product Definition Template 12](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-12.shtml)"""
     _len = 31
     _num = 12
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
@@ -1585,6 +1737,7 @@ class ProductDefinitionTemplate12(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate15(ProductDefinitionTemplate0):
+    """[Product Definition Template 15](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-15.shtml)"""
     _len = 18
     _num = 15
     statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
@@ -1597,6 +1750,7 @@ class ProductDefinitionTemplate15(ProductDefinitionTemplate0):
 
 @dataclass(init=False)
 class ProductDefinitionTemplate48(ProductDefinitionTemplate0):
+    """[Product Definition Template 48](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-48.shtml)"""
     _len = 26
     _num = 48
     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
@@ -1631,72 +1785,95 @@ _pdt_by_pdtn = {
     }
 
 def pdt_class_by_pdtn(pdtn):
+    """
+    Provides a Product Definition Template class via the template number
+
+    Parameters
+    ----------
+    **`pdtn : int`**
+        Product definition template number.
+
+    Returns
+    -------
+    Product definition template class object (not an instance).
+    """
     return _pdt_by_pdtn[pdtn]
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 5 metadata.
 # ----------------------------------------------------------------------------------------
 class NumberOfPackedValues:
+    """Number of Packed Values"""
     def __get__(self, obj, objtype=None):
         return obj.section5[0]
     def __set__(self, obj, value):
         pass
 
 class DataRepresentationTemplateNumber:
+    """[Data Representation Template Number](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-0.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[1],table='5.0')
     def __set__(self, obj, value):
         pass
 
 class DataRepresentationTemplate:
+    """Data Representation Template"""
     def __get__(self, obj, objtype=None):
         return obj.section5[2:]
     def __set__(self, obj, value):
         raise NotImplementedError
 
 class RefValue:
+    """Reference Value (represented as an IEEE 32-bit floating point value)"""
     def __get__(self, obj, objtype=None):
         return utils.ieee_int_to_float(obj.section5[0+2])
     def __set__(self, obj, value):
         pass
 
 class BinScaleFactor:
+    """Binary Scale Factor"""
     def __get__(self, obj, objtype=None):
         return obj.section5[1+2]
     def __set__(self, obj, value):
         obj.section5[1+2] = value
 
 class DecScaleFactor:
+    """Decimal Scale Factor"""
     def __get__(self, obj, objtype=None):
         return obj.section5[2+2]
     def __set__(self, obj, value):
         obj.section5[2+2] = value
 
 class NBitsPacking:
+    """Minimum number of bits for packing"""
     def __get__(self, obj, objtype=None):
         return obj.section5[3+2]
     def __set__(self, obj, value):
         obj.section5[3+2] = value
 
 class TypeOfValues:
+    """[Type of Original Field Values](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-1.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[4+2],table='5.1')
     def __set__(self, obj, value):
         obj.section5[4+2] = value
 
 class GroupSplittingMethod:
+    """[Group Splitting Method](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-4.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[5+2],table='5.4')
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
 class TypeOfMissingValueManagement:
+    """[Type of Missing Value Management](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-5.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[6+2],table='5.5')
     def __set__(self, obj, value):
         obj.section5[6+2] = value
 
 class PriMissingValue:
+    """Primary Missing Value"""
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj.section5[7+2]) if obj.section5[6+2] in {1,2} and obj.section5[7+2] != 255 else None
@@ -1710,6 +1887,7 @@ class PriMissingValue:
         obj.section5[6+2] = 1
 
 class SecMissingValue:
+    """Secondary Missing Value"""
     def __get__(self, obj, objtype=None):
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj.section5[8+2]) if obj.section5[6+2] in {1,2} and obj.section5[8+2] != 255 else None
@@ -1723,96 +1901,112 @@ class SecMissingValue:
         obj.section5[6+2] = 2
 
 class NGroups:
+    """Number of Groups"""
     def __get__(self, obj, objtype=None):
         return obj.section5[9+2]
     def __set__(self, obj, value):
         pass
 
 class RefGroupWidth:
+    """Reference Group Width"""
     def __get__(self, obj, objtype=None):
         return obj.section5[10+2]
     def __set__(self, obj, value):
         pass
 
 class NBitsGroupWidth:
+    """Number of bits for Group Width"""
     def __get__(self, obj, objtype=None):
         return obj.section5[11+2]
     def __set__(self, obj, value):
         pass
 
 class RefGroupLength:
+    """Reference Group Length"""
     def __get__(self, obj, objtype=None):
         return obj.section5[12+2]
     def __set__(self, obj, value):
         pass
 
 class GroupLengthIncrement:
+    """Group Length Increment"""
     def __get__(self, obj, objtype=None):
         return obj.section5[13+2]
     def __set__(self, obj, value):
         pass
 
 class LengthOfLastGroup:
+    """Length of Last Group"""
     def __get__(self, obj, objtype=None):
         return obj.section5[14+2]
     def __set__(self, obj, value):
         pass
 
 class NBitsScaledGroupLength:
+    """Number of bits of Scaled Group Length"""
     def __get__(self, obj, objtype=None):
         return obj.section5[15+2]
     def __set__(self, obj, value):
         pass
 
 class SpatialDifferenceOrder:
+    """[Spatial Difference Order](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-6.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[16+2],table='5.6')
     def __set__(self, obj, value):
         obj.section5[16+2] = value
 
 class NBytesSpatialDifference:
+    """Number of bytes for Spatial Differencing"""
     def __get__(self, obj, objtype=None):
         return obj.section5[17+2]
     def __set__(self, obj, value):
         pass
 
 class Precision:
+    """[Precision for IEEE Floating Point Data](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-7.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[0+2],table='5.7')
     def __set__(self, obj, value):
         obj.section5[0+2] = value
 
 class TypeOfCompression:
+    """[Type of Compression](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table5-40.shtml)"""
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section5[5+2],table='5.40')
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
 class TargetCompressionRatio:
+    """Target Compression Ratio"""
     def __get__(self, obj, objtype=None):
         return obj.section5[6+2]
     def __set__(self, obj, value):
         pass
 
 class RealOfCoefficient:
+    """Real of Coefficient"""
     def __get__(self, obj, objtype=None):
         return utils.ieee_int_to_float(obj.section5[4+2])
     def __set__(self, obj, value):
         obj.section5[4+2] = utils.ieee_float_to_int(float(value))
 
 class CompressionOptionsMask:
+    """Compression Options Mask for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
         return obj.section5[5+2]
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
 class BlockSize:
+    """Block Size for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
         return obj.section5[6+2]
     def __set__(self, obj, value):
         obj.section5[6+2] = value
 
 class RefSampleInterval:
+    """Reference Sample Interval for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
         return obj.section5[7+2]
     def __set__(self, obj, value):
@@ -1820,6 +2014,7 @@ class RefSampleInterval:
 
 @dataclass(init=False)
 class DataRepresentationTemplate0():
+    """[Data Representation Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-0.shtml)"""
     _len = 5
     _num = 0
     _packingScheme = 'simple'
@@ -1834,6 +2029,7 @@ class DataRepresentationTemplate0():
 
 @dataclass(init=False)
 class DataRepresentationTemplate2():
+    """[Data Representation Template 2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-2.shtml)"""
     _len = 16
     _num = 2
     _packingScheme = 'complex'
@@ -1859,6 +2055,7 @@ class DataRepresentationTemplate2():
 
 @dataclass(init=False)
 class DataRepresentationTemplate3():
+    """[Data Representation Template 3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-3.shtml)"""
     _len = 18
     _num = 3
     _packingScheme = 'complex-spdiff'
@@ -1886,6 +2083,7 @@ class DataRepresentationTemplate3():
 
 @dataclass(init=False)
 class DataRepresentationTemplate4():
+    """[Data Representation Template 4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-4.shtml)"""
     _len = 1
     _num = 4
     _packingScheme = 'ieee-float'
@@ -1897,6 +2095,7 @@ class DataRepresentationTemplate4():
 
 @dataclass(init=False)
 class DataRepresentationTemplate40():
+    """[Data Representation Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-40.shtml)"""
     _len = 7
     _num = 40
     _packingScheme = 'jpeg'
@@ -1913,6 +2112,7 @@ class DataRepresentationTemplate40():
 
 @dataclass(init=False)
 class DataRepresentationTemplate41():
+    """[Data Representation Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-41.shtml)"""
     _len = 5
     _num = 41
     _packingScheme = 'png'
@@ -1927,6 +2127,7 @@ class DataRepresentationTemplate41():
 
 @dataclass(init=False)
 class DataRepresentationTemplate42():
+    """[Data Representation Template 42](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-42.shtml)"""
     _len = 8
     _num = 42
     _packingScheme = 'aec'
@@ -1944,6 +2145,7 @@ class DataRepresentationTemplate42():
 
 @dataclass(init=False)
 class DataRepresentationTemplate50():
+    """[Data Representation Template 50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml)"""
     _len = 5
     _num = 0
     _packingScheme = 'spectral-simple'
@@ -1969,4 +2171,16 @@ _drt_by_drtn = {
     }
 
 def drt_class_by_drtn(drtn):
+    """
+    Provides a Data Representation Template class via the template number
+
+    Parameters
+    ----------
+    **`drtn : int`**
+        Data Representation template number.
+
+    Returns
+    -------
+    Data Representation template class object (not an instance).
+    """
     return _drt_by_drtn[drtn]

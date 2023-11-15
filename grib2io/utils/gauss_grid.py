@@ -1,8 +1,8 @@
 """
 Tools for working with Gaussian grids.
-"""
 
-# Adopted from: https://gist.github.com/ajdawson/b64d24dfac618b91974f
+Adopted from: https://gist.github.com/ajdawson/b64d24dfac618b91974f
+"""
 from __future__ import (absolute_import, division, print_function)
 
 import functools
@@ -34,13 +34,12 @@ def gaussian_latitudes(nlat):
 
     Parameters
     ----------
-
-    **`nlat`**: The number of latitudes in the Gaussian grid.
+    **`nlat : int`**
+        The number of latitudes in the Gaussian grid.
 
     Returns
     -------
-
-    Numpy array of latitudes (in degrees) with a length of `nlat`.
+    `numpy.ndarray` of latitudes (in degrees) with a length of `nlat`.
     """
     if abs(int(nlat)) != nlat:
         raise ValueError('nlat must be a non-negative integer')

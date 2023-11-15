@@ -20,14 +20,16 @@ def get_table(table, expand=False):
 
     Parameters
     ----------
-    **`table`**: Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value
-    representing the product discipline (e.g. '4.1.0').
+    **`table : str`**
+        Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value
+        representing the product discipline (e.g. '4.1.0').
 
-    **`expand`**: If `True`, expand output dictionary where keys are a range.
+    **`expand : bool, optional`**
+        If `True`, expand output dictionary where keys are a range.
 
     Returns
     -------
-    **`dict`**
+    Table as a **`dict`**.
     """
     if len(table) == 3 and table == '4.1':
         raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
@@ -56,11 +58,14 @@ def get_value_from_table(value, table, expand=False):
 
     Parameters
     ----------
-    **`value`**: `int` or `str` code table value.
+    **`value : int or str`**
+        Code table value.
 
-    **`table`**: `str` code table number.
+    **`table : str`**
+        Code table number.
 
-    **`expand`**: If `True`, expand output dictionary where keys are a range.
+    **`expand : bool, optional`**
+        If `True`, expand output dictionary where keys are a range.
 
     Returns
     -------
@@ -87,22 +92,26 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
 
     Parameters
     ----------
-    **`discipline`**: `int` or `str` of Discipline code value of a GRIB2 message.
+    **`discipline : int or str`**
+        Discipline code value of a GRIB2 message.
 
-    **`parmcat`**: `int` or `str` of Parameter Category value of a GRIB2 message.
+    **`parmcat : int or str`**
+        Parameter Category value of a GRIB2 message.
 
-    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.
+    **`parmnum : int or str`**
+        Parameter Number value of a GRIB2 message.
 
-    **`isNDFD`**: If `True`, signals function to try to get variable information
-    from the supplemental NDFD tables.
+    **`isNDFD : bool, optional`**
+        If `True`, signals function to try to get variable information from 
+        the supplemental NDFD tables.
 
     Returns
     -------
-    **`list`**: containing variable information. "Unknown" is given for item of
+    **`list`** containing variable information. "Unknown" is given for item of
     information if variable is not found.
-    - list[0] = full name
-    - list[1] = units
-    - list[2] = short name (abbreviated name)
+        - list[0] = full name
+        - list[1] = units
+        - list[2] = short name (abbreviated name)
     """
     if isNDFD:
         try:
@@ -132,11 +141,14 @@ def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
 
     Parameters
     ----------
-    **`discipline : int`** GRIB2 discipline code value.
+    **`discipline : int`**
+        GRIB2 discipline code value.
 
-    **`parmcat : int`** GRIB2 parameter category value.
+    **`parmcat : int`**
+        GRIB2 parameter category value.
 
-    **`parmnum`**: `int` or `str` of Parameter Number value of a GRIB2 message.
+    **`parmnum : int or str`**
+        Parameter Number value of a GRIB2 message.
 
     Returns
     -------
@@ -180,7 +192,8 @@ def get_metadata_from_shortname(shortname):
 
     Parameters
     ----------
-    **`shortname : str`** GRIB2 variable shortName.
+    **`shortname : str`**
+        GRIB2 variable shortName.
 
     Returns
     -------
@@ -200,7 +213,7 @@ def get_metadata_from_shortname(shortname):
     return metadata
 
 
-def get_wgrib2_level_string(pdtn,pdt):
+def get_wgrib2_level_string(pdtn, pdt):
     """
     Return a string that describes the level or layer of the GRIB2 message. The
     format and language of the string is an exact replica of how wgrib2 produces
@@ -212,13 +225,15 @@ def get_wgrib2_level_string(pdtn,pdt):
 
     Parameters
     ----------
-    **`pdtn`**: GRIB2 Product Definition Template Number
+    **`pdtn :  int`**
+        GRIB2 Product Definition Template Number
 
-    **`pdt`**: sequence containing GRIB2 Product Definition Template (Section 4).
+    **`pdt : list or array_like`**
+        Sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
-    **`str`**: wgrib2-formatted level/layer string.
+    wgrib2-formatted level/layer string.
     """
     if pdtn == 48:
         idxs = slice(20,26)
