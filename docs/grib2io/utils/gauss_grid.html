@@ -50,6 +50,8 @@
 <a href="./../../grib2io.html">grib2io</a><wbr>.<a href="./../utils.html">utils</a><wbr>.gauss_grid    </h1>
 
                         <div class="docstring"><p>Tools for working with Gaussian grids.</p>
+
+<p>Adopted from: <a href="https://gist.github.com/ajdawson/b64d24dfac618b91974f">https://gist.github.com/ajdawson/b64d24dfac618b91974f</a></p>
 </div>
 
                         <input id="mod-gauss_grid-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
@@ -58,9 +60,9 @@
 
                         <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="sd">Tools for working with Gaussian grids.</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="sd">&quot;&quot;&quot;</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="c1"># Adopted from: https://gist.github.com/ajdawson/b64d24dfac618b91974f</span>
+</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a>
+</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="sd">Adopted from: https://gist.github.com/ajdawson/b64d24dfac618b91974f</span>
+</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="sd">&quot;&quot;&quot;</span>
 </span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="p">(</span><span class="n">absolute_import</span><span class="p">,</span> <span class="n">division</span><span class="p">,</span> <span class="n">print_function</span><span class="p">)</span>
 </span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a>
 </span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="kn">import</span> <span class="nn">functools</span>
@@ -92,39 +94,38 @@
 </span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a>
 </span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="sd">    Parameters</span>
 </span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="sd">    ----------</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">    **`nlat`**: The number of latitudes in the Gaussian grid.</span>
+</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="sd">    **`nlat : int`**</span>
+</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="sd">        The number of latitudes in the Gaussian grid.</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a>
 </span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="sd">    Returns</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="sd">    -------</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="sd">    Numpy array of latitudes (in degrees) with a length of `nlat`.</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nlat</span><span class="p">))</span> <span class="o">!=</span> <span class="n">nlat</span><span class="p">:</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;nlat must be a non-negative integer&#39;</span><span class="p">)</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>    <span class="c1"># Create the coefficients of the Legendre polynomial and construct the</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="c1"># companion matrix:</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>    <span class="n">cs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nlat</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>    <span class="n">cm</span> <span class="o">=</span> <span class="n">legcompanion</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>    <span class="c1"># Compute the eigenvalues of the companion matrix (the roots of the</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="c1"># Legendre polynomial) taking advantage of the fact that the matrix is</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>    <span class="c1"># symmetric:</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="n">roots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="c1"># Improve the roots by one application of Newton&#39;s method, using the</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>    <span class="c1"># solved root as the initial guess:</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>    <span class="n">fx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>    <span class="n">fpx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">legder</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>    <span class="n">roots</span> <span class="o">-=</span> <span class="n">fx</span> <span class="o">/</span> <span class="n">fpx</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>    <span class="c1"># The roots should exhibit symmetry, but with a sign change, so make sure</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>    <span class="c1"># this is the case:</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="p">(</span><span class="n">roots</span> <span class="o">-</span> <span class="n">roots</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>    <span class="c1"># Convert the roots from the interval [-1, 1] to latitude values on the</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>    <span class="c1"># interval [-90, 90] degrees:</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>    <span class="c1"># Flip latitudes such that it is oriented from North to South [90, -90]</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a>    <span class="k">return</span> <span class="n">latitudes</span>
+</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="sd">    `numpy.ndarray` of latitudes (in degrees) with a length of `nlat`.</span>
+</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a>    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nlat</span><span class="p">))</span> <span class="o">!=</span> <span class="n">nlat</span><span class="p">:</span>
+</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;nlat must be a non-negative integer&#39;</span><span class="p">)</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a>    <span class="c1"># Create the coefficients of the Legendre polynomial and construct the</span>
+</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a>    <span class="c1"># companion matrix:</span>
+</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a>    <span class="n">cs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nlat</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a>    <span class="n">cm</span> <span class="o">=</span> <span class="n">legcompanion</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a>    <span class="c1"># Compute the eigenvalues of the companion matrix (the roots of the</span>
+</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a>    <span class="c1"># Legendre polynomial) taking advantage of the fact that the matrix is</span>
+</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a>    <span class="c1"># symmetric:</span>
+</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
+</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a>    <span class="n">roots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a>    <span class="c1"># Improve the roots by one application of Newton&#39;s method, using the</span>
+</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a>    <span class="c1"># solved root as the initial guess:</span>
+</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a>    <span class="n">fx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a>    <span class="n">fpx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">legder</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
+</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a>    <span class="n">roots</span> <span class="o">-=</span> <span class="n">fx</span> <span class="o">/</span> <span class="n">fpx</span>
+</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a>    <span class="c1"># The roots should exhibit symmetry, but with a sign change, so make sure</span>
+</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a>    <span class="c1"># this is the case:</span>
+</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="p">(</span><span class="n">roots</span> <span class="o">-</span> <span class="n">roots</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.</span>
+</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a>    <span class="c1"># Convert the roots from the interval [-1, 1] to latitude values on the</span>
+</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a>    <span class="c1"># interval [-90, 90] degrees:</span>
+</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
+</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a>    <span class="c1"># Flip latitudes such that it is oriented from North to South [90, -90]</span>
+</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span>
+</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a>    <span class="k">return</span> <span class="n">latitudes</span>
 </span></pre></div>
 
 
@@ -147,39 +148,38 @@
 </span><span id="gaussian_latitudes-35"><a href="#gaussian_latitudes-35"><span class="linenos">35</span></a>
 </span><span id="gaussian_latitudes-36"><a href="#gaussian_latitudes-36"><span class="linenos">36</span></a><span class="sd">    Parameters</span>
 </span><span id="gaussian_latitudes-37"><a href="#gaussian_latitudes-37"><span class="linenos">37</span></a><span class="sd">    ----------</span>
-</span><span id="gaussian_latitudes-38"><a href="#gaussian_latitudes-38"><span class="linenos">38</span></a>
-</span><span id="gaussian_latitudes-39"><a href="#gaussian_latitudes-39"><span class="linenos">39</span></a><span class="sd">    **`nlat`**: The number of latitudes in the Gaussian grid.</span>
+</span><span id="gaussian_latitudes-38"><a href="#gaussian_latitudes-38"><span class="linenos">38</span></a><span class="sd">    **`nlat : int`**</span>
+</span><span id="gaussian_latitudes-39"><a href="#gaussian_latitudes-39"><span class="linenos">39</span></a><span class="sd">        The number of latitudes in the Gaussian grid.</span>
 </span><span id="gaussian_latitudes-40"><a href="#gaussian_latitudes-40"><span class="linenos">40</span></a>
 </span><span id="gaussian_latitudes-41"><a href="#gaussian_latitudes-41"><span class="linenos">41</span></a><span class="sd">    Returns</span>
 </span><span id="gaussian_latitudes-42"><a href="#gaussian_latitudes-42"><span class="linenos">42</span></a><span class="sd">    -------</span>
-</span><span id="gaussian_latitudes-43"><a href="#gaussian_latitudes-43"><span class="linenos">43</span></a>
-</span><span id="gaussian_latitudes-44"><a href="#gaussian_latitudes-44"><span class="linenos">44</span></a><span class="sd">    Numpy array of latitudes (in degrees) with a length of `nlat`.</span>
-</span><span id="gaussian_latitudes-45"><a href="#gaussian_latitudes-45"><span class="linenos">45</span></a><span class="sd">    &quot;&quot;&quot;</span>
-</span><span id="gaussian_latitudes-46"><a href="#gaussian_latitudes-46"><span class="linenos">46</span></a>    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nlat</span><span class="p">))</span> <span class="o">!=</span> <span class="n">nlat</span><span class="p">:</span>
-</span><span id="gaussian_latitudes-47"><a href="#gaussian_latitudes-47"><span class="linenos">47</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;nlat must be a non-negative integer&#39;</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-48"><a href="#gaussian_latitudes-48"><span class="linenos">48</span></a>    <span class="c1"># Create the coefficients of the Legendre polynomial and construct the</span>
-</span><span id="gaussian_latitudes-49"><a href="#gaussian_latitudes-49"><span class="linenos">49</span></a>    <span class="c1"># companion matrix:</span>
-</span><span id="gaussian_latitudes-50"><a href="#gaussian_latitudes-50"><span class="linenos">50</span></a>    <span class="n">cs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nlat</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-51"><a href="#gaussian_latitudes-51"><span class="linenos">51</span></a>    <span class="n">cm</span> <span class="o">=</span> <span class="n">legcompanion</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-52"><a href="#gaussian_latitudes-52"><span class="linenos">52</span></a>    <span class="c1"># Compute the eigenvalues of the companion matrix (the roots of the</span>
-</span><span id="gaussian_latitudes-53"><a href="#gaussian_latitudes-53"><span class="linenos">53</span></a>    <span class="c1"># Legendre polynomial) taking advantage of the fact that the matrix is</span>
-</span><span id="gaussian_latitudes-54"><a href="#gaussian_latitudes-54"><span class="linenos">54</span></a>    <span class="c1"># symmetric:</span>
-</span><span id="gaussian_latitudes-55"><a href="#gaussian_latitudes-55"><span class="linenos">55</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-56"><a href="#gaussian_latitudes-56"><span class="linenos">56</span></a>    <span class="n">roots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-</span><span id="gaussian_latitudes-57"><a href="#gaussian_latitudes-57"><span class="linenos">57</span></a>    <span class="c1"># Improve the roots by one application of Newton&#39;s method, using the</span>
-</span><span id="gaussian_latitudes-58"><a href="#gaussian_latitudes-58"><span class="linenos">58</span></a>    <span class="c1"># solved root as the initial guess:</span>
-</span><span id="gaussian_latitudes-59"><a href="#gaussian_latitudes-59"><span class="linenos">59</span></a>    <span class="n">fx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-60"><a href="#gaussian_latitudes-60"><span class="linenos">60</span></a>    <span class="n">fpx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">legder</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
-</span><span id="gaussian_latitudes-61"><a href="#gaussian_latitudes-61"><span class="linenos">61</span></a>    <span class="n">roots</span> <span class="o">-=</span> <span class="n">fx</span> <span class="o">/</span> <span class="n">fpx</span>
-</span><span id="gaussian_latitudes-62"><a href="#gaussian_latitudes-62"><span class="linenos">62</span></a>    <span class="c1"># The roots should exhibit symmetry, but with a sign change, so make sure</span>
-</span><span id="gaussian_latitudes-63"><a href="#gaussian_latitudes-63"><span class="linenos">63</span></a>    <span class="c1"># this is the case:</span>
-</span><span id="gaussian_latitudes-64"><a href="#gaussian_latitudes-64"><span class="linenos">64</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="p">(</span><span class="n">roots</span> <span class="o">-</span> <span class="n">roots</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.</span>
-</span><span id="gaussian_latitudes-65"><a href="#gaussian_latitudes-65"><span class="linenos">65</span></a>    <span class="c1"># Convert the roots from the interval [-1, 1] to latitude values on the</span>
-</span><span id="gaussian_latitudes-66"><a href="#gaussian_latitudes-66"><span class="linenos">66</span></a>    <span class="c1"># interval [-90, 90] degrees:</span>
-</span><span id="gaussian_latitudes-67"><a href="#gaussian_latitudes-67"><span class="linenos">67</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
-</span><span id="gaussian_latitudes-68"><a href="#gaussian_latitudes-68"><span class="linenos">68</span></a>    <span class="c1"># Flip latitudes such that it is oriented from North to South [90, -90]</span>
-</span><span id="gaussian_latitudes-69"><a href="#gaussian_latitudes-69"><span class="linenos">69</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span>
-</span><span id="gaussian_latitudes-70"><a href="#gaussian_latitudes-70"><span class="linenos">70</span></a>    <span class="k">return</span> <span class="n">latitudes</span>
+</span><span id="gaussian_latitudes-43"><a href="#gaussian_latitudes-43"><span class="linenos">43</span></a><span class="sd">    `numpy.ndarray` of latitudes (in degrees) with a length of `nlat`.</span>
+</span><span id="gaussian_latitudes-44"><a href="#gaussian_latitudes-44"><span class="linenos">44</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="gaussian_latitudes-45"><a href="#gaussian_latitudes-45"><span class="linenos">45</span></a>    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">nlat</span><span class="p">))</span> <span class="o">!=</span> <span class="n">nlat</span><span class="p">:</span>
+</span><span id="gaussian_latitudes-46"><a href="#gaussian_latitudes-46"><span class="linenos">46</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;nlat must be a non-negative integer&#39;</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-47"><a href="#gaussian_latitudes-47"><span class="linenos">47</span></a>    <span class="c1"># Create the coefficients of the Legendre polynomial and construct the</span>
+</span><span id="gaussian_latitudes-48"><a href="#gaussian_latitudes-48"><span class="linenos">48</span></a>    <span class="c1"># companion matrix:</span>
+</span><span id="gaussian_latitudes-49"><a href="#gaussian_latitudes-49"><span class="linenos">49</span></a>    <span class="n">cs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">nlat</span> <span class="o">+</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-50"><a href="#gaussian_latitudes-50"><span class="linenos">50</span></a>    <span class="n">cm</span> <span class="o">=</span> <span class="n">legcompanion</span><span class="p">(</span><span class="n">cs</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-51"><a href="#gaussian_latitudes-51"><span class="linenos">51</span></a>    <span class="c1"># Compute the eigenvalues of the companion matrix (the roots of the</span>
+</span><span id="gaussian_latitudes-52"><a href="#gaussian_latitudes-52"><span class="linenos">52</span></a>    <span class="c1"># Legendre polynomial) taking advantage of the fact that the matrix is</span>
+</span><span id="gaussian_latitudes-53"><a href="#gaussian_latitudes-53"><span class="linenos">53</span></a>    <span class="c1"># symmetric:</span>
+</span><span id="gaussian_latitudes-54"><a href="#gaussian_latitudes-54"><span class="linenos">54</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="n">la</span><span class="o">.</span><span class="n">eigvalsh</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-55"><a href="#gaussian_latitudes-55"><span class="linenos">55</span></a>    <span class="n">roots</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+</span><span id="gaussian_latitudes-56"><a href="#gaussian_latitudes-56"><span class="linenos">56</span></a>    <span class="c1"># Improve the roots by one application of Newton&#39;s method, using the</span>
+</span><span id="gaussian_latitudes-57"><a href="#gaussian_latitudes-57"><span class="linenos">57</span></a>    <span class="c1"># solved root as the initial guess:</span>
+</span><span id="gaussian_latitudes-58"><a href="#gaussian_latitudes-58"><span class="linenos">58</span></a>    <span class="n">fx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">cs</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-59"><a href="#gaussian_latitudes-59"><span class="linenos">59</span></a>    <span class="n">fpx</span> <span class="o">=</span> <span class="n">legval</span><span class="p">(</span><span class="n">roots</span><span class="p">,</span> <span class="n">legder</span><span class="p">(</span><span class="n">cs</span><span class="p">))</span>
+</span><span id="gaussian_latitudes-60"><a href="#gaussian_latitudes-60"><span class="linenos">60</span></a>    <span class="n">roots</span> <span class="o">-=</span> <span class="n">fx</span> <span class="o">/</span> <span class="n">fpx</span>
+</span><span id="gaussian_latitudes-61"><a href="#gaussian_latitudes-61"><span class="linenos">61</span></a>    <span class="c1"># The roots should exhibit symmetry, but with a sign change, so make sure</span>
+</span><span id="gaussian_latitudes-62"><a href="#gaussian_latitudes-62"><span class="linenos">62</span></a>    <span class="c1"># this is the case:</span>
+</span><span id="gaussian_latitudes-63"><a href="#gaussian_latitudes-63"><span class="linenos">63</span></a>    <span class="n">roots</span> <span class="o">=</span> <span class="p">(</span><span class="n">roots</span> <span class="o">-</span> <span class="n">roots</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mf">2.</span>
+</span><span id="gaussian_latitudes-64"><a href="#gaussian_latitudes-64"><span class="linenos">64</span></a>    <span class="c1"># Convert the roots from the interval [-1, 1] to latitude values on the</span>
+</span><span id="gaussian_latitudes-65"><a href="#gaussian_latitudes-65"><span class="linenos">65</span></a>    <span class="c1"># interval [-90, 90] degrees:</span>
+</span><span id="gaussian_latitudes-66"><a href="#gaussian_latitudes-66"><span class="linenos">66</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arcsin</span><span class="p">(</span><span class="n">roots</span><span class="p">))</span>
+</span><span id="gaussian_latitudes-67"><a href="#gaussian_latitudes-67"><span class="linenos">67</span></a>    <span class="c1"># Flip latitudes such that it is oriented from North to South [90, -90]</span>
+</span><span id="gaussian_latitudes-68"><a href="#gaussian_latitudes-68"><span class="linenos">68</span></a>    <span class="n">latitudes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">latitudes</span><span class="p">)</span>
+</span><span id="gaussian_latitudes-69"><a href="#gaussian_latitudes-69"><span class="linenos">69</span></a>    <span class="k">return</span> <span class="n">latitudes</span>
 </span></pre></div>
 
 
@@ -187,11 +187,12 @@
 
 <h2 id="parameters">Parameters</h2>
 
-<p><strong><code>nlat</code></strong>: The number of latitudes in the Gaussian grid.</p>
+<p><strong><code>nlat : int</code></strong>
+    The number of latitudes in the Gaussian grid.</p>
 
 <h2 id="returns">Returns</h2>
 
-<p>Numpy array of latitudes (in degrees) with a length of <code>nlat</code>.</p>
+<p><code>numpy.ndarray</code> of latitudes (in degrees) with a length of <code>nlat</code>.</p>
 </div>
 
 
