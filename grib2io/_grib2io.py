@@ -45,6 +45,7 @@ DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 ONE_MB = 1048576 # 1 MB in units of bytes
+TYPE_OF_VALUES_DTYPE = ('float32','int32')
 
 _AUTO_NANS = True
 
@@ -315,13 +316,9 @@ class open():
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
                             if not no_data:
-                                shape = (msg.ny,msg.nx)
-                                ndim = 2
-                                if msg.typeOfValues == 0:
-                                    dtype = 'float32'
-                                elif msg.typeOfValues == 1:
-                                    dtype = 'int32'
-                                msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
+                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues.value],
+                                                                    self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
@@ -345,13 +342,9 @@ class open():
                             msg._deflist = _deflist
                             msg._coordlist = _coordlist
                             if not no_data:
-                                shape = (msg.ny,msg.nx)
-                                ndim = 2
-                                if msg.typeOfValues == 0:
-                                    dtype = 'float32'
-                                elif msg.typeOfValues == 1:
-                                    dtype = 'int32'
-                                msg._data = Grib2MessageOnDiskArray(shape, ndim, dtype, self._filehandle,
+                                msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
+                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues.value],
+                                                                    self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
 
@@ -926,7 +919,7 @@ class _Grib2Message:
         Returns
         -------
         **`lats, lons : numpy.ndarray`**
-            Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and 
+            Returns two numpy.ndarrays with dtype=numpy.float32 of grid latitudes and
             longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
@@ -1318,7 +1311,7 @@ def set_auto_nans(value):
     ----------
     **`value : bool`**
         If `True` [DEFAULT], missing values in GRIB2 message data will be set to `np.nan` and
-        if `False`, missing values will present in the data array.  If a bitmap is used, then 
+        if `False`, missing values will present in the data array.  If a bitmap is used, then
         `np.nan` will be used regardless of this setting.
     """
     global _AUTO_NANS
