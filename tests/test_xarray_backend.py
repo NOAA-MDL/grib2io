@@ -1,16 +1,12 @@
 import pytest
 import xarray as xr
-import grib2io
-import numpy as np
-import datetime
 
-def test_nemed_filter(request):
+def test_named_filter(request):
     data = request.config.rootdir / 'tests' / 'data'
     filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
     ds1 = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f024', engine='grib2io', filters=filters)
     filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface='Ground or Water Surface')
     ds2 = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f024', engine='grib2io', filters=filters)
-
     xr.testing.assert_equal(ds1, ds2)
 
 def test_multi_lead(request):

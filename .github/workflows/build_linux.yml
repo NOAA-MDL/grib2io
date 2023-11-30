@@ -33,9 +33,9 @@ jobs:
 
     - name: Install NCEPLIBS-g2c
       run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.7.0.tar.gz
-        tar -xzvf v1.7.0.tar.gz
-        cd NCEPLIBS-g2c-1.7.0
+        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.8.0.tar.gz
+        tar -xzvf v1.8.0.tar.gz
+        cd NCEPLIBS-g2c-1.8.0
         mkdir build && cd build
         cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
@@ -45,6 +45,4 @@ jobs:
       run: |
         python --version
         pip install .
-        cd /tmp # Get out out source package
-        python -c "import grib2io; print(grib2io)"
-        python -c "import xarray; print(xarray.backends.list_engines().keys())"
+        pytest ./tests/

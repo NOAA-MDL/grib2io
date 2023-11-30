@@ -37,6 +37,4 @@ jobs:
       run: |
         python --version
         pip install .
-        cd /tmp # Get out of source package
-        python -c "import grib2io; print(grib2io)"
-        python -c "import xarray; print(xarray.backends.list_engines().keys())"
+        pytest ./tests/	
