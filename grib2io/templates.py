@@ -68,6 +68,8 @@ class Grib2Metadata():
         return other in self.definition
     def __hash__(self):
         return hash(self.value)
+    def __index__(self):
+        return int(self.value)
     @property
     def definition(self):
         return tables.get_value_from_table(self.value,self.table)

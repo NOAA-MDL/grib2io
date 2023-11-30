@@ -317,7 +317,7 @@ class open():
                             msg._coordlist = _coordlist
                             if not no_data:
                                 msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
-                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues.value],
+                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
                                                                     self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
@@ -343,7 +343,7 @@ class open():
                             msg._coordlist = _coordlist
                             if not no_data:
                                 msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
-                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues.value],
+                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
                                                                     self._filehandle,
                                                                     msg, pos, _bmappos, _datapos)
                             self._index['msg'].append(msg)
