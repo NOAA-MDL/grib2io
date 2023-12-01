@@ -11,16 +11,19 @@ except(ImportError):
 __all__ = ['open','Grib2Message','_Grib2Message','show_config','interpolate',
            'interpolate_to_stations','tables','templates','utils','Grib2GridDef']
 
+from .g2clib import __version__ as __g2clib_version__
+from .g2clib import _has_jpeg
+from .g2clib import _has_png
+from .g2clib import _has_aec
+
+has_jpeg_support = bool(_has_jpeg)
+has_png_support  = bool(_has_png)
+has_aec_support = bool(_has_aec)
+
 def show_config():
-    """
-    Print grib2io build configuration information.
-    """
-    from .g2clib import __version__ as g2clib_version
-    from .g2clib import _has_png as have_png
-    from .g2clib import _has_jpeg as have_jpeg
-    from .g2clib import _has_aec as have_aec
-    print("grib2io version %s Configuration:\n"%(__version__))
-    print("\tg2c library version:".expandtabs(4),g2clib_version)
-    print("\tJPEG compression support:".expandtabs(4),bool(have_jpeg))
-    print("\tPNG compression support:".expandtabs(4),bool(have_png))
-    print("\tAEC compression support:".expandtabs(4),bool(have_aec))
+    """Print grib2io build configuration information."""
+    print(f'grib2io version {__version__} Configuration:\n')
+    print(f'\tg2c library version: {__g2clib_version__}')
+    print(f'\tJPEG compression support: {has_jpeg_support}')
+    print(f'\tPNG compression support: {has_png_support}')
+    print(f'\tAEC compression support: {has_aec_support}')
