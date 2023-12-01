@@ -45,22 +45,26 @@ DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 ONE_MB = 1048576 # 1 MB in units of bytes
+
 TYPE_OF_VALUES_DTYPE = ('float32','int32')
+
+_interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
+                   'budget':3, 'spectral':4, 'neighbor-budget':6}
 
 _AUTO_NANS = True
 
 _latlon_datastore = dict()
-
 _msg_class_store = dict()
 
 class open():
     """
-    GRIB2 File Object.  A physical file can contain one or more GRIB2 messages.  When instantiated,
-    class `grib2io.open`, the file named `filename` is opened for reading (`mode = 'r'`) and is
-    automatically indexed.  The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.
+    GRIB2 File Object.
 
-    A GRIB2 Message may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates
-    for this by flattening any GRIB2 submessages into multiple individual messages.
+    A physical file can contain one or more GRIB2 messages.  When instantiated, class `grib2io.open`, 
+    the file named `filename` is opened for reading (`mode = 'r'`) and is automatically indexed.  
+    The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.  A GRIB2 Message 
+    may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates for this by 
+    flattening any GRIB2 submessages into multiple individual messages.
 
     Attributes
     ----------
@@ -92,7 +96,7 @@ class open():
                  'current_message','size','closed','variables','levels','_pos')
     def __init__(self, filename, mode='r', **kwargs):
         """
-        `open` Constructor
+        Initialize GRIB2 File object instance.
 
         Parameters
         ----------
@@ -128,39 +132,27 @@ class open():
 
 
     def __delete__(self, instance):
-        """
-        """
         self.close()
         del self._index
 
 
     def __enter__(self):
-        """
-        """
         return self
 
 
     def __exit__(self, atype, value, traceback):
-        """
-        """
         self.close()
 
 
     def __iter__(self):
-        """
-        """
         yield from self._index['msg']
 
 
     def __len__(self):
-        """
-        """
         return self.messages
 
 
     def __repr__(self):
-        """
-        """
         strings = []
         for k in self.__slots__:
             if k.startswith('_'): continue
@@ -169,8 +161,6 @@ class open():
 
 
     def __getitem__(self, key):
-        """
-        """
         if isinstance(key,int):
             if abs(key) >= len(self._index['msg']):
                 raise IndexError("index out of range")
@@ -374,11 +364,12 @@ class open():
 
     def read(self, size=None):
         """
-        Read size amount of GRIB2 messages from the current position. If no argument is
-        given, then size is None and all messages are returned from the current position
-        in the file. This read method follows the behavior of Python's builtin open()
-        function, but whereas that operates on units of bytes, we operate on units of
-        GRIB2 messages.
+        Read size amount of GRIB2 messages from the current position.
+
+        If no argument is given, then size is None and all messages are returned from 
+        the current position in the file. This read method follows the behavior of 
+        Python's builtin open() function, but whereas that operates on units of bytes, 
+        we operate on units of GRIB2 messages.
 
         Parameters
         ----------
@@ -388,8 +379,7 @@ class open():
 
         Returns
         -------
-        `Grib2Message` object when size = 1 or a `list` of Grib2Messages when
-        size > 1.
+        `Grib2Message` object when size = 1 or a `list` of Grib2Messages when size > 1.
         """
         if size is not None and size < 0:
             size = None
@@ -906,9 +896,10 @@ class _Grib2Message:
 
     def grid(self, unrotate=True):
         """
-        Return lats,lons (in degrees) of grid. Currently can handle reg. lat/lon,
-        global Gaussian, mercator, stereographic, lambert conformal, albers equal-area,
-        space-view and azimuthal equidistant grids.
+        Return lats,lons (in degrees) of grid.
+
+        Currently can handle reg. lat/lon,cglobal Gaussian, mercator, stereographic, 
+        lambert conformal, albers equal-area, space-view and azimuthal equidistant grids.
 
         Parameters
         ----------
@@ -1070,11 +1061,11 @@ class _Grib2Message:
     def map_keys(self):
         """
         Returns an unpacked data grid where integer grid values are replaced with
-        a string in which the numeric value is a representation of. These types
-        of fields are cateogrical or classifications where data values do not
-        represent an observable or predictable physical quantity.
+        a string.in which the numeric value is a representation of.
 
-        An example of such a field field would be [Dominant Precipitation Type -
+        These types of fields are cateogrical or classifications where data values 
+        do not represent an observable or predictable physical quantity. An example 
+        of such a field field would be [Dominant Precipitation Type -
         DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml)
 
         Returns
@@ -1105,10 +1096,11 @@ class _Grib2Message:
 
     def to_bytes(self, validate=True):
         """
-        Return packed GRIB2 message in bytes format. This will be Useful for
-        exporting data in non-file formats.  For example, can be used to
-        output grib data directly to S3 using the boto3 client without the
-        need to write a temporary file to upload first.
+        Return packed GRIB2 message in bytes format.
+
+        This will be Useful for exporting data in non-file formats. For example, 
+        can be used to output grib data directly to S3 using the boto3 client 
+        without the need to write a temporary file to upload first.
 
         Parameters
         ----------
@@ -1325,9 +1317,6 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     """
     This is the module-level interpolation function that interfaces with the grib2io_interp
     component pakcage that interfaces to the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
-    It supports scalar and vector interpolation according to the type of object a.  It also
-    supports scalar and vector interpolation to station points when grid_def_out is set up
-    properly for station interpolation.
 
     Parameters
     ----------
@@ -1375,14 +1364,11 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     """
     from grib2io_interp import interpolate
 
-    interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                      'budget':3, 'spectral':4, 'neighbor-budget':6}
-
-    if isinstance(method,int) and method not in interp_schemes.values():
+    if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
     elif isinstance(method,str):
-        if method in interp_schemes.keys():
-            method = interp_schemes[method]
+        if method in _interp_schemes.keys():
+            method = _interp_schemes[method]
         else:
             raise ValueError('Invalid interpolation method.')
 
@@ -1493,14 +1479,11 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
     """
     from grib2io_interp import interpolate
 
-    interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                      'budget':3, 'spectral':4, 'neighbor-budget':6}
-
-    if isinstance(method,int) and method not in interp_schemes.values():
+    if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
     elif isinstance(method,str):
-        if method in interp_schemes.keys():
-            method = interp_schemes[method]
+        if method in _interp_schemes.keys():
+            method = _interp_schemes[method]
         else:
             raise ValueError('Invalid interpolation method.')
 
