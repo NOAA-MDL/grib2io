@@ -31,8 +31,9 @@ table_1_0 = {
 '29':'Version Implemented on 15 May 2022',
 '30':'Version Implemented on 15 November 2022',
 '31':'Version Implemented on 15 June 2023',
-'32':'Pre-operational to be implemented by next amendment',
-'23-254':'Future Version',
+'32':'Version Implemented on 30 November 2023',
+'33':'Pre-operational to be implemented by next amendment',
+'34-254':'Future Version',
 '255':'Missing"',
 }
 
@@ -66,6 +67,8 @@ table_1_3 = {
 '9':'Uncertainties in ensembles of regional reanalysis project (UERRA) Test',
 '10':'Copernicus Regional Reanalysis',
 '11':'Copernicus Regional Reanalysis Test',
+'12':'Destination Earth',
+'13':'Destination Earth test',
 '12-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',

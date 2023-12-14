@@ -20,7 +20,8 @@ table_4_1_0 = {
 '18':'Nuclear/radiology',
 '19':'Physical atmospheric properties',
 '20':'Atmospheric chemical Constituents',
-'21-189':'Reserved',
+'21':'Thermodynamic Properties',
+'22-189':'Reserved',
 '190':'CCITT IA5 string',
 '191':'Miscellaneous',
 '192-254':'Reserved for Local Use',
@@ -44,7 +45,8 @@ table_4_1_2 = {
 '3':'Soil Products',
 '4':'Fire Weather Products',
 '5':'Land Surface Products',
-'6-191':'Reserved',
+'6':'Urban areas',
+'7-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
@@ -96,7 +98,8 @@ table_4_1_20 = {
 '0':'Health Indicators',
 '1':'Epidemiology',
 '2':'Socioeconomic indicators',
-'3-191':'Reserved',
+'3':'Renewable energy sector',
+'4-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
@@ -342,7 +345,8 @@ table_4_5 = {
 '169':['Ocean level defined by water density (sigma-theta) difference from near-surface to level','kg m-3'],
 '170':['Ocean level defined by water potential temperature difference from near-surface to level','K'],
 '171':['Ocean level defined by vertical eddy diffusivity difference from near-surface to level,(see Note 7)','m2 s-1'],
-'172-173':['Reserved','unknown'],
+'172':['Reserved','unknown'],
+'173':['Top of Snow Over Sea Ice on Sea, Lake or River','unknown'],
 '174':['Top Surface of Ice on Sea, Lake or River','unknown'],
 '175':['Top Surface of Ice, under Snow, on Sea, Lake or River','unknown'],
 '176':['Bottom Surface (underside) Ice on Sea, Lake or River','unknown'],
@@ -354,7 +358,12 @@ table_4_5 = {
 '182':['Grid Tile Water Fraction as a Model Surface','unknown'],
 '183':['Grid Tile Ice Fraction on Sea, Lake or River as a Model Surface','unknown'],
 '184':['Grid Tile Glacier Ice and Inland Ice Fraction as a Model Surface','unknown'],
-'185-191':['Reserved','unknown'],
+'185':['Roof Level','unknown'],
+'186':['Wall level','unknown'],
+'187':['Road Level','unknown'],
+'188':['Melt pond Top Surface','unknown'],
+'189':['Melt Pond Bottom Surface','unknown'],
+'190-191':['Reserved','unknown'],
 '192-254':['Reserved for Local Use','unknown'],
 '200':['Entire atmosphere (considered as a single layer)','unknown'],
 '201':['Entire ocean (considered as a single layer)','unknown'],
@@ -509,6 +518,31 @@ table_4_11 = {
 '4':'Successive times processed have start time of forecast decremented and forecast time incremented so that valid time remains constant.',
 '5':'Floating subinterval of time between forecast time and end of overall time interval.(see Note 1)',
 '6-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_12 = {
+'0':'Mainteunknownce Mode',
+'1':'Clear Air',
+'2':'Precipitation',
+'3-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_13 = {
+'0':'No Quality Control Applied',
+'1':'Quality Control Applied',
+'2-191':'Reserved',
+'192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_14 = {
+'0':'No Clutter Filter Used',
+'1':'Clutter Filter Used',
+'2-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }

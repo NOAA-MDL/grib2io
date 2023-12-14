@@ -52,7 +52,9 @@ table_4_2_1_2  = {
 '12':['Salinity','kg kg-1','SALTIL'],
 '13':['Cross Sectional Area of Flow in Channel','m2','CSAFC'],
 '14':['Snow temperature','K','LNDSNOWT'],
-'15-191':['Reserved','unknown','unknown'],
+'15':['Lake depth','m','LDEPTH'],
+'16':['River depth','m','RDEPTH'],
+'17-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }

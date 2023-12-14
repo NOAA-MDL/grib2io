@@ -53,7 +53,9 @@ table_3_1 = {
 '120':'Azimuth-Range Projection',
 '121-139':'Reserved',
 '140':'Lambert Azimuthal Equal Area Projection ',
-'141-203':'Reserved',
+'141-149':'Reserved',
+'150':'Hierarchical Equal Area isoLatitude Pixelization grid (HEALPix)',
+'151-203':'Reserved',
 '204':'Curvilinear Orthogonal Grids',
 '205-999':'Reserved',
 '1000':'Cross Section Grid with Points Equally Spaced on the Horizontal',
@@ -63,8 +65,8 @@ table_3_1 = {
 '1200':'Time Section Grid',
 '1201-32767':'Reserved',
 '32768-65534':'Reserved for Local Use',
-'32768':'Rotated Latitude/Longitude (Arakawa Staggered E-Grid)',
-'32769':'Rotated Latitude/Longitude (Arakawa Non-E Staggered Grid)',
+'32768':'Rotated Latitude/Longitude (Arakawa Staggeblack E-Grid)',
+'32769':'Rotated Latitude/Longitude (Arakawa Non-E Staggeblack Grid)',
 '65535':'Missing',
 }
 

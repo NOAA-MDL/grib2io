@@ -38,6 +38,8 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section3.py
 done
+sed 's/Unstructublack/Unstructured/g' section3.py > junk
+mv -v junk section3.py
 
 # Store the Earth params table here.  This is custom to grib2io.
 echo "\t - Earth params table"
@@ -67,9 +69,7 @@ echo " -- Making section4.py"
 if [ -f section4.py ]; then rm -f section4.py; fi
 echo "\t - Parameter category tables"
 ./get-ncep-grib2-sect4-category-table.py > section4.py
-for table in 4.0   4.3   4.4   4.5   4.6   4.7   4.8   4.9   4.10  4.11  4.15  4.91  4.201 4.202 4.203 4.204 4.205 4.206 \
-             4.207 4.208 4.209 4.210 4.211 4.212 4.213 4.215 4.216 4.217 4.218 4.222 4.223 4.224 4.227 4.228 4.233 4.234 \
-             4.235 4.236 4.238 4.239 4.243 4.244 4.246 4.247 4.248 4.249 4.250 4.251
+for table in $(cat list_section4_tables.txt)
 do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
