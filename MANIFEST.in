@@ -5,6 +5,7 @@ include setup.py
 include pyproject.toml
 include README.md
 include LICENSE
+include VERSION
 recursive-include grib2io *
 recursive-include docs *
 recursive-include make_grib2_tables *
