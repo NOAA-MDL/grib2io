@@ -1,8 +1,9 @@
 from setuptools import setup, Extension
 import configparser
+from ctypes.util import find_library as ctypes_find_library
 import numpy
 import os
-import pathlib
+from pathlib import Path
 import platform
 import sys
 
@@ -13,26 +14,43 @@ libdirs = []
 incdirs = []
 libraries = ['g2c']
 
+
 # ----------------------------------------------------------------------------------------
 # find_library.
 # ----------------------------------------------------------------------------------------
 def find_library(name, dirs=None):
     out = []
     sysinfo = (os.name, sys.platform)
-    if sysinfo == ('posix', 'darwin'):
-        libext = '.dylib'
-    elif sysinfo == ('posix', 'linux'):
-        libext = '.so'
+
+    # According to the ctypes documentation Mac and Windows ctypes_find_library
+    # returns the full path.
+    if sysinfo != ("posix", "linux"):
+        return ctypes_find_library(name)
+
+    # For Linux have to search ourselves.
+    libext = ".so"
     if dirs is None:
-        if os.environ.get('CONDA_PREFIX'):
-            dirs = [os.environ['CONDA_PREFIX']]
+        if os.environ.get("CONDA_PREFIX"):
+            dirs = [os.environ["CONDA_PREFIX"]]
         else:
-            dirs = ['/usr/local', '/sw', '/opt', '/opt/local', '/opt/homebrew', '/usr']
+            dirs = ["/usr/local", "/sw", "/opt", "/opt/local", "/opt/homebrew", "/usr"]
+    if os.environ.get("LD_LIBRARY_PATH"):
+        dirs = dirs + os.environ.get("LD_LIBRARY_PATH").split(":")
+
+    out = []
     for d in dirs:
-        libs = pathlib.Path(d).rglob('lib*'+name+libext)
-        for l in libs:
-            out.append(l.absolute().resolve().as_posix())
-    return list(set(out))[0]
+        libs = Path(d).rglob(f"lib*{name}{libext}")
+        out.extend(libs)
+    if not out:
+        raise ValueError(f"""
+
+The library "lib{name}{libext}" could not be found in any of the following
+directories:
+{dirs}
+
+""")
+    return out[0].absolute().resolve().as_posix()
+
 
 # ----------------------------------------------------------------------------------------
 # Build Cython sources
@@ -42,16 +60,16 @@ cmdclass = {'build_ext': build_ext}
 redtoreg_pyx = 'redtoreg.pyx'
 g2clib_pyx  = 'g2clib.pyx'
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Read setup.cfg
 # ----------------------------------------------------------------------------------------
 setup_cfg = 'setup.cfg'
 config = configparser.ConfigParser()
 config.read(setup_cfg)
 
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 # Get NCEPLIBS-g2c library info.
-# ---------------------------------------------------------------------------------------- 
+# ----------------------------------------------------------------------------------------
 if os.environ.get('G2C_DIR'):
     g2c_dir = os.environ.get('G2C_DIR')
     if os.path.exists(os.path.join(g2c_dir,'lib')):
