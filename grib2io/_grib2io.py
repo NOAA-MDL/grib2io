@@ -916,8 +916,6 @@ class _Grib2Message:
         if self._sha1_section3 in _latlon_datastore.keys():
             return (_latlon_datastore[self._sha1_section3]['latitude'],
                     _latlon_datastore[self._sha1_section3]['longitude'])
-        else:
-            _latlon_datastore[self._sha1_section3] = {}
         gdtn = self.gridDefinitionTemplateNumber.value
         gdtmpl = self.gridDefinitionTemplate
         reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
@@ -1047,13 +1045,15 @@ class _Grib2Message:
                 lons = np.where(lons>180.0,lons-360.0,lons)
             vector_rotation_angles_vectorized = np.vectorize(arakawa_rotated_grid.vector_rotation_angles)
             rots = vector_rotation_angles_vectorized(lats, lons, clat, losp, xlats)
-            _latlon_datastore[self._sha1_section3]['vector_rotation_angles'] = rots
             del xlat1d, xlon1d, xlats, xlons
         else:
             raise ValueError('Unsupported grid')
 
-        _latlon_datastore[self._sha1_section3]['latitude'] = lats
-        _latlon_datastore[self._sha1_section3]['longitude'] = lons
+        _latlon_datastore[self._sha1_section3] = dict(latitude=lats,longitude=lons)
+        try:
+            _latlon_datastore[self._sha1_section3]['vector_rotation_angles'] = rots
+        except(NameError):
+            pass
 
         return lats, lons
 
