@@ -151,7 +151,7 @@ table_4_2_2_3  = {
 '26':['Soil Heat Flux','W m-2','SHFLX'],
 '27':['Soil Depth','m','SOILDEP'],
 '28':['Snow Temperature','K','SNOWTMP'],
-'29':['Ice Temperature','K','ICETEMP'],
+'29':['Ice Temperature','K','ICETMP'],
 '30':['Soil wetness index','Numeric','SWET'],
 '31-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
