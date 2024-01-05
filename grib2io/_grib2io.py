@@ -197,7 +197,22 @@ class open():
             try:
                 # Read first 4 bytes and decode...looking for "GRIB"
                 pos = self._filehandle.tell()
-                header = struct.unpack('>i',self._filehandle.read(4))[0]
+
+                # Ignore headers (usually text) that are not part of the GRIB2
+                # file.  For example, NAVGEM files have a http header at the
+                # beginning that needs to be ignored.
+
+                # Read a byte at a time until "GRIB" is found.  Using
+                # "wgrib2" on a NAVGEM file, the header was 421 bytes and
+                # decided to go to 2048 bytes to be safe. For normal GRIB2
+                # files this should be quick and break out of the first
+                # loop when "test_offset" is 0.
+                for test_offset in range(2048):
+                    self._filehandle.seek(pos + test_offset)
+                    header = struct.unpack(">i", self._filehandle.read(4))[0]
+                    if header.to_bytes(4, "big") == b"GRIB":
+                        pos = pos + test_offset
+                        break
 
                 # Test header. Then get information from GRIB2 Section 0: the discipline
                 # number, edition number (should always be 2), and GRIB2 message size.
