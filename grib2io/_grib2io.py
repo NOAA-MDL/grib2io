@@ -962,7 +962,7 @@ class _Grib2Message:
                                                   self.latitudeSouthernPole,
                                                   self.longitudeSouthernPole)
         elif gdtn == 40: # Gaussian grid (only works for global!)
-            from utils.gauss_grids import gaussian_latitudes
+            from grib2io.utils.gauss_grid import gaussian_latitudes
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             nlats = self.ny
