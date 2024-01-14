@@ -6,7 +6,7 @@ jobs:
   build-macos:
     
     name: Python (${{ matrix.python-version }})
-    runs-on: ${{ maxtrix.os }}
+    runs-on: ${{ matrix.os }}
     env:
       CC: gcc-12
     strategy:
