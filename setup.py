@@ -19,16 +19,22 @@ libraries = ['g2c']
 # find_library.
 # ----------------------------------------------------------------------------------------
 def find_library(name, dirs=None):
+    _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
-    sysinfo = (os.name, sys.platform)
 
     # According to the ctypes documentation Mac and Windows ctypes_find_library
     # returns the full path.
-    if sysinfo != ("posix", "linux"):
-        return ctypes_find_library(name)
+    #
+    # IMPORTANT: The following does not work at this time (Jan. 2024) for macOS on
+    # Apple Silicon.
+    if (os.name, sys.platform) != ("posix", "linux"):
+        if (sys.platform, platform.machine()) == ("darwin", "arm64"):
+            pass
+        else:
+            return ctypes_find_library(name)
 
-    # For Linux have to search ourselves.
-    libext = ".so"
+    # For Linux and macOS (Apple Silicon), we have to search ourselves.
+    libext = _libext_by_platform[sys.platform]
     if dirs is None:
         if os.environ.get("CONDA_PREFIX"):
             dirs = [os.environ["CONDA_PREFIX"]]
