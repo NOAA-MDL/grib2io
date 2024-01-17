@@ -111,7 +111,23 @@ class open():
             mode = mode+'b'
             if 'w' in mode: mode += '+'
             if 'a' in mode: mode += '+'
-        self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+
+        # Some GRIB2 files are gzipped, so check for that here, but
+        # raise error when using xarray backend.
+        if 'r' in mode:
+            self._filehandle = builtins.open(filename,mode=mode)
+            # Gzip files contain a 2-byte header b'\x1f\x8b'.
+            if self._filehandle.read(2) == b'\x1f\x8b':
+                self._filehandle.close()
+                if '_xarray_backend' in kwargs.keys():
+                    raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
+                import gzip
+                self._filehandle = gzip.open(filename,mode=mode)
+            else:
+                self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+        else:
+            self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+
         self._hasindex = False
         self._index = {}
         self.mode = mode
