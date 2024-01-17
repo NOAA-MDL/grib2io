@@ -156,6 +156,11 @@ do
    ./get-ncep-grib2-sect4-parameters-table.py 20 $table >> section4_discipline20.py
 done
 
+# Discipline 209 - MRMS GRIB2 Products
+echo " -- Making section4_discipline209.py"
+if [ -f section4_discipline209.py ]; then rm -f section4_discipline209.py; fi
+./make-mrms-grib2-sect4-parameters.py >> section4_discipline209.py
+
 # ---------------------------------------------------------------------------------------- 
 # Remove "See Note" strings from section 4 discipline files.
 # ---------------------------------------------------------------------------------------- 
