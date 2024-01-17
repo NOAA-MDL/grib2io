@@ -301,7 +301,7 @@ class DySign:
 class LLScaleFactor:
     """Scale Factor for Lats/Lons"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,203,205,32768,32769}:
+        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
             llscalefactor = float(obj.section3[14])
             if llscalefactor == 0:
                 return 1
@@ -313,7 +313,7 @@ class LLScaleFactor:
 class LLDivisor:
     """Divisor Value for scaling Lats/Lons"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,203,205,32768,32769}:
+        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
             lldivisor = float(obj.section3[15])
             if lldivisor <= 0:
                 return 1.e6
@@ -325,7 +325,7 @@ class LLDivisor:
 class XYDivisor:
     """Divisor Value for scaling grid lengths"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,203,205,32768,32769}:
+        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
             return obj._lldivisor
         return 1.e3
     def __set__(self, obj, value):
@@ -483,11 +483,22 @@ class GridlengthXDirection:
 
 class GridlengthYDirection:
     """Grid lenth in the Y-Direction"""
-    _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 40:17, 41:17, 203:17, 204:17, 205:17, 32768:17, 32769:17}
+    _key = {0:17, 1:17, 10:18, 20:15, 30:15, 31:15, 203:17, 204:17, 205:17, 32768:17, 32769:17}
     def __get__(self, obj, objtype=None):
-        return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dysign
+        if obj.gdtn in {40, 41}:
+            return obj.gridlengthXDirection
+        else:
+            return (obj._llscalefactor*obj.section3[self._key[obj.gdtn]+5]/obj._xydivisor)*obj._dysign
     def __set__(self, obj, value):
         obj.section3[self._key[obj.gdtn]+5] = int(value*obj._xydivisor/obj._llscalefactor)
+
+class NumberOfParallels:
+    """Number of parallels between a pole and the equator"""
+    _key = {40:17, 41:17}
+    def __get__(self, obj, objtype=None):
+        return obj.section3[self._key[obj.gdtn]+5]
+    def __set__(self, obj, value):
+        raise RuntimeError
 
 class LatitudeSouthernPole:
     """Latitude of the Southern Pole for a Rotated Lat/Lon Grid"""
@@ -743,6 +754,7 @@ class GridDefinitionTemplate40():
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    numberOfParallels: int = field(init=False, repr=False, default=NumberOfParallels())
     @classmethod
     @property
     def _attrs(cls):
@@ -759,6 +771,7 @@ class GridDefinitionTemplate41():
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+    numberOfParallels: int = field(init=False, repr=False, default=NumberOfParallels())
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
