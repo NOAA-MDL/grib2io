@@ -972,7 +972,7 @@ class _Grib2Message:
             else:
                 nlons = self.nx
                 dlon = self.gridlengthXDirection
-            lons = np.arange(lon1,lon2+dlon,dlon)
+            lons = np.linspace(lon1,lon2,nlons)
             # Compute Gaussian lats (north to south)
             lats = gaussian_latitudes(nlats)
             if lat1 < lat2:  # reverse them if necessary
