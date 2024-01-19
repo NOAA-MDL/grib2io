@@ -1,17 +1,21 @@
 # grib2io
 
-![Build Linux](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_linux.yml/badge.svg)
-![Build macOS](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_macos.yml/badge.svg)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 [![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![Python 3.11](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+
+![Build Linux](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_linux.yml/badge.svg)
+![Build macOS](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_macos.yml/badge.svg)
+
 ![PyPI](https://img.shields.io/pypi/v/grib2io?label=pypi%20package)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/grib2io)
+
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/grib2io/badges/version.svg)](https://anaconda.org/conda-forge/grib2io)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/grib2io/badges/platforms.svg)](https://anaconda.org/conda-forge/grib2io)
-[![Anaconda-Server Badge](https://anaconda.org/conda-forge/grib2io/badges/license.svg)](https://anaconda.org/conda-forge/grib2io)
 [![Anaconda-Server Badge](https://anaconda.org/conda-forge/grib2io/badges/downloads.svg)](https://anaconda.org/conda-forge/grib2io)
 
 ## Introduction
