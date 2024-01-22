@@ -107,6 +107,9 @@ class open():
         **`mode : str, optional`**
             File access mode where `r` opens the files for reading only; `w` opens the file for writing.
         """
+        # Manage keywords
+        if "_xarray_backend" not in kwargs:
+            kwargs["_xarray_backend"] = False
         if mode in {'a','r','w'}:
             mode = mode+'b'
             if 'w' in mode: mode += '+'
@@ -233,143 +236,146 @@ class open():
                 # Test header. Then get information from GRIB2 Section 0: the discipline
                 # number, edition number (should always be 2), and GRIB2 message size.
                 # Then iterate to check for submessages.
-                if header.to_bytes(4,'big') == b'GRIB':
 
-                    _issubmessage = False
-                    _submsgoffset = 0
-                    _submsgbegin = 0
-                    _bmapflag = None
+                _issubmessage = False
+                _submsgoffset = 0
+                _submsgbegin = 0
+                _bmapflag = None
 
-                    # Read the rest of Section 0 using struct.
-                    section0 = np.concatenate(([header],list(struct.unpack('>HBBQ',self._filehandle.read(12)))),dtype=np.int64)
-                    assert section0[3] == 2
+                # Read the rest of Section 0 using struct.
+                section0 = np.concatenate(([header],list(struct.unpack('>HBBQ',self._filehandle.read(12)))),dtype=np.int64)
 
-                    # Read and unpack Section 1
-                    secsize = struct.unpack('>i',self._filehandle.read(4))[0]
-                    secnum = struct.unpack('>B',self._filehandle.read(1))[0]
-                    assert secnum == 1
-                    self._filehandle.seek(self._filehandle.tell()-5)
-                    _grbmsg = self._filehandle.read(secsize)
-                    _grbpos = 0
-                    section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
-                    secrange = range(2,8)
-                    while 1:
-                        section2 = b''
-                        for num in secrange:
-                            secsize = struct.unpack('>i',self._filehandle.read(4))[0]
-                            secnum = struct.unpack('>B',self._filehandle.read(1))[0]
-                            if secnum == num:
-                                if secnum == 2:
-                                    if secsize > 0:
-                                        section2 = self._filehandle.read(secsize-5)
-                                elif secnum == 3:
-                                    self._filehandle.seek(self._filehandle.tell()-5)
-                                    _grbmsg = self._filehandle.read(secsize)
-                                    _grbpos = 0
-                                    # Unpack Section 3
-                                    _gds,_gdt,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
-                                    _gds = _gds.tolist()
-                                    _gdt = _gdt.tolist()
-                                    section3 = np.concatenate((_gds,_gdt))
-                                    section3 = np.where(section3==4294967295,-1,section3)
-                                elif secnum == 4:
-                                    self._filehandle.seek(self._filehandle.tell()-5)
-                                    _grbmsg = self._filehandle.read(secsize)
-                                    _grbpos = 0
-                                    # Unpack Section 4
-                                    _numcoord,_pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
-                                    _pdt = _pdt.tolist()
-                                    section4 = np.concatenate((np.array((_numcoord,_pdtnum)),_pdt))
-                                elif secnum == 5:
-                                    self._filehandle.seek(self._filehandle.tell()-5)
-                                    _grbmsg = self._filehandle.read(secsize)
-                                    _grbpos = 0
-                                    # Unpack Section 5
-                                    _drt,_drtn,_npts,self._pos = g2clib.unpack5(_grbmsg,_grbpos,np.empty)
-                                    section5 = np.concatenate((np.array((_npts,_drtn)),_drt))
-                                    section5 = np.where(section5==4294967295,-1,section5)
-                                elif secnum == 6:
-                                    # Unpack Section 6. Not really...just get the flag value.
-                                    _bmapflag = struct.unpack('>B',self._filehandle.read(1))[0]
-                                    if _bmapflag == 0:
-                                        _bmappos = self._filehandle.tell()-6
-                                    elif _bmapflag == 254:
-                                        pass # Do this to keep the previous position value
-                                    else:
-                                        _bmappos = None
-                                    self._filehandle.seek(self._filehandle.tell()+secsize-6)
-                                elif secnum == 7:
-                                    # Unpack Section 7. No need to read it, just index the position in file.
-                                    _datapos = self._filehandle.tell()-5
-                                    _datasize = secsize
-                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
-                                else:
-                                    self._filehandle.seek(self._filehandle.tell()+secsize-5)
-                            else:
-                                if num == 2 and secnum == 3:
-                                    pass # Allow this.  Just means no Local Use Section.
-                                else:
-                                    _issubmessage = True
-                                    _submsgoffset = (self._filehandle.tell()-5)-(self._index['offset'][-1])
-                                    _submsgbegin = secnum
+                if section0[3] != 2:
+                    raise ValueError(
+                        "This is a GRIB version 1 file.  grib2io only supports GRIB version 2."
+                    )
+
+                # Read and unpack Section 1
+                secsize = struct.unpack('>i',self._filehandle.read(4))[0]
+                secnum = struct.unpack('>B',self._filehandle.read(1))[0]
+                assert secnum == 1
+                self._filehandle.seek(self._filehandle.tell()-5)
+                _grbmsg = self._filehandle.read(secsize)
+                _grbpos = 0
+                section1,_grbpos = g2clib.unpack1(_grbmsg,_grbpos,np.empty)
+                secrange = range(2,8)
+                while 1:
+                    section2 = b''
+                    for num in secrange:
+                        secsize = struct.unpack('>i',self._filehandle.read(4))[0]
+                        secnum = struct.unpack('>B',self._filehandle.read(1))[0]
+                        if secnum == num:
+                            if secnum == 2:
+                                if secsize > 0:
+                                    section2 = self._filehandle.read(secsize-5)
+                            elif secnum == 3:
                                 self._filehandle.seek(self._filehandle.tell()-5)
-                                continue
-                        trailer = struct.unpack('>4s',self._filehandle.read(4))[0]
-                        if trailer == b'7777':
-                            self.messages += 1
-                            self._index['offset'].append(pos)
-                            self._index['bitmap_offset'].append(_bmappos)
-                            self._index['data_offset'].append(_datapos)
-                            self._index['size'].append(section0[-1])
-                            self._index['data_size'].append(_datasize)
-                            self._index['messageNumber'].append(self.messages)
-                            self._index['isSubmessage'].append(_issubmessage)
-                            if _issubmessage:
-                                self._index['submessageOffset'].append(_submsgoffset)
-                                self._index['submessageBeginSection'].append(_submsgbegin)
+                                _grbmsg = self._filehandle.read(secsize)
+                                _grbpos = 0
+                                # Unpack Section 3
+                                _gds,_gdt,_deflist,_grbpos = g2clib.unpack3(_grbmsg,_grbpos,np.empty)
+                                _gds = _gds.tolist()
+                                _gdt = _gdt.tolist()
+                                section3 = np.concatenate((_gds,_gdt))
+                                section3 = np.where(section3==4294967295,-1,section3)
+                            elif secnum == 4:
+                                self._filehandle.seek(self._filehandle.tell()-5)
+                                _grbmsg = self._filehandle.read(secsize)
+                                _grbpos = 0
+                                # Unpack Section 4
+                                _numcoord,_pdt,_pdtnum,_coordlist,_grbpos = g2clib.unpack4(_grbmsg,_grbpos,np.empty)
+                                _pdt = _pdt.tolist()
+                                section4 = np.concatenate((np.array((_numcoord,_pdtnum)),_pdt))
+                            elif secnum == 5:
+                                self._filehandle.seek(self._filehandle.tell()-5)
+                                _grbmsg = self._filehandle.read(secsize)
+                                _grbpos = 0
+                                # Unpack Section 5
+                                _drt,_drtn,_npts,self._pos = g2clib.unpack5(_grbmsg,_grbpos,np.empty)
+                                section5 = np.concatenate((np.array((_npts,_drtn)),_drt))
+                                section5 = np.where(section5==4294967295,-1,section5)
+                            elif secnum == 6:
+                                # Unpack Section 6. Not really...just get the flag value.
+                                _bmapflag = struct.unpack('>B',self._filehandle.read(1))[0]
+                                if _bmapflag == 0:
+                                    _bmappos = self._filehandle.tell()-6
+                                elif _bmapflag == 254:
+                                    pass # Do this to keep the previous position value
+                                else:
+                                    _bmappos = None
+                                self._filehandle.seek(self._filehandle.tell()+secsize-6)
+                            elif secnum == 7:
+                                # Unpack Section 7. No need to read it, just index the position in file.
+                                _datapos = self._filehandle.tell()-5
+                                _datasize = secsize
+                                self._filehandle.seek(self._filehandle.tell()+secsize-5)
                             else:
-                                self._index['submessageOffset'].append(0)
-                                self._index['submessageBeginSection'].append(_submsgbegin)
-
-                            # Create Grib2Message with data.
-                            msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
-                            msg._msgnum = self.messages-1
-                            msg._deflist = _deflist
-                            msg._coordlist = _coordlist
-                            if not no_data:
-                                msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
-                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
-                                                                    self._filehandle,
-                                                                    msg, pos, _bmappos, _datapos)
-                            self._index['msg'].append(msg)
-
-                            break
+                                self._filehandle.seek(self._filehandle.tell()+secsize-5)
                         else:
-                            self._filehandle.seek(self._filehandle.tell()-4)
-                            self.messages += 1
-                            self._index['offset'].append(pos)
-                            self._index['bitmap_offset'].append(_bmappos)
-                            self._index['data_offset'].append(_datapos)
-                            self._index['size'].append(section0[-1])
-                            self._index['data_size'].append(_datasize)
-                            self._index['messageNumber'].append(self.messages)
-                            self._index['isSubmessage'].append(_issubmessage)
+                            if num == 2 and secnum == 3:
+                                pass # Allow this.  Just means no Local Use Section.
+                            else:
+                                _issubmessage = True
+                                _submsgoffset = (self._filehandle.tell()-5)-(self._index['offset'][-1])
+                                _submsgbegin = secnum
+                            self._filehandle.seek(self._filehandle.tell()-5)
+                            continue
+                    trailer = struct.unpack('>4s',self._filehandle.read(4))[0]
+                    if trailer == b'7777':
+                        self.messages += 1
+                        self._index['offset'].append(pos)
+                        self._index['bitmap_offset'].append(_bmappos)
+                        self._index['data_offset'].append(_datapos)
+                        self._index['size'].append(section0[-1])
+                        self._index['data_size'].append(_datasize)
+                        self._index['messageNumber'].append(self.messages)
+                        self._index['isSubmessage'].append(_issubmessage)
+                        if _issubmessage:
                             self._index['submessageOffset'].append(_submsgoffset)
                             self._index['submessageBeginSection'].append(_submsgbegin)
+                        else:
+                            self._index['submessageOffset'].append(0)
+                            self._index['submessageBeginSection'].append(_submsgbegin)
 
-                            # Create Grib2Message with data.
-                            msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
-                            msg._msgnum = self.messages-1
-                            msg._deflist = _deflist
-                            msg._coordlist = _coordlist
-                            if not no_data:
-                                msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
-                                                                    TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
-                                                                    self._filehandle,
-                                                                    msg, pos, _bmappos, _datapos)
-                            self._index['msg'].append(msg)
+                        # Create Grib2Message with data.
+                        msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
+                        msg._msgnum = self.messages-1
+                        msg._deflist = _deflist
+                        msg._coordlist = _coordlist
+                        if not no_data:
+                            msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
+                                                                TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
+                                                                self._filehandle,
+                                                                msg, pos, _bmappos, _datapos)
+                        self._index['msg'].append(msg)
 
-                            continue
+                        break
+                    else:
+                        self._filehandle.seek(self._filehandle.tell()-4)
+                        self.messages += 1
+                        self._index['offset'].append(pos)
+                        self._index['bitmap_offset'].append(_bmappos)
+                        self._index['data_offset'].append(_datapos)
+                        self._index['size'].append(section0[-1])
+                        self._index['data_size'].append(_datasize)
+                        self._index['messageNumber'].append(self.messages)
+                        self._index['isSubmessage'].append(_issubmessage)
+                        self._index['submessageOffset'].append(_submsgoffset)
+                        self._index['submessageBeginSection'].append(_submsgbegin)
+
+                        # Create Grib2Message with data.
+                        msg = Grib2Message(section0,section1,section2,section3,section4,section5,_bmapflag)
+                        msg._msgnum = self.messages-1
+                        msg._deflist = _deflist
+                        msg._coordlist = _coordlist
+                        if not no_data:
+                            msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
+                                                                TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
+                                                                self._filehandle,
+                                                                msg, pos, _bmappos, _datapos)
+                        self._index['msg'].append(msg)
+
+                        continue
 
             except(struct.error):
                 if 'r' in self.mode:
