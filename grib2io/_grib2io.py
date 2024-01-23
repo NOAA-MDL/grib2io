@@ -67,6 +67,11 @@ class open():
     may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates for this by 
     flattening any GRIB2 submessages into multiple individual messages.
 
+    It is important to note that GRIB2 files from some Meteorological agencies contain other data
+    than GRIB2 messages.  GRIB2 files from NWS NDFD and NAVGEM have text-based "header" data and
+    files from ECMWF can contain GRIB1 and GRIB2 messages.  grib2io checks for these and safely
+    ignores them.
+
     Attributes
     ----------
     **`mode : str`**
