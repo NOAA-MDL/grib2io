@@ -528,7 +528,7 @@ class Grib2Message:
                       section5: np.array = None, *args, **kwargs):
 
         if np.all(section1==0):
-            section1[5:11] = datetime.datetime.utcfromtimestamp(0).timetuple()[:6]
+            section1[5:11] = datetime.datetime.fromtimestamp(0, datetime.UTC).timetuple()[:6]
 
         bases = list()
         if section3 is None:
