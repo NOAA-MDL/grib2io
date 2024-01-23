@@ -233,7 +233,7 @@ class OnDiskArray:
                 self.shape = tuple([len(i) for i in self.index.index.levels]) + geo_shape
         self.ndim = len(self.shape)
 
-        cols = ['msg', 'data_offset','bitmap_offset']
+        cols = ['msg', 'sectionOffset']
         self.index = self.index[cols]
 
     def __getitem__(self, item) -> np.array:
@@ -268,8 +268,8 @@ class OnDiskArray:
         with open(self.file_name, mode='rb', buffering=ONE_MB) as filehandle:
             for key, row in index.iterrows():
 
-                bitmap_offset = None if pd.isna(row['bitmap_offset']) else int(row['bitmap_offset'])
-                values = _data(filehandle, row.msg, bitmap_offset, row['data_offset'])
+                bitmap_offset = None if pd.isna(row['sectionOffset'][6]) else int(row['sectionOffset'][6])
+                values = _data(filehandle, row.msg, bitmap_offset, row['sectionOffset'][7])
 
                 if len(index_slicer_inclusive) >= 1:
                     array_field[row.miloc] = values
@@ -346,7 +346,7 @@ def parse_grib_index(index, filters):
     index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.typeOfGeneratingProcess))
     index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber))
     index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface))
-    index = index.astype({'data_offset':'int', 'ny':'int','nx':'int'})
+    index = index.astype({'ny':'int','nx':'int'})
     # apply common filters(to all definition templates) to reduce dataset to single cube
 
 
