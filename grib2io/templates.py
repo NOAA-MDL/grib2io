@@ -1427,7 +1427,7 @@ class NumberOfDataPointsForSpatialProcessing:
         obj.section4[self._key[pdtn]+2] = value
 
 class NumberOfContributingSpectralBands:
-    """Number of Contributing Spectral Bands"""
+    """Number of Contributing Spectral Bands (NB)"""
     _key = {32:9}
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1435,6 +1435,51 @@ class NumberOfContributingSpectralBands:
     def __set__(self, obj, value):
         pdtn = obj.section4[1]
         obj.section4[self._key[pdtn]+2] = value
+
+class SatelliteSeries:
+    """Satellte Series of band nb, where nb=1,NB if NB > 0"""
+    _key = {32:10}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2::5][:obj.section4[9+2]]
+    def __set__(self, obj, value):
+        pass
+
+class SatelliteNumber:
+    """Satellte Number of band nb, where nb=1,NB if NB > 0"""
+    _key = {32:11}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2::5][:obj.section4[9+2]]
+    def __set__(self, obj, value):
+        pass
+
+class InstrumentType:
+    """Instrument Type of band nb, where nb=1,NB if NB > 0"""
+    _key = {32:12}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2::5][:obj.section4[9+2]]
+    def __set__(self, obj, value):
+        pass
+
+class ScaleFactorOfCentralWaveNumber:
+    """Scale Factor Of Central WaveNumber of band nb, where nb=1,NB if NB > 0"""
+    _key = {32:13}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2::5][:obj.section4[9+2]]
+    def __set__(self, obj, value):
+        pass
+
+class ScaledValueOfCentralWaveNumber:
+    """Scaled Value Of Central WaveNumber of band NB"""
+    _key = {32:14}
+    def __get__(self, obj, objtype=None):
+        pdtn = obj.section4[1]
+        return obj.section4[self._key[pdtn]+2::5][:obj.section4[9+2]]
+    def __set__(self, obj, value):
+        pass
 
 class TypeOfAerosol:
     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
@@ -1804,6 +1849,11 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
     unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
     valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
     numberOfContributingSpectralBands: int = field(init=False,repr=False,default=NumberOfContributingSpectralBands())
+    satelliteSeries: list = field(init=False,repr=False,default=SatelliteSeries())
+    satelliteNumber: list = field(init=False,repr=False,default=SatelliteNumber())
+    instrumentType: list = field(init=False,repr=False,default=InstrumentType())
+    scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
+    scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
     @classmethod
     @property
     def _attrs(cls):
