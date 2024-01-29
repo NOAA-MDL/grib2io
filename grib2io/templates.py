@@ -24,7 +24,7 @@ _section_attrs = {0:['discipline'],
                   8:[],}
 
 
-class Grib2Metadata():
+class Grib2Metadata:
     """
     Class to hold GRIB2 metadata both as numeric code value as stored in
     GRIB2 and its plain langauge definition.
@@ -627,7 +627,7 @@ class ProjParameters:
         raise RuntimeError
 
 @dataclass(init=False)
-class GridDefinitionTemplate0():
+class GridDefinitionTemplate0:
     """[Grid Definition Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-0.shtml)"""
     _len = 19
     _num = 0
@@ -643,7 +643,7 @@ class GridDefinitionTemplate0():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate1():
+class GridDefinitionTemplate1:
     """[Grid Definition Template 1](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-1.shtml)"""
     _len = 22
     _num = 1
@@ -662,7 +662,7 @@ class GridDefinitionTemplate1():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate10():
+class GridDefinitionTemplate10:
     """[Grid Definition Template 10](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-10.shtml)"""
     _len = 19
     _num = 10
@@ -681,7 +681,7 @@ class GridDefinitionTemplate10():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate20():
+class GridDefinitionTemplate20:
     """[Grid Definition Template 20](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-20.shtml)"""
     _len = 18
     _num = 20
@@ -699,7 +699,7 @@ class GridDefinitionTemplate20():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate30():
+class GridDefinitionTemplate30:
     """[Grid Definition Template 30](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-30.shtml)"""
     _len = 22
     _num = 30
@@ -721,7 +721,7 @@ class GridDefinitionTemplate30():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate31():
+class GridDefinitionTemplate31:
     """[Grid Definition Template 31](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-31.shtml)"""
     _len = 22
     _num = 31
@@ -742,7 +742,7 @@ class GridDefinitionTemplate31():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate40():
+class GridDefinitionTemplate40:
     """[Grid Definition Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-40.shtml)"""
     _len = 19
     _num = 40
@@ -759,7 +759,7 @@ class GridDefinitionTemplate40():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate41():
+class GridDefinitionTemplate41:
     """[Grid Definition Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-41.shtml)"""
     _len = 22
     _num = 41
@@ -779,7 +779,7 @@ class GridDefinitionTemplate41():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate50():
+class GridDefinitionTemplate50:
     """[Grid Definition Template 50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-50.shtml)"""
     _len = 5
     _num = 50
@@ -790,7 +790,7 @@ class GridDefinitionTemplate50():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate32768():
+class GridDefinitionTemplate32768:
     """[Grid Definition Template 32768](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-32768.shtml)"""
     _len = 19
     _num = 32768
@@ -806,7 +806,7 @@ class GridDefinitionTemplate32768():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class GridDefinitionTemplate32769():
+class GridDefinitionTemplate32769:
     """[Grid Definition Template 32769](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp3-32769.shtml)"""
     _len = 19
     _num = 32769
@@ -1574,7 +1574,7 @@ GRIB2 Section 4, Product Definition Template Classes
 """
 
 @dataclass(init=False)
-class ProductDefinitionTemplateBase():
+class ProductDefinitionTemplateBase:
     """Base attributes for Product Definition Templates"""
     _varinfo: list = field(init=False, repr=False, default=VarInfo())
     fullName: str = field(init=False, repr=False, default=FullName())
@@ -1600,7 +1600,7 @@ class ProductDefinitionTemplateBase():
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
-class ProductDefinitionTemplateSurface():
+class ProductDefinitionTemplateSurface:
     """Surface attributes for Product Definition Templates"""
     _fixedsfc1info: list = field(init=False, repr=False, default=FixedSfc1Info())
     _fixedsfc2info: list = field(init=False, repr=False, default=FixedSfc2Info())
@@ -1835,19 +1835,30 @@ class ProductDefinitionTemplate15(ProductDefinitionTemplateBase,ProductDefinitio
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
-class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
-    """[Product Definition Template 32](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-32.shtml)"""
-    _len = 10
-    _num = 0
+class ProductDefinitionTemplate31:
+    """[Product Definition Template 31](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-31.shtml)"""
+    _len = 5
+    _num = 31
     parameterCategory: int = field(init=False,repr=False,default=ParameterCategory())
     parameterNumber: int = field(init=False,repr=False,default=ParameterNumber())
     typeOfGeneratingProcess: Grib2Metadata = field(init=False,repr=False,default=TypeOfGeneratingProcess())
     generatingProcess: Grib2Metadata = field(init=False, repr=False, default=GeneratingProcess())
-    backgroundGeneratingProcessIdentifier: int = field(init=False,repr=False,default=BackgroundGeneratingProcessIdentifier())
-    hoursAfterDataCutoff: int = field(init=False,repr=False,default=HoursAfterDataCutoff())
-    minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
-    unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
-    valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
+    numberOfContributingSpectralBands: int = field(init=False,repr=False,default=NumberOfContributingSpectralBands())
+    satelliteSeries: list = field(init=False,repr=False,default=SatelliteSeries())
+    satelliteNumber: list = field(init=False,repr=False,default=SatelliteNumber())
+    instrumentType: list = field(init=False,repr=False,default=InstrumentType())
+    scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
+    scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
+    @classmethod
+    @property
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+@dataclass(init=False)
+class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
+    """[Product Definition Template 32](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-32.shtml)"""
+    _len = 10
+    _num = 32
     numberOfContributingSpectralBands: int = field(init=False,repr=False,default=NumberOfContributingSpectralBands())
     satelliteSeries: list = field(init=False,repr=False,default=SatelliteSeries())
     satelliteNumber: list = field(init=False,repr=False,default=SatelliteNumber())
@@ -1892,6 +1903,7 @@ _pdt_by_pdtn = {
     11: ProductDefinitionTemplate11,
     12: ProductDefinitionTemplate12,
     15: ProductDefinitionTemplate15,
+    31: ProductDefinitionTemplate31,
     32: ProductDefinitionTemplate32,
     48: ProductDefinitionTemplate48,
     }
@@ -2125,7 +2137,7 @@ class RefSampleInterval:
         obj.section5[7+2] = value
 
 @dataclass(init=False)
-class DataRepresentationTemplate0():
+class DataRepresentationTemplate0:
     """[Data Representation Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-0.shtml)"""
     _len = 5
     _num = 0
@@ -2140,7 +2152,7 @@ class DataRepresentationTemplate0():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate2():
+class DataRepresentationTemplate2:
     """[Data Representation Template 2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-2.shtml)"""
     _len = 16
     _num = 2
@@ -2166,7 +2178,7 @@ class DataRepresentationTemplate2():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate3():
+class DataRepresentationTemplate3:
     """[Data Representation Template 3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-3.shtml)"""
     _len = 18
     _num = 3
@@ -2194,7 +2206,7 @@ class DataRepresentationTemplate3():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate4():
+class DataRepresentationTemplate4:
     """[Data Representation Template 4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-4.shtml)"""
     _len = 1
     _num = 4
@@ -2206,7 +2218,7 @@ class DataRepresentationTemplate4():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate40():
+class DataRepresentationTemplate40:
     """[Data Representation Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-40.shtml)"""
     _len = 7
     _num = 40
@@ -2223,7 +2235,7 @@ class DataRepresentationTemplate40():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate41():
+class DataRepresentationTemplate41:
     """[Data Representation Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-41.shtml)"""
     _len = 5
     _num = 41
@@ -2238,7 +2250,7 @@ class DataRepresentationTemplate41():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate42():
+class DataRepresentationTemplate42:
     """[Data Representation Template 42](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-42.shtml)"""
     _len = 8
     _num = 42
@@ -2256,7 +2268,7 @@ class DataRepresentationTemplate42():
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate50():
+class DataRepresentationTemplate50:
     """[Data Representation Template 50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml)"""
     _len = 5
     _num = 0
