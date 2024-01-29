@@ -235,12 +235,14 @@ def get_wgrib2_level_string(pdtn, pdt):
     -------
     wgrib2-formatted level/layer string.
     """
-    if pdtn == 48:
+    lvlstr = ''
+    if pdtn == 32:
+        return 'no_level'
+    elif pdtn == 48:
         idxs = slice(20,26)
     else:
         idxs = slice(9,15)
     type1, sfac1, sval1, type2, sfac2, sval2 = map(int,pdt[idxs])
-    lvlstr = ''
     val1 = sval1/10**sfac1
     if type1 in [100,108]: val1 *= 0.01
     if type2 != 255:

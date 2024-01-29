@@ -658,24 +658,9 @@ class _Grib2Message:
     scanModeFlags: list = field(init=False,repr=False,default=templates.ScanModeFlags())
     projParameters: dict = field(init=False,repr=False,default=templates.ProjParameters())
 
-    # Section 4 attributes. Listed here are "extra" or "helper" attrs that use metadata from
-    # the given PDT, but not a formal part of the PDT.
+    # Section 4
     productDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: np.array = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
-    _varinfo: list = field(init=False, repr=False, default=templates.VarInfo())
-    _fixedsfc1info: list = field(init=False, repr=False, default=templates.FixedSfc1Info())
-    _fixedsfc2info: list = field(init=False, repr=False, default=templates.FixedSfc2Info())
-    fullName: str = field(init=False, repr=False, default=templates.FullName())
-    units: str = field(init=False, repr=False, default=templates.Units())
-    shortName: str = field(init=False, repr=False, default=templates.ShortName())
-    leadTime: datetime.timedelta = field(init=False,repr=False,default=templates.LeadTime())
-    unitOfFirstFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfFirstFixedSurface())
-    valueOfFirstFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfFirstFixedSurface())
-    unitOfSecondFixedSurface: str = field(init=False,repr=False,default=templates.UnitOfSecondFixedSurface())
-    valueOfSecondFixedSurface: int = field(init=False,repr=False,default=templates.ValueOfSecondFixedSurface())
-    level: str = field(init=False, repr=False, default=templates.Level())
-    duration: datetime.timedelta = field(init=False,repr=False,default=templates.Duration())
-    validDate: datetime.datetime = field(init=False,repr=False,default=templates.ValidDate())
 
     # Section 5 looked up common attributes.  Other looked up attributes are available according
     # to the Data Representation Template.
