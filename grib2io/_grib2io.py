@@ -210,6 +210,7 @@ class open():
             self._index['msgSize'] = []
             self._index['msgNumber'] = []
             self._index['msg'] = []
+            self._index['isSubmessage'] = []
             self._hasindex = True
 
         # Iterate
@@ -222,6 +223,7 @@ class open():
                 trailer = b''
                 _secpos = dict.fromkeys(range(8))
                 _secsize = dict.fromkeys(range(8))
+                _isSubmessage = False
 
                 # Ignore headers (usually text) that are not part of the GRIB2
                 # file.  For example, NAVGEM files have a http header at the
@@ -257,10 +259,10 @@ class open():
                         raise ValueError("Bad GRIB version number.")
 
                 # Read and unpack sections 1 through 8 which all follow a pattern of
-                # section size, number, and content.
+                # section size (4 bytes), section number (1 byte), and section data.
                 while 1:
                     # Read first 5 bytes of the section which contains the size of the
-                    # section (4 bytes) and the section number (1 byte).
+                    # section (4 bytes) and section number (1 byte).
                     secmsg = self._filehandle.read(5)
                     secsize, secnum = struct.unpack('>iB',secmsg)
 
@@ -314,10 +316,11 @@ class open():
 
                         # Update the file index.
                         self.messages += 1
-                        self._index['sectionOffset'].append(_secpos)
-                        self._index['sectionSize'].append(_secsize)
+                        self._index['sectionOffset'].append(copy.deepcopy(_secpos))
+                        self._index['sectionSize'].append(copy.deepcopy(_secsize))
                         self._index['msgSize'].append(section0[-1])
                         self._index['msgNumber'].append(self.messages)
+                        self._index['isSubmessage'].append(_isSubmessage)
 
                         # Create Grib2Message with data.
                         msg = Grib2Message(section0,section1,section2,section3,section4,section5,bmapflag)
@@ -336,18 +339,19 @@ class open():
                         trailer = struct.unpack('>i',self._filehandle.read(4))[0]
 
                         # If we reach the GRIB2 trailer string ('7777'), then we can break
-                        # begin processing the next GRIB2 message.  If not, then we continue
-                        # within the same iteration to process a GRIB2 submessage.
+                        # and begin processing the next GRIB2 message.  If not, then we 
+                        # continue within the same iteration to process a GRIB2 submessage.
                         if trailer.to_bytes(4, "big") == b'7777':
                             break
                         else:
                             # If here, trailer should be the size of the first section
                             # of the next submessage, then the next byte is the section
-                            # number.  Check this value.
+                            # number for the submessage.  Check this value.
                             nextsec = struct.unpack('>B',self._filehandle.read(1))[0]
                             if nextsec not in {2,3,4}:
                                 raise ValueError("Bad GRIB2 message structure.")
                             self._filehandle.seek(self._filehandle.tell()-5)
+                            _isSubmessage = True
                             continue
                     else:
                         raise ValueError("Bad GRIB2 section number.")
