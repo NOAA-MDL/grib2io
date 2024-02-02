@@ -1,9 +1,9 @@
+from ctypes.util import find_library as ctypes_find_library
+from pathlib import Path
 from setuptools import setup, Extension
 import configparser
-from ctypes.util import find_library as ctypes_find_library
 import numpy
 import os
-from pathlib import Path
 import platform
 import sys
 
@@ -31,7 +31,7 @@ def find_library(name, dirs=None):
         if (sys.platform, platform.machine()) == ("darwin", "arm64"):
             pass
         else:
-            return ctypes_find_library(name)
+            out.append(ctypes_find_library(name))
 
     # For Linux and macOS (Apple Silicon), we have to search ourselves.
     libext = _libext_by_platform[sys.platform]
