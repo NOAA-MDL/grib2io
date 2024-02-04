@@ -841,11 +841,13 @@ class _Grib2Message:
 
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
-        if np.isnan(fld).any() and hasattr(self,'_missvalmap'):
+        if np.isnan(fld).any():
+            fld = np.where(np.isnan(fld),self.priMissingValue,fld)
+        if hasattr(self,'_missvalmap'):
             fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
             fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
 
-        # Add sections 4, 5, 6 (if present), and 7.
+        # Add sections 4, 5, 6, and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
                                                     self.productDefinitionTemplate,
                                                     crdlist,
@@ -856,7 +858,7 @@ class _Grib2Message:
                                                     bmap)
         self._sections.append(4)
         self._sections.append(5)
-        if bmap is not None: self._sections.append(6)
+        self._sections.append(6)
         self._sections.append(7)
 
         # Finalize GRIB2 message with section 8.
@@ -1127,7 +1129,7 @@ class _Grib2Message:
             return self._msg
 
 
-    def interpolate(self, method, grid_def_out, method_options=None):
+    def interpolate(self, method, grid_def_out, method_options=None, drtn=None):
         """
         Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
@@ -1168,9 +1170,10 @@ class _Grib2Message:
         section0[-1] = 0
         gds = [0, grid_def_out.npoints, 0, 255, grid_def_out.gdtn]
         section3 = np.concatenate((gds,grid_def_out.gdt))
+        drtn = self.drtn if drtn is None else drtn
 
         msg = Grib2Message(section0,self.section1,self.section2,section3,
-                           self.section4,self.section5,self.bitMapFlag.value)
+                           self.section4,None,self.bitMapFlag.value,drtn=drtn)
 
         msg._msgnum = -1
         msg._deflist = self._deflist
@@ -1183,6 +1186,7 @@ class _Grib2Message:
             dtype = 'int32'
         msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
                                 method_options=method_options).reshape(msg.ny,msg.nx)
+        msg.section5[0] = grid_def_out.npoints
         return msg
 
 
@@ -1400,18 +1404,28 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
-        ibi = np.zeros((a.shape[0]),dtype=np.int32)
-        li = np.zeros(a.shape,dtype=np.int32)
+        if np.any(np.isnan(a)):
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)+1
+            li = np.where(np.isnan(a),0,1).astype(np.int8)
+        else:
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)
+            li = np.zeros(a.shape,dtype=np.int8)
         go = np.zeros((a.shape[0],no),dtype=np.float32)
         no,ibo,lo,iret = interpolate.interpolate_scalar(method,method_options,
                                                  grid_def_in.gdtn,grid_def_in.gdt,
                                                  grid_def_out.gdtn,grid_def_out.gdt,
                                                  ibi,li.T,a.T,go.T,rlat,rlon)
+        lo = lo[:,0].reshape(newshp)
         out = go.reshape(newshp)
+        out = np.where(lo==0,np.nan,out)
     elif isinstance(a,tuple):
         # Vector
-        ibi = np.zeros((a[0].shape[0]),dtype=np.int32)
-        li = np.zeros(a[0].shape,dtype=np.int32)
+        if np.any(np.isnan(a)):
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)+1
+            li = np.where(np.isnan(a),0,1).astype(np.int8)
+        else:
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)
+            li = np.zeros(a.shape,dtype=np.int8)
         uo = np.zeros((a[0].shape[0],no),dtype=np.float32)
         vo = np.zeros((a[1].shape[0],no),dtype=np.float32)
         crot = np.ones((no),dtype=np.float32)
@@ -1423,7 +1437,12 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
                                                  rlat,rlon,crot,srot)
         del crot
         del srot
-        out = (uo.reshape(newshp),vo.reshape(newshp))
+        lo = lo[:,0].reshape(newshp)
+        uo = uo.reshape(new)
+        vo = vo.reshape(new)
+        uo = np.where(lo==0,np.nan,uo)
+        vo = np.where(lo==0,np.nan,vo)
+        out = (uo,vo)
 
     del rlat
     del rlon
