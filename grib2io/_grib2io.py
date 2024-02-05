@@ -882,11 +882,19 @@ class _Grib2Message:
             return self._data
         raise ValueError
 
+
     @data.setter
     def data(self, data):
         if not isinstance(data, np.ndarray):
             raise ValueError('Grib2Message data only supports numpy arrays')
         self._data = data
+
+
+    @data.deleter
+    def data(self):
+        if isinstance(self._data, np.ndarray):
+            del self._data
+            self._data = self._ondiskarray
 
 
     def __getitem__(self, item):
