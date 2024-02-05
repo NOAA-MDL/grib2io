@@ -1,0 +1,15 @@
+name: grib2io
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - jupyter
+  - ipython
+  - dask
+  - nceplibs-g2c
+  - pip:
+    - numpy
+    - cython
+    - pyproj
