@@ -1,6 +1,25 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
+from urllib.request import urlopen
 import pandas as pd
+
+# ----------------------------------------------------------------------------------------
+# Get NCEP GRIB2 tables version
+# ----------------------------------------------------------------------------------------
+url = 'https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/'
+page = urlopen(url).read()
+for n in range(len(page)):
+    try:
+        if page[n:n+7].decode('utf-8') == 'Version':
+            version = page[n:n+40].decode('utf-8')
+            break
+    except(UnicodeDecodeError):
+        pass
+version = version.split('<')[0]
+version_num = version.split('-')[0].replace('Version','').strip()
+# FUTURE: version_date = version.split('-')[1].strip()
+# FUTURE: datetime.datetime.strptime(version_date,'%B %d, %Y')
+print(f"_ncep_grib2_table_version = \'{version_num}\'\n")
 
 # ----------------------------------------------------------------------------------------
 # Originating Center

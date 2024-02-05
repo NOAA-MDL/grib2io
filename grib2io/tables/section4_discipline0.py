@@ -913,7 +913,7 @@ table_4_2_0_20  = {
 '78':['Column integrated eastward mass flux','kg m-2 s-1','CEMF'],
 '79':['Column integrated northward mass flux','kg m-2 s-1','CNMF'],
 '80':['Column integrated divergence of mass flux','kg m-2 s-1','CDIVMF'],
-'81':['Column integrated net source','kg m-2 s-1','CDNETS'],
+'81':['Column integrated net source','kg m-2 s-1','CNETS'],
 '82-99':['Reserved','unknown','unknown'],
 '100':['Surface Area Density (Aerosol)','m-1','SADEN'],
 '101':['Vertical Visual Range','m','ATMTK'],
