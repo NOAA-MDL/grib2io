@@ -1134,10 +1134,11 @@ class _Grib2Message:
 
     def interpolate(self, method, grid_def_out, method_options=None, drtn=None):
         """
-        Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+        Grib2Message Interpolator
 
-        **IMPORTANT:**  This interpolate method only supports scalar interpolation. If you
-        need to perform vector interpolation, use the module-level `grib2io.interpolate` function.
+        Performs spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+        This interpolate method only supports scalar interpolation. If you need to perform vector 
+        interpolation, use the module-level `grib2io.interpolate` function.
 
         Parameters
         ----------
@@ -1158,14 +1159,20 @@ class _Grib2Message:
             Grib2GridDef object of the output grid.
 
         **`method_options : list of ints, optional`**
-            Interpolation options. See the NCEPLIBS-ip doucmentation for
+            Interpolation options. See the NCEPLIBS-ip documentation for
             more information on how these are used.
+
+        **`drtn : int, optional
+            Data Representation Template to be used for the returned interpolated
+            GRIB2 message. When `None`, the data representation template of the
+            source GRIB2 message is used. Once again, it is the user's responsibility
+            to properly set the Data Representation Template attributes.
 
         Returns
         -------
         If interpolating to a grid, a new Grib2Message object is returned.  The GRIB2 metadata of
         the new Grib2Message object is indentical to the input except where required to be different
-        because of the new grid specs.
+        because of the new grid specs and possibly a new data representation template.
 
         If interpolating to station points, the interpolated data values are returned as a numpy.ndarray.
         """
