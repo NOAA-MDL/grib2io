@@ -61,10 +61,10 @@ class open():
     """
     GRIB2 File Object.
 
-    A physical file can contain one or more GRIB2 messages.  When instantiated, class `grib2io.open`, 
-    the file named `filename` is opened for reading (`mode = 'r'`) and is automatically indexed.  
-    The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.  A GRIB2 Message 
-    may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates for this by 
+    A physical file can contain one or more GRIB2 messages.  When instantiated, class `grib2io.open`,
+    the file named `filename` is opened for reading (`mode = 'r'`) and is automatically indexed.
+    The indexing procedure reads some of the GRIB2 metadata for all GRIB2 Messages.  A GRIB2 Message
+    may contain submessages whereby Section 2-7 can be repeated.  grib2io accommodates for this by
     flattening any GRIB2 submessages into multiple individual messages.
 
     It is important to note that GRIB2 files from some Meteorological agencies contain other data
@@ -339,7 +339,7 @@ class open():
                         trailer = struct.unpack('>i',self._filehandle.read(4))[0]
 
                         # If we reach the GRIB2 trailer string ('7777'), then we can break
-                        # and begin processing the next GRIB2 message.  If not, then we 
+                        # and begin processing the next GRIB2 message.  If not, then we
                         # continue within the same iteration to process a GRIB2 submessage.
                         if trailer.to_bytes(4, "big") == b'7777':
                             break
@@ -382,9 +382,9 @@ class open():
         """
         Read size amount of GRIB2 messages from the current position.
 
-        If no argument is given, then size is None and all messages are returned from 
-        the current position in the file. This read method follows the behavior of 
-        Python's builtin open() function, but whereas that operates on units of bytes, 
+        If no argument is given, then size is None and all messages are returned from
+        the current position in the file. This read method follows the behavior of
+        Python's builtin open() function, but whereas that operates on units of bytes,
         we operate on units of GRIB2 messages.
 
         Parameters
@@ -841,11 +841,13 @@ class _Grib2Message:
 
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
-        if np.isnan(fld).any() and hasattr(self,'_missvalmap'):
+        if np.isnan(fld).any():
+            fld = np.where(np.isnan(fld),self.priMissingValue,fld)
+        if hasattr(self,'_missvalmap'):
             fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
             fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
 
-        # Add sections 4, 5, 6 (if present), and 7.
+        # Add sections 4, 5, 6, and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
                                                     self.productDefinitionTemplate,
                                                     crdlist,
@@ -856,7 +858,7 @@ class _Grib2Message:
                                                     bmap)
         self._sections.append(4)
         self._sections.append(5)
-        if bmap is not None: self._sections.append(6)
+        self._sections.append(6)
         self._sections.append(7)
 
         # Finalize GRIB2 message with section 8.
@@ -904,7 +906,7 @@ class _Grib2Message:
         """
         Return lats,lons (in degrees) of grid.
 
-        Currently can handle reg. lat/lon,cglobal Gaussian, mercator, stereographic, 
+        Currently can handle reg. lat/lon,cglobal Gaussian, mercator, stereographic,
         lambert conformal, albers equal-area, space-view and azimuthal equidistant grids.
 
         Parameters
@@ -1069,8 +1071,8 @@ class _Grib2Message:
         Returns an unpacked data grid where integer grid values are replaced with
         a string.in which the numeric value is a representation of.
 
-        These types of fields are cateogrical or classifications where data values 
-        do not represent an observable or predictable physical quantity. An example 
+        These types of fields are cateogrical or classifications where data values
+        do not represent an observable or predictable physical quantity. An example
         of such a field field would be [Dominant Precipitation Type -
         DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml)
 
@@ -1104,8 +1106,8 @@ class _Grib2Message:
         """
         Return packed GRIB2 message in bytes format.
 
-        This will be Useful for exporting data in non-file formats. For example, 
-        can be used to output grib data directly to S3 using the boto3 client 
+        This will be useful for exporting data in non-file formats. For example,
+        can be used to output grib data directly to S3 using the boto3 client
         without the need to write a temporary file to upload first.
 
         Parameters
@@ -1118,21 +1120,25 @@ class _Grib2Message:
         -------
         Returns GRIB2 formatted message as bytes.
         """
-        if validate:
-            if self._msg[0:4]+self._msg[-4:] == b'GRIB7777':
-                return self._msg
+        if hasattr(self,'_msg'):
+            if validate:
+                if self.validate():
+                    return self._msg
+                else:
+                    return None
             else:
-                return None
+                return self._msg
         else:
-            return self._msg
+            return None
 
 
-    def interpolate(self, method, grid_def_out, method_options=None):
+    def interpolate(self, method, grid_def_out, method_options=None, drtn=None):
         """
-        Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+        Grib2Message Interpolator
 
-        **IMPORTANT:**  This interpolate method only supports scalar interpolation. If you
-        need to perform vector interpolation, use the module-level `grib2io.interpolate` function.
+        Performs spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+        This interpolate method only supports scalar interpolation. If you need to perform vector 
+        interpolation, use the module-level `grib2io.interpolate` function.
 
         Parameters
         ----------
@@ -1153,14 +1159,20 @@ class _Grib2Message:
             Grib2GridDef object of the output grid.
 
         **`method_options : list of ints, optional`**
-            Interpolation options. See the NCEPLIBS-ip doucmentation for
+            Interpolation options. See the NCEPLIBS-ip documentation for
             more information on how these are used.
+
+        **`drtn : int, optional
+            Data Representation Template to be used for the returned interpolated
+            GRIB2 message. When `None`, the data representation template of the
+            source GRIB2 message is used. Once again, it is the user's responsibility
+            to properly set the Data Representation Template attributes.
 
         Returns
         -------
         If interpolating to a grid, a new Grib2Message object is returned.  The GRIB2 metadata of
         the new Grib2Message object is indentical to the input except where required to be different
-        because of the new grid specs.
+        because of the new grid specs and possibly a new data representation template.
 
         If interpolating to station points, the interpolated data values are returned as a numpy.ndarray.
         """
@@ -1168,9 +1180,10 @@ class _Grib2Message:
         section0[-1] = 0
         gds = [0, grid_def_out.npoints, 0, 255, grid_def_out.gdtn]
         section3 = np.concatenate((gds,grid_def_out.gdt))
+        drtn = self.drtn if drtn is None else drtn
 
         msg = Grib2Message(section0,self.section1,self.section2,section3,
-                           self.section4,self.section5,self.bitMapFlag.value)
+                           self.section4,None,self.bitMapFlag.value,drtn=drtn)
 
         msg._msgnum = -1
         msg._deflist = self._deflist
@@ -1183,7 +1196,29 @@ class _Grib2Message:
             dtype = 'int32'
         msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
                                 method_options=method_options).reshape(msg.ny,msg.nx)
+        msg.section5[0] = grid_def_out.npoints
         return msg
+
+
+    def validate(self):
+        """
+        Validate a complete GRIB2 message.
+
+        The g2c library does its own internal validation when g2_gribend() is called, but
+        we will check in grib2io also. The validation checks if the first 4 bytes in
+        self._msg is 'GRIB' and '7777' as the last 4 bytes and that the message length in
+        section 0 equals the length of the packed message.
+
+        Returns
+        -------
+            `True` if the packed GRIB2 message is complete and well-formed, `False` otherwise.
+        """
+        valid = False
+        if hasattr(self,'_msg'):
+            if self._msg[0:4]+self._msg[-4:] == b'GRIB7777':
+                if self.section0[-1] == len(self._msg):
+                    valid = True
+        return valid
 
 
 @dataclass
@@ -1400,18 +1435,28 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
-        ibi = np.zeros((a.shape[0]),dtype=np.int32)
-        li = np.zeros(a.shape,dtype=np.int32)
+        if np.any(np.isnan(a)):
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)+1
+            li = np.where(np.isnan(a),0,1).astype(np.int8)
+        else:
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)
+            li = np.zeros(a.shape,dtype=np.int8)
         go = np.zeros((a.shape[0],no),dtype=np.float32)
         no,ibo,lo,iret = interpolate.interpolate_scalar(method,method_options,
                                                  grid_def_in.gdtn,grid_def_in.gdt,
                                                  grid_def_out.gdtn,grid_def_out.gdt,
                                                  ibi,li.T,a.T,go.T,rlat,rlon)
+        lo = lo[:,0].reshape(newshp)
         out = go.reshape(newshp)
+        out = np.where(lo==0,np.nan,out)
     elif isinstance(a,tuple):
         # Vector
-        ibi = np.zeros((a[0].shape[0]),dtype=np.int32)
-        li = np.zeros(a[0].shape,dtype=np.int32)
+        if np.any(np.isnan(a)):
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)+1
+            li = np.where(np.isnan(a),0,1).astype(np.int8)
+        else:
+            ibi = np.zeros((a.shape[0]),dtype=np.int32)
+            li = np.zeros(a.shape,dtype=np.int8)
         uo = np.zeros((a[0].shape[0],no),dtype=np.float32)
         vo = np.zeros((a[1].shape[0],no),dtype=np.float32)
         crot = np.ones((no),dtype=np.float32)
@@ -1423,7 +1468,12 @@ def interpolate(a, method, grid_def_in, grid_def_out, method_options=None):
                                                  rlat,rlon,crot,srot)
         del crot
         del srot
-        out = (uo.reshape(newshp),vo.reshape(newshp))
+        lo = lo[:,0].reshape(newshp)
+        uo = uo.reshape(new)
+        vo = vo.reshape(new)
+        uo = np.where(lo==0,np.nan,uo)
+        vo = np.where(lo==0,np.nan,vo)
+        out = (uo,vo)
 
     del rlat
     del rlon
