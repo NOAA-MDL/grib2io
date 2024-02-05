@@ -3,3 +3,5 @@ libopenjp2-7
 libopenjp2-7-dev
 libpng16-16
 libpng-dev
+libaec0
+libaec-dev
