@@ -1,10 +1,8 @@
-"""
-GRIB2 section templates classes and metadata descriptor classes
-"""
+"""GRIB2 section templates classes and metadata descriptor classes."""
 from dataclasses import dataclass, field
 from collections import defaultdict
 import datetime
-import numpy as np
+from typing import Union
 
 from . import tables
 from . import utils
@@ -26,18 +24,18 @@ _section_attrs = {0:['discipline'],
 
 class Grib2Metadata:
     """
-    Class to hold GRIB2 metadata both as numeric code value as stored in
-    GRIB2 and its plain langauge definition.
+    Class to hold GRIB2 metadata.
+
+    Stores both numeric code value as stored in GRIB2 and its plain language
+    definition.
 
     Attributes
     ----------
-    **`value : int`**
+    value : int
         GRIB2 metadata integer code value.
-
-    **`table : str, optional`**
+    table : str, optional
         GRIB2 table to lookup the `value`. Default is None.
-
-    **`definition : str`**
+    definition : str
         Plain language description of numeric metadata.
     """
     __slots__ = ('value','table')
@@ -47,7 +45,9 @@ class Grib2Metadata:
     def __call__(self):
         return self.value
     def __hash__(self):
-        return hash(self.value)   # AS- added hash() to self.value as pandas was raising error about some non integer returns from hash method
+        # AS- added hash() to self.value as pandas was raising error about some
+        # non integer returns from hash method
+        return hash(self.value)
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
     def __str__(self):
@@ -72,9 +72,7 @@ class Grib2Metadata:
     def definition(self):
         return tables.get_value_from_table(self.value,self.table)
     def show_table(self):
-        """
-        Provide the table related to this metadata.
-        """
+        """Provide the table related to this metadata."""
         return tables.get_table(self.table)
 
 # ----------------------------------------------------------------------------------------
@@ -836,18 +834,19 @@ _gdt_by_gdtn = {0: GridDefinitionTemplate0,
     32769: GridDefinitionTemplate32769,
     }
 
-def gdt_class_by_gdtn(gdtn):
+def gdt_class_by_gdtn(gdtn: int):
     """
     Provides a Grid Definition Template class via the template number
 
     Parameters
     ----------
-    **`gdtn : int`**
+    gdtn
         Grid definition template number.
 
     Returns
     -------
-    Grid definition template class object (not an instance).
+    gdt_class_by_gdtn
+        Grid definition template class object (not an instance).
     """
     return _gdt_by_gdtn[gdtn]
 
@@ -887,30 +886,32 @@ class ParameterNumber:
 
 class VarInfo:
     """
-    Variable Information.  These are the metadata returned for a specific variable according
-    to discipline, parameter category, and parameter number.
-    """ 
+    Variable Information.
+
+    These are the metadata returned for a specific variable according to
+    discipline, parameter category, and parameter number.
+    """
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)
     def __set__(self, obj, value):
         raise RuntimeError
 
 class FullName:
-    """Full name of the Variable"""
+    """Full name of the Variable."""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class Units:
-    """Units of the Variable"""
+    """Units of the Variable."""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[1]
     def __set__(self, obj, value):
         raise RuntimeError
 
 class ShortName:
-    """ Short name of the variable (i.e. the variable abbreviation)"""
+    """ Short name of the variable (i.e. the variable abbreviation)."""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
@@ -944,7 +945,7 @@ class GeneratingProcess:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class HoursAfterDataCutoff:
-    """Hours of observational data cutoff after reference time"""
+    """Hours of observational data cutoff after reference time."""
     _key = defaultdict(lambda: 5, {48:16})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -952,7 +953,7 @@ class HoursAfterDataCutoff:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class MinutesAfterDataCutoff:
-    """Minutes of observational data cutoff after reference time"""
+    """Minutes of observational data cutoff after reference time."""
     _key = defaultdict(lambda: 6, {48:17})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -969,7 +970,7 @@ class UnitOfForecastTime:
         obj.section4[self._key[obj.pdtn]+2] = value
 
 class ValueOfForecastTime:
-    """Value of forecast time in units defined by `UnitofForecastTime`"""
+    """Value of forecast time in units defined by `UnitofForecastTime`."""
     _key = defaultdict(lambda: 8, {48:19})
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
@@ -996,7 +997,7 @@ class FixedSfc1Info:
         raise NotImplementedError
 
 class FixedSfc2Info:
-    """Information of the seconds fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
+    """Information of the second fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 12, {48:23})
     #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
@@ -1908,18 +1909,19 @@ _pdt_by_pdtn = {
     48: ProductDefinitionTemplate48,
     }
 
-def pdt_class_by_pdtn(pdtn):
+def pdt_class_by_pdtn(pdtn: int):
     """
-    Provides a Product Definition Template class via the template number
+    Provide a Product Definition Template class via the template number.
 
     Parameters
     ----------
-    **`pdtn : int`**
+    pdtn
         Product definition template number.
 
     Returns
     -------
-    Product definition template class object (not an instance).
+    pdt_class_by_pdtn
+        Product definition template class object (not an instance).
     """
     return _pdt_by_pdtn[pdtn]
 
@@ -2163,8 +2165,8 @@ class DataRepresentationTemplate2:
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
-    priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
-    secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
+    priMissingValue: Union[float, int] = field(init=False, repr=False, default=PriMissingValue())
+    secMissingValue: Union[float, int] = field(init=False, repr=False, default=SecMissingValue())
     nGroups: int = field(init=False, repr=False, default=NGroups())
     refGroupWidth: int = field(init=False, repr=False, default=RefGroupWidth())
     nBitsGroupWidth: int = field(init=False, repr=False, default=NBitsGroupWidth())
@@ -2189,8 +2191,8 @@ class DataRepresentationTemplate3:
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
-    priMissingValue: [float, int] = field(init=False, repr=False, default=PriMissingValue())
-    secMissingValue: [float, int] = field(init=False, repr=False, default=SecMissingValue())
+    priMissingValue: Union[float, int] = field(init=False, repr=False, default=PriMissingValue())
+    secMissingValue: Union[float, int] = field(init=False, repr=False, default=SecMissingValue())
     nGroups: int = field(init=False, repr=False, default=NGroups())
     refGroupWidth: int = field(init=False, repr=False, default=RefGroupWidth())
     nBitsGroupWidth: int = field(init=False, repr=False, default=NBitsGroupWidth())
@@ -2294,17 +2296,18 @@ _drt_by_drtn = {
     50: DataRepresentationTemplate50,
     }
 
-def drt_class_by_drtn(drtn):
+def drt_class_by_drtn(drtn: int):
     """
-    Provides a Data Representation Template class via the template number
+    Provide a Data Representation Template class via the template number.
 
     Parameters
     ----------
-    **`drtn : int`**
+    drtn
         Data Representation template number.
 
     Returns
     -------
-    Data Representation template class object (not an instance).
+    drt_class_by_drtn
+        Data Representation template class object (not an instance).
     """
     return _drt_by_drtn[drtn]
