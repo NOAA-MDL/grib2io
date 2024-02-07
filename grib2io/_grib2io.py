@@ -798,8 +798,10 @@ class _Grib2Message:
 
     def pack(self):
         """
-        Packs GRIB2 section data into a binary message.  It is the user's responsibility
-        to populate the GRIB2 section information with appropriate metadata.
+        Packs GRIB2 section array data into a binary message.
+
+        It is the user's responsibility to populate the GRIB2 section
+        information with appropriate metadata.
         """
         # Create beginning of packed binary message with section 0 and 1 data.
         self._sections = []
@@ -869,9 +871,7 @@ class _Grib2Message:
 
     @property
     def data(self) -> np.array:
-        """
-        Accessing the data attribute loads data into memmory
-        """
+        """Access the unpacked data values."""
         if not hasattr(self,'_auto_nans'): self._auto_nans = _AUTO_NANS
         if hasattr(self,'_data'):
             if self._auto_nans != _AUTO_NANS:
@@ -890,11 +890,10 @@ class _Grib2Message:
         self._data = data
 
 
-    @data.deleter
-    def data(self):
-        if isinstance(self._data, np.ndarray):
-            del self._data
-            self._data = self._ondiskarray
+    def flush_data(self):
+        """Flush the unpacked data values from the Grib2Message object."""
+        del self._data
+        self._data = self._ondiskarray
 
 
     def __getitem__(self, item):
@@ -1076,13 +1075,12 @@ class _Grib2Message:
 
     def map_keys(self):
         """
-        Returns an unpacked data grid where integer grid values are replaced with
-        a string.in which the numeric value is a representation of.
+        Maps data values to a classification map.
 
-        These types of fields are cateogrical or classifications where data values
+        These types of data are enumerations of categorical or classification values that
         do not represent an observable or predictable physical quantity. An example
-        of such a field field would be [Dominant Precipitation Type -
-        DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml)
+        of such a field would be [Dominant Precipitation Type -
+        DPTYPE](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-201.shtml).
 
         Returns
         -------
