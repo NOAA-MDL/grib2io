@@ -1180,12 +1180,12 @@ class _Grib2Message:
         method_options : list of ints, optional
             Interpolation options. See the NCEPLIBS-ip documentation for
             more information on how these are used.
-
-        **`drtn : int, optional
-            Data Representation Template to be used for the returned interpolated
-            GRIB2 message. When `None`, the data representation template of the
-            source GRIB2 message is used. Once again, it is the user's responsibility
-            to properly set the Data Representation Template attributes.
+        drtn
+            Data Representation Template to be used for the returned
+            interpolated GRIB2 message. When `None`, the data representation
+            template of the source GRIB2 message is used. Once again, it is the
+            user's responsibility to properly set the Data Representation
+            Template attributes.
 
         Returns
         -------
@@ -1193,7 +1193,7 @@ class _Grib2Message:
             If interpolating to a grid, a new Grib2Message object is returned.
             The GRIB2 metadata of the new Grib2Message object is identical to
             the input except where required to be different because of the new
-            grid specs.
+            grid specs and possibly a new data representation template.
 
             If interpolating to station points, the interpolated data values are
             returned as a numpy.ndarray.
