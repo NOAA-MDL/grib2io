@@ -4,15 +4,15 @@ of GRIB2 Messages.
 """
 
 import datetime
-import numpy as np
 import struct
-from typing import Union
+from typing import Union, Type
 
+import numpy as np
 from numpy.typing import ArrayLike
 
 from .. import tables
 
-def int2bin(i: int, nbits: int=8, output: Union[type[str], type[list]]=str):
+def int2bin(i: int, nbits: int=8, output: Union[Type[str], Type[list]]=str):
     """
     Convert integer to binary string or list
 
