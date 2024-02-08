@@ -2,7 +2,7 @@
 
 from functools import lru_cache
 
-from typing import Optional, Union
+from typing import Optional, Union, List
 from numpy.typing import ArrayLike
 
 from .section0 import *
@@ -147,7 +147,7 @@ def get_shortnames(
     parmcat: Optional[Union[int, str]] = None,
     parmnum: Optional[Union[int, str]] = None,
     isNDFD: bool = False,
-) -> list[str]:
+) -> List[str]:
     """
     Return a list of variable shortNames.
 
