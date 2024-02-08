@@ -5,14 +5,14 @@ of GRIB2 Messages.
 
 import datetime
 import struct
-from typing import Union, Type
+from typing import Union, Type, Dict, List
 
 import numpy as np
 from numpy.typing import ArrayLike
 
 from .. import tables
 
-def int2bin(i: int, nbits: int=8, output: Union[Type[str], Type[list]]=str):
+def int2bin(i: int, nbits: int=8, output: Union[Type[str], Type[List]]=str):
     """
     Convert integer to binary string or list
 
@@ -139,7 +139,7 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
         return None
 
 
-def decode_wx_strings(lus: bytes) -> dict[int, str]:
+def decode_wx_strings(lus: bytes) -> Dict[int, str]:
     """
     Decode GRIB2 Local Use Section to obtain NDFD/MDL Weather Strings.
 
