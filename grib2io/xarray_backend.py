@@ -1,7 +1,7 @@
 """
-grib2io xarray backend is a backend entrypoint for decoding grib files with xarray 
-engine 'grib2io' API is experimental and is subject to change without backward 
-compatability.
+grib2io xarray backend is a backend entrypoint for decoding grib2 files with
+xarray engine 'grib2io' API is experimental and is subject to change without
+backward compatibility.
 """
 from copy import copy
 from dataclasses import dataclass, field, astuple
@@ -31,33 +31,43 @@ LOCK = SerializableLock()
 
 class GribBackendEntrypoint(BackendEntrypoint):
     """
-    xarray backend engine entrypoint for opening and decoding grib files.
+    xarray backend engine entrypoint for opening and decoding grib2 files.
 
     .. warning::
-            This backend is experimental and the API/behavior may change without backward comaptability.
 
-    Parameters
-    ----------
-    **`filename : str, Path, file-like`**
-        GRIB2 file to be opened
-
-    **`filters : dict, optional`**
-        Filter GRIB2 messages to single hypercube. Dict keys can be any GRIB2 metadata attribute name.
+       This backend is experimental and the API/behavior may change without
+       backward compatibility.
     """
     def open_dataset(
         self,
         filename,
         *,
         drop_variables = None,
-        filters: typing.Mapping[str, any] = dict(),
+        filters: typing.Mapping[str, typing.Any] = dict(),
     ):
+        """
+        Read and parse metadata from grib file.
 
-        # read and parse metadata from grib file
+        Parameters
+        ----------
+        filename
+            GRIB2 file to be opened.
+        filters
+            Filter GRIB2 messages to single hypercube. Dict keys can be any
+            GRIB2 metadata attribute name.
+
+        Returns
+        -------
+        open_dataset
+            Xarray dataset of grib2 messages.
+        """
         with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
 
-        # parse grib2io _index to dataframe and aquire non-geo possible dims (scalar coord when not dim due to squeeze)
-        # parse_grib_index applies filters to index and expands metadata based on product definition template number
+        # parse grib2io _index to dataframe and acquire non-geo possible dims
+        # (scalar coord when not dim due to squeeze) parse_grib_index applies
+        # filters to index and expands metadata based on product definition
+        # template number
         file_index, non_geo_dims = parse_grib_index(file_index, filters)
 
         # Divide up records by variable
@@ -72,7 +82,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
             da = build_da_without_coords(var_df, cube, filename)
             ds[da.name] = da
 
-        # assign coords from the cube; the cube prevents datarrays with different shapes
+        # assign coords from the cube; the cube prevents datarrays with
+        # different shapes
         ds = ds.assign_coords(cube.coords())
         # assign extra geo coords
         ds = ds.assign_coords(extra_geo)
@@ -102,12 +113,30 @@ class GribBackendArray(BackendArray):
         )
 
     def _raw_getitem(self, key: tuple):
-        # thread safe method implementing access to data on disk
+        """Implement thread safe access to data on disk."""
         with self.lock:
             return self.array[key]
 
 
-def exclusive_slice_to_inclusive(item):
+def exclusive_slice_to_inclusive(item: slice):
+    """
+    Convert a slice with exclusive stop to an inclusive slice.
+
+    If the slice has a step, the stop is reduced by the step, so that both
+    interpretations would yield the same result.
+
+    The means that [start, stop) is converted to [start, stop - step].
+
+    Parameters
+    ----------
+    item
+        The slice to convert.
+
+    Returns
+    -------
+    slice
+        The converted slice.
+    """
     # return the None slice
     if item.start is None and item.stop is None and item.step is None:
         return item
@@ -149,7 +178,7 @@ class PdIndex(Validator):
 
 
 def array_safe_eq(a, b) -> bool:
-    """Check if a and b are equal, even if they are numpy arrays"""
+    """Check if a and b are equal, even if they are numpy arrays."""
     if a is b:
         return True
     if hasattr(a, 'equals'):
@@ -165,7 +194,7 @@ def array_safe_eq(a, b) -> bool:
 
 
 def dc_eq(dc1, dc2) -> bool:
-    """checks if two dataclasses which hold numpy arrays are equal"""
+    """Check if two dataclasses which hold numpy arrays are equal."""
     if dc1 is dc2:
         return True
     if dc1.__class__ is not dc2.__class__:
@@ -204,7 +233,6 @@ class Cube:
                     coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(grib_name=k))
                 elif len(self[k]) == 1:
                     coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(grib_name=k))
-        #coords = {k: xr.Variable(dims=k, data=self[k], attrs=dict(tdlp_name=k)) for k in keys if self[k] is not None}
         return coords
 
 
@@ -219,7 +247,8 @@ class OnDiskArray:
     dtype = 'float32'
 
     def __post_init__(self):
-        geo_shape = (self.index.iloc[0].ny, self.index.iloc[0].nx)  # multiple grids not allowed so can just use first
+        # multiple grids not allowed so can just use first
+        geo_shape = (self.index.iloc[0].ny, self.index.iloc[0].nx)
 
         self.geo_shape = geo_shape
         self.geo_ndim = len(geo_shape)
@@ -237,11 +266,15 @@ class OnDiskArray:
         self.index = self.index[cols]
 
     def __getitem__(self, item) -> np.array:
-        # dimensions not in index are internal to tdlpack records; 2 dims for grids; 1 dim for stations
+        # dimensions not in index are internal to tdlpack records; 2 dims for
+        # grids; 1 dim for stations
 
         index_slicer = item[:-self.geo_ndim]
-        index_slicer = tuple([[i] if isinstance(i, int) else i for i in index_slicer]) # maintain all multindex levels
-        # pandas loc slicing is inclusive, therefore convert slices into explicit lists
+        # maintain all multindex levels
+        index_slicer = tuple([[i] if isinstance(i, int) else i for i in index_slicer])
+
+        # pandas loc slicing is inclusive, therefore convert slices into
+        # explicit lists
         index_slicer_inclusive = tuple([ exclusive_slice_to_inclusive(i) if isinstance(i, slice) else i for i in index_slicer])
 
         # get records selected by item in new index dataframe
@@ -307,7 +340,8 @@ def filter_index(index, k, v):
             else _asarray_tuplesafe(v)
             )
         if label.ndim == 0:
-            label_value = label[()] if label.dtype.kind in "mM" else label.item() # see https://github.com/pydata/xarray/pull/4292 for details
+            # see https://github.com/pydata/xarray/pull/4292 for details
+            label_value = label[()] if label.dtype.kind in "mM" else label.item()
             try:
                 indexer = pd.Index(index[k]).get_loc(label_value)
                 if isinstance(indexer, int):
@@ -324,9 +358,11 @@ def filter_index(index, k, v):
 
 
 def parse_grib_index(index, filters):
-    '''
-    Apply filters; evaluate what dimesnions are possible (based on pdtn) and parse each out
-    '''
+    """
+    Apply filters.
+
+    Evaluate remaining dimensions based on pdtn and parse each out.
+    """
 
     # make a copy of filters, remove filters as they are applied
     filters = copy(filters)
@@ -347,8 +383,8 @@ def parse_grib_index(index, filters):
     index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber))
     index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface))
     index = index.astype({'ny':'int','nx':'int'})
-    # apply common filters(to all definition templates) to reduce dataset to single cube
-
+    # apply common filters(to all definition templates) to reduce dataset to
+    # single cube
 
     # ensure only one of each of the below exists after filters applied
     unique_pdtn = index.productDefinitionTemplateNumber.unique()
@@ -366,13 +402,15 @@ def parse_grib_index(index, filters):
     if len(index.typeOfFirstFixedSurface.unique()) > 1:
         raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {[str(i) for i in unique]}')
 
-    # determine which non geo dimensions can be created from data
-    # by this point the index is filtered down to a single typeOfFirstFixedSurface and productDefinitionTemplateNumber
+    # determine which non geo dimensions can be created from data by this point
+    # the index is filtered down to a single typeOfFirstFixedSurface and
+    # productDefinitionTemplateNumber
     non_geo_dims = list()
 
     #TODO Eventually re-work this section making 'non_geo_dims'
 
-    # refDate always added for now (could add only based on typOfGeneratingProcess)
+    # refDate always added for now (could add only based on
+    # typOfGeneratingProcess)
     if 'refDate' not in index.columns:
         index = index.assign(refDate=index.msg.apply(lambda msg: msg.refDate))
     @dataclass(init=False)
@@ -380,7 +418,8 @@ def parse_grib_index(index, filters):
         refDate: pd.Index = PdIndex()
     non_geo_dims.append(RefDateDim)
 
-    # leadTime always added for now (could add only based on typOfGeneratingProcess)
+    # leadTime always added for now (could add only based on
+    # typOfGeneratingProcess)
     if 'leadTime' not in index.columns:
         index = index.assign(leadTime=index.msg.apply(lambda msg: msg.leadTime))
     @dataclass(init=False)
@@ -398,7 +437,9 @@ def parse_grib_index(index, filters):
     # logic for parsing possible dims from specific product definition section
 
     if pdtn in {5,9}:
-        '''Probability forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.  (see Template 4.9)'''
+        # Probability forecasts at a horizontal level or in a horizontal layer
+        # in a continuous or non-continuous time interval.  (see Template
+        # 4.9)
         index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
         index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
 
@@ -414,7 +455,9 @@ def parse_grib_index(index, filters):
             non_geo_dims.append(ThresholdUpperLimitDim)
 
     if pdtn in {6,10}:
-        '''Percentile forecasts at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval.  (see Template 4.10)'''
+        # Percentile forecasts at a horizontal level or in a horizontal layer
+        # in a continuous or non-continuous time interval.  (see Template
+        # 4.10)
         index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
 
         @dataclass(init=False)
@@ -443,6 +486,23 @@ def parse_grib_index(index, filters):
 
 
 def build_da_without_coords(index, cube, filename) -> xr.DataArray:
+    """
+    Build a DataArray without coordinates from a cube of grib2 messages.
+
+    Parameters
+    ----------
+    index
+        Index of cube.
+    cube
+        Cube of grib2 messages.
+    filename
+        Filename of grib2 file
+
+    Returns
+    -------
+    DataArray
+        DataArray without coordinates
+    """
     dim_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is not None and len(cube[k]) > 1]
     constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
@@ -484,11 +544,10 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
 
 def _asarray_tuplesafe(values):
     """
-    Convert values into a numpy array of at most 1-dimension, while preserving
-    tuples.
+    Convert values to a numpy array of at most 1-dimension and preserve tuples.
 
-    Adapted from pandas.core.common._asarray_tuplesafe
-    grabbed from xarray because prefixed with _
+    Adapted from pandas.core.common._asarray_tuplesafe grabbed from xarray
+    because prefixed with _
     """
     if isinstance(values, tuple):
         result = utils.to_0d_object_array(values)
@@ -503,10 +562,26 @@ def _asarray_tuplesafe(values):
 
 def make_variables(index, f, non_geo_dims):
     """
-    from index as dataframe, separate by variable
-    create an individual dataframe index and cube for each variable
-    """
+    Create an individual dataframe index and cube for each variable.
 
+    Parameters
+    ----------
+    index
+        Index of cube.
+    f
+        ?
+    non_geo_dims
+        Dimensions not associated with the x,y grid
+
+    Returns
+    -------
+    ordered_frames
+        List of dataframes, one for each variable.
+    cube
+        Cube of grib2 messages.
+    extra_geo
+        Extra geographic coordinates.
+    """
     # let shortName determine the variables
 
     # set the index to the name
@@ -545,7 +620,7 @@ def make_variables(index, f, non_geo_dims):
 
         for dim in dims:
             if frame[dim].value_counts().nunique() > 1:
-                raise ValueError(f'un-even numer of grib msgs associated with dimension: {dim}\n unique values for {dim}: {frame[dim].unique()} ')
+                raise ValueError(f'uneven number of grib msgs associated with dimension: {dim}\n unique values for {dim}: {frame[dim].unique()} ')
 
         if len(dims) >= 1: # dims may be empty if no extra dims on top of x,y
             frame = frame.sort_values(dims)
@@ -559,9 +634,6 @@ def make_variables(index, f, non_geo_dims):
 
         # miloc is multi-index integer location of msg in nd DataArray
         miloc = list(zip(*[frame.index.unique(level=dim).get_indexer(frame.index.get_level_values(dim)) for dim in dims]))
-
-       #if len(miloc) >= 1:  # miloc will be empty when no extra dims  # removed as miloc is calculated and used in OnDiskArray __getitem__
-       #    frame = frame.assign(miloc=miloc)
 
         # set frame multi index
         if len(miloc) >= 1:  # miloc will be empty when no extra dims, thus no multiindex
@@ -654,39 +726,38 @@ class Grib2ioDataArray:
 
     def interp(self, method, grid_def_out, method_options=None) -> xr.DataArray:
         """
-        Perform grid spatial interpolation via the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+        Perform grid spatial interpolation.
+
+        Uses the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
         Parameters
         ----------
+        method
+            Interpolate method to use. This can either be an integer or string
+            using the following mapping:
 
-        **`method : int or str`**
+            | Interpolate Scheme | Integer Value |
+            | :---:              | :---:         |
+            | 'bilinear'         | 0             |
+            | 'bicubic'          | 1             |
+            | 'neighbor'         | 2             |
+            | 'budget'           | 3             |
+            | 'spectral'         | 4             |
+            | 'neighbor-budget'  | 6             |
 
-        Interpolate method to use. This can either be an integer or string using
-        the following mapping:
-
-        | Interpolate Scheme | Integer Value |
-        | :---:              | :---:         |
-        | 'bilinear'         | 0             |
-        | 'bicubic'          | 1             |
-        | 'neighbor'         | 2             |
-        | 'budget'           | 3             |
-        | 'spectral'         | 4             |
-        | 'neighbor-budget'  | 6             |
-
-        **`grid_def_out : grib2io.Grib2GridDef`**
-
-        Grib2GridDef object of the output grid.
+        grid_def_out
+            Grib2GridDef object of the output grid.
 
         Returns
-        _______
-
-        DataSet interpolated to new grid definition
-        The attribute GRIB2IO_section3 is replaced with the section3 array from the new grid definition
-
+        -------
+        interp
+            DataSet interpolated to new grid definition.  The attribute
+            GRIB2IO_section3 is replaced with the section3 array from the new
+            grid definition.
         """
-
         da = self._obj
-        # ensure that y, x are rightmost dims; they should be if opening with grib2io engine
+        # ensure that y, x are rightmost dims; they should be if opening with
+        # grib2io engine
 
         # gdtn and gdt is not the entirety of the new s3
         npoints = grid_def_out.npoints
@@ -704,7 +775,7 @@ class Grib2ioDataArray:
         new_coords['longitude'] = longitude
         new_coords['latitude'] = latitude
 
-        # make grid def in from section3 on da attrs
+        # make grid def in from section3 on da.attrs
         grid_def_in = self.griddef()
 
         if da.chunks is None:
@@ -731,42 +802,35 @@ class Grib2ioDataArray:
 
         Parameters
         ----------
+        method
+            Interpolate method to use. This can either be an integer or string
+            using the following mapping:
 
-        **`method : int or str`**
+            | Interpolate Scheme | Integer Value |
+            | :---:              | :---:         |
+            | 'bilinear'         | 0             |
+            | 'bicubic'          | 1             |
+            | 'neighbor'         | 2             |
+            | 'budget'           | 3             |
+            | 'spectral'         | 4             |
+            | 'neighbor-budget'  | 6             |
 
-        Interpolate method to use. This can either be an integer or string using
-        the following mapping:
-
-        | Interpolate Scheme | Integer Value |
-        | :---:              | :---:         |
-        | 'bilinear'         | 0             |
-        | 'bicubic'          | 1             |
-        | 'neighbor'         | 2             |
-        | 'budget'           | 3             |
-        | 'spectral'         | 4             |
-        | 'neighbor-budget'  | 6             |
-
-        **`calls : sequence of strings`**
-
-        Station calls used for labeling new station index coordinate
-
-        **`lats : sequence of floats`**
-
-        Latitudes of the station points.
-
-        **`lons : sequence of floats`**
-
-        Longitudes of the station points.
+        calls
+            Station calls used for labeling new station index coordinate
+        lats
+            Latitudes of the station points.
+        lons
+            Longitudes of the station points.
 
         Returns
         -------
-        DataArray interpolated to lat and lon locations and labeled with dimension and coordinate 'station'
-        (..., y, x) -> (..., station)
-
+        interp_to_stations
+            DataArray interpolated to lat and lon locations and labeled with
+            dimension and coordinate 'station'. (..., y, x) -> (..., station)
         """
-
         da = self._obj
-        #TODO ensure that y, x are rightmost dims; they should be if opening with grib2io engine
+        #TODO ensure that y, x are rightmost dims; they should be if opening
+        # with grib2io engine
 
         calls = np.asarray(calls)
         lats = np.asarray(lats)

@@ -1,42 +1,47 @@
-"""
-Tools for working with Rotated Lat/Lon Grids.
-"""
+"""Tools for working with Rotated Lat/Lon Grids."""
 
 import numpy as np
+from numpy.typing import NDArray
 
 RAD2DEG = 57.29577951308232087684
 DEG2RAD = 0.01745329251994329576
 
-def rotate(latin, lonin, aor, splat, splon):
+def rotate(
+    latin: NDArray[np.float32],
+    lonin: NDArray[np.float32],
+    aor: NDArray[np.float32],
+    splat: NDArray[np.float32],
+    splon: NDArray[np.float32],
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """
-    Perform grid rotation. This function is adapted from ECMWF's ecCodes library
-    void function, rotate().
+    Perform grid rotation.
+
+    This function is adapted from ECMWF's ecCodes library void function,
+    rotate().
 
     https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc
 
     Parameters
     ----------
-
-    **`latin : float or array_like`**
+    latin
         Latitudes in units of degrees.
-
-    **`lonin : float or array_like`**
+    lonin
         Longitudes in units of degrees.
-
-    **`aor : float`**
+    aor
         Angle of rotation as defined in GRIB2 GDTN 4.1.
-
-    **`splat : float`**
+    splat
         Latitude of South Pole as defined in GRIB2 GDTN 4.1.
-
-    **`splon : float`**
+    splon
         Longitude of South Pole as defined in GRIB2 GDTN 4.1.
 
     Returns
     -------
-    **`lats, lons : numpy.ndarray`**
-        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes and
-        longitudes in units of degrees.
+    lats
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes in units
+        of degrees.
+    lons
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units
+        of degrees.
     """
     zsycen = np.sin(DEG2RAD * (splat + 90.))
     zcycen = np.cos(DEG2RAD * (splat + 90.))
@@ -65,35 +70,42 @@ def rotate(latin, lonin, aor, splat, splon):
     return pyrot, pxrot
 
 
-def unrotate(latin, lonin, aor, splat, splon):
+def unrotate(
+    latin: NDArray[np.float32],
+    lonin: NDArray[np.float32],
+    aor: NDArray[np.float32],
+    splat: NDArray[np.float32],
+    splon: NDArray[np.float32],
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
     """
-    Perform grid un-rotation. This function is adapted from ECMWF's ecCodes library
-    void function, unrotate().
+    Perform grid un-rotation.
+
+    This function is adapted from ECMWF's ecCodes library void function,
+    unrotate().
 
     https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc
 
     Parameters
     ----------
-    **`latin : float or array_like`**
+    latin
         Latitudes in units of degrees.
-
-    **`lonin : float or array_like`**
+    lonin
         Longitudes in units of degrees.
-
-    **`aor : float`**
+    aor
         Angle of rotation as defined in GRIB2 GDTN 4.1.
-
-    **`splat : float`**
+    splat
         Latitude of South Pole as defined in GRIB2 GDTN 4.1.
-
-    **`splon : float`**
+    splon
         Longitude of South Pole as defined in GRIB2 GDTN 4.1.
 
     Returns
     -------
-    **`lats, lons : numpy.ndarray`**
-        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes and
-        longitudes in units of degrees.
+    lats
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid latitudes in units
+        of degrees.
+    lons
+        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units
+        of degrees.
     """
     lon_x = lonin
     lat_y = latin

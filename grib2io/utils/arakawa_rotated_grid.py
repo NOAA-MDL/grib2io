@@ -15,28 +15,27 @@ from . import rotated_grid
 DEG2RAD = rotated_grid.DEG2RAD
 RAD2DEG = rotated_grid.RAD2DEG
 
-def ll2rot(latin, lonin, latpole, lonpole):
+def ll2rot(latin: float, lonin: float, latpole: float, lonpole: float) -> tuple[float, float]:
     """
     Rotate a latitude/longitude pair.
 
     Parameters
     ----------
-    **`latin`**: `float`
-        Latitudes in units of degrees.
-
-    **`lonin`**: `float`
-        Longitudes in units of degrees.
-
-    **`latpole`**: `float`
+    latin
+        Unrotated latitude in units of degrees.
+    lonin
+        Unrotated longitude in units of degrees.
+    latpole
         Latitude of Pole.
-
-    **`lonpole`**: `float`
+    lonpole
         Longitude of Pole.
 
     Returns
     -------
-    **`tlat, tlons`**
-        Returns two floats of rotated latitude and longitude in units of degrees.
+    tlat
+        Rotated latitude in units of degrees.
+    tlons
+        Rotated longitude in units of degrees.
     """
     tlon = lonin - lonpole
 
@@ -70,28 +69,27 @@ def ll2rot(latin, lonin, latpole, lonpole):
     return tlat, tlon
 
 
-def rot2ll(latin, lonin, latpole, lonpole):
+def rot2ll(latin: float, lonin: float, latpole: float, lonpole: float) -> tuple[float, float]:
     """
     Unrotate a latitude/longitude pair.
 
     Parameters
     ----------
-    **`latin`**: `float`
-        Latitudes in units of degrees.
-
-    **`lonin`**: `float`
-        Longitudes in units of degrees.
-
-    **`latpole`**: `float`
+    latin
+        Rotated latitude in units of degrees.
+    lonin
+        Rotated longitude in units of degrees.
+    latpole
         Latitude of Pole.
-
-    **`lonpole`**: `float`
+    lonpole
         Longitude of Pole.
 
     Returns
     -------
-    **`tlat, tlons`**
-        Returns two floats of unrotated latitude and longitude in units of degrees.
+    tlat
+        Unrotated latitude in units of degrees.
+    tlons
+        Unrotated longitude in units of degrees.
     """
     tlon = lonin
 
@@ -116,43 +114,47 @@ def rot2ll(latin, lonin, latpole, lonpole):
         tlon = 90.0
     else:
         tlon = -90.0
-    
+
     # Remove the longitude rotation
     tlon += lonpole
     if tlon < 0:
         tlon += 360.0
     if tlon > 360:
         tlon -= 360.0
-    
+
     return tlat, tlon
 
 
-def vector_rotation_angles(tlat, tlon, clat, losp, xlat):
+def vector_rotation_angles(
+    tlat: float,
+    tlon: float,
+    clat: float,
+    losp: float,
+    xlat: float,
+) -> float:
     """
-    Generate a rotation angle value that can be applied to a vector quantity to
-    make it Earth-oriented.
+    Generate a rotation angle value.
+
+    The rotation angle value can be applied to a vector quantity to make it
+    Earth-oriented.
 
     Parameters
     ----------
-    **`tlat`**: `float`
+    tlat
         True latitude in units of degrees.
-
-    **tlon`**: `float`
+    tlon
         True longitude in units of degrees..
-
-    **`clat`**: `float`
+    clat
         Latitude of center grid point in units of degrees.
-
-    **`losp`**: `float`
+    losp
         Longitude of the southern pole in units of degrees.
-
-    **`xlat`**: `float`
+    xlat
         Latitude of the rotated grid in units of degrees.
 
     Returns
     -------
-    **`rot : float`**
-        Rotation angle in units of radians. 
+    rot
+        Rotation angle in units of radians.
     """
     slon = math.sin((tlon-losp)*DEG2RAD)
     cgridlat = math.cos(xlat*DEG2RAD)

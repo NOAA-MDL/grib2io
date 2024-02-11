@@ -1,8 +1,9 @@
-"""
-Functions for retreiving data from NCEP GRIB2 Tables.
-"""
-#from functools import cache # USE WHEN Python 3.9+ only
+"""Functions for retrieving data from NCEP GRIB2 Tables."""
+
 from functools import lru_cache
+
+from typing import Optional, Union, List
+from numpy.typing import ArrayLike
 
 from .section0 import *
 from .section1 import *
@@ -14,22 +15,24 @@ from .originating_centers import *
 
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20]
 
-def get_table(table, expand=False):
+def get_table(table: str, expand: bool=False) -> dict:
     """
     Return GRIB2 code table as a dictionary.
 
     Parameters
     ----------
-    **`table : str`**
-        Code table number (e.g. '1.0'). NOTE: Code table '4.1' requires a 3rd value
-        representing the product discipline (e.g. '4.1.0').
+    table
+        Code table number (e.g. '1.0').
 
-    **`expand : bool, optional`**
-        If `True`, expand output dictionary where keys are a range.
+        NOTE: Code table '4.1' requires a 3rd value representing the product
+        discipline (e.g. '4.1.0').
+    expand
+        If `True`, expand output dictionary wherever keys are a range.
 
     Returns
     -------
-    Table as a **`dict`**.
+    get_table
+        GRIB2 code table as a dictionary.
     """
     if len(table) == 3 and table == '4.1':
         raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
@@ -52,24 +55,27 @@ def get_table(table, expand=False):
         return {}
 
 
-def get_value_from_table(value, table, expand=False):
+def get_value_from_table(
+    value: Union[int, str],
+    table: str,
+    expand: bool = False,
+) -> Optional[Union[float, int]]:
     """
     Return the definition given a GRIB2 code table.
 
     Parameters
     ----------
-    **`value : int or str`**
+    value
         Code table value.
-
-    **`table : str`**
+    table
         Code table number.
-
-    **`expand : bool, optional`**
+    expand
         If `True`, expand output dictionary where keys are a range.
 
     Returns
     -------
-    Table value or `None` if not found.
+    get_value_from_table
+        Table value or `None` if not found.
     """
     try:
         tbl = get_table(table,expand=expand)
@@ -84,34 +90,39 @@ def get_value_from_table(value, table, expand=False):
         return None
 
 
-def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
+def get_varinfo_from_table(
+    discipline: Union[int, str],
+    parmcat: Union[int, str],
+    parmnum: Union[int, str],
+    isNDFD: bool = False,
+):
     """
-    Return the GRIB2 variable information given values of `discipline`,
-    `parmcat`, and `parmnum`. NOTE: This functions allows for all arguments
-    to be converted to a string type if arguments are integer.
+    Return the GRIB2 variable information.
+
+    NOTE: This functions allows for all arguments to be converted to a string
+    type if arguments are integer.
 
     Parameters
     ----------
-    **`discipline : int or str`**
+    discipline
         Discipline code value of a GRIB2 message.
-
-    **`parmcat : int or str`**
+    parmcat
         Parameter Category value of a GRIB2 message.
-
-    **`parmnum : int or str`**
+    parmnum
         Parameter Number value of a GRIB2 message.
-
-    **`isNDFD : bool, optional`**
-        If `True`, signals function to try to get variable information from 
-        the supplemental NDFD tables.
+    isNDFD: optional
+        If `True`, signals function to try to get variable information from the
+        supplemental NDFD tables.
 
     Returns
     -------
-    **`list`** containing variable information. "Unknown" is given for item of
-    information if variable is not found.
-        - list[0] = full name
-        - list[1] = units
-        - list[2] = short name (abbreviated name)
+    full_name
+        Full name of the GRIB2 variable. "Unknown" if variable is not found.
+    units
+        Units of the GRIB2 variable. "Unknown" if variable is not found.
+    shortName
+        Abbreviated name of the GRIB2 variable. "Unknown" if variable is not
+        found.
     """
     if isNDFD:
         try:
@@ -121,7 +132,6 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
             return locals()[tblname][str(parmnum)]
         except(ImportError,KeyError):
             pass
-            #return ['Unknown','Unknown','Unknown']
     try:
         tblname = f'table_4_2_{discipline}_{parmcat}'
         modname = f'.section4_discipline{discipline}'
@@ -131,28 +141,35 @@ def get_varinfo_from_table(discipline,parmcat,parmnum,isNDFD=False):
         return ['Unknown','Unknown','Unknown']
 
 
-#@cache# USE WHEN Python 3.9+ only
 @lru_cache(maxsize=None)
-def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
+def get_shortnames(
+    discipline: Optional[Union[int, str]] = None,
+    parmcat: Optional[Union[int, str]] = None,
+    parmnum: Optional[Union[int, str]] = None,
+    isNDFD: bool = False,
+) -> List[str]:
     """
-    Returns a list of variable shortNames given GRIB2 discipline, parameter
-    category, and parameter number.  If all 3 args are None, then shortNames
-    from all disciplines, parameter categories, and numbers will be returned.
+    Return a list of variable shortNames.
+
+    If all 3 args are None, then shortNames from all disciplines, parameter
+    categories, and numbers will be returned.
 
     Parameters
     ----------
-    **`discipline : int`**
+    discipline
         GRIB2 discipline code value.
-
-    **`parmcat : int`**
+    parmcat
         GRIB2 parameter category value.
-
-    **`parmnum : int or str`**
+    parmnum
         Parameter Number value of a GRIB2 message.
+    isNDFD: optional
+        If `True`, signals function to try to get variable information from the
+        supplemental NDFD tables.
 
     Returns
     -------
-    **`list`** of GRIB2 shortNames.
+    get_shortnames
+        list of GRIB2 shortNames.
     """
     shortnames = list()
     if discipline is None:
@@ -184,22 +201,24 @@ def get_shortnames(discipline=None, parmcat=None, parmnum=None, isNDFD=False):
     return shortnames
 
 
-#@cache# USE WHEN Python 3.9+ only
 @lru_cache(maxsize=None)
-def get_metadata_from_shortname(shortname):
+def get_metadata_from_shortname(shortname: str):
     """
     Provide GRIB2 variable metadata attributes given a GRIB2 shortName.
 
     Parameters
     ----------
-    **`shortname : str`**
+    shortname
         GRIB2 variable shortName.
 
     Returns
     -------
-    **`list`** of dictionary items where each dictionary items contains the variable
-    metadata key:value pairs. **NOTE:** Some variable shortNames will exist in multiple
-    parameter category/number tables according to the GRIB2 discipline.
+    get_metadata_from_shortname
+        list of dictionary items where each dictionary item contains the
+        variable metadata key:value pairs.
+
+        NOTE: Some variable shortNames will exist in multiple parameter
+        category/number tables according to the GRIB2 discipline.
     """
     metadata = []
     for d in GRIB2_DISCIPLINES:
@@ -213,27 +232,29 @@ def get_metadata_from_shortname(shortname):
     return metadata
 
 
-def get_wgrib2_level_string(pdtn, pdt):
+def get_wgrib2_level_string(pdtn: int, pdt: ArrayLike) -> str:
     """
-    Return a string that describes the level or layer of the GRIB2 message. The
-    format and language of the string is an exact replica of how wgrib2 produces
-    the level/layer string in its inventory output.
+    Return a string that describes the level or layer of the GRIB2 message.
 
-    Contents of wgrib2 source, [Level.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c),
+    The format and language of the string is an exact replica of how wgrib2
+    produces the level/layer string in its inventory output.
+
+    Contents of wgrib2 source,
+    [Level.c](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c),
     were converted into a Python dictionary and stored in grib2io as table
     'wgrib2_level_string'.
 
     Parameters
     ----------
-    **`pdtn :  int`**
+    pdtn
         GRIB2 Product Definition Template Number
-
-    **`pdt : list or array_like`**
+    pdt
         Sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
-    wgrib2-formatted level/layer string.
+    get_wgrib2_level_string
+        wgrib2-formatted level/layer string.
     """
     lvlstr = ''
     if pdtn == 32:

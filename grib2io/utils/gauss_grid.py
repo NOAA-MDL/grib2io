@@ -28,18 +28,19 @@ def __single_arg_fast_cache(func):
 
 
 @__single_arg_fast_cache
-def gaussian_latitudes(nlat):
+def gaussian_latitudes(nlat: int):
     """
     Construct latitudes for a Gaussian grid.
 
     Parameters
     ----------
-    **`nlat : int`**
+    nlat
         The number of latitudes in the Gaussian grid.
 
     Returns
     -------
-    `numpy.ndarray` of latitudes (in degrees) with a length of `nlat`.
+    latitudes
+        `numpy.ndarray` of latitudes (in degrees) with a length of `nlat`.
     """
     if abs(int(nlat)) != nlat:
         raise ValueError('nlat must be a non-negative integer')
