@@ -1,15 +1,14 @@
 from ._grib2io import *
-from ._grib2io import __doc__
-from ._grib2io import _Grib2Message
+
+__all__ = ['open', 'show_config', 'interpolate', 'interpolate_to_stations',
+           'tables', 'templates', 'utils',
+           'Grib2Message', 'Grib2GridDef']
 
 try:
     from . import __config__
     __version__ = __config__.grib2io_version
 except(ImportError):
     pass
-
-__all__ = ['open','Grib2Message','_Grib2Message','show_config','interpolate',
-           'interpolate_to_stations','tables','templates','utils','Grib2GridDef']
 
 from .g2clib import __version__ as __g2clib_version__
 from .g2clib import _has_jpeg
