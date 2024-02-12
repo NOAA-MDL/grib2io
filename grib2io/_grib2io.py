@@ -1486,7 +1486,7 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, method_op
                                                  grid_def_in.gdtn,grid_def_in.gdt,
                                                  grid_def_out.gdtn,grid_def_out.gdt,
                                                  ibi,li.T,a.T,go.T,rlat,rlon)
-        lo = lo[:,0].reshape(newshp)
+        lo = lo.T.reshape(newshp)
         out = go.reshape(newshp)
         out = np.where(lo==0,np.nan,out)
     elif isinstance(a,tuple):
