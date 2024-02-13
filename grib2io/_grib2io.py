@@ -21,23 +21,21 @@ The following Jupyter Notebooks are available as tutorials:
 * [Plotting Arakawa Rotated Lat/Lon Grids](https://github.com/NOAA-MDL/grib2io/blob/master/demos/plot-arakawa-rotlatlon-grids.ipynb)
 """
 
+from dataclasses import dataclass, field
+from numpy.typing import NDArray
+from typing import Union, Optional
 import builtins
 import collections
 import copy
 import datetime
 import hashlib
+import numpy as np
 import os
+import pyproj
 import re
 import struct
 import sys
-from typing import Union, Optional
 import warnings
-
-from dataclasses import dataclass, field
-from numpy import ma
-import numpy as np
-from numpy.typing import NDArray
-import pyproj
 
 from . import g2clib
 from . import tables
@@ -723,6 +721,18 @@ class _Grib2Message:
     def griddef(self):
         """Return a Grib2GridDef instance for a GRIB2 message."""
         return Grib2GridDef.from_section3(self.section3)
+
+
+    @property
+    def lats(self):
+        """Return grid latitudes."""
+        return self.latlons()[0]
+
+
+    @property
+    def lons(self):
+        """Return grid longitudes."""
+        return self.latlons()[1]
 
 
     def __repr__(self):
