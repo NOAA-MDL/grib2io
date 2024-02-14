@@ -7,6 +7,8 @@ from typing import Union
 from . import tables
 from . import utils
 
+# This dict is used by grib2io.Grib2Message.attrs_by_section() method
+# to get attr names that defined in the Grib2Message base class.
 _section_attrs = {0:['discipline'],
                   1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
                      'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
