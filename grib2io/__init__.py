@@ -21,6 +21,7 @@ has_aec_support = bool(_has_aec)
 
 from .tables.originating_centers import _ncep_grib2_table_version
 ncep_grib2_table_version = _ncep_grib2_table_version
+g2c_version = __g2clib_version__
 
 def show_config():
     """Print grib2io build configuration information."""
