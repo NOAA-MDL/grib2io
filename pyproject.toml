@@ -54,7 +54,7 @@ Respository = "https://github.com/NOAA-MDL/grib2io"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["grib2io"]
+packages = ["grib2io", "grib2io.tables", "grib2io.utils"]
 zip-safe = false
 
 [tool.setuptools.dynamic]

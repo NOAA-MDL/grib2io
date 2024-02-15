@@ -5,6 +5,7 @@ include README.md
 include LICENSE
 include VERSION
 include create_docs.sh
+include requirements.txt
 graft docs
 graft src/ext src/grib2io
 graft tests
