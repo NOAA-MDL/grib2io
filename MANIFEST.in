@@ -1,12 +1,11 @@
 include MANIFEST.in
-include g2clib.pyx
-include redtoreg.pyx
 include setup.py
 include pyproject.toml
 include README.md
 include LICENSE
 include VERSION
-recursive-include grib2io *
-recursive-include docs *
-recursive-include make_grib2_tables *
-recursive-include tests *
+include create_docs.sh
+graft docs
+graft src/ext src/grib2io
+graft tests
+global-exclude *.py[cod] *.c *.so

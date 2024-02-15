@@ -1,4 +1,5 @@
 from ._grib2io import *
+from ._grib2io import __doc__
 
 __all__ = ['open', 'show_config', 'interpolate', 'interpolate_to_stations',
            'tables', 'templates', 'utils',

@@ -63,8 +63,8 @@ directories:
 # ----------------------------------------------------------------------------------------
 from Cython.Distutils import build_ext
 cmdclass = {'build_ext': build_ext}
-redtoreg_pyx = 'redtoreg.pyx'
-g2clib_pyx  = 'g2clib.pyx'
+redtoreg_pyx = 'src/ext/redtoreg.pyx'
+g2clib_pyx  = 'src/ext/g2clib.pyx'
 
 # ----------------------------------------------------------------------------------------
 # Read setup.cfg
@@ -110,7 +110,7 @@ cnt = \
 # It contains configuration information when building this package.
 grib2io_version = '%(grib2io_version)s'
 """
-a = open('grib2io/__config__.py','w')
+a = open('src/grib2io/__config__.py','w')
 cfgdict = {}
 cfgdict['grib2io_version'] = VERSION
 try:
