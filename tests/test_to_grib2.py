@@ -1,5 +1,3 @@
-from pathlib import Path
-
 import xarray as xr
 from numpy.testing import assert_allclose, assert_array_equal
 
@@ -41,7 +39,8 @@ def test_da_write(tmp_path, request):
     )
     # Too many differences in section 5 to easily compare and should be added
     # when/if there is an understanding of the differences.
-    assert_allclose(ds1["TMP"].data, ds2["TMP"].data, atol=0.1, rtol=0)
+
+    assert_allclose(ds1["TMP"].data, ds2["TMP"].data, atol=0.02, rtol=0)
 
 
 def test_ds_write(tmp_path, request):
@@ -83,7 +82,8 @@ def test_ds_write(tmp_path, request):
         )
         # Too many differences in section 5 to easily compare and should be
         # added when/if there is an understanding of the differences.
-        assert_allclose(ds1[var].data, ds2[var].data, atol=0.1, rtol=0)
+
+        assert_allclose(ds1[var].data, ds2[var].data, atol=0.02, rtol=0)
 
 
 def test_ds_write_levels(tmp_path, request):
@@ -120,7 +120,8 @@ def test_ds_write_levels(tmp_path, request):
         assert_array_equal(da1.attrs["GRIB2IO_section4"], da2.attrs["GRIB2IO_section4"])
         # Too many differences in section 5 to easily compare and should be
         # added when/if there is an understanding of the differences.
-        assert_allclose(da1.data, da2.data, atol=0.1, rtol=0)
+
+        assert_allclose(da1.data, da2.data, atol=0.02, rtol=0)
 
 
 def test_ds_write_leadtime(tmp_path, request):
@@ -163,4 +164,5 @@ def test_ds_write_leadtime(tmp_path, request):
         assert_array_equal(da1.attrs["GRIB2IO_section4"], da2.attrs["GRIB2IO_section4"])
         # Too many differences in section 5 to easily compare and should be
         # added when/if there is an understanding of the differences.
-        assert_allclose(da1.data, da2.data, atol=0.1, rtol=0)
+
+        assert_allclose(da1.data, da2.data, atol=0.02, rtol=0)
