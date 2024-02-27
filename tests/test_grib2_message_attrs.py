@@ -4,19 +4,19 @@ import datetime
 import grib2io
 
 def test_section0_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data'
-    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f024') as f:
-        msg = f[8]
-    expected_section0 = np.array([1196575042, 0, 0, 2, 69146])
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
+        msg = f['REFC'][0]
+    expected_section0 = np.array([1196575042, 0, 0, 2, 69683])
     np.testing.assert_array_equal(expected_section0, msg.section0)
     np.testing.assert_array_equal(msg.indicatorSection, expected_section0)
     assert msg.discipline.value == 0
     assert msg.discipline.definition == 'Meteorological Products'
 
 def test_section1_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data'
-    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f024') as f:
-        msg = f[8]
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
+        msg = f['REFC'][0]
     expected_section1 = np.array([   7,    0,    2,    1,    1, 2022,   11,    7,    0,    0,    0,
                0,    1])
     np.testing.assert_array_equal(expected_section1, msg.section1)
@@ -42,9 +42,9 @@ def test_section1_attrs(request):
     assert msg.typeOfData.definition == 'Forecast Products'
 
 def test_section3(request):
-    data = request.config.rootdir / 'tests' / 'data'
-    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f024') as f:
-        msg = f[8]
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
+        msg = f['REFC'][0]
     expected_section3 = np.array([        0,     65160,         0,         0,         0,         6,
                0,         0,         0,         0,         0,         0,
              360,       181,         0,        -1,  90000000,         0,
@@ -55,10 +55,10 @@ def test_section3(request):
     assert msg.sourceOfGridDefinition.definition == 'Specified in Code Table 3.1'
 
 def test_section4(request):
-    data = request.config.rootdir / 'tests' / 'data'
-    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f024') as f:
-        msg = f[8]
-    expected_section4 = np.array([  0,   0,  16, 196,   2,   0,  96,   0,   0,   1,  24,  10,   0,
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
+        msg = f['REFC'][0]
+    expected_section4 = np.array([  0,   0,  16, 196,   2,   0,  96,   0,   0,   1,  12,  10,   0,
                                     0, 255,   0,   0])
     assert msg.typeOfFirstFixedSurface.value == 10
     assert msg.typeOfFirstFixedSurface.definition == ['Entire Atmosphere', 'unknown']
@@ -75,9 +75,9 @@ def test_section4(request):
     assert msg.fullName == 'Composite reflectivity'
     assert msg.units == 'dB'
     assert msg.shortName == 'REFC'
-    assert msg.leadTime == datetime.timedelta(hours=24)
+    assert msg.leadTime == datetime.timedelta(hours=12)
     assert msg.duration == None
-    assert msg.validDate == datetime.datetime(2022,11,8)
+    assert msg.validDate == datetime.datetime(2022,11,7,12)
     assert msg.level == 'entire atmosphere'
     assert msg.parameterCategory == 16
     assert msg.parameterNumber == 196
@@ -90,17 +90,17 @@ def test_section4(request):
     assert msg.minutesAfterDataCutoff == 0
     assert msg.unitOfForecastTime.value == 1
     assert msg.unitOfForecastTime.definition == 'Hour'
-    assert msg.valueOfForecastTime == 24
+    assert msg.valueOfForecastTime == 12
     np.testing.assert_array_equal(expected_section4, msg.section4)
 
 def test_section5(request):
-    data = request.config.rootdir / 'tests' / 'data'
-    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f024') as f:
-        msg = f[8]
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
+        msg = f['REFC'][0]
     expected_section5 = np.array([     65160,          3, 3304718338,          0,          2,
                                           15,          0,          1,          0, 1649987994,
-                                          -1,       3266,          0,          4,          1,
-                                           1,         42,          8,          2,          2])
+                                          -1,       3127,          0,          4,          1,
+                                           1,         49,          8,          2,          2])
     assert msg.dataRepresentationTemplateNumber.value == 3
     assert msg.dataRepresentationTemplateNumber.definition == 'Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)'
     assert msg.numberOfPackedValues == 65160
@@ -116,12 +116,12 @@ def test_section5(request):
     assert msg.typeOfMissingValueManagement.definition == 'No explicit missing values included within the data values'
     assert msg.priMissingValue == None
     assert msg.secMissingValue == None
-    assert msg.nGroups == 3266
+    assert msg.nGroups == 3127
     assert msg.refGroupWidth == 0
     assert msg.nBitsGroupWidth == 4
     assert msg.refGroupLength == 1
     assert msg.groupLengthIncrement == 1
-    assert msg.lengthOfLastGroup == 42
+    assert msg.lengthOfLastGroup == 49
     assert msg.nBitsScaledGroupLength == 8
     assert msg.spatialDifferenceOrder.value == 2
     assert msg.spatialDifferenceOrder.definition == 'Second-Order Spatial Differencing'

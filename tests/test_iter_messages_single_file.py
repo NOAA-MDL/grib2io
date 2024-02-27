@@ -3,16 +3,20 @@ import numpy as np
 import pytest
 
 def test_iter_messages_read(request):
-    grib2file = request.config.rootdir / 'tests' / 'data' / 'gfs.t00z.pgrb2.1p00.f024'
+    grib2file = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00' / 'gfs.t00z.pgrb2.1p00.f012_subset'
     with grib2io.open(grib2file) as g:
         for msg in g:
             print(msg)
             print(f'\tmin: {np.nanmin(msg.data)} max: {np.nanmax(msg.data)} mean: {np.nanmean(msg.data)}')
             msg.flush_data()
 
-def test_iter_messages_write(request):
-    grib2file = request.config.rootdir / 'tests' / 'data' / 'gfs.t00z.pgrb2.1p00.f024'
-    grib2out = grib2io.open('/tmp/testwrite.grib2', mode='w')
+def test_iter_messages_write(tmp_path, request):
+    target_dir = tmp_path / "test_iter_messages_write"
+    target_dir.mkdir()
+    target_file = target_dir / "testwrite.grib2"
+
+    grib2file = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00' / 'gfs.t00z.pgrb2.1p00.f012_subset'
+    grib2out = grib2io.open(target_file, mode='w')
     with grib2io.open(grib2file) as g:
         for msg in g[:10]:
             print(type(msg))
