@@ -255,6 +255,7 @@ table_originating_subcenters  = {
 '15':'North American Regional Reanalysis Project',
 '16':'Space Weather Prediction Center',
 '17':'ESRL Global Systems Division',
+'18':'National Water Center',
 }
 
 table_generating_process  = {

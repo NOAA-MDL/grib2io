@@ -620,11 +620,6 @@ class _Grib2Message:
     productionStatus: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
     typeOfData: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
 
-    @property
-    def _isNDFD(self):
-        """Check if GRIB2 message is from NWS NDFD"""
-        return np.all(self.section1[0:2]==[8,65535])
-
     # Section 3 looked up common attributes.  Other looked up attributes are available according
     # to the Grid Definition Template.
     gridDefinitionSection: NDArray = field(init=False,repr=False,default=templates.GridDefinitionSection())
@@ -673,6 +668,12 @@ class _Grib2Message:
         except(TypeError):
             pass
         self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
+
+
+    @property
+    def _isNDFD(self):
+        """Check if GRIB2 message is from NWS NDFD"""
+        return np.all(self.section1[0:2]==[8,65535])
 
 
     @property

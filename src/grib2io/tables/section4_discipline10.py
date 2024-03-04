@@ -176,7 +176,7 @@ table_4_2_10_3  = {
 '18':['Heat flux correction','W m-2','HFLUXCOR'],
 '19':['Sea surface height tendency due to parameterization','m s-1','SSHGTPARM'],
 '20':['Deviation of sea level from mean with inverse barometer correction','m','DSLIBARCOR'],
-'21':['Salinity','kg kg-1','SALIN'],
+'21':['Salinity','kg kg-1','SALINITY'],
 '22-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '192':['Hurricane Storm Surge','m','SURGE'],
