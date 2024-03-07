@@ -134,6 +134,7 @@ g2clibext = Extension('grib2io.g2clib',
                       include_dirs = incdirs,
                       library_dirs = libdirs,
                       libraries = libraries,
+                      runtime_library_dirs = libdirs,
                       extra_objects = extra_objects)
 redtoregext = Extension('grib2io.redtoreg',
                         [redtoreg_pyx],
