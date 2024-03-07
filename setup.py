@@ -5,11 +5,14 @@ import configparser
 import numpy
 import os
 import platform
+import subprocess
 import sys
 
 with open("VERSION","rt") as f:
     VERSION = f.readline().strip()
 
+usestaticlibs = False
+extra_objects = []
 libdirs = []
 incdirs = []
 libraries = ['g2c']
@@ -18,7 +21,7 @@ libraries = ['g2c']
 # ----------------------------------------------------------------------------------------
 # find_library.
 # ----------------------------------------------------------------------------------------
-def find_library(name, dirs=None):
+def find_library(name, dirs=None, static=False):
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
 
@@ -35,6 +38,7 @@ def find_library(name, dirs=None):
 
     # For Linux and macOS (Apple Silicon), we have to search ourselves.
     libext = _libext_by_platform[sys.platform]
+    if static: libext = '.a'
     if dirs is None:
         if os.environ.get("CONDA_PREFIX"):
             dirs = [os.environ["CONDA_PREFIX"]]
@@ -45,7 +49,7 @@ def find_library(name, dirs=None):
 
     out = []
     for d in dirs:
-        libs = Path(d).rglob(f"lib*{name}{libext}")
+        libs = Path(d).rglob(f"lib{name}{libext}")
         out.extend(libs)
     if not out:
         raise ValueError(f"""
@@ -96,11 +100,44 @@ incdirs = list(set(incdirs))
 incdirs.append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
+# Check if static library linking is preferred.
+# ----------------------------------------------------------------------------------------
+if os.environ.get('USE_STATIC_LIBS'):
+    val = os.environ.get('USE_STATIC_LIBS')
+    if val not in {'True','False'}:
+        raise ValueError('Environment variable USE_STATIC_LIBS must be \'True\' or \'False\'')
+    usestaticlibs = True if val == 'True' else False
+
+if usestaticlibs:
+    for libdir in libdirs:
+        staticlib = find_library('g2c', dirs=[libdir], static=True)
+    extra_objects.append(staticlib)
+    cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
+    symbols = cmd.stdout.decode('utf-8')
+    if 'aec' in symbols:
+        extra_objects.append(find_library('aec', static=True))
+    if 'jpeg2000' in symbols:
+        extra_objects.append(find_library('jasper', static=True))
+    if 'openjpeg' in symbols:
+        extra_objects.append(find_library('openjp2', static=True))
+    if 'png' in symbols:
+        extra_objects.append(find_library('png', static=True))
+    extra_objects.append(find_library('z', static=True))
+    libdirs = []
+    libraries = []
+
+# ----------------------------------------------------------------------------------------
 # Define extensions
 # ----------------------------------------------------------------------------------------
-g2clibext = Extension('grib2io.g2clib',[g2clib_pyx],include_dirs=incdirs,\
-            library_dirs=libdirs,libraries=libraries,runtime_library_dirs=libdirs)
-redtoregext = Extension('grib2io.redtoreg',[redtoreg_pyx],include_dirs=[numpy.get_include()])
+g2clibext = Extension('grib2io.g2clib',
+                      [g2clib_pyx],
+                      include_dirs = incdirs,
+                      library_dirs = libdirs,
+                      libraries = libraries,
+                      extra_objects = extra_objects)
+redtoregext = Extension('grib2io.redtoreg',
+                        [redtoreg_pyx],
+                        include_dirs = [numpy.get_include()])
 
 # ----------------------------------------------------------------------------------------
 # Create __config__.py
