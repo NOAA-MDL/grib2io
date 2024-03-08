@@ -4,6 +4,8 @@ from collections import defaultdict
 import datetime
 from typing import Union
 
+from numpy import timedelta64, datetime64
+
 from . import tables
 from . import utils
 
@@ -191,7 +193,12 @@ class RefDate:
     def __get__(self, obj, objtype=None):
         return datetime.datetime(*obj.section1[5:11])
     def __set__(self, obj, value):
-        if isinstance(value,datetime.datetime):
+        if isinstance(value, datetime64):
+            timestamp = (value - datetime64("1970-01-01T00:00:00")) / timedelta64(
+                1, "s"
+            )
+            value = datetime.datetime.utcfromtimestamp(timestamp)
+        if isinstance(value, datetime.datetime):
             obj.section1[5] = value.year
             obj.section1[6] = value.month
             obj.section1[7] = value.day
@@ -199,7 +206,7 @@ class RefDate:
             obj.section1[9] = value.minute
             obj.section1[10] = value.second
         else:
-            msg = 'Reference date must be a datetime.datetime object.'
+            msg = "Reference date must be a datetime.datetime or np.datetime64 object."
             raise TypeError(msg)
 
 class ProductionStatus:
@@ -985,7 +992,30 @@ class LeadTime:
         return utils.get_leadtime(obj.section1,obj.section4[1],
                                   obj.section4[2:])
     def __set__(self, obj, value):
-        raise NotImplementedError
+        pdt = obj.section4[2:]
+
+        _key = {
+            8: slice(15, 21),
+            9: slice(22, 28),
+            10: slice(16, 22),
+            11: slice(18, 24),
+            12: slice(17, 23),
+        }
+        refdate = datetime.datetime(*obj.section1[5:11])
+        ivalue = int(value / timedelta64(1, "h"))
+        try:
+            pdt[_key[obj.pdtn]] = (
+                datetime.timedelta(hours=ivalue) + refdate
+            ).timetuple()[:5]
+        except KeyError:
+            if obj.pdtn == 48:
+                pdt[19] = ivalue / (
+                    tables.get_value_from_table(pdt[18], "scale_time_hours")
+                )
+            else:
+                pdt[8] = ivalue / (
+                    tables.get_value_from_table(pdt[7], "scale_time_hours")
+                )
 
 class FixedSfc1Info:
     """Information of the first fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
@@ -1046,10 +1076,13 @@ class UnitOfFirstFixedSurface:
 class ValueOfFirstFixedSurface:
     """Value of First Fixed Surface"""
     def __get__(self, obj, objtype=None):
-        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn]+2]/\
-                            (10.**obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn]+2])
+        return obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn] + 2] / (
+            10.0 ** obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn] + 2]
+        )
     def __set__(self, obj, value):
-        pass
+        obj.section4[ScaledValueOfFirstFixedSurface._key[obj.pdtn] + 2] = value * (
+            10.0 ** obj.section4[ScaleFactorOfFirstFixedSurface._key[obj.pdtn] + 2]
+        )
 
 class TypeOfSecondFixedSurface:
     """[Type of Second Fixed Surface](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""

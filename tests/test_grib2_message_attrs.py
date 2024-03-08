@@ -4,7 +4,7 @@ import datetime
 import grib2io
 
 def test_section0_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['REFC'][0]
     expected_section0 = np.array([1196575042, 0, 0, 2, 69683])
@@ -14,7 +14,7 @@ def test_section0_attrs(request):
     assert msg.discipline.definition == 'Meteorological Products'
 
 def test_section1_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['REFC'][0]
     expected_section1 = np.array([   7,    0,    2,    1,    1, 2022,   11,    7,    0,    0,    0,
@@ -42,7 +42,7 @@ def test_section1_attrs(request):
     assert msg.typeOfData.definition == 'Forecast Products'
 
 def test_section3(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['REFC'][0]
     expected_section3 = np.array([        0,     65160,         0,         0,         0,         6,
@@ -55,7 +55,7 @@ def test_section3(request):
     assert msg.sourceOfGridDefinition.definition == 'Specified in Code Table 3.1'
 
 def test_section4(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['REFC'][0]
     expected_section4 = np.array([  0,   0,  16, 196,   2,   0,  96,   0,   0,   1,  12,  10,   0,
@@ -94,7 +94,7 @@ def test_section4(request):
     np.testing.assert_array_equal(expected_section4, msg.section4)
 
 def test_section5(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / '00'
+    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['REFC'][0]
     expected_section5 = np.array([     65160,          3, 3304718338,          0,          2,
