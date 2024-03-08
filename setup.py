@@ -8,19 +8,46 @@ import platform
 import subprocess
 import sys
 
-with open("VERSION","rt") as f:
-    VERSION = f.readline().strip()
+# This maps package names to library names used in the
+# library filename.
+pkgname_to_libname = {
+    'g2c': ['g2c'],
+    'aec': ['aec'],
+    'jasper': ['jasper'],
+    'jpeg': ['jpegturbo', 'jpeg'],
+    'openjpeg': ['openjp2'],
+    'png': ['png'],
+    'z': ['z'],}
 
-usestaticlibs = False
-extra_objects = []
-libdirs = []
-incdirs = []
-libraries = ['g2c']
+def get_grib2io_version():
+    with open("VERSION","rt") as f:
+        ver = f.readline().strip()
+    return ver
 
+def get_package_info(name, config, static=False):
+    pkg_dir = os.environ.get(name.upper()+'_DIR')
+    pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
+    pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
 
-# ----------------------------------------------------------------------------------------
-# find_library.
-# ----------------------------------------------------------------------------------------
+    if pkg_dir is None:
+        # Env var not set
+        pkg_dir = config.get('directories',name+'_dir',fallback=None)
+        if pkg_dir is None:
+            for l in pkgname_to_libname[name]:
+                libname = os.path.dirname(find_library(l, static=static))
+                if libname is not None: break
+            pkg_libdir = libname
+            pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+    else:
+        # Env var was set
+        if os.path.exists(os.path.join(pkg_dir,'lib')):
+            pkg_libdir = os.path.join(pkg_dir,'lib')
+        elif os.path.exists(os.path.join(pkg_dir,'lib64')):
+            pkg_libdir = os.path.join(pkg_dir,'lib64')
+        if os.path.exists(os.path.join(pkg_dir,'include')):
+            pkg_incdir = os.path.join(pkg_dir,'include')
+    return (pkg_incdir, pkg_libdir)
+
 def find_library(name, dirs=None, static=False):
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
@@ -61,6 +88,17 @@ directories:
 """)
     return out[0].absolute().resolve().as_posix()
 
+# ----------------------------------------------------------------------------------------
+# Main part of setup.py
+# ----------------------------------------------------------------------------------------
+VERSION = get_grib2io_version()
+
+usestaticlibs = False
+libraries = ['g2c']
+
+extra_objects = []
+incdirs = []
+libdirs = []
 
 # ----------------------------------------------------------------------------------------
 # Build Cython sources
@@ -78,28 +116,6 @@ config = configparser.ConfigParser()
 config.read(setup_cfg)
 
 # ----------------------------------------------------------------------------------------
-# Get NCEPLIBS-g2c library info.
-# ----------------------------------------------------------------------------------------
-if os.environ.get('G2C_DIR'):
-    g2c_dir = os.environ.get('G2C_DIR')
-    if os.path.exists(os.path.join(g2c_dir,'lib')):
-        g2c_libdir = os.path.join(g2c_dir,'lib')
-    elif os.path.exists(os.path.join(g2c_dir,'lib64')):
-        g2c_libdir = os.path.join(g2c_dir,'lib64')
-    g2c_incdir = os.path.join(g2c_dir,'include')
-else:
-    g2c_dir = config.get('directories','g2c_dir',fallback=None)
-    if g2c_dir is None:
-       g2c_libdir = os.path.dirname(find_library('g2c'))
-       g2c_incdir = os.path.join(os.path.dirname(g2c_libdir),'include')
-libdirs.append(g2c_libdir)
-incdirs.append(g2c_incdir)
-
-libdirs = list(set(libdirs))
-incdirs = list(set(incdirs))
-incdirs.append(numpy.get_include())
-
-# ----------------------------------------------------------------------------------------
 # Check if static library linking is preferred.
 # ----------------------------------------------------------------------------------------
 if os.environ.get('USE_STATIC_LIBS'):
@@ -107,7 +123,18 @@ if os.environ.get('USE_STATIC_LIBS'):
     if val not in {'True','False'}:
         raise ValueError('Environment variable USE_STATIC_LIBS must be \'True\' or \'False\'')
     usestaticlibs = True if val == 'True' else False
+usestaticlibs = config.get('options', 'use_static_libs', fallback=usestaticlibs)
 
+# ----------------------------------------------------------------------------------------
+# Get g2c information
+# ----------------------------------------------------------------------------------------
+pkginfo = get_package_info(libraries[0], config, static=usestaticlibs)
+incdirs.append(pkginfo[0])
+libdirs.append(pkginfo[1])
+
+# ----------------------------------------------------------------------------------------
+# Perform work to determine required static library files.
+# ----------------------------------------------------------------------------------------
 if usestaticlibs:
     for libdir in libdirs:
         staticlib = find_library('g2c', dirs=[libdir], static=True)
@@ -115,16 +142,33 @@ if usestaticlibs:
     cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
     symbols = cmd.stdout.decode('utf-8')
     if 'aec' in symbols:
-        extra_objects.append(find_library('aec', static=True))
+        libraries.append('aec')
     if 'jpeg2000' in symbols:
-        extra_objects.append(find_library('jasper', static=True))
+        libraries.append('jpeg')
+        libraries.append('jasper')
     if 'openjpeg' in symbols:
-        extra_objects.append(find_library('openjp2', static=True))
+        libraries.append('openjpeg')
     if 'png' in symbols:
-        extra_objects.append(find_library('png', static=True))
-    extra_objects.append(find_library('z', static=True))
-    libdirs = []
-    libraries = []
+        libraries.append('png')
+        libraries.append('z')
+
+for l in libraries:
+    incdir, libdir = get_package_info(l, config, static=usestaticlibs)
+    incdirs.append(incdir)
+    libdirs.append(libdir)
+    if usestaticlibs:
+        l = pkgname_to_libname[l][0]
+        extra_objects.append(find_library(l, dirs=[libdir], static=usestaticlibs))
+        
+libraries = [] if usestaticlibs else list(set(libraries))
+incdirs = [] if usestaticlibs else list(set(incdirs)) 
+incdirs.append(numpy.get_include())
+libdirs = [] if usestaticlibs else list(set(libdirs))
+extra_objects = list(set(extra_objects)) if usestaticlibs else []
+
+print(f'{incdirs = }')
+print(f'{libdirs = }')
+print(f'{extra_objects = }')
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
