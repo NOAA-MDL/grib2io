@@ -14,7 +14,7 @@ pkgname_to_libname = {
     'g2c': ['g2c'],
     'aec': ['aec'],
     'jasper': ['jasper'],
-    'jpeg': ['jpegturbo', 'jpeg'],
+    'jpeg': ['turbojpeg', 'jpeg'],
     'openjpeg': ['openjp2'],
     'png': ['png'],
     'z': ['z'],}
@@ -33,11 +33,19 @@ def get_package_info(name, config, static=False):
         # Env var not set
         pkg_dir = config.get('directories',name+'_dir',fallback=None)
         if pkg_dir is None:
+            if static:
+                pkg_lib = config.get('static_libs',name+'_lib',fallback=None)
+                pkg_libdir = os.path.dirname(pkg_lib)
+                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                pkg_dir = os.path.dirname(pkg_libdir)
+
+        if pkg_dir is None:
             for l in pkgname_to_libname[name]:
                 libname = os.path.dirname(find_library(l, static=static))
                 if libname is not None: break
             pkg_libdir = libname
             pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+
     else:
         # Env var was set
         if os.path.exists(os.path.join(pkg_dir,'lib')):
@@ -159,9 +167,9 @@ for l in libraries:
     if usestaticlibs:
         l = pkgname_to_libname[l][0]
         extra_objects.append(find_library(l, dirs=[libdir], static=usestaticlibs))
-        
+
 libraries = [] if usestaticlibs else list(set(libraries))
-incdirs = [] if usestaticlibs else list(set(incdirs)) 
+incdirs = list(set(incdirs))
 incdirs.append(numpy.get_include())
 libdirs = [] if usestaticlibs else list(set(libdirs))
 extra_objects = list(set(extra_objects)) if usestaticlibs else []
