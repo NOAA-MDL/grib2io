@@ -144,8 +144,7 @@ libdirs.append(pkginfo[1])
 # Perform work to determine required static library files.
 # ----------------------------------------------------------------------------------------
 if usestaticlibs:
-    for libdir in libdirs:
-        staticlib = find_library('g2c', dirs=[libdir], static=True)
+    staticlib = find_library('g2c', dirs=libdirs, static=True)
     extra_objects.append(staticlib)
     cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
     symbols = cmd.stdout.decode('utf-8')
@@ -160,13 +159,14 @@ if usestaticlibs:
         libraries.append('png')
         libraries.append('z')
 
-for l in libraries:
-    incdir, libdir = get_package_info(l, config, static=usestaticlibs)
-    incdirs.append(incdir)
-    libdirs.append(libdir)
-    if usestaticlibs:
-        l = pkgname_to_libname[l][0]
-        extra_objects.append(find_library(l, dirs=[libdir], static=usestaticlibs))
+    # We already found g2c info, so iterate over libraries from [1:]
+    for l in libraries[1:]:
+        incdir, libdir = get_package_info(l, config, static=usestaticlibs)
+        incdirs.append(incdir)
+        libdirs.append(libdir)
+        if usestaticlibs:
+            l = pkgname_to_libname[l][0]
+            extra_objects.append(find_library(l, dirs=[libdir], static=usestaticlibs))
 
 libraries = [] if usestaticlibs else list(set(libraries))
 incdirs = list(set(incdirs))
@@ -174,9 +174,10 @@ incdirs.append(numpy.get_include())
 libdirs = [] if usestaticlibs else list(set(libdirs))
 extra_objects = list(set(extra_objects)) if usestaticlibs else []
 
-print(f'{incdirs = }')
-print(f'{libdirs = }')
-print(f'{extra_objects = }')
+print(f'Use static libs: {usestaticlibs}')
+print(f'\t{incdirs = }')
+print(f'\t{libdirs = }')
+print(f'\t{extra_objects = }')
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
