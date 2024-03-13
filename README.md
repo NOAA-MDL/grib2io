@@ -66,9 +66,18 @@ conda install -c conda-forge grib2io
 pip install .
 ```
 
+> [!NOTE]
+> ### Building with static libraries
+> The default behavior for building grib2io is to build against shared-object libraries.  However, in production environments, it is beneficial to build against static library files.  grib2io (v2.2.0+) allows for this type of build configuration.  To build against static library files, set the environment variable, `USE_STATIC_LIBS="True"` before your build/install command.  For example,
+> 
+>```shell
+>export USE_STATIC_LIBS="True"
+>pip install .
+>```
+
 ## Development
 
-The intention of grib2io is to become the offical Python interface for the NCEP g2c library.  Therefore, the development evolution of grib2io will mainly focus on how best to serve that purpose and its primary user's -- mainly meteorologists, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS) and National Centers for Environmental Prediction (NCEP), and other NOAA organizations.
+The intention of grib2io is to become the offical Python interface for the NCEP g2c library.  Therefore, the development evolution of grib2io will mainly focus on how best to serve that purpose and its primary users -- mainly meteorologists, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS) and National Centers for Environmental Prediction (NCEP), and other NOAA organizations.
 
 ## Disclaimer
 
