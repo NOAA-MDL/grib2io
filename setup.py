@@ -160,7 +160,8 @@ if usestaticlibs:
         libraries.append('z')
 
     # We already found g2c info, so iterate over libraries from [1:]
-    for l in libraries[1:]:
+    dep_libraries = [] if len(libraries) == 1 else libraries[1:]
+    for l in dep_libraries:
         incdir, libdir = get_package_info(l, config, static=usestaticlibs)
         incdirs.append(incdir)
         libdirs.append(libdir)
