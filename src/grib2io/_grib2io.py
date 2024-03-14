@@ -668,6 +668,7 @@ class _Grib2Message:
         except(TypeError):
             pass
         self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
+        self.bitmap = None
 
 
     @property
@@ -913,6 +914,7 @@ class _Grib2Message:
         """Flush the unpacked data values from the Grib2Message object."""
         del self._data
         self._data = self._ondiskarray
+        self.bitmap = None
 
 
     def __getitem__(self, item):
@@ -1300,7 +1302,6 @@ def _data(
     gdt = msg.section3[5:]
     drt = msg.section5[2:]
     nx, ny = msg.nx, msg.ny
-    scanModeFlags = msg.scanModeFlags
 
     # Set the fill value according to how we are handling missing values
     msg._auto_nans = _AUTO_NANS
@@ -1320,14 +1321,11 @@ def _data(
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
         bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
+        msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
 
-    try:
-        if scanModeFlags[2]:
-            storageorder='F'
-        else:
-            storageorder='C'
-    except AttributeError:
-        raise ValueError('Unsupported grid definition template number %s'%gridDefinitionTemplateNumber)
+    if hasattr(msg,'scanModeFlags'):
+        scanModeFlags = msg.scanModeFlags
+        storageorder = 'F' if scanModeFlags[2] else 'C'
 
     # Position file pointer to the beginning of data section.
     filehandle.seek(data_offset)
