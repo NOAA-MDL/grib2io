@@ -1321,7 +1321,8 @@ def _data(
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
         bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
-        msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
+        if bmap is not None:
+            msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
 
     if hasattr(msg,'scanModeFlags'):
         scanModeFlags = msg.scanModeFlags
