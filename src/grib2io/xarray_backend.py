@@ -25,7 +25,6 @@ from grib2io._grib2io import _data
 
 logger = logging.getLogger(__name__)
 
-ONE_MB = 1048576 # 1 MB in units of bytes
 LOCK = SerializableLock()
 
 
@@ -298,7 +297,7 @@ class OnDiskArray:
 
         array_field = np.full(array_field_shape, fill_value=np.nan, dtype="float32")
 
-        with open(self.file_name, mode='rb', buffering=ONE_MB) as filehandle:
+        with open(self.file_name, mode='rb') as filehandle:
             for key, row in index.iterrows():
 
                 bitmap_offset = None if pd.isna(row['sectionOffset'][6]) else int(row['sectionOffset'][6])

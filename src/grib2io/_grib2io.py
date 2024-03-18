@@ -46,8 +46,6 @@ DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
-ONE_MB = 1048576  # 1 MB in units of bytes
-
 TYPE_OF_VALUES_DTYPE = ('float32','int32')
 
 _interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
@@ -118,18 +116,18 @@ class open():
         # Some GRIB2 files are gzipped, so check for that here, but
         # raise error when using xarray backend.
         if 'r' in mode:
-            self._filehandle = builtins.open(filename,mode=mode)
+            self._filehandle = builtins.open(filename, mode=mode)
             # Gzip files contain a 2-byte header b'\x1f\x8b'.
             if self._filehandle.read(2) == b'\x1f\x8b':
                 self._filehandle.close()
                 if '_xarray_backend' in kwargs.keys():
                     raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
                 import gzip
-                self._filehandle = gzip.open(filename,mode=mode)
+                self._filehandle = gzip.open(filename, mode=mode)
             else:
-                self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+                self._filehandle = builtins.open(filename, mode=mode)
         else:
-            self._filehandle = builtins.open(filename,mode=mode,buffering=ONE_MB)
+            self._filehandle = builtins.open(filename, mode=mode)
 
         self._hasindex = False
         self._index = {}
