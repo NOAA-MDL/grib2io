@@ -5,14 +5,14 @@ backward compatibility.
 """
 from copy import copy
 from dataclasses import dataclass, field, astuple
+import itertools
 import logging
+import typing
+
 import numpy as np
 import pandas as pd
-import typing
 import xarray as xr
 from xarray.backends.common import (
-    BACKEND_ENTRYPOINTS,
-    AbstractDataStore,
     BackendArray,
     BackendEntrypoint,
 )
@@ -20,7 +20,7 @@ from xarray.core import indexing
 from xarray.backends.locks import SerializableLock
 
 import grib2io
-from grib2io import Grib2Message, templates, Grib2GridDef
+from grib2io import Grib2Message, Grib2GridDef
 from grib2io._grib2io import _data
 
 logger = logging.getLogger(__name__)
@@ -524,11 +524,14 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
 
     da.encoding['preferred_chunks'] = {'y':-1, 'x':-1}
     msg1 = index.msg.iloc[0]
+
     # plain language metadata is minimized
     da.attrs['GRIB2IO_section0'] = msg1.section0
     da.attrs['GRIB2IO_section1'] = msg1.section1
+    da.attrs['GRIB2IO_section2'] = msg1.section2
     da.attrs['GRIB2IO_section3'] = msg1.section3
     da.attrs['GRIB2IO_section4'] = msg1.section4
+    da.attrs['GRIB2IO_section5'] = msg1.section5
     da.attrs['fullName'] = msg1.fullName
     da.attrs['shortName'] = msg1.shortName
     da.attrs['units'] = msg1.units
@@ -654,7 +657,7 @@ def make_variables(index, f, non_geo_dims):
     extra_geo = None
     msg = index.msg.iloc[0]
 
-    # we want the lat lons; make them via accessing a record; we are asuming
+    # we want the lat lons; make them via accessing a record; we are assuming
     # all records are the same grid because they have the same shape;
     # may want a unique grid identifier from grib2io to avoid assuming this
     latitude, longitude = msg.latlons()
@@ -710,6 +713,23 @@ class Grib2ioDataSet:
         da = da.grib2io.interp_to_stations(method, calls, lats, lons, method_options=method_options)
         ds = da.to_dataset(dim='variable')
         return ds
+
+    def to_grib2(self, filename):
+        """
+        Write a DataSet to a grib2 file.
+
+        Parameters
+        ----------
+        filename
+            Name of the grib2 file to write to.
+        """
+        ds = self._obj
+
+        for shortName in ds:
+            # make a DataArray from the "Data Variables" in the DataSet
+            da = ds[shortName]
+
+            da.grib2io.to_grib2(filename, mode="a")
 
 
 @xr.register_dataarray_accessor("grib2io")
@@ -865,3 +885,64 @@ class Grib2ioDataArray:
 
         new_da.name = da.name
         return new_da
+
+    def to_grib2(self, filename, mode="w"):
+        """
+        Write a DataArray to a grib2 file.
+
+        Parameters
+        ----------
+        filename
+            Name of the grib2 file to write to.
+        mode
+            Mode to open the file in.  Can be 'w' for write or 'a' for append.
+            Default is 'w'.
+        """
+        da = self._obj.copy(deep=True)
+
+        # If there are indexes, the DataArray is a hypercube of grib2
+        # messages.  Loop through the indexes and write each message to the
+        # file, setting the appropriate grib2 message metadata to the index
+        # values.
+        index_keys = list(da.coords.keys())
+        index_keys = [
+            k for k in index_keys if k not in ["latitude", "longitude", "validDate"]
+        ]
+        indexes = []
+        for index in index_keys:
+            values = da.coords[index].values
+            if not isinstance(values, np.ndarray):
+                continue
+            if values.ndim != 1:
+                continue
+            listeach = [{index: value} for value in list(set(values))]
+            indexes.append(listeach)
+
+        for selectors in itertools.product(*indexes):
+            filters = {k: v for d in selectors for k, v in d.items()}
+            try:
+                selected = da.sel(**filters)
+            except KeyError:
+                raise ValueError(
+                    f"The shape of the xarray doesn't allow a selection of a single grib2 message with '{filters}'"
+                )
+
+            newmsg = Grib2Message(
+                selected.attrs["GRIB2IO_section0"],
+                selected.attrs["GRIB2IO_section1"],
+                selected.attrs["GRIB2IO_section2"],
+                selected.attrs["GRIB2IO_section3"],
+                selected.attrs["GRIB2IO_section4"],
+                selected.attrs["GRIB2IO_section5"],
+            )
+            newmsg.data = np.array(selected.data)
+
+            for index, value in filters.items():
+                setattr(newmsg, index, value)
+
+            newmsg.pack()
+
+            # write the message to file
+            with grib2io.open(filename, mode=mode) as f:
+                f.write(newmsg)
+            mode = "a"
