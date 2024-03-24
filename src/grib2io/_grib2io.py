@@ -91,8 +91,9 @@ class open():
     levels : tuple
         Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
-    __slots__ = ('_filehandle','_hasindex','_index','mode','name','messages',
-                 'current_message','size','closed','variables','levels','_pos')
+    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_pos',
+                 'closed', 'current_message', 'levels', 'messages', 'mode',
+                 'name', 'size', 'variables')
     def __init__(self, filename: str, mode: str="r", **kwargs):
         """
         Initialize GRIB2 File object instance.
@@ -129,16 +130,19 @@ class open():
         else:
             self._filehandle = builtins.open(filename, mode=mode)
 
+        self.name = os.path.abspath(filename)
+        fstat = os.stat(self.name)
         self._hasindex = False
         self._index = {}
         self.mode = mode
-        self.name = os.path.abspath(filename)
         self.messages = 0
         self.current_message = 0
-        self.size = os.path.getsize(self.name)
+        self.size = fstat.st_size
         self.closed = self._filehandle.closed
         self.levels = None
         self.variables = None
+        self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
+                                     str(self.size)).encode('ASCII')).hexdigest()
         if 'r' in self.mode:
             try:
                 self._build_index(no_data=kwargs['_xarray_backend'])
