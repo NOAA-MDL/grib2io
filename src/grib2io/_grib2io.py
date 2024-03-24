@@ -73,27 +73,27 @@ class open():
 
     Attributes
     ----------
+    closed : bool
+        `True` is file handle is close; `False` otherwise.
+    current_message : int
+        Current position of the file in units of GRIB2 Messages.
+    levels : tuple
+        Tuple containing a unique list of wgrib2-formatted level/layer strings.
+    messages : int
+        Count of GRIB2 Messages contained in the file.
     mode : str
         File IO mode of opening the file.
     name : str
         Full path name of the GRIB2 file.
-    messages : int
-        Count of GRIB2 Messages contained in the file.
-    current_message : int
-        Current position of the file in units of GRIB2 Messages.
     size : int
         Size of the file in units of bytes.
-    closed : bool
-        `True` is file handle is close; `False` otherwise.
     variables : tuple
         Tuple containing a unique list of variable short names (i.e. GRIB2
         abbreviation names).
-    levels : tuple
-        Tuple containing a unique list of wgrib2-formatted level/layer strings.
     """
-    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_pos',
-                 'closed', 'current_message', 'levels', 'messages', 'mode',
-                 'name', 'size', 'variables')
+    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_nodata',
+                 '_pos', 'closed', 'current_message', 'messages', 'mode',
+                 'name', 'size')
     def __init__(self, filename: str, mode: str="r", **kwargs):
         """
         Initialize GRIB2 File object instance.
@@ -109,6 +109,9 @@ class open():
         # Manage keywords
         if "_xarray_backend" not in kwargs:
             kwargs["_xarray_backend"] = False
+            self._nodata = False
+        else:
+            self._nodata = kwargs["_xarray_backend"]
         if mode in {'a','r','w'}:
             mode = mode+'b'
             if 'w' in mode: mode += '+'
@@ -139,15 +142,10 @@ class open():
         self.current_message = 0
         self.size = fstat.st_size
         self.closed = self._filehandle.closed
-        self.levels = None
-        self.variables = None
         self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
                                      str(self.size)).encode('ASCII')).hexdigest()
         if 'r' in self.mode:
-            try:
-                self._build_index(no_data=kwargs['_xarray_backend'])
-            except(KeyError):
-                self._build_index()
+            self._build_index()
         # FIX: Cannot perform reads on mode='a'
         #if 'a' in self.mode and self.size > 0: self._build_index()
 
@@ -195,7 +193,7 @@ class open():
             raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
 
 
-    def _build_index(self, no_data=False):
+    def _build_index(self):
         """Perform indexing of GRIB2 Messages."""
         # Initialize index dictionary
         if not self._hasindex:
@@ -321,7 +319,7 @@ class open():
                         msg._msgnum = self.messages-1
                         msg._deflist = deflist
                         msg._coordlist = coordlist
-                        if not no_data:
+                        if not self._nodata:
                             msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
                                                                 TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
                                                                 self._filehandle,
@@ -356,10 +354,21 @@ class open():
                     self._filehandle.seek(0)
                 break
 
-        # Index at end of _build_index()
-        if self._hasindex and not no_data:
-             self.variables = tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
-             self.levels = tuple(sorted(set([msg.level for msg in self._index['msg']])))
+
+    @property
+    def levels(self):
+        if self._hasindex and not self._nodata:
+            return tuple(sorted(set([msg.level for msg in self._index['msg']])))
+        else:
+            return None
+
+
+    @property
+    def variables(self):
+        if self._hasindex and not self._nodata:
+            return tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
+        else:
+            return None
 
 
     def close(self):
