@@ -859,6 +859,7 @@ table_4_2_0_19  = {
 '237':['Dry Thunderstorm Probability','%','DRYTPROB'],
 '238':['Ellrod Index','unknown','ELLINX'],
 '239':['Craven-Wiedenfeld Aggregate Severe Parameter','Numeric','CWASP'],
+'240':['Continuous Icing Severity','non-dim','ICESEVCON'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_0_20  = {
