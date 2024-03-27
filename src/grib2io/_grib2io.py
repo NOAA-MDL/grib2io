@@ -527,7 +527,39 @@ class open():
 
 
 class Grib2Message:
-    """Creation class for a GRIB2 message."""
+    """
+    Creation class for a GRIB2 message.
+
+    This class returns a dynamically-created Grib2Message object that
+    inherits from `_Grib2Message` and grid, product, data representation
+    template classes according to the template numbers for the respective
+    sections. If `section3`, `section4`, or `section5` are omitted, then
+    the appropriate keyword arguments for the template number `gdtn=`, 
+    `pdtn=`, or `drtn=` must be provided.
+
+    Parameters
+    ----------
+    section0
+        GRIB2 section 0 array.
+    section1
+        GRIB2 section 1 array.
+    section2
+        Local Use section data.
+    section3
+        GRIB2 section 3 array.
+    section4
+        GRIB2 section 4 array.
+    section5
+        GRIB2 section 5 array.
+        
+    Returns
+    -------
+    Msg
+        A dynamically-create Grib2Message object that inherits from
+        _Grib2Message, a grid definition template class, product 
+        definition template class, and a data representation template
+        class.
+    """
     def __new__(self, section0: NDArray = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
                       section1: NDArray = np.zeros((13),dtype=np.int64),
                       section2: Optional[bytes] = None,
@@ -600,7 +632,9 @@ class Grib2Message:
 
 @dataclass
 class _Grib2Message:
-    """GRIB2 Message base class"""
+    """
+    GRIB2 Message base class.
+    """
     # GRIB2 Sections
     section0: NDArray = field(init=True,repr=False)
     section1: NDArray = field(init=True,repr=False)
@@ -1257,7 +1291,7 @@ class _Grib2Message:
 
         Returns
         -------
-            `True` if the packed GRIB2 message is complete and well-formed, `False` otherwise.
+        `True` if the packed GRIB2 message is complete and well-formed, `False` otherwise.
         """
         valid = False
         if hasattr(self,'_msg'):

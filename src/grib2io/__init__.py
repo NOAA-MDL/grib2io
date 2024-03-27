@@ -1,9 +1,10 @@
 from ._grib2io import *
 from ._grib2io import __doc__
+from ._grib2io import _Grib2Message
 
 __all__ = ['open', 'show_config', 'interpolate', 'interpolate_to_stations',
            'tables', 'templates', 'utils',
-           'Grib2Message', 'Grib2GridDef']
+           'Grib2Message', '_Grib2Message', 'Grib2GridDef']
 
 try:
     from . import __config__
