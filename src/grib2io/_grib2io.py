@@ -674,12 +674,17 @@ class _Grib2Message:
         self._deflist = None
         self._coordlist = None
         self._signature = self._generate_signature()
+        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
+        self.bitmap = None
+        self._section3_hash()
+
+
+    def _section3_hash(self):
+        """SHA1 Hash for Section 3 data"""
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
             pass
-        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
-        self.bitmap = None
 
 
     @property
@@ -1265,6 +1270,51 @@ class _Grib2Message:
                 if self.section0[-1] == len(self._msg):
                     valid = True
         return valid
+
+
+    def subgrid(self, extents):
+        """
+        Create a Grib2Message where the grid extent has been trimmed.
+
+        Parameters
+        ----------
+        extents : list of floats
+            Set the extent (lon0, lon1, lat0, lat1) for the output grid
+            definition.
+
+        Returns
+        -------
+        msg : Grib2Message
+            Grib2Message object with trimmed data and grid extent. 
+        """
+        # Create masks based on extents
+        lonmask = np.where(np.logical_and(self.lons>=extents[0],
+                                          self.lons<=extents[1]),True,False)
+        latmask = np.where(np.logical_and(self.lats>=extents[2],
+                                          self.lats<=extents[3]),True,False)
+        mask = np.where(np.logical_and(lonmask,latmask),True,False)
+        coords = np.where(mask)
+        latslice = slice(coords[0][0],coords[0][-1])
+        lonslice = slice(coords[1][0],coords[1][-1])
+
+        # Make new Grib2Message object
+        section0 = np.copy(self.section0)
+        section0[-1] = 0
+        msg = Grib2Message(section0,self.section1,self.section2,self.section3,
+                           self.section4,None,self.bitMapFlag.value,drtn=self.drtn)
+        msg._data = self.data[latslice,lonslice]
+        msg.ny, msg.nx = msg._data.shape
+
+        # Update grid definition information
+        slats = self.lats[latslice,lonslice]
+        slons = self.lons[latslice,lonslice]
+        msg.latitudeFirstGridpoint = slats[0,0]
+        msg.longitudeFirstGridpoint = slons[0,0]
+        msg.latitudeLastGridpoint = slats[-1,-1]
+        msg.longitudeLastGridpoint = slons[-1,-1]
+        msg.section5[0] = msg.nx*msg.ny
+        msg._section3_hash()
+        return msg
 
 
 @dataclass
