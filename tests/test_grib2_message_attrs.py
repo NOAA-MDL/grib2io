@@ -76,7 +76,7 @@ def test_section4(request):
     assert msg.units == 'dB'
     assert msg.shortName == 'REFC'
     assert msg.leadTime == datetime.timedelta(hours=12)
-    assert msg.duration == None
+    assert msg.duration == datetime.timedelta(hours=0)
     assert msg.validDate == datetime.datetime(2022,11,7,12)
     assert msg.level == 'entire atmosphere'
     assert msg.parameterCategory == 16
