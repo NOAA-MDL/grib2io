@@ -136,7 +136,7 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     try:
         return datetime.timedelta(hours=pdt[_key[pdtn]+1]*tables.get_value_from_table(pdt[_key[pdtn]],'scale_time_hours'))
     except(KeyError):
-        return None
+        return datetime.timedelta(hours=0)
 
 
 def decode_wx_strings(lus: bytes) -> Dict[int, str]:
