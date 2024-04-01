@@ -528,7 +528,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     # plain language metadata is minimized
     da.attrs['GRIB2IO_section0'] = msg1.section0
     da.attrs['GRIB2IO_section1'] = msg1.section1
-    da.attrs['GRIB2IO_section2'] = msg1.section2
+    da.attrs['GRIB2IO_section2'] = msg1.section2 if msg1.section2 else []
     da.attrs['GRIB2IO_section3'] = msg1.section3
     da.attrs['GRIB2IO_section4'] = msg1.section4
     da.attrs['GRIB2IO_section5'] = msg1.section5
