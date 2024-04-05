@@ -1002,7 +1002,7 @@ class LeadTime:
             12: slice(17, 23),
         }
         refdate = datetime.datetime(*obj.section1[5:11])
-        ivalue = int(value / timedelta64(1, "h"))
+        ivalue = int(timedelta64(value, "h") / timedelta64(1, "h"))
         try:
             pdt[_key[obj.pdtn]] = (
                 datetime.timedelta(hours=ivalue) + refdate
