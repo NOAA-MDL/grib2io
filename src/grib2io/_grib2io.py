@@ -781,6 +781,29 @@ class _Grib2Message:
         """Return grid longitudes."""
         return self.latlons()[1]
 
+    @property
+    def min(self):
+        """Return min value of data."""
+        return np.nanmin(self.data)
+
+
+    @property
+    def max(self):
+        """Return min value of data."""
+        return np.nanmax(self.data)
+
+
+    @property
+    def mean(self):
+        """Return min value of data."""
+        return np.nanmean(self.data)
+
+
+    @property
+    def median(self):
+        """Return min value of data."""
+        return np.nanmedian(self.data)
+
 
     def __repr__(self):
         """
