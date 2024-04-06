@@ -896,7 +896,10 @@ class _Grib2Message:
         # Prepare bitmap, if necessary
         bitmapflag = self.bitMapFlag.value
         if bitmapflag == 0:
-            bmap = np.ravel(np.where(np.isnan(fld),0,1)).astype(DEFAULT_NUMPY_INT)
+            if hasattr(self,'bitmap'):
+                bmap = np.ravel(self.bitmap).astype(DEFAULT_NUMPY_INT)
+            else:
+                bmap = np.ravel(np.where(np.isnan(fld),0,1)).astype(DEFAULT_NUMPY_INT)
         else:
             bmap = None
 
@@ -908,11 +911,17 @@ class _Grib2Message:
 
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
-        if np.isnan(fld).any():
-            fld = np.where(np.isnan(fld),self.priMissingValue,fld)
-        if hasattr(self,'_missvalmap'):
-            fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
-            fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
+        if bitmapflag in {0,254}:
+            fld = np.where(np.isnan(fld),0,fld)
+        else:
+            if np.isnan(fld).any():
+                if hasattr(self,'priMissingValue'):
+                    fld = np.where(np.isnan(fld),self.priMissingValue,fld)
+            if hasattr(self,'_missvalmap'):
+                if hasattr(self,'priMissingValue'):
+                    fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
+                if hasattr(self,'secMissingValue'):
+                    fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
 
         # Add sections 4, 5, 6, and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
