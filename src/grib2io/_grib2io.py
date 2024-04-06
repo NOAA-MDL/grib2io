@@ -783,25 +783,25 @@ class _Grib2Message:
 
     @property
     def min(self):
-        """Return min value of data."""
+        """Return minimum value of data."""
         return np.nanmin(self.data)
 
 
     @property
     def max(self):
-        """Return min value of data."""
+        """Return maximum value of data."""
         return np.nanmax(self.data)
 
 
     @property
     def mean(self):
-        """Return min value of data."""
+        """Return mean value of data."""
         return np.nanmean(self.data)
 
 
     @property
     def median(self):
-        """Return min value of data."""
+        """Return median value of data."""
         return np.nanmedian(self.data)
 
 
