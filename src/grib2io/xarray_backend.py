@@ -670,18 +670,20 @@ def make_variables(index, f, non_geo_dims):
     return ordered_frames, cube, extra_geo
 
 
-def interp_nd(a,*, method, grid_def_in, grid_def_out, method_options=None):
+def interp_nd(a,*, method, grid_def_in, grid_def_out, method_options=None, num_threads=1):
     front_shape = a.shape[:-2]
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
-    a = grib2io.interpolate(a, method, grid_def_in, grid_def_out, method_options=method_options)
+    a = grib2io.interpolate(a, method, grid_def_in, grid_def_out, method_options=method_options,
+                            num_threads=num_threads)
     a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
     return a
 
 
-def interp_nd_stations(a,*, method, grid_def_in, lats, lons, method_options=None):
+def interp_nd_stations(a,*, method, grid_def_in, lats, lons, method_options=None, num_threads=1):
     front_shape = a.shape[:-2]
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
-    a = grib2io.interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=method_options)
+    a = grib2io.interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=method_options,
+                                        num_threads=num_threads)
     a = a.reshape(front_shape + (len(lats),))
     return a
 
@@ -697,20 +699,22 @@ class Grib2ioDataSet:
         return Grib2GridDef.from_section3(self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3'])
 
 
-    def interp(self, method, grid_def_out, method_options=None) -> xr.Dataset:
+    def interp(self, method, grid_def_out, method_options=None, num_threads=1) -> xr.Dataset:
         # see interp method of class Grib2ioDataArray
         da = self._obj.to_array()
         da.attrs['GRIB2IO_section3'] = self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3']
-        da = da.grib2io.interp(method, grid_def_out, method_options=method_options)
+        da = da.grib2io.interp(method, grid_def_out, method_options=method_options,
+                               num_threads=num_threads)
         ds = da.to_dataset(dim='variable')
         return ds
 
 
-    def interp_to_stations(self, method, calls, lats, lons, method_options=None) -> xr.Dataset:
+    def interp_to_stations(self, method, calls, lats, lons, method_options=None, num_threads=1) -> xr.Dataset:
         # see interp_to_stations method of class Grib2ioDataArray
         da = self._obj.to_array()
         da.attrs['GRIB2IO_section3'] = self._obj[list(self._obj.data_vars)[0]].attrs['GRIB2IO_section3']
-        da = da.grib2io.interp_to_stations(method, calls, lats, lons, method_options=method_options)
+        da = da.grib2io.interp_to_stations(method, calls, lats, lons, method_options=method_options,
+                                           num_threads=num_threads)
         ds = da.to_dataset(dim='variable')
         return ds
 
@@ -743,7 +747,7 @@ class Grib2ioDataArray:
         return Grib2GridDef.from_section3(self._obj.attrs['GRIB2IO_section3'])
 
 
-    def interp(self, method, grid_def_out, method_options=None) -> xr.DataArray:
+    def interp(self, method, grid_def_out, method_options=None, num_threads=1) -> xr.DataArray:
         """
         Perform grid spatial interpolation.
 
@@ -763,9 +767,15 @@ class Grib2ioDataArray:
             | 'budget'           | 3             |
             | 'spectral'         | 4             |
             | 'neighbor-budget'  | 6             |
-
         grid_def_out
             Grib2GridDef object of the output grid.
+        method_options : list of ints, optional
+            Interpolation options. See the NCEPLIBS-ip documentation for
+            more information on how these are used.
+        num_threads : int, optional
+            Number of OpenMP threads to use for interpolation. The default
+            value is 1. If grib2io_interp was not build with OpenMP, then
+            this keyword argument and value will have no impact.
 
         Returns
         -------
@@ -800,7 +810,7 @@ class Grib2ioDataArray:
         if da.chunks is None:
             data = interp_nd(da.data, method=method, grid_def_in=grid_def_in,
                              grid_def_out=grid_def_out,
-                             method_options=method_options)
+                             method_options=method_options,num_threads=num_threads)
         else:
             import dask
             front_shape = da.shape[:-2]
@@ -815,7 +825,7 @@ class Grib2ioDataArray:
         return new_da
 
 
-    def interp_to_stations(self, method, calls, lats, lons, method_options=None) -> xr.DataArray:
+    def interp_to_stations(self, method, calls, lats, lons, method_options=None, num_threads=1) -> xr.DataArray:
         """
         Perform spatial interpolation to station points.
 
@@ -872,7 +882,7 @@ class Grib2ioDataArray:
 
         if da.chunks is None:
             data = interp_nd_stations(da.data, method=method, grid_def_in=grid_def_in, lats=lats,
-                                      lons=lons, method_options=method_options)
+                                      lons=lons, method_options=method_options, num_threads=num_threads)
         else:
             import dask
             front_shape = da.shape[:-1]

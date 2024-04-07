@@ -1240,7 +1240,8 @@ class _Grib2Message:
             return None
 
 
-    def interpolate(self, method, grid_def_out, method_options=None, drtn=None):
+    def interpolate(self, method, grid_def_out, method_options=None, drtn=None,
+                    num_threads=1):
         """
         Grib2Message Interpolator
 
@@ -1276,6 +1277,10 @@ class _Grib2Message:
             template of the source GRIB2 message is used. Once again, it is the
             user's responsibility to properly set the Data Representation
             Template attributes.
+        num_threads : int, optional
+            Number of OpenMP threads to use for interpolation. The default
+            value is 1. If grib2io_interp was not build with OpenMP, then
+            this keyword argument and value will have no impact.
 
         Returns
         -------
@@ -1481,7 +1486,8 @@ def set_auto_nans(value: bool):
         raise TypeError(f"Argument must be bool")
 
 
-def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, method_options=None):
+def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, 
+                method_options=None, num_threads=1):
     """
     This is the module-level interpolation function.
 
@@ -1521,6 +1527,10 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, method_op
     method_options : list of ints, optional
         Interpolation options. See the NCEPLIBS-ip documentation for
         more information on how these are used.
+    num_threads : int, optional
+        Number of OpenMP threads to use for interpolation. The default
+        value is 1. If grib2io_interp was not build with OpenMP, then
+        this keyword argument and value will have no impact.
 
     Returns
     -------
@@ -1530,7 +1540,17 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, method_op
         the assumptions that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
+    import grib2io_interp
     from grib2io_interp import interpolate
+
+    prev_num_threads = 1
+    try:
+        import grib2io_interp
+        if grib2io_interp.has_openmp_support:
+            prev_num_threads = grib2io_interp.get_openmp_threads()
+            grib2io_interp.set_openmp_threads(num_threads)
+    except(AttributeError):
+        pass
 
     if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
@@ -1604,10 +1624,18 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, method_op
 
     del rlat
     del rlon
+
+    try:
+        if grib2io_interp.has_openmp_support:
+            grib2io_interp.set_openmp_threads(prev_num_threads)
+    except(AttributeError):
+        pass
+
     return out
 
 
-def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=None):
+def interpolate_to_stations(a, method, grid_def_in, lats, lons,
+                            method_options=None, num_threads=1):
     """
     Module-level interpolation function for interpolation to stations.
 
@@ -1651,6 +1679,10 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
     method_options : list of ints, optional
         Interpolation options. See the NCEPLIBS-ip documentation for
         more information on how these are used.
+    num_threads : int, optional
+        Number of OpenMP threads to use for interpolation. The default
+        value is 1. If grib2io_interp was not build with OpenMP, then
+        this keyword argument and value will have no impact.
 
     Returns
     -------
@@ -1660,7 +1692,17 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
         the assumptions that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
+    import grib2io_interp
     from grib2io_interp import interpolate
+
+    prev_num_threads = 1
+    try:
+        import grib2io_interp
+        if grib2io_interp.has_openmp_support:
+            prev_num_threads = grib2io_interp.get_openmp_threads()
+            grib2io_interp.set_openmp_threads(num_threads)
+    except(AttributeError):
+        pass
 
     if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
@@ -1735,6 +1777,13 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons, method_options=N
 
     del rlat
     del rlon
+
+    try:
+        if grib2io_interp.has_openmp_support:
+            grib2io_interp.set_openmp_threads(prev_num_threads)
+    except(AttributeError):
+        pass
+
     return out
 
 
