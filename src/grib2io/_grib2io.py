@@ -1279,7 +1279,7 @@ class _Grib2Message:
             Template attributes.
         num_threads : int, optional
             Number of OpenMP threads to use for interpolation. The default
-            value is 1. If grib2io_interp was not build with OpenMP, then
+            value is 1. If grib2io_interp was not built with OpenMP, then
             this keyword argument and value will have no impact.
 
         Returns
@@ -1529,7 +1529,7 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         more information on how these are used.
     num_threads : int, optional
         Number of OpenMP threads to use for interpolation. The default
-        value is 1. If grib2io_interp was not build with OpenMP, then
+        value is 1. If grib2io_interp was not built with OpenMP, then
         this keyword argument and value will have no impact.
 
     Returns
@@ -1681,7 +1681,7 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
         more information on how these are used.
     num_threads : int, optional
         Number of OpenMP threads to use for interpolation. The default
-        value is 1. If grib2io_interp was not build with OpenMP, then
+        value is 1. If grib2io_interp was not built with OpenMP, then
         this keyword argument and value will have no impact.
 
     Returns

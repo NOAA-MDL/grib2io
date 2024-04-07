@@ -774,7 +774,7 @@ class Grib2ioDataArray:
             more information on how these are used.
         num_threads : int, optional
             Number of OpenMP threads to use for interpolation. The default
-            value is 1. If grib2io_interp was not build with OpenMP, then
+            value is 1. If grib2io_interp was not built with OpenMP, then
             this keyword argument and value will have no impact.
 
         Returns
