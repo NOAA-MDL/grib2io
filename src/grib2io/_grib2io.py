@@ -1312,7 +1312,7 @@ class _Grib2Message:
         elif msg.typeOfValues == 1:
             dtype = 'int32'
         msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
-                                method_options=method_options).reshape(msg.ny,msg.nx)
+                                method_options=method_options,num_threads=num_threads).reshape(msg.ny,msg.nx)
         msg.section5[0] = grid_def_out.npoints
         return msg
 
