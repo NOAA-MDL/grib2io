@@ -124,7 +124,7 @@ class open():
             # Gzip files contain a 2-byte header b'\x1f\x8b'.
             if self._filehandle.read(2) == b'\x1f\x8b':
                 self._filehandle.close()
-                if '_xarray_backend' in kwargs.keys():
+                if kwargs["_xarray_backend"]:
                     raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
                 import gzip
                 self._filehandle = gzip.open(filename, mode=mode)
@@ -320,7 +320,7 @@ class open():
                         msg._deflist = deflist
                         msg._coordlist = coordlist
                         if not self._nodata:
-                            msg._data = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
+                            msg._ondiskarray = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
                                                                 TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
                                                                 self._filehandle,
                                                                 msg, pos, _secpos[6], _secpos[7])
@@ -701,12 +701,15 @@ class _Grib2Message:
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
     typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
 
-
     def __post_init__(self):
         """Set some attributes after init."""
-        self._msgnum = -1
-        self._deflist = None
+        self._auto_nans = _AUTO_NANS
         self._coordlist = None
+        self._data = None
+        self._deflist = None
+        self._msgnum = -1
+        self._ondiskarray = None
+        self._orig_section5 = np.copy(self.section5)
         self._signature = self._generate_signature()
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
@@ -909,6 +912,9 @@ class _Grib2Message:
         self._sections.append(3)
 
         # Prepare data.
+        if self._data is None:
+            if self._ondiskarray is None:
+                raise ValueError("Grib2Message object has no data, thus it cannot be packed.")
         field = np.copy(self.data)
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
@@ -969,15 +975,11 @@ class _Grib2Message:
     @property
     def data(self) -> np.array:
         """Access the unpacked data values."""
-        if not hasattr(self,'_auto_nans'): self._auto_nans = _AUTO_NANS
-        if hasattr(self,'_data'):
+        if self._data is None:
             if self._auto_nans != _AUTO_NANS:
                 self._data = self._ondiskarray
-            if isinstance(self._data, Grib2MessageOnDiskArray):
-                self._ondiskarray = self._data
-                self._data = np.asarray(self._data)
-            return self._data
-        raise ValueError
+            self._data = np.asarray(self._ondiskarray)
+        return self._data
 
 
     @data.setter
@@ -988,9 +990,14 @@ class _Grib2Message:
 
 
     def flush_data(self):
-        """Flush the unpacked data values from the Grib2Message object."""
-        del self._data
-        self._data = self._ondiskarray
+        """
+        Flush the unpacked data values from the Grib2Message object.
+
+        Note: If the Grib2Message object was constructed from "scratch" (i.e.
+        not read from file), this method will remove the data array from
+        the object and it cannot be recovered.
+        """
+        self._data = None
         self.bitmap = None
 
 
@@ -1382,7 +1389,7 @@ def _data(
     """
     gds = msg.section3[0:5]
     gdt = msg.section3[5:]
-    drt = msg.section5[2:]
+    drt = msg._orig_section5[2:]
     nx, ny = msg.nx, msg.ny
 
     # Set the fill value according to how we are handling missing values

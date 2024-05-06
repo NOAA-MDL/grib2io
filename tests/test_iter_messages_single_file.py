@@ -7,8 +7,17 @@ def test_iter_messages_read(request):
     with grib2io.open(grib2file) as g:
         for msg in g:
             print(msg)
-            print(f'\tmin: {np.nanmin(msg.data)} max: {np.nanmax(msg.data)} mean: {np.nanmean(msg.data)}')
+            print(f'\tmin: {msg.min} max: {msg.max} mean: {msg.mean}, median: {msg.median}')
             msg.flush_data()
+
+def test_iter_messages_data_flush_pack(request):
+    grib2file = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107' / 'gfs.t00z.pgrb2.1p00.f012_subset'
+    with grib2io.open(grib2file) as g:
+        for msg in g:
+            for _ in range(2):
+                msg.data
+                msg.flush_data()
+                msg.pack()
 
 def test_iter_messages_write(tmp_path, request):
     target_dir = tmp_path / "test_iter_messages_write"
