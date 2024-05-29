@@ -1006,7 +1006,7 @@ class LeadTime:
         try:
             pdt[_key[obj.pdtn]] = (
                 datetime.timedelta(hours=ivalue) + refdate
-            ).timetuple()[:5]
+            ).timetuple()[:6]
         except KeyError:
             if obj.pdtn == 48:
                 pdt[19] = ivalue / (
