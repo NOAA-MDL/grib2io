@@ -925,7 +925,7 @@ class _Grib2Message:
         # Prepare bitmap, if necessary
         bitmapflag = self.bitMapFlag.value
         if bitmapflag == 0:
-            if hasattr(self,'bitmap'):
+            if self.bitmap is not None:
                 bmap = np.ravel(self.bitmap).astype(DEFAULT_NUMPY_INT)
             else:
                 bmap = np.ravel(np.where(np.isnan(fld),0,1)).astype(DEFAULT_NUMPY_INT)
