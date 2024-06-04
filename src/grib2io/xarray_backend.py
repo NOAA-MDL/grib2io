@@ -718,6 +718,7 @@ class Grib2ioDataSet:
         ds = da.to_dataset(dim='variable')
         return ds
 
+
     def to_grib2(self, filename):
         """
         Write a DataSet to a grib2 file.
@@ -729,7 +730,7 @@ class Grib2ioDataSet:
         """
         ds = self._obj
 
-        for shortName in ds:
+        for shortName in sorted(ds):
             # make a DataArray from the "Data Variables" in the DataSet
             da = ds[shortName]
 
@@ -896,6 +897,7 @@ class Grib2ioDataArray:
         new_da.name = da.name
         return new_da
 
+
     def to_grib2(self, filename, mode="w"):
         """
         Write a DataArray to a grib2 file.
@@ -919,13 +921,13 @@ class Grib2ioDataArray:
             k for k in index_keys if k not in ["latitude", "longitude", "validDate"]
         ]
         indexes = []
-        for index in index_keys:
+        for index in sorted(index_keys):
             values = da.coords[index].values
             if not isinstance(values, np.ndarray):
                 continue
             if values.ndim != 1:
                 continue
-            listeach = [{index: value} for value in list(set(values))]
+            listeach = [{index: value} for value in sorted(set(values))]
             indexes.append(listeach)
 
         for selectors in itertools.product(*indexes):
@@ -949,8 +951,6 @@ class Grib2ioDataArray:
 
             for index, value in filters.items():
                 setattr(newmsg, index, value)
-
-            newmsg.pack()
 
             # write the message to file
             with grib2io.open(filename, mode=mode) as f:

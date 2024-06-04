@@ -90,11 +90,11 @@ def get_leadtime(idsec: ArrayLike, pdtn: int, pdt: ArrayLike) -> datetime.timede
     Parameters
     ----------
     idsec
-        Seqeunce containing GRIB2 Identification Section (Section 1).
+        Sequence containing GRIB2 Identification Section (Section 1).
     pdtn
         GRIB2 Product Definition Template Number
     pdt
-        Seqeunce containing GRIB2 Product Definition Template (Section 4).
+        Sequence containing GRIB2 Product Definition Template (Section 4).
 
     Returns
     -------
