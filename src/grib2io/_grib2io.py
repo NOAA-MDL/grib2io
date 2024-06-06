@@ -22,20 +22,21 @@ The following Jupyter Notebooks are available as tutorials:
 """
 
 from dataclasses import dataclass, field
-from numpy.typing import NDArray
-from typing import Union, Optional
+from typing import Literal, Optional, Union
 import builtins
 import collections
 import copy
 import datetime
 import hashlib
-import numpy as np
 import os
-import pyproj
 import re
 import struct
 import sys
 import warnings
+
+from numpy.typing import NDArray
+import numpy as np
+import pyproj
 
 from . import g2clib
 from . import tables
@@ -91,10 +92,12 @@ class open():
         Tuple containing a unique list of variable short names (i.e. GRIB2
         abbreviation names).
     """
+
     __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_nodata',
                  '_pos', 'closed', 'current_message', 'messages', 'mode',
                  'name', 'size')
-    def __init__(self, filename: str, mode: str="r", **kwargs):
+
+    def __init__(self, filename: str, mode: Literal["r", "w", "x"] = "r", **kwargs):
         """
         Initialize GRIB2 File object instance.
 
@@ -104,7 +107,7 @@ class open():
             File name containing GRIB2 messages.
         mode: default="r"
             File access mode where "r" opens the files for reading only; "w"
-            opens the file for writing.
+            opens the file for overwriting and "x" for writing to a new file.
         """
         # Manage keywords
         if "_xarray_backend" not in kwargs:
@@ -112,10 +115,12 @@ class open():
             self._nodata = False
         else:
             self._nodata = kwargs["_xarray_backend"]
-        if mode in {'a','r','w'}:
-            mode = mode+'b'
-            if 'w' in mode: mode += '+'
-            if 'a' in mode: mode += '+'
+
+        # All write modes are read/write.
+        # All modes are binary.
+        if mode in ("a", "x", "w"):
+            mode += "+"
+        mode = mode + "b"
 
         # Some GRIB2 files are gzipped, so check for that here, but
         # raise error when using xarray backend.
@@ -534,7 +539,7 @@ class Grib2Message:
     inherits from `_Grib2Message` and grid, product, data representation
     template classes according to the template numbers for the respective
     sections. If `section3`, `section4`, or `section5` are omitted, then
-    the appropriate keyword arguments for the template number `gdtn=`, 
+    the appropriate keyword arguments for the template number `gdtn=`,
     `pdtn=`, or `drtn=` must be provided.
 
     Parameters
@@ -551,12 +556,12 @@ class Grib2Message:
         GRIB2 section 4 array.
     section5
         GRIB2 section 5 array.
-        
+
     Returns
     -------
     Msg
         A dynamically-create Grib2Message object that inherits from
-        _Grib2Message, a grid definition template class, product 
+        _Grib2Message, a grid definition template class, product
         definition template class, and a data representation template
         class.
     """
@@ -1493,7 +1498,7 @@ def set_auto_nans(value: bool):
         raise TypeError(f"Argument must be bool")
 
 
-def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out, 
+def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
                 method_options=None, num_threads=1):
     """
     This is the module-level interpolation function.

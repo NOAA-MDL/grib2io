@@ -7,6 +7,7 @@ from copy import copy
 from dataclasses import dataclass, field, astuple
 import itertools
 import logging
+from pathlib import Path
 import typing
 
 import numpy as np
@@ -718,8 +719,7 @@ class Grib2ioDataSet:
         ds = da.to_dataset(dim='variable')
         return ds
 
-
-    def to_grib2(self, filename):
+    def to_grib2(self, filename, mode: typing.Literal["x", "w", "a"] = "x"):
         """
         Write a DataSet to a grib2 file.
 
@@ -727,6 +727,19 @@ class Grib2ioDataSet:
         ----------
         filename
             Name of the grib2 file to write to.
+        mode: {"x", "w", "a"}, optional, default="x"
+            Persistence mode
+
+            +------+-----------------------------------+
+            | mode | Description                       |
+            +======+===================================+
+            | x    | create (fail if exists)           |
+            +------+-----------------------------------+
+            | w    | create (overwrite if exists)      |
+            +------+-----------------------------------+
+            | a    | append (create if does not exist) |
+            +------+-----------------------------------+
+
         """
         ds = self._obj
 
@@ -734,7 +747,8 @@ class Grib2ioDataSet:
             # make a DataArray from the "Data Variables" in the DataSet
             da = ds[shortName]
 
-            da.grib2io.to_grib2(filename, mode="a")
+            da.grib2io.to_grib2(filename, mode=mode)
+            mode = "a"
 
 
 @xr.register_dataarray_accessor("grib2io")
@@ -897,8 +911,7 @@ class Grib2ioDataArray:
         new_da.name = da.name
         return new_da
 
-
-    def to_grib2(self, filename, mode="w"):
+    def to_grib2(self, filename, mode: typing.Literal["x", "w", "a"] = "x"):
         """
         Write a DataArray to a grib2 file.
 
@@ -906,9 +919,19 @@ class Grib2ioDataArray:
         ----------
         filename
             Name of the grib2 file to write to.
-        mode
-            Mode to open the file in.  Can be 'w' for write or 'a' for append.
-            Default is 'w'.
+        mode: {"x", "w", "a"}, optional, default="x"
+            Persistence mode
+
+            +------+-----------------------------------+
+            | mode | Description                       |
+            +======+===================================+
+            | x    | create (fail if exists)           |
+            +------+-----------------------------------+
+            | w    | create (overwrite if exists)      |
+            +------+-----------------------------------+
+            | a    | append (create if does not exist) |
+            +------+-----------------------------------+
+
         """
         da = self._obj.copy(deep=True)
 

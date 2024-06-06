@@ -1,5 +1,7 @@
 import itertools
+from pathlib import Path
 
+import grib2io
 import pytest
 import xarray as xr
 from numpy.testing import assert_allclose, assert_array_equal
@@ -47,7 +49,12 @@ def test_da_write(tmp_path, request):
         filters=filters,
     )
 
-    ds1["TMP"].grib2io.to_grib2(target_file)
+    Path(target_file).touch()
+
+    with pytest.raises(FileExistsError):
+        ds1["TMP"].grib2io.to_grib2(target_file)
+
+    ds1["TMP"].grib2io.to_grib2(target_file, mode="w")
 
     ds2 = xr.open_dataset(target_file, engine="grib2io")
 
@@ -74,12 +81,25 @@ def test_ds_write(tmp_path, request):
         filters=filters,
     )
 
-    ds1.grib2io.to_grib2(target_file)
+    Path(target_file).touch()
+
+    with pytest.raises(FileExistsError):
+        ds1.grib2io.to_grib2(target_file)
+
+    ds1.grib2io.to_grib2(target_file, mode="w")
 
     ds2 = xr.open_dataset(target_file, engine="grib2io")
 
+    ds2_msgs = grib2io.open(target_file)
+
     for var in ["APTMP", "DPT", "RH", "SPFH", "TMP"]:
         _test_any_differences(ds1[var], ds2[var])
+
+    ds1.grib2io.to_grib2(target_file, mode="a")
+
+    ds3_msgs = grib2io.open(target_file)
+
+    assert len(ds3_msgs) == 2 * len(ds2_msgs)
 
 
 def test_ds_write_levels(tmp_path, request):
