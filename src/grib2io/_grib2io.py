@@ -233,7 +233,7 @@ class open():
                 # loop when "test_offset" is 0.
                 for test_offset in range(2048):
                     self._filehandle.seek(pos + test_offset)
-                    header = struct.unpack(">i", self._filehandle.read(4))[0]
+                    header = struct.unpack(">I", self._filehandle.read(4))[0]
                     if header.to_bytes(4, "big") == b"GRIB":
                         pos = pos + test_offset
                         break
