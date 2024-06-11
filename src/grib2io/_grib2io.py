@@ -237,6 +237,11 @@ class open():
                     if header.to_bytes(4, "big") == b"GRIB":
                         pos = pos + test_offset
                         break
+                else:
+                    # NOTE: Coming here means that no "GRIB" message identifier
+                    # was found in the previous 2048 bytes. So here we continue
+                    # the while True loop.
+                    continue
 
                 # Read the rest of Section 0 using struct.
                 _secpos[0] = self._filehandle.tell()-4
