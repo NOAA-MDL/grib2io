@@ -21,7 +21,7 @@ keywords = [
 readme = "README.md"
 license = {text = "MIT"}
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
@@ -31,9 +31,10 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Intended Audience :: Science/Research",
-  "License :: OSI Approved",
+  "License :: OSI Approved :: MIT License",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Operating System :: POSIX",
+  "Operating System :: POSIX :: Linux",
   "Operating System :: MacOS",
 ]
 dependencies = [
@@ -44,7 +45,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 interp = ["grib2io-interp >= 1.0.0"]
-xarray = ["xarray <= 2024.1.0"]
+xarray = ["xarray"]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
