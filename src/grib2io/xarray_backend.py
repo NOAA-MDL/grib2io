@@ -13,7 +13,7 @@ import typing
 import numpy as np
 import pandas as pd
 import xarray as xr
-from xarray.backends.common import (
+from xarray.backends import (
     BackendArray,
     BackendEntrypoint,
 )
@@ -935,32 +935,61 @@ class Grib2ioDataArray:
         """
         da = self._obj.copy(deep=True)
 
-        # If there are indexes, the DataArray is a hypercube of grib2
-        # messages.  Loop through the indexes and write each message to the
-        # file, setting the appropriate grib2 message metadata to the index
-        # values.
-        index_keys = list(da.coords.keys())
-        index_keys = [
-            k for k in index_keys if k not in ["latitude", "longitude", "validDate"]
+        available_non_geo_dims = [
+            "duration",
+            "leadTime",
+            "percentileValue",
+            "perturbationNumber",
+            "refDate",
+            "thresholdLowerLimit",
+            "thresholdUpperLimit",
+            "valueOfFirstFixedSurface",
         ]
-        indexes = []
-        for index in sorted(index_keys):
-            values = da.coords[index].values
-            if not isinstance(values, np.ndarray):
-                continue
-            if values.ndim != 1:
-                continue
-            listeach = [{index: value} for value in sorted(set(values))]
-            indexes.append(listeach)
 
-        for selectors in itertools.product(*indexes):
-            filters = {k: v for d in selectors for k, v in d.items()}
-            try:
-                selected = da.sel(**filters)
-            except KeyError:
+        coords_keys = sorted(da.coords.keys())
+        coords_keys = [k for k in coords_keys if k in available_non_geo_dims]
+
+        # If there are dimension coordinates, the DataArray is a hypercube of
+        # grib2 messages.
+
+        # Create `indexes` which is a list of lists of dictionaries for all
+        # dimension coordinates. Each dictionary key is the dimension
+        # coordinate name and the value is a list of the dimension coordinate
+        # values.  This allows for easy iteration over all possible grib2
+        # messages in the DataArray by using itertools.product.
+        #
+        # For example:
+        # indexes = [
+        #     [
+        #         {"leadTime": 9},
+        #         {"leadTime": 12},
+        #     ],
+        #     [
+        #         {"valueOfFirstFixedSurface": 900},
+        #         {"valueOfFirstFixedSurface": 925},
+        #         {"valueOfFirstFixedSurface": 950},
+        #     ],
+        # ]
+        dim_coords = []
+        for index in [i for i in coords_keys if i in da.dims]:
+            values = da.coords[index].values
+            if len(values) != len(set(values)):
                 raise ValueError(
-                    f"The shape of the xarray doesn't allow a selection of a single grib2 message with '{filters}'"
+                    f"Dimension coordinate '{index}' has duplicate values, but to_grib2 requires unique values to find each GRIB2 message in the DataArray."
                 )
+            listeach = [{index: value} for value in sorted(values)]
+            dim_coords.append(listeach)
+
+        # If `dim_coords` is [], then the DataArray is a single grib2 message and
+        # itertools.product(*dim_coords) will run once with `selectors = ()`.
+        for selectors in itertools.product(*dim_coords):
+            # Need to find the correct data in the DataArray based on the
+            # dimension coordinates.
+            filters = {k: v for d in selectors for k, v in d.items()}
+
+            # If `filters` is {}, then the DataArray is a single grib2 message
+            # and da.sel(indexers={}) returns the DataArray.
+            selected = da.sel(indexers=filters)
 
             newmsg = Grib2Message(
                 selected.attrs["GRIB2IO_section0"],
@@ -972,8 +1001,15 @@ class Grib2ioDataArray:
             )
             newmsg.data = np.array(selected.data)
 
+            # For dimension coordinates, set the grib2 message metadata to the
+            # dimension coordinate value.
             for index, value in filters.items():
                 setattr(newmsg, index, value)
+
+            # For non-dimension coordinates, set the grib2 message metadata to
+            # the DataArray coordinate value.
+            for index in [i for i in coords_keys if i not in da.dims]:
+                setattr(newmsg, index, selected.coords[index].values)
 
             # write the message to file
             with grib2io.open(filename, mode=mode) as f:
