@@ -7,7 +7,6 @@ from copy import copy
 from dataclasses import dataclass, field, astuple
 import itertools
 import logging
-from pathlib import Path
 import typing
 
 import numpy as np
@@ -100,7 +99,7 @@ class GribBackendArray(BackendArray):
     def __init__(self, array, lock):
         self.array = array
         self.shape = array.shape
-        self.dtype = array.dtype
+        self.dtype = np.dtype(array.dtype)
         self.lock = lock
 
 
