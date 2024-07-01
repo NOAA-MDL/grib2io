@@ -18,9 +18,8 @@ def test_da_repr(tmp_path, request):
         engine="grib2io",
         filters=filters,
     )
-    assert (
-        repr(ds1)
-        == """<xarray.Dataset> Size: 1MB
+
+    new_print = """<xarray.DataArray 'TMP' (y: 181, x: 360)>
 Dimensions:                   (y: 181, x: 360)
 Coordinates:
     refDate                   datetime64[ns] 8B ...
@@ -29,9 +28,25 @@ Coordinates:
     latitude                  (y, x) float64 521kB ...
     longitude                 (y, x) float64 521kB ...
     validDate                 datetime64[ns] 8B ...
-Dimensions without coordinates: y, x
+    Dimensions without coordinates: y, x
 Data variables:
     TMP                       (y, x) float32 261kB ...
 Attributes:
     engine:   grib2io"""
-    )
+
+    old_print = """<xarray.DataArray 'TMP' (y: 181, x: 360)>
+Dimensions:                   (y: 181, x: 360)
+Coordinates:
+    refDate                   datetime64[ns] ...
+    leadTime                  timedelta64[ns] ...
+    valueOfFirstFixedSurface  float64 ...
+    latitude                  (y, x) float64 ...
+    longitude                 (y, x) float64 ...
+    validDate                 datetime64[ns] ...
+    Dimensions without coordinates: y, x
+Data variables:
+    TMP                       (y, x) float32 ...
+Attributes:
+    engine:   grib2io"""
+
+    assert (repr(ds1) == new_print) or (repr(ds1) == old_print)
