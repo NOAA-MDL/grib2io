@@ -469,20 +469,20 @@ class open():
         msg
             GRIB2 message objects to write to file.
         """
-        if isinstance(msg,list):
+        if isinstance(msg, list):
             for m in msg:
                 self.write(m)
             return
 
-        if issubclass(msg.__class__,_Grib2Message):
-            if hasattr(msg,'_msg'):
+        if issubclass(msg.__class__, _Grib2Message):
+            if hasattr(msg, "_msg"):
                 self._filehandle.write(msg._msg)
             else:
                 if msg._signature != msg._generate_signature():
                     msg.pack()
                     self._filehandle.write(msg._msg)
                 else:
-                    if hasattr(msg._data,'filehandle'):
+                    if hasattr(msg._data, "filehandle"):
                         msg._data.filehandle.seek(msg._data.offset)
                         self._filehandle.write(msg._data.filehandle.read(msg.section0[-1]))
                     else:
@@ -1334,6 +1334,97 @@ class _Grib2Message:
         return msg
 
 
+    def subset(self, lats, lons):
+        """
+        Return a spatial subset.
+
+        Uses the minimum and maximum values in `lats` and `lons`.
+
+        Parameters
+        ----------
+        lats
+            List or tuple of latitudes.  The minimum and maximum latitudes will
+            be used to define the southern and northern boundaries.
+
+            The order of the latitudes is not important.  The function will
+            determine which is the minimum and maximum.
+
+            The latitudes should be in decimal degrees with 0.0 at the equator,
+            positive values in the northern hemisphere increasing to 90, and
+            negative values in the southern hemisphere decreasing to -90.
+        lons
+            List or tuple of longitudes.  The minimum and maximum longitudes
+            will be used to define the western and eastern boundaries.
+
+            The order of the longitudes is not important.  The function will
+            determine which is the minimum and maximum.
+
+            The longitudes should be in decimal degrees with 0.0 at the prime
+            meridian, positive values increasing eastward to 360.  There are no
+            negative longitudes.  West longitudes are converted to east
+            longitudes by adding 180 to the absolute value of the west
+            longitude.
+
+        Returns
+        -------
+        subset
+            A spatial subset of a GRIB2 message.
+        """
+        if self.gdtn not in [0, 1, 40, 10, 20, 30, 31, 110, 32769]:
+            raise ValueError('Subset only works for regular lat/lon, Gaussian, mercator, stereographic, lambert conformal, albers equal-area, and azimuthal equidistant grids.')
+
+        newmsg = Grib2Message(
+            np.copy(self.section0),
+            np.copy(self.section1),
+            np.copy(self.section2),
+            np.copy(self.section3),
+            np.copy(self.section4),
+            np.copy(self.section5),
+        )
+
+        msglats, msglons = self.grid()
+
+        la1 = np.min(lats)
+        la2 = np.max(lats)
+        lo1 = np.min(lons)
+        lo2 = np.max(lons)
+
+        first_lat = np.abs(msglats - la1)
+        first_lon = np.abs(msglons - lo1)
+        max_idx = np.maximum(first_lon, first_lat)
+        first_i, first_j = np.where(max_idx == np.min(max_idx))
+
+        print("first_i, first_j", first_i, first_j)
+        last_lat = np.abs(msglats - la2)
+        last_lon = np.abs(msglons - lo2)
+        max_idx = np.maximum(last_lon, last_lat)
+        last_i, last_j = np.where(max_idx == np.min(max_idx))
+        print("last_i, last_j", last_i, last_j)
+
+        setattr(newmsg, "latitudeFirstGridpoint" , msglats[first_i[0], first_j[0]])
+        print("latitudeFirstGridpoint", newmsg.latitudeFirstGridpoint)
+        setattr(newmsg, "longitudeFirstGridpoint" , msglons[first_i[0], first_j[0]])
+        print("longitudeFirstGridpoint", newmsg.longitudeFirstGridpoint)
+        setattr(newmsg, "nx" , np.abs(first_i[0] - last_i[0]))
+        setattr(newmsg, "ny" , np.abs(first_j[0] - last_j[0]))
+        print("newmsg.nx, newmsg.ny", newmsg.nx, newmsg.ny)
+        print(self._data.shape)
+        setattr(newmsg, "data" , np.copy(self._data[
+            min(first_i[0] , last_i[0]) : max(first_i[0] , last_i[0]),
+            min(first_j[0] , last_j[0]) : max(first_j[0] , last_j[0])]))
+        if self.gdtn in [0, 1, 40]:
+            setattr(newmsg, "latitudeLastGridpoint" , msglats[last_i[0], last_j[0]])
+            print("latitudeLastGridpoint", newmsg.latitudeLastGridpoint)
+            setattr(newmsg, "longitudeLastGridpoint" , msglons[last_i[0], last_j[0]])
+            print("longitudeLastGridpoint", newmsg.longitudeLastGridpoint)
+        if self._sha1_section3 in _latlon_datastore.keys():
+            del _latlon_datastore[self._sha1_section3]
+        newmsg.grid()
+        print(newmsg.nx, newmsg.ny)
+        print(newmsg.grid())
+
+        return newmsg
+
     def validate(self):
         """
         Validate a complete GRIB2 message.
@@ -1589,7 +1680,7 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
     a,newshp = _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out)
 
     # Set lats and lons if stations, else create array for grids.
-    if grid_def_out.gdtn == -1:
+    if grid_def_out.dtn == -1:
         rlat = np.array(grid_def_out.lats,dtype=np.float32)
         rlon = np.array(grid_def_out.lons,dtype=np.float32)
     else:
