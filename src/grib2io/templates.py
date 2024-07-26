@@ -169,6 +169,7 @@ class Year:
         return obj.section1[5]
     def __set__(self, obj, value):
         obj.section1[5] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class Month:
     """Month of reference time"""
@@ -176,6 +177,7 @@ class Month:
         return obj.section1[6]
     def __set__(self, obj, value):
         obj.section1[6] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class Day:
     """Day of reference time"""
@@ -183,6 +185,7 @@ class Day:
         return obj.section1[7]
     def __set__(self, obj, value):
         obj.section1[7] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class Hour:
     """Hour of reference time"""
@@ -190,6 +193,7 @@ class Hour:
         return obj.section1[8]
     def __set__(self, obj, value):
         obj.section1[8] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class Minute:
     """Minute of reference time"""
@@ -197,6 +201,7 @@ class Minute:
         return obj.section1[9]
     def __set__(self, obj, value):
         obj.section1[9] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class Second:
     """Second of reference time"""
@@ -204,6 +209,7 @@ class Second:
         return obj.section1[10]
     def __set__(self, obj, value):
         obj.section1[10] = value
+        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
 
 class RefDate:
     """Reference Date. NOTE: This is a `datetime.datetime` object."""
@@ -927,21 +933,33 @@ class FullName:
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
     def __set__(self, obj, value):
-        raise RuntimeError
+        raise RuntimeError(
+            "Cannot set the fullName of the message.  Instead set shortName OR set the appropriate discipline, parameterCategory, and parameterNumber.  The fullName will be set automatically from these other attributes."
+        )
 
 class Units:
     """Units of the Variable."""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[1]
     def __set__(self, obj, value):
-        raise RuntimeError
+        raise RuntimeError(
+            "Cannot set the units of the message.  Instead set shortName OR set the appropriate discipline, parameterCategory, and parameterNumber.  The units will be set automatically from these other attributes."
+        )
 
 class ShortName:
     """ Short name of the variable (i.e. the variable abbreviation)."""
     def __get__(self, obj, objtype=None):
         return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
-        raise RuntimeError
+        metadata = tables.get_metadata_from_shortname(value)
+        if len(metadata) > 1:
+            raise ValueError(
+                f"shortName={value} is ambiguous within the GRIB2 standard and you have to set instead with discipline, parameterCategory, and parameterNumber.\n{metadata}"
+            )
+        for attr, val in metadata[0].items():
+            if attr in ["fullName", "units"]:
+                continue
+            setattr(obj, attr, val)
 
 class TypeOfGeneratingProcess:
     """[Type of Generating Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-3.shtml)"""
