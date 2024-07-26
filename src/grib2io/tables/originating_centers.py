@@ -1,4 +1,4 @@
-_ncep_grib2_table_version = '31.0.0'
+_ncep_grib2_table_version = '33.0.0'
 
 table_originating_centers  = {
 '1':'Melbourne (WMC)',

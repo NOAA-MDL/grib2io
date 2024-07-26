@@ -49,7 +49,8 @@ table_1_2 = {
 '2':'Verifying Time of Forecast',
 '3':'Observation Time',
 '4':'Local Time',
-'5-191':'Reserved',
+'5':'Simulation start',
+'6-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
@@ -69,7 +70,7 @@ table_1_3 = {
 '11':'Copernicus Regional Reanalysis Test',
 '12':'Destination Earth',
 '13':'Destination Earth test',
-'12-191':'Reserved',
+'14-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }

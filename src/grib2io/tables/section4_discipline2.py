@@ -207,7 +207,7 @@ table_4_2_2_4  = {
 '33':['Dense dead leaf moisture content','kg kg-1','DDLMC'],
 '34':['Fine dead wood moisture content','kg kg-1','FDWMC'],
 '35':['Dense dead wood moisture content','kg kg-1','DDWMC'],
-'36':['Fire radiative power	(Tentatively accpeted)','W','FRADPOW'],
+'36':['Fire radiative power','W','FRADPOW'],
 '37-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
