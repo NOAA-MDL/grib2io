@@ -169,7 +169,8 @@ class Year:
         return obj.section1[5]
     def __set__(self, obj, value):
         obj.section1[5] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class Month:
     """Month of reference time"""
@@ -177,7 +178,8 @@ class Month:
         return obj.section1[6]
     def __set__(self, obj, value):
         obj.section1[6] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class Day:
     """Day of reference time"""
@@ -185,7 +187,8 @@ class Day:
         return obj.section1[7]
     def __set__(self, obj, value):
         obj.section1[7] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class Hour:
     """Hour of reference time"""
@@ -193,7 +196,8 @@ class Hour:
         return obj.section1[8]
     def __set__(self, obj, value):
         obj.section1[8] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class Minute:
     """Minute of reference time"""
@@ -201,7 +205,8 @@ class Minute:
         return obj.section1[9]
     def __set__(self, obj, value):
         obj.section1[9] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class Second:
     """Second of reference time"""
@@ -209,7 +214,8 @@ class Second:
         return obj.section1[10]
     def __set__(self, obj, value):
         obj.section1[10] = value
-        setattr(obj, "refDate", datetime.datetime(*obj.section1[5:11]))
+        # Test validity of datetime values
+        _ = datetime.datetime(*obj.section1[5:11])
 
 class RefDate:
     """Reference Date. NOTE: This is a `datetime.datetime` object."""

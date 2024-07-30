@@ -239,6 +239,29 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
             None,
             id="month",
         ),
+        pytest.param(
+            {
+                "year": 2021,
+                "month": 2,
+                "day": 29,
+            },  # kwargs
+            Exception,  # expected_type
+            ValueError,  # expected
+            "day is out of range for month",
+            id="non_leap_year_error",
+        ),
+        pytest.param(
+            {
+                "year": 2021,
+                "month": 1,
+                "day": 29,
+                "hour": 25,
+            },  # kwargs
+            Exception,  # expected_type
+            ValueError,  # expected
+            "hour must be in 0..23",
+            id="25_hour_error",
+        ),
     ],
 )
 def test_update_attrs(kwargs, expected_type, expected, error_message):
