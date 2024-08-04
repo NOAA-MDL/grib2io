@@ -1371,7 +1371,9 @@ class _Grib2Message:
             A spatial subset of a GRIB2 message.
         """
         if self.gdtn not in [0, 1, 40, 10, 20, 30, 31, 110, 32769]:
-            raise ValueError('Subset only works for regular lat/lon, Gaussian, mercator, stereographic, lambert conformal, albers equal-area, and azimuthal equidistant grids.')
+            raise ValueError(
+                "Subset only works for regular lat/lon, Gaussian, mercator, stereographic, lambert conformal, albers equal-area, and azimuthal equidistant grids.  Grid Definition Template Numbers of 0, 1, 40, 10, 20, 30, 31, 110, and 32769 are supported."
+            )
 
         newmsg = Grib2Message(
             np.copy(self.section0),
@@ -1384,44 +1386,42 @@ class _Grib2Message:
 
         msglats, msglons = self.grid()
 
-        la1 = np.min(lats)
-        la2 = np.max(lats)
+        la1 = np.max(lats)
         lo1 = np.min(lons)
+        la2 = np.min(lats)
         lo2 = np.max(lons)
 
         first_lat = np.abs(msglats - la1)
         first_lon = np.abs(msglons - lo1)
-        max_idx = np.maximum(first_lon, first_lat)
-        first_i, first_j = np.where(max_idx == np.min(max_idx))
+        max_idx = np.maximum(first_lat, first_lon)
+        first_j, first_i = np.where(max_idx == np.min(max_idx))
 
-        print("first_i, first_j", first_i, first_j)
         last_lat = np.abs(msglats - la2)
         last_lon = np.abs(msglons - lo2)
-        max_idx = np.maximum(last_lon, last_lat)
-        last_i, last_j = np.where(max_idx == np.min(max_idx))
-        print("last_i, last_j", last_i, last_j)
+        max_idx = np.maximum(last_lat, last_lon)
+        last_j, last_i = np.where(max_idx == np.min(max_idx))
 
-        setattr(newmsg, "latitudeFirstGridpoint" , msglats[first_i[0], first_j[0]])
-        print("latitudeFirstGridpoint", newmsg.latitudeFirstGridpoint)
-        setattr(newmsg, "longitudeFirstGridpoint" , msglons[first_i[0], first_j[0]])
-        print("longitudeFirstGridpoint", newmsg.longitudeFirstGridpoint)
-        setattr(newmsg, "nx" , np.abs(first_i[0] - last_i[0]))
-        setattr(newmsg, "ny" , np.abs(first_j[0] - last_j[0]))
-        print("newmsg.nx, newmsg.ny", newmsg.nx, newmsg.ny)
-        print(self._data.shape)
-        setattr(newmsg, "data" , np.copy(self._data[
-            min(first_i[0] , last_i[0]) : max(first_i[0] , last_i[0]),
-            min(first_j[0] , last_j[0]) : max(first_j[0] , last_j[0])]))
-        if self.gdtn in [0, 1, 40]:
-            setattr(newmsg, "latitudeLastGridpoint" , msglats[last_i[0], last_j[0]])
-            print("latitudeLastGridpoint", newmsg.latitudeLastGridpoint)
-            setattr(newmsg, "longitudeLastGridpoint" , msglons[last_i[0], last_j[0]])
-            print("longitudeLastGridpoint", newmsg.longitudeLastGridpoint)
-        if self._sha1_section3 in _latlon_datastore.keys():
-            del _latlon_datastore[self._sha1_section3]
+        setattr(newmsg, "latitudeFirstGridpoint", msglats[first_j[0], first_i[0]])
+        setattr(newmsg, "longitudeFirstGridpoint", msglons[first_j[0], first_i[0]])
+        setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
+        setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
+
+        # Set *LastGridpoint attributes even if only used for gdtn=[0,1,40].
+        # This information is used to subset xarray datasets.
+        setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
+        setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
+
+        setattr(
+            newmsg,
+            "data",
+            self.data[
+                min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]),
+                min(first_i[0], last_i[0]) : max(first_i[0], last_i[0]),
+            ].copy(),
+        )
+
+        newmsg._sha1_section3 = ""
         newmsg.grid()
-        print(newmsg.nx, newmsg.ny)
-        print(newmsg.grid())
 
         return newmsg
 
