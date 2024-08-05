@@ -57,25 +57,20 @@ def get_package_info(name, config, static=False):
     return (pkg_incdir, pkg_libdir)
 
 def find_library(name, dirs=None, static=False):
-    _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
+    """Find library"""
+    _libext_by_platform = {"linux": ".so", "darwin": ".dylib", "win32": ".dll"}
     out = []
 
     # According to the ctypes documentation Mac and Windows ctypes_find_library
     # returns the full path.
-    #
-    # IMPORTANT: The following does not work at this time (Jan. 2024) for macOS on
-    # Apple Silicon.
     if (os.name, sys.platform) != ("posix", "linux"):
-        if (sys.platform, platform.machine()) == ("darwin", "arm64"):
-            pass
-        else:
-            out.append(ctypes_find_library(name))
+        out.append(ctypes_find_library(name))
 
     # For Linux and macOS (Apple Silicon), we have to search ourselves.
     libext = _libext_by_platform[sys.platform]
-    if static: libext = '.a'
+    libext = ".a" if static else libext
     if dirs is None:
-        if os.environ.get("CONDA_PREFIX"):
+        if 'CONDA_PREFIX' in os.environ:
             dirs = [os.environ["CONDA_PREFIX"]]
         else:
             dirs = ["/usr/local", "/sw", "/opt", "/opt/local", "/opt/homebrew", "/usr"]
@@ -84,7 +79,7 @@ def find_library(name, dirs=None, static=False):
 
     out = []
     for d in dirs:
-        libs = Path(d).rglob(f"lib{name}{libext}")
+        libs = Path(d).rglob(f"lib*{name}{libext}")
         out.extend(libs)
     if not out:
         raise ValueError(f"""
@@ -95,6 +90,35 @@ directories:
 
 """)
     return out[0].absolute().resolve().as_posix()
+
+def run_ar_command(filename):
+    """Run the ar command"""
+    cmd = subprocess.run(['ar','-t',filename],
+                         stdout=subprocess.PIPE)
+    cmdout = cmd.stdout.decode('utf-8')
+    return cmdout
+
+def run_nm_command(filename):
+    """Run the nm command"""
+    cmd = subprocess.run(['nm','-C',filename],
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.DEVNULL)
+    cmdout = cmd.stdout.decode('utf-8')
+    return cmdout
+
+def run_ldd_command(filename):
+    """Run the ldd command"""
+    cmd = subprocess.run(['ldd',filename],
+                         stdout=subprocess.PIPE)
+    cmdout = cmd.stdout.decode('utf-8')
+    return cmdout
+
+def run_otool_command(filename):
+    """Run the otool command"""
+    cmd = subprocess.run(['otool','-L',filename],
+                         stdout=subprocess.PIPE)
+    cmdout = cmd.stdout.decode('utf-8')
+    return cmdout
 
 # ----------------------------------------------------------------------------------------
 # Main part of setup.py
@@ -146,8 +170,9 @@ libdirs.append(pkginfo[1])
 if usestaticlibs:
     staticlib = find_library('g2c', dirs=libdirs, static=True)
     extra_objects.append(staticlib)
-    cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
-    symbols = cmd.stdout.decode('utf-8')
+    #cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
+    #symbols = cmd.stdout.decode('utf-8')
+    symbols = run_ar_command(staticlib)
     if 'aec' in symbols:
         libraries.append('aec')
     if 'jpeg2000' in symbols:
@@ -175,6 +200,7 @@ incdirs.append(numpy.get_include())
 libdirs = [] if usestaticlibs else list(set(libdirs))
 extra_objects = list(set(extra_objects)) if usestaticlibs else []
 
+print(f'Libraries: {libraries}')
 print(f'Use static libs: {usestaticlibs}')
 print(f'\t{incdirs = }')
 print(f'\t{libdirs = }')
