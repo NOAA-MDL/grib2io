@@ -469,20 +469,20 @@ class open():
         msg
             GRIB2 message objects to write to file.
         """
-        if isinstance(msg, list):
+        if isinstance(msg,list):
             for m in msg:
                 self.write(m)
             return
 
-        if issubclass(msg.__class__, _Grib2Message):
-            if hasattr(msg, "_msg"):
+        if issubclass(msg.__class__,_Grib2Message):
+            if hasattr(msg,'_msg'):
                 self._filehandle.write(msg._msg)
             else:
                 if msg._signature != msg._generate_signature():
                     msg.pack()
                     self._filehandle.write(msg._msg)
                 else:
-                    if hasattr(msg._data, "filehandle"):
+                    if hasattr(msg._data,'filehandle'):
                         msg._data.filehandle.seek(msg._data.offset)
                         self._filehandle.write(msg._data.filehandle.read(msg.section0[-1]))
                     else:
@@ -1680,7 +1680,7 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
     a,newshp = _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out)
 
     # Set lats and lons if stations, else create array for grids.
-    if grid_def_out.dtn == -1:
+    if grid_def_out.gdtn == -1:
         rlat = np.array(grid_def_out.lats,dtype=np.float32)
         rlon = np.array(grid_def_out.lons,dtype=np.float32)
     else:
