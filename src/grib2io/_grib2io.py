@@ -1338,7 +1338,18 @@ class _Grib2Message:
         """
         Return a spatial subset.
 
-        Uses the minimum and maximum values in `lats` and `lons`.
+        Currently only supports regular grids of the following types:
+
+        | Grid Type                                                    | gdtn  |
+        | :---:                                                        | :---: |
+        | Latitude/Longitude, Equidistant Cylindrical, or Plate Carree | 0     |
+        | Rotated Latitude/Longitude                                   | 1     |
+        | Mercator                                                     | 10    |
+        | Polar Stereographic                                          | 20    |
+        | Lambert Conformal                                            | 30    |
+        | Albers Equal-Area                                            | 31    |
+        | Gaussian Latitude/Longitude                                  | 40    |
+        | Equatorial Azimuthal Equidistant Projection                  | 110   |
 
         Parameters
         ----------
@@ -1359,20 +1370,44 @@ class _Grib2Message:
             The order of the longitudes is not important.  The function will
             determine which is the minimum and maximum.
 
-            The longitudes should be in decimal degrees with 0.0 at the prime
+            GRIB2 longitudes should be in decimal degrees with 0.0 at the prime
             meridian, positive values increasing eastward to 360.  There are no
-            negative longitudes.  West longitudes are converted to east
-            longitudes by adding 180 to the absolute value of the west
-            longitude.
+            negative GRIB2 longitudes.
+
+            The typical west longitudes that start at 0.0 at the prime meridian
+            and decrease to -180 westward, are converted to GRIB2 longitudes by
+            '360 - (absolute value of the west longitude)' where typical
+            eastern longitudes are unchanged as GRIB2 longitudes.
 
         Returns
         -------
         subset
             A spatial subset of a GRIB2 message.
         """
-        if self.gdtn not in [0, 1, 40, 10, 20, 30, 31, 110, 32769]:
+        if self.gdtn not in [0, 1, 10, 20, 30, 31, 40, 110]:
             raise ValueError(
-                "Subset only works for regular lat/lon, Gaussian, mercator, stereographic, lambert conformal, albers equal-area, and azimuthal equidistant grids.  Grid Definition Template Numbers of 0, 1, 40, 10, 20, 30, 31, 110, and 32769 are supported."
+                """
+
+Subset only works for
+    Latitude/Longitude, Equidistant Cylindrical, or Plate Carree (gdtn=0)
+    Rotated Latitude/Longitude (gdtn=1)
+    Mercator (gdtn=10)
+    Polar Stereographic (gdtn=20)
+    Lambert Conformal (gdtn=30)
+    Albers Equal-Area (gdtn=31)
+    Gaussian Latitude/Longitude (gdtn=40)
+    Equatorial Azimuthal Equidistant Projection (gdtn=110)
+
+"""
+            )
+
+        if self.nx == 0 or self.ny == 0:
+            raise ValueError(
+                """
+
+Subset only works for regular grids.
+
+"""
             )
 
         newmsg = Grib2Message(
@@ -1391,6 +1426,8 @@ class _Grib2Message:
         la2 = np.min(lats)
         lo2 = np.max(lons)
 
+        # Find the indices of the first and last grid points to the nearest
+        # lat/lon values in the grid.
         first_lat = np.abs(msglats - la1)
         first_lon = np.abs(msglons - lo1)
         max_idx = np.maximum(first_lat, first_lon)
@@ -1406,8 +1443,10 @@ class _Grib2Message:
         setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
         setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
 
-        # Set *LastGridpoint attributes even if only used for gdtn=[0,1,40].
-        # This information is used to subset xarray datasets.
+        # Set *LastGridpoint attributes even if only used for gdtn=[0, 1, 40].
+        # This information is used to subset xarray datasets and even though
+        # unnecessary for some supported grid types, it won't affect a grib2io
+        # message to set them.
         setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
         setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
 
@@ -1420,6 +1459,9 @@ class _Grib2Message:
             ].copy(),
         )
 
+        # Need to set the newmsg._sha1_section3 to a blank string so the grid
+        # method ignores the cached lat/lon values.  This will force the grid
+        # method to recompute the lat/lon values for the subsetted grid.
         newmsg._sha1_section3 = ""
         newmsg.grid()
 
