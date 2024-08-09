@@ -8,6 +8,7 @@ from dataclasses import dataclass, field, astuple
 import itertools
 import logging
 import typing
+from warnings import warn
 
 import numpy as np
 import pandas as pd
@@ -26,6 +27,17 @@ from grib2io._grib2io import _data
 logger = logging.getLogger(__name__)
 
 LOCK = SerializableLock()
+
+AVAILABLE_NON_GEO_DIMS = [
+    "duration",
+    "leadTime",
+    "percentileValue",
+    "perturbationNumber",
+    "refDate",
+    "thresholdLowerLimit",
+    "thresholdUpperLimit",
+    "valueOfFirstFixedSurface",
+]
 
 
 class GribBackendEntrypoint(BackendEntrypoint):
@@ -749,6 +761,19 @@ class Grib2ioDataSet:
             da.grib2io.to_grib2(filename, mode=mode)
             mode = "a"
 
+    def update_attrs(self, **kwargs):
+        """
+        Raises an error because Datasets don't have a .attrs attribute.
+
+        Parameters
+        ----------
+        attrs
+            Attributes to update.
+        """
+        raise ValueError(
+            f"Datasets do not have a .attrs attribute; use .grib2io.update_attrs({kwargs}) on a DataArray instead."
+        )
+
     def subset(self, lats, lons) -> xr.Dataset:
         """
         Subset the DataSet to a region defined by latitudes and longitudes.
@@ -773,6 +798,7 @@ class Grib2ioDataSet:
 
         return newds
 
+      
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
@@ -957,19 +983,9 @@ class Grib2ioDataArray:
         """
         da = self._obj.copy(deep=True)
 
-        available_non_geo_dims = [
-            "duration",
-            "leadTime",
-            "percentileValue",
-            "perturbationNumber",
-            "refDate",
-            "thresholdLowerLimit",
-            "thresholdUpperLimit",
-            "valueOfFirstFixedSurface",
-        ]
 
         coords_keys = sorted(da.coords.keys())
-        coords_keys = [k for k in coords_keys if k in available_non_geo_dims]
+        coords_keys = [k for k in coords_keys if k in AVAILABLE_NON_GEO_DIMS]
 
         # If there are dimension coordinates, the DataArray is a hypercube of
         # grib2 messages.
@@ -1033,10 +1049,107 @@ class Grib2ioDataArray:
             for index in [i for i in coords_keys if i not in da.dims]:
                 setattr(newmsg, index, selected.coords[index].values)
 
+            # Set section 5 attributes to the da.encoding dictionary.
+            for key, value in selected.encoding.items():
+                if key in ["dtype", "chunks", "original_shape"]:
+                    continue
+                setattr(newmsg, key, value)
+
             # write the message to file
             with grib2io.open(filename, mode=mode) as f:
                 f.write(newmsg)
             mode = "a"
+
+    def update_attrs(self, **kwargs):
+        """
+        Update many of the attributes of the DataArray.
+
+        Parameters
+        ----------
+        **kwargs
+            Attributes to update.  This can include many of the GRIB2IO message
+            attributes that you can find when you print a GRIB2IO message. For
+            conflicting updates, the last keyword will be used.
+
+            +-----------------------+------------------------------------------+
+            | kwargs                | Description                              |
+            +=======================+==========================================+
+            | shortName="VTMP"      | Set shortName to "VTMP", along with      |
+            |                       | appropriate discipline,                  |
+            |                       | parameterCategory, parameterNumber,      |
+            |                       | fullName and units.                      |
+            +-----------------------+------------------------------------------+
+            | discipline=0,         | Set shortName, discipline,               |
+            | parameterCategory=0,  | parameterCategory, parameterNumber,      |
+            | parameterNumber=1     | fullName and units appropriate for       |
+            |                       | "Virtual Temperature".                   |
+            +-----------------------+------------------------------------------+
+            | discipline=0,         | Conflicting keywords but                 |
+            | parameterCategory=0,  | 'shortName="TMP"' wins.  Set shortName,  |
+            | parameterNumber=1,    | discipline, parameterCategory,           |
+            | shortName="TMP"       | parameterNumber, fullName and units      |
+            |                       | appropriate for "Temperature".           |
+            +-----------------------+------------------------------------------+
+
+        Returns
+        -------
+        DataArray
+            DataArray with updated attributes.
+        """
+        da = self._obj.copy(deep=True)
+
+        newmsg = Grib2Message(
+            da.attrs["GRIB2IO_section0"],
+            da.attrs["GRIB2IO_section1"],
+            da.attrs["GRIB2IO_section2"],
+            da.attrs["GRIB2IO_section3"],
+            da.attrs["GRIB2IO_section4"],
+            da.attrs["GRIB2IO_section5"],
+        )
+
+        coords_keys = [
+            k
+            for k in da.coords.keys()
+            if (k in AVAILABLE_NON_GEO_DIMS) and (k in da.dims)
+        ]
+
+        for grib2_name, value in kwargs.items():
+            if grib2_name == "gridDefinitionTemplateNumber":
+                raise ValueError(
+                    "The gridDefinitionTemplateNumber attribute cannot be updated.  The best way to change to a different grid is to interpolate the data to a new grid using the grib2io interpolate functions."
+                )
+            if grib2_name == "productDefinitionTemplateNumber":
+                raise ValueError(
+                    "The productDefinitionTemplateNumber attribute cannot be updated."
+                )
+            if grib2_name == "dataRepresentationTemplateNumber":
+                raise ValueError(
+                    "The dataRepresentationTemplateNumber attribute cannot be updated."
+                )
+            if grib2_name in coords_keys:
+                warn(
+                    f"Skipping attribute '{grib2_name}' because it is a dimension coordinate and cannot be updated."
+                )
+                continue
+            if hasattr(newmsg, grib2_name):
+                setattr(newmsg, grib2_name, value)
+            else:
+                warn(
+                    f"Skipping attribute '{grib2_name}' because it is not a valid GRIB2 attribute for this message and cannot be updated."
+                )
+                continue
+
+        da.attrs["GRIB2IO_section0"] = newmsg.section0
+        da.attrs["GRIB2IO_section1"] = newmsg.section1
+        da.attrs["GRIB2IO_section2"] = newmsg.section2 or []
+        da.attrs["GRIB2IO_section3"] = newmsg.section3
+        da.attrs["GRIB2IO_section4"] = newmsg.section4
+        da.attrs["GRIB2IO_section5"] = newmsg.section5
+        da.attrs["fullName"] = newmsg.fullName
+        da.attrs["shortName"] = newmsg.shortName
+        da.attrs["units"] = newmsg.units
+
+        return da
 
     def subset(self, lats, lons) -> xr.DataArray:
         """
