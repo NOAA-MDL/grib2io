@@ -19,6 +19,7 @@ The following Jupyter Notebooks are available as tutorials:
 
 * [General Usage](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
 * [Plotting Arakawa Rotated Lat/Lon Grids](https://github.com/NOAA-MDL/grib2io/blob/master/demos/plot-arakawa-rotlatlon-grids.ipynb)
+* [Subset Example](https://github.com/NOAA-MDL/grib2io/blob/master/demos/subset-example.ipynb)
 """
 
 from dataclasses import dataclass, field
