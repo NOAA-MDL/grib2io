@@ -1334,6 +1334,139 @@ class _Grib2Message:
         return msg
 
 
+    def subset(self, lats, lons):
+        """
+        Return a spatial subset.
+
+        Currently only supports regular grids of the following types:
+
+        | Grid Type                                                    | gdtn  |
+        | :---:                                                        | :---: |
+        | Latitude/Longitude, Equidistant Cylindrical, or Plate Carree | 0     |
+        | Rotated Latitude/Longitude                                   | 1     |
+        | Mercator                                                     | 10    |
+        | Polar Stereographic                                          | 20    |
+        | Lambert Conformal                                            | 30    |
+        | Albers Equal-Area                                            | 31    |
+        | Gaussian Latitude/Longitude                                  | 40    |
+        | Equatorial Azimuthal Equidistant Projection                  | 110   |
+
+        Parameters
+        ----------
+        lats
+            List or tuple of latitudes.  The minimum and maximum latitudes will
+            be used to define the southern and northern boundaries.
+
+            The order of the latitudes is not important.  The function will
+            determine which is the minimum and maximum.
+
+            The latitudes should be in decimal degrees with 0.0 at the equator,
+            positive values in the northern hemisphere increasing to 90, and
+            negative values in the southern hemisphere decreasing to -90.
+        lons
+            List or tuple of longitudes.  The minimum and maximum longitudes
+            will be used to define the western and eastern boundaries.
+
+            The order of the longitudes is not important.  The function will
+            determine which is the minimum and maximum.
+
+            GRIB2 longitudes should be in decimal degrees with 0.0 at the prime
+            meridian, positive values increasing eastward to 360.  There are no
+            negative GRIB2 longitudes.
+
+            The typical west longitudes that start at 0.0 at the prime meridian
+            and decrease to -180 westward, are converted to GRIB2 longitudes by
+            '360 - (absolute value of the west longitude)' where typical
+            eastern longitudes are unchanged as GRIB2 longitudes.
+
+        Returns
+        -------
+        subset
+            A spatial subset of a GRIB2 message.
+        """
+        if self.gdtn not in [0, 1, 10, 20, 30, 31, 40, 110]:
+            raise ValueError(
+                """
+
+Subset only works for
+    Latitude/Longitude, Equidistant Cylindrical, or Plate Carree (gdtn=0)
+    Rotated Latitude/Longitude (gdtn=1)
+    Mercator (gdtn=10)
+    Polar Stereographic (gdtn=20)
+    Lambert Conformal (gdtn=30)
+    Albers Equal-Area (gdtn=31)
+    Gaussian Latitude/Longitude (gdtn=40)
+    Equatorial Azimuthal Equidistant Projection (gdtn=110)
+
+"""
+            )
+
+        if self.nx == 0 or self.ny == 0:
+            raise ValueError(
+                """
+
+Subset only works for regular grids.
+
+"""
+            )
+
+        newmsg = Grib2Message(
+            np.copy(self.section0),
+            np.copy(self.section1),
+            np.copy(self.section2),
+            np.copy(self.section3),
+            np.copy(self.section4),
+            np.copy(self.section5),
+        )
+
+        msglats, msglons = self.grid()
+
+        la1 = np.max(lats)
+        lo1 = np.min(lons)
+        la2 = np.min(lats)
+        lo2 = np.max(lons)
+
+        # Find the indices of the first and last grid points to the nearest
+        # lat/lon values in the grid.
+        first_lat = np.abs(msglats - la1)
+        first_lon = np.abs(msglons - lo1)
+        max_idx = np.maximum(first_lat, first_lon)
+        first_j, first_i = np.where(max_idx == np.min(max_idx))
+
+        last_lat = np.abs(msglats - la2)
+        last_lon = np.abs(msglons - lo2)
+        max_idx = np.maximum(last_lat, last_lon)
+        last_j, last_i = np.where(max_idx == np.min(max_idx))
+
+        setattr(newmsg, "latitudeFirstGridpoint", msglats[first_j[0], first_i[0]])
+        setattr(newmsg, "longitudeFirstGridpoint", msglons[first_j[0], first_i[0]])
+        setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
+        setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
+
+        # Set *LastGridpoint attributes even if only used for gdtn=[0, 1, 40].
+        # This information is used to subset xarray datasets and even though
+        # unnecessary for some supported grid types, it won't affect a grib2io
+        # message to set them.
+        setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
+        setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
+
+        setattr(
+            newmsg,
+            "data",
+            self.data[
+                min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]),
+                min(first_i[0], last_i[0]) : max(first_i[0], last_i[0]),
+            ].copy(),
+        )
+
+        # Need to set the newmsg._sha1_section3 to a blank string so the grid
+        # method ignores the cached lat/lon values.  This will force the grid
+        # method to recompute the lat/lon values for the subsetted grid.
+        newmsg._sha1_section3 = ""
+        newmsg.grid()
+
+        return newmsg
+
     def validate(self):
         """
         Validate a complete GRIB2 message.

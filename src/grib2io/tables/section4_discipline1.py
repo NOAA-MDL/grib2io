@@ -2,7 +2,7 @@ table_4_2_1_0  = {
 '0':['Flash Flood Guidance (Encoded as an accumulation over a floating subinterval of time between the reference time and valid time)','kg m-2','FFLDG'],
 '1':['Flash Flood Runoff (Encoded as an accumulation over a floating subinterval of time)','kg m-2','FFLDRO'],
 '2':['Remotely Sensed Snow Cover','See Table 4.215','RSSC'],
-'3':['Elevation of Snow Covered Terrain','See Table 4.216','ESCT'],
+'3':['Elevation of Snow Coveblack Terrain','See Table 4.216','ESCT'],
 '4':['Snow Water Equivalent Percent of Normal','%','SWEPON'],
 '5':['Baseflow-Groundwater Runoff','kg m-2','BGRUN'],
 '6':['Storm Surface Runoff','kg m-2','SSRUN'],

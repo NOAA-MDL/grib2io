@@ -774,7 +774,31 @@ class Grib2ioDataSet:
             f"Datasets do not have a .attrs attribute; use .grib2io.update_attrs({kwargs}) on a DataArray instead."
         )
 
+    def subset(self, lats, lons) -> xr.Dataset:
+        """
+        Subset the DataSet to a region defined by latitudes and longitudes.
 
+        Parameters
+        ----------
+        lats
+            Latitude bounds of the region.
+        lons
+            Longitude bounds of the region.
+
+        Returns
+        -------
+        subset
+            DataSet subset to the region.
+        """
+        ds = self._obj
+
+        newds = xr.Dataset()
+        for shortName in ds:
+            newds[shortName] = ds[shortName].grib2io.subset(lats, lons).copy()
+
+        return newds
+
+      
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
@@ -1126,3 +1150,44 @@ class Grib2ioDataArray:
         da.attrs["units"] = newmsg.units
 
         return da
+
+    def subset(self, lats, lons) -> xr.DataArray:
+        """
+        Subset the DataArray to a region defined by latitudes and longitudes.
+
+        Parameters
+        ----------
+        lats
+            Latitude bounds of the region.
+        lons
+            Longitude bounds of the region.
+
+        Returns
+        -------
+        subset
+            DataArray subset to the region.
+        """
+        da = self._obj.copy(deep=True)
+
+        newmsg = Grib2Message(
+            da.attrs["GRIB2IO_section0"],
+            da.attrs["GRIB2IO_section1"],
+            da.attrs["GRIB2IO_section2"],
+            da.attrs["GRIB2IO_section3"],
+            da.attrs["GRIB2IO_section4"],
+            da.attrs["GRIB2IO_section5"],
+        )
+        newmsg.data = np.copy(da.values)
+
+        newmsg = newmsg.subset(lats, lons)
+
+        da.attrs["GRIB2IO_section3"] = newmsg.section3
+
+        mask_lat = (da.latitude >= newmsg.latitudeLastGridpoint) & (
+            da.latitude <= newmsg.latitudeFirstGridpoint
+        )
+        mask_lon = (da.longitude >= newmsg.longitudeFirstGridpoint) & (
+            da.longitude <= newmsg.longitudeLastGridpoint
+        )
+
+        return da.where((mask_lon & mask_lat).compute(), drop=True)

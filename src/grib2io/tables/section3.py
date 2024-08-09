@@ -65,8 +65,8 @@ table_3_1 = {
 '1200':'Time Section Grid',
 '1201-32767':'Reserved',
 '32768-65534':'Reserved for Local Use',
-'32768':'Rotated Latitude/Longitude (Arakawa Staggeblack E-Grid)',
-'32769':'Rotated Latitude/Longitude (Arakawa Non-E Staggeblack Grid)',
+'32768':'Rotated Latitude/Longitude (Arakawa Staggered E-Grid)',
+'32769':'Rotated Latitude/Longitude (Arakawa Non-E Staggered Grid)',
 '65535':'Missing',
 }
 
