@@ -1110,7 +1110,7 @@ class Grib2ioDataArray:
         coords_keys = [
             k
             for k in da.coords.keys()
-            if (k in AVAILABLE_NON_GEO_DIMS) and (k in da.dims)
+            if k in AVAILABLE_NON_GEO_DIMS
         ]
 
         for grib2_name, value in kwargs.items():
@@ -1128,7 +1128,7 @@ class Grib2ioDataArray:
                 )
             if grib2_name in coords_keys:
                 warn(
-                    f"Skipping attribute '{grib2_name}' because it is a dimension coordinate and cannot be updated."
+                    f"Skipping attribute '{grib2_name}' because it is a coordinate. Use da.assign_coords() to change coordinate values."
                 )
                 continue
             if hasattr(newmsg, grib2_name):

@@ -133,15 +133,6 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
         ),
         pytest.param(
             {
-                "leadTime": 4,
-            },  # kwargs
-            set,  # expected_type
-            set(),  # expected
-            None,
-            id="warning_dims",
-        ),
-        pytest.param(
-            {
                 "zebra": 4,
             },  # kwargs
             Warning,  # expected_type
@@ -151,39 +142,12 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
         ),
         pytest.param(
             {
-                "zebra": 4,
-            },  # kwargs
-            set,  # expected_type
-            set(),  # expected
-            None,  # error_message
-            id="warning_not_found",
-        ),
-        pytest.param(
-            {
                 "refDate": datetime.datetime(2022, 11, 7, 0, 0),
             },  # kwargs
-            set,  # expected_type
-            set(),  # expected
-            None,
+            Warning,  # expected_type
+            UserWarning,  # expected
+            "", # error message
             id="refDate",
-        ),
-        pytest.param(
-            {
-                "refDate": datetime.datetime(2021, 11, 7, 0, 0),
-            },  # kwargs
-            set,  # expected_type
-            {
-                (
-                    "GRIB2IO_section1",
-                    "[   7    0    2    1    1 2022   11    7    0    0    0    0    1]",
-                ),
-                (
-                    "GRIB2IO_section1",
-                    "[   7    0    2    1    1 2021   11    7    0    0    0    0    1]",
-                ),
-            },  # expected
-            None,
-            id="refDate_year",
         ),
         pytest.param(
             {
@@ -202,24 +166,6 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
             },  # expected
             None,
             id="year",
-        ),
-        pytest.param(
-            {
-                "refDate": datetime.datetime(2022, 10, 7, 0, 0),
-            },  # kwargs
-            set,  # expected_type
-            {
-                (
-                    "GRIB2IO_section1",
-                    "[   7    0    2    1    1 2022   11    7    0    0    0    0    1]",
-                ),
-                (
-                    "GRIB2IO_section1",
-                    "[   7    0    2    1    1 2022   10    7    0    0    0    0    1]",
-                ),
-            },  # expected
-            None,
-            id="refDate_month",
         ),
         pytest.param(
             {

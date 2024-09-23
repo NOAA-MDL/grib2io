@@ -11,6 +11,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 
 from .. import tables
+from .. import templates
 
 def int2bin(i: int, nbits: int=8, output: Union[Type[str], Type[List]]=str):
     """
@@ -80,17 +81,15 @@ def ieee_int_to_float(i):
     return np.float32(f)
 
 
-def get_leadtime(idsec: ArrayLike, pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
+def get_leadtime(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     """
     Compute lead time as a datetime.timedelta object.
 
-    Using information from GRIB2 Identification Section (Section 1), Product
-    Definition Template Number, and Product Definition Template (Section 4).
+    Using information from GRIB2 Product Definition Template
+    Number, and Product Definition Template (Section 4).
 
     Parameters
     ----------
-    idsec
-        Sequence containing GRIB2 Identification Section (Section 1).
     pdtn
         GRIB2 Product Definition Template Number
     pdt
@@ -101,15 +100,9 @@ def get_leadtime(idsec: ArrayLike, pdtn: int, pdt: ArrayLike) -> datetime.timede
     leadTime
         datetime.timedelta object representing the lead time of the GRIB2 message.
     """
-    _key = {8:slice(15,21), 9:slice(22,28), 10:slice(16,22), 11:slice(18,24), 12:slice(17,23)}
-    refdate = datetime.datetime(*idsec[5:11])
-    try:
-        return datetime.datetime(*pdt[_key[pdtn]])-refdate
-    except(KeyError):
-        if pdtn == 48:
-            return datetime.timedelta(hours=pdt[19]*(tables.get_value_from_table(pdt[18],'scale_time_hours')))
-        else:
-            return datetime.timedelta(hours=pdt[8]*(tables.get_value_from_table(pdt[7],'scale_time_hours')))
+    lt = tables.get_value_from_table(pdt[templates.UnitOfForecastTime._key[pdtn]], 'scale_time_hours')
+    lt *= pdt[templates.ValueOfForecastTime._key[pdtn]]
+    return datetime.timedelta(hours=int(lt))
 
 
 def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
@@ -132,11 +125,16 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
         datetime.timedelta object representing the time duration of the GRIB2
         message.
     """
-    _key = {8:25, 9:32, 10:26, 11:28, 12:27}
-    try:
-        return datetime.timedelta(hours=pdt[_key[pdtn]+1]*tables.get_value_from_table(pdt[_key[pdtn]],'scale_time_hours'))
-    except(KeyError):
-        return datetime.timedelta(hours=0)
+    if pdtn in templates._timeinterval_pdtns:
+        ntime = pdt[templates.NumberOfTimeRanges._key[pdtn]]
+        duration_unit = tables.get_value_from_table(
+            pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]],
+            'scale_time_hours')
+        d = ntime * duration_unit * pdt[
+            templates.TimeRangeOfStatisticalProcess._key[pdtn]]
+    else:
+        d = 0
+    return datetime.timedelta(hours=int(d))
 
 
 def decode_wx_strings(lus: bytes) -> Dict[int, str]:
