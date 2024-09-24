@@ -1,10 +1,11 @@
 """GRIB2 section templates classes and metadata descriptor classes."""
 from dataclasses import dataclass, field
 from collections import defaultdict
-import datetime
 from typing import Union
-
-from numpy import timedelta64, datetime64
+import copy
+import datetime
+import numpy as np
+import warnings
 
 from . import tables
 from . import utils
@@ -25,6 +26,14 @@ _section_attrs = {0:['discipline'],
                   7:[],
                   8:[],}
 
+_continuous_pdtns = [
+    int(k) for k, v in tables.get_table("4.0").items() if "a point in time" in v
+]
+_timeinterval_pdtns = [
+    int(k)
+    for k, v in tables.get_table("4.0").items()
+    if "continuous or non-continuous time interval" in v
+]
 
 def _calculate_scale_factor(value: float):
     """
@@ -168,62 +177,74 @@ class Year:
     def __get__(self, obj, objtype=None):
         return obj.section1[5]
     def __set__(self, obj, value):
-        obj.section1[5] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[0] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        obj.section1[5] = value
 
 class Month:
     """Month of reference time"""
     def __get__(self, obj, objtype=None):
         return obj.section1[6]
     def __set__(self, obj, value):
-        obj.section1[6] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[1] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        obj.section1[6] = value
 
 class Day:
     """Day of reference time"""
     def __get__(self, obj, objtype=None):
         return obj.section1[7]
     def __set__(self, obj, value):
-        obj.section1[7] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[2] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        #obj.section1[7] = value
 
 class Hour:
     """Hour of reference time"""
     def __get__(self, obj, objtype=None):
         return obj.section1[8]
     def __set__(self, obj, value):
-        obj.section1[8] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[3] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        obj.section1[8] = value
 
 class Minute:
     """Minute of reference time"""
     def __get__(self, obj, objtype=None):
         return obj.section1[9]
     def __set__(self, obj, value):
-        obj.section1[9] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[4] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        obj.section1[9] = value
 
 class Second:
     """Second of reference time"""
     def __get__(self, obj, objtype=None):
         return obj.section1[10]
     def __set__(self, obj, value):
-        obj.section1[10] = value
+        rd = copy.copy(obj.section1[5:11])
+        rd[5] = value
         # Test validity of datetime values
-        _ = datetime.datetime(*obj.section1[5:11])
+        _ = datetime.datetime(*rd)
+        obj.section1[10] = value
 
 class RefDate:
     """Reference Date. NOTE: This is a `datetime.datetime` object."""
     def __get__(self, obj, objtype=None):
         return datetime.datetime(*obj.section1[5:11])
     def __set__(self, obj, value):
-        if isinstance(value, datetime64):
-            timestamp = (value - datetime64("1970-01-01T00:00:00")) / timedelta64(
+        if isinstance(value, np.datetime64):
+            timestamp = (value - np.datetime64("1970-01-01T00:00:00")) / np.timedelta64(
                 1, "s"
             )
             value = datetime.datetime.utcfromtimestamp(timestamp)
@@ -234,6 +255,15 @@ class RefDate:
             obj.section1[8] = value.hour
             obj.section1[9] = value.minute
             obj.section1[10] = value.second
+            # IMPORTANT: Update validDate components when message is time interval
+            if obj.pdtn in _timeinterval_pdtns:
+                vd = value + obj.leadTime + obj.duration
+                obj.yearOfEndOfTimePeriod = vd.year
+                obj.monthOfEndOfTimePeriod = vd.month
+                obj.dayOfEndOfTimePeriod = vd.day
+                obj.hourOfEndOfTimePeriod = vd.hour
+                obj.minuteOfEndOfTimePeriod = vd.minute
+                obj.secondOfEndOfTimePeriod = vd.second
         else:
             msg = "Reference date must be a datetime.datetime or np.datetime64 object."
             raise TypeError(msg)
@@ -1029,61 +1059,24 @@ class ValueOfForecastTime:
 
 class LeadTime:
     """Forecast Lead Time. NOTE: This is a `datetime.timedelta` object."""
-
+    _key = ValueOfForecastTime._key
     def __get__(self, obj, objtype=None):
-        return utils.get_leadtime(obj.section1, obj.section4[1], obj.section4[2:])
-
+        return utils.get_leadtime(obj.section4[1], obj.section4[2:])
     def __set__(self, obj, value):
-        pdt = obj.section4[2:]
-
-        # For the tables below, the key is the PDTN and the value is the slice
-        # of the PDT that contains the end date of the accumulation.
-        # This is only needed for PDTNs 8-12.
-        _key = {
-            8: slice(15, 21),
-            9: slice(22, 28),
-            10: slice(16, 22),
-            11: slice(18, 24),
-            12: slice(17, 23),
-        }
-
-        accumulation_offset = 0
-        if obj.pdtn in _key:
-            accumulation_end_date = _key[obj.pdtn]
-            accumulation_key = accumulation_end_date.stop + 5
-            accumulation_offset = int(
-                timedelta64(pdt[accumulation_key], "h") / timedelta64(1, "h")
-            )
-            accumulation_offset = accumulation_offset / (
-                tables.get_value_from_table(
-                    pdt[accumulation_key - 1], "scale_time_hours"
-                )
-            )
-
-            refdate = datetime.datetime(*obj.section1[5:11])
-            pdt[_key[obj.pdtn]] = (
-                datetime.timedelta(hours=accumulation_offset) + refdate
-            ).timetuple()[:6]
-
-        # All messages need the leadTime value set, but for PDTNs 8-12, the
-        # leadTime value has to be set to the beginning of the accumulation
-        # period which is done here by subtracting the already calculated
-        # value accumulation_offset.
-        lead_time_index = 8
-        if obj.pdtn == 48:
-            lead_time_index = 19
-
-        ivalue = int(timedelta64(value, "h") / timedelta64(1, "h"))
-
-        pdt[lead_time_index] = (
-            ivalue
-            / (
-                tables.get_value_from_table(
-                    pdt[lead_time_index - 1], "scale_time_hours"
-                )
-            )
-            - accumulation_offset
-        )
+        if isinstance(value, np.timedelta64):
+            # Allows setting from xarray
+            value = datetime.timedelta(
+                seconds=int(value/np.timedelta64(1, 's')))
+        obj.section4[self._key[obj.pdtn]+2] = int(value.total_seconds()/3600)
+        # IMPORTANT: Update validDate components when message is time interval
+        if obj.pdtn in _timeinterval_pdtns:
+            vd = obj.refDate + value + obj.duration
+            obj.yearOfEndOfTimePeriod = vd.year
+            obj.monthOfEndOfTimePeriod = vd.month
+            obj.dayOfEndOfTimePeriod = vd.day
+            obj.hourOfEndOfTimePeriod = vd.hour
+            obj.minuteOfEndOfTimePeriod = vd.minute
+            obj.secondOfEndOfTimePeriod = vd.second
 
 class FixedSfc1Info:
     """Information of the first fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
@@ -1422,7 +1415,25 @@ class Duration:
     def __get__(self, obj, objtype=None):
         return utils.get_duration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
-        pass
+        if obj.pdtn in _continuous_pdtns:
+            pass
+        elif obj.pdtn in _timeinterval_pdtns:
+            _key = TimeRangeOfStatisticalProcess._key
+            if isinstance(value, np.timedelta64):
+                # Allows setting from xarray
+                value = datetime.timedelta(
+                    seconds=int(value/np.timedelta64(1, 's')))
+            obj.section4[_key[obj.pdtn]+2] = int(value.total_seconds()/3600)
+            # IMPORTANT: Update validDate components when message is time interval
+            if obj.pdtn in _timeinterval_pdtns:
+                print(obj.refDate, value, obj.leadTime)
+                vd = obj.refDate + value + obj.leadTime
+                obj.yearOfEndOfTimePeriod = vd.year
+                obj.monthOfEndOfTimePeriod = vd.month
+                obj.dayOfEndOfTimePeriod = vd.day
+                obj.hourOfEndOfTimePeriod = vd.hour
+                obj.minuteOfEndOfTimePeriod = vd.minute
+                obj.secondOfEndOfTimePeriod = vd.second
 
 class ValidDate:
     """Valid Date of the forecast. NOTE: This is a `datetime.datetime` object."""
@@ -1435,7 +1446,7 @@ class ValidDate:
         except(KeyError):
             return obj.refDate + obj.leadTime
     def __set__(self, obj, value):
-        pass
+        warnings.warn(f"validDate attribute is read-only.")
 
 class NumberOfTimeRanges:
     """Number of time ranges specifications describing the time intervals used to calculate the statistically-processed field"""
