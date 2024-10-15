@@ -28,7 +28,7 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 
 ## Documentation
 * [API documentation](https://noaa-mdl.github.io/grib2io/grib2io.html)
-* [User Guide Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/grib2io-v2.ipynb)
+* [User Guide Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
 
 ## Required Software
 * [Python](https://python.org) 3.8+
