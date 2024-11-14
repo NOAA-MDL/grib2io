@@ -110,6 +110,7 @@ class open():
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
         """
+
         # Manage keywords
         if "_xarray_backend" not in kwargs:
             kwargs["_xarray_backend"] = False
@@ -209,6 +210,7 @@ class open():
             self._index['msgNumber'] = []
             self._index['msg'] = []
             self._index['isSubmessage'] = []
+            self._index['isAerosol'] = []
             self._hasindex = True
 
         # Iterate
@@ -324,6 +326,11 @@ class open():
                         self._index['msgSize'].append(section0[-1])
                         self._index['msgNumber'].append(self.messages)
                         self._index['isSubmessage'].append(_isSubmessage)
+
+                        # Check if message contains aerosol data based on template number
+                        aero_templates = [46, 48]  # These are the currently supported aerosol templates
+                        is_aero = section4[1] in aero_templates
+                        self._index['isAerosol'].append(is_aero)
 
                         # Create Grib2Message with data.
                         msg = Grib2Message(section0,section1,section2,section3,section4,section5,bmapflag)
@@ -729,12 +736,62 @@ class _Grib2Message:
         self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
         self.bitmap = None
 
-
     @property
     def _isNDFD(self):
         """Check if GRIB2 message is from NWS NDFD"""
         return np.all(self.section1[0:2]==[8,65535])
 
+    @property
+    def _isAerosol(self):
+        """Check if GRIB2 message contains aerosol data"""
+        aero_templates = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
+        # TODO: Add other aerosol templates that are failing
+
+        # Combine parameters from both tables
+        aero_params = [
+            # Basic aerosol parameters
+            '0',   # Aerosol Type
+            '1',   # AOD550
+            '2',   # ASYF
+            '3',   # SSA
+            '4',   # AEC
+            '5',   # AAC
+            '192', # PMTC
+            '193', # PMTF
+            '194', # PM2.5
+            '195', # COLPM2.5
+
+            # Backscatter and optical parameters
+            '100', # SADEN
+            '102', # AOTK
+            '103', # SSALBK
+            '104', # ASYSFK
+            '105', # AECOEF
+            '106', # AACOEF
+            '107', # ALBSAT
+            '108', # ALBGRD
+            '109', # ALESAT
+            '110', # ALEGRD
+            '111', # ANGSTEXP
+            '112', # SCTAOTK
+
+            # Additional parameters from table_4_2_0_20
+            '59',  # ANCON
+            '60',  # ASNCON
+            '61',  # MXMASSD
+            '62',  # HGTMD
+            '63'   # CAVEMDL
+        ]
+
+        is_aero_template = self.productDefinitionTemplateNumber.value in aero_templates
+        is_aero_param = (str(self.parameterCategory) == '13' and
+                        str(self.parameterNumber) in aero_params)
+
+        # Check table 4.205 aerosol presence
+        is_aero_type = (str(self.parameterCategory) == '205' and
+                        str(self.parameterNumber) == '1')
+
+        return is_aero_template or is_aero_param or is_aero_type
 
     @property
     def gdtn(self):

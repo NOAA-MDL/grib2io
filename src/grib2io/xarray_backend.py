@@ -1,3 +1,4 @@
+from collections import namedtuple
 """
 grib2io xarray backend is a backend entrypoint for decoding grib2 files with
 xarray engine 'grib2io' API is experimental and is subject to change without
@@ -37,6 +38,12 @@ AVAILABLE_NON_GEO_DIMS = [
     "thresholdLowerLimit",
     "thresholdUpperLimit",
     "valueOfFirstFixedSurface",
+    "aerosolType",
+    "scaledValueOfFirstWavelength",
+    "scaledValueOfSecondWavelength",
+    "scaledValueOfCentralWaveNumber",
+    "scaledValueOfFirstSize",
+    "scaledValueOfSecondSize"
 ]
 
 
@@ -103,7 +110,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # assign attributes
         ds.attrs['engine'] = 'grib2io'
 
-        return ds
+        # Add time as a CF / COARDS compliant dimension
+        timestamp = pd.to_datetime(ds.validDate.values)
+        ds['time'] = timestamp
+        ds['time'].attrs['units'] = timestamp.strftime('hours since %Y-%m-%d')
+        ds['time'] = ds['time'].reset_coords(drop=True)
+        return ds.expand_dims(['time'])
 
 
 class GribBackendArray(BackendArray):
@@ -514,6 +526,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     DataArray
         DataArray without coordinates
     """
+
     dim_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is not None and len(cube[k]) > 1]
     constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
@@ -798,7 +811,7 @@ class Grib2ioDataSet:
 
         return newds
 
-      
+
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
@@ -1096,42 +1109,49 @@ class Grib2ioDataArray:
         DataArray
             DataArray with updated attributes.
         """
+
+        FORBIDDEN_TEMPLATES = {
+            "gridDefinitionTemplateNumber",
+            "productDefinitionTemplateNumber",
+            "dataRepresentationTemplateNumber"
+        }
+
+        INVALID_TEMPLATE_ERRORS = {
+            "gridDefinitionTemplateNumber": "The gridDefinitionTemplateNumber attribute cannot be updated. The best way to change to a different grid is to interpolate the data to a new grid using the grib2io interpolate functions.",
+            "productDefinitionTemplateNumber": "The productDefinitionTemplateNumber attribute cannot be updated.",
+            "dataRepresentationTemplateNumber": "The dataRepresentationTemplateNumber attribute cannot be updated."
+        }
+
         da = self._obj.copy(deep=True)
 
-        newmsg = Grib2Message(
-            da.attrs["GRIB2IO_section0"],
-            da.attrs["GRIB2IO_section1"],
-            da.attrs["GRIB2IO_section2"],
-            da.attrs["GRIB2IO_section3"],
-            da.attrs["GRIB2IO_section4"],
-            da.attrs["GRIB2IO_section5"],
-        )
+        try:
+            newmsg = Grib2Message(
+                da.attrs["GRIB2IO_section0"],
+                da.attrs["GRIB2IO_section1"],
+                da.attrs["GRIB2IO_section2"],
+                da.attrs["GRIB2IO_section3"],
+                da.attrs["GRIB2IO_section4"],
+                da.attrs["GRIB2IO_section5"],
+            )
+        except KeyError as e:
+            raise ValueError(f"Missing required GRIB2 section in attributes: {e}")
+        except ValueError as e:
+            raise ValueError(f"Invalid GRIB2 section data: {e}")
 
-        coords_keys = [
-            k
-            for k in da.coords.keys()
-            if k in AVAILABLE_NON_GEO_DIMS
-        ]
+        coords_keys = set(da.coords.keys()) & set(AVAILABLE_NON_GEO_DIMS)
+        valid_attrs = {attr for attr in dir(newmsg) if not attr.startswith('_')}
 
         for grib2_name, value in kwargs.items():
-            if grib2_name == "gridDefinitionTemplateNumber":
-                raise ValueError(
-                    "The gridDefinitionTemplateNumber attribute cannot be updated.  The best way to change to a different grid is to interpolate the data to a new grid using the grib2io interpolate functions."
-                )
-            if grib2_name == "productDefinitionTemplateNumber":
-                raise ValueError(
-                    "The productDefinitionTemplateNumber attribute cannot be updated."
-                )
-            if grib2_name == "dataRepresentationTemplateNumber":
-                raise ValueError(
-                    "The dataRepresentationTemplateNumber attribute cannot be updated."
-                )
+            if grib2_name in FORBIDDEN_TEMPLATES:
+                raise ValueError(INVALID_TEMPLATE_ERRORS[grib2_name])
+
             if grib2_name in coords_keys:
                 warn(
                     f"Skipping attribute '{grib2_name}' because it is a coordinate. Use da.assign_coords() to change coordinate values."
                 )
                 continue
-            if hasattr(newmsg, grib2_name):
+
+            if grib2_name in valid_attrs:
                 setattr(newmsg, grib2_name, value)
             else:
                 warn(
@@ -1139,15 +1159,14 @@ class Grib2ioDataArray:
                 )
                 continue
 
-        da.attrs["GRIB2IO_section0"] = newmsg.section0
-        da.attrs["GRIB2IO_section1"] = newmsg.section1
-        da.attrs["GRIB2IO_section2"] = newmsg.section2 or []
-        da.attrs["GRIB2IO_section3"] = newmsg.section3
-        da.attrs["GRIB2IO_section4"] = newmsg.section4
-        da.attrs["GRIB2IO_section5"] = newmsg.section5
-        da.attrs["fullName"] = newmsg.fullName
-        da.attrs["shortName"] = newmsg.shortName
-        da.attrs["units"] = newmsg.units
+        da.attrs.update({
+            f'GRIB2IO_section{i}': getattr(newmsg, f'section{i}') if i != 2 else (getattr(newmsg, f'section{i}') or [])
+            for i in range(6)
+        })
+
+        MessageAttrs = namedtuple('MessageAttrs', ['fullName', 'shortName', 'units'])
+        msg_attrs = MessageAttrs(newmsg.fullName, newmsg.shortName, newmsg.units)
+        da.attrs.update(msg_attrs._asdict())
 
         return da
 

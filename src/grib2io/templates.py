@@ -35,6 +35,112 @@ _timeinterval_pdtns = [
     if "continuous or non-continuous time interval" in v
 ]
 
+_AERO_TYPE_MAPPING = {
+    '62000': '',      # Total Aerosol
+    '62001': 'du',      # Dust
+    '62002': 'h2o',     # Water
+    '62003': 'nh4',     # Ammonium
+    '62004': 'no3',     # Nitrate
+    '62005': 'nat',     # NAT
+    '62006': 'so4',     # Sulfate
+    '62007': 'hg',      # Mercury
+    '62008': 'ss',      # Sea Salt
+    '62009': 'bc',      # Black Carbon
+    '62010': 'om',      # Organic Matter
+    '62011': 'pom',     # Primary Organic Matter
+    '62012': 'som',     # Secondary Organic Matter
+    '62013': 'bchi',    # Black Carbon Hydrophilic
+    '62014': 'bcho',    # Black Carbon Hydrophobic
+    '62015': 'omhi',    # Organic Matter Hydrophilic
+    '62016': 'omho',    # Organic Matter Hydrophobic
+    '62017': 'no3hi',   # Nitrate Hydrophilic
+    '62018': 'no3ho',   # Nitrate Hydrophobic
+    '62020': 'smkha',   # Smoke High Absorption
+    '62021': 'smkla',   # Smoke Low Absorption
+    '62022': 'aeroha',  # Aerosol High Absorption
+    '62023': 'aerola',  # Aerosol Low Absorption
+    '62025': 'vash',    # Volcanic Ash
+    '62036': 'brc',     # Brown Carbon
+}
+
+_PARAMETER_MAPPING = {
+    '0': 'mr',       # Mass Density (Concentration) [kg m-3]
+    '1': 'colmd',    # Column-Integrated Mass Density [kg m-2]
+    '2': 'mmr',      # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
+    '3': 'EmisFlux', # Atmosphere Emission Mass Flux [kg m-2s-1]
+    '6': 'DryDepFlx',# Surface Dry Deposition Mass Flux [kg m-2s-1]
+    '7': 'WetDepFlx',# Surface Wet Deposition Mass Flux [kg m-2s-1]
+    '8': 'ResuspFlx',# Atmosphere Re-Emission Mass Flux [kg m-2s-1]
+    '9': 'WetDepLS', # Wet Deposition by Large-Scale Precipitation Mass Flux [kg m-2s-1]
+    '10':'WetDepConv',# Wet Deposition by Convective Precipitation Mass Flux [kg m-2s-1]
+    '11':'Sed',      # Sedimentation Mass Flux [kg m-2s-1]
+    '12':'DryDepFlx',# Dry Deposition Mass Flux [kg m-2s-1]
+    '15':'DryDepVel',# Dry deposition velocity [m s-1]
+    '16':'mr_dry',   # Mass mixing ratio with respect to dry air [kg kg-1]
+    '17':'mr_wet',   # Mass mixing ratio with respect to wet air [kg kg-1]
+    '52':'vmr',      # Volume Mixing Ratio (Fraction in Air) [mol mol-1]
+    '75':'WFFlx',    # Wildfire Flux
+    '76':'EmisFlx',  # Emission Flux
+    '77':'SfcEmisFlx'# Surface Emission Flux
+}
+
+_OPTICAL_WAVELENGTH_MAPPING = {
+    # AOD
+    ('102', '338','342'): 'AOD340',
+    ('102', '430', '450'): 'AOD440',
+    ('102', '545', '565'): 'AOD550',
+    ('102', '620', '670'): 'AOD645',
+    ('102', '841', '876'): 'AOD870',
+    ('102', '1628', '1652'): 'AOD1640',
+    ('102', '11000', '11200'): 'AOD11100',
+
+    # SSA
+    ('103', '338','342'): 'SSA340',
+    ('103', '430', '450'): 'SSA440',
+    ('103', '545', '565'): 'SSA550',
+    ('103', '620', '670'): 'SSA645',
+    ('103', '841', '876'): 'SSA870',
+
+    # Asymmetry Parameter
+    ('104', '338','342'): 'Asy340',
+    ('104', '430', '450'): 'Asy440',
+    ('104', '545', '565'): 'Asy550',
+    ('104', '620', '670'): 'Asy645',
+    ('104', '841', '876'): 'Asy870',
+
+    # Extinction Coefficient
+    ('105', '338','342'): 'ExtCoeff340',
+    ('105', '430', '450'): 'ExtCoeff440',
+    ('105', '545', '565'): 'ExtCoeff550',
+    ('105', '620', '670'): 'ExtCoeff645',
+    ('105', '841', '876'): 'ExtCoeff870',
+
+    # Absorption Coefficient
+    ('106', '338','342'): 'AbsCoeff340',
+    ('106', '430', '450'): 'AbsCoeff440',
+    ('106', '545', '565'): 'AbsCoeff550',
+    ('106', '620', '670'): 'AbsCoeff645',
+    ('106', '841', '876'): 'AbsCoeff870',
+
+    # Lidar Parameters
+    ('107', '532'): 'LidarBackScatSat532',
+    ('108', '532'): 'LidarBackScat532',
+    ('109', '532'): 'LidarExtSat532',
+    ('110', '532'): 'LidarExt532',
+
+    # Special Cases
+    ('111', '440TO870'): 'AngExp440TO870',  # Angstrom Exponent
+    ('112', '545', '565'): 'ScatAOD550'  # Scattering AOD
+}
+
+_LEVEL_MAPPING = {
+    '1': 'sfc',      # Surface
+    '100': 'pres',   # Isobaric Surface (hPa)
+    '101': 'msl',    # Mean Sea Level
+    '102': 'amsl',   # Specific Altitude Above MSL (m)
+    '103': 'agl',   # Specified Height Above Ground (m)
+    '104': 'sigma',   # Sigma Level
+}
 def _calculate_scale_factor(value: float):
     """
     Calculate the scale factor for a given value.
@@ -967,10 +1073,48 @@ class VarInfo:
 class FullName:
     """Full name of the Variable."""
     def __get__(self, obj, objtype=None):
-        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
+        full_name = []
+
+        # Get aerosol type from table 4.233
+        if hasattr(obj, 'typeOfAerosol'):
+            aero_type = str(obj.typeOfAerosol.value)
+            if aero_type in tables.table_4_233:
+                full_name.append(tables.table_4_233[aero_type][0])
+
+        # Get base name from GRIB2 table
+        base_name = tables.get_varinfo_from_table(
+            obj.section0[2],
+            *obj.section4[2:4],
+            isNDFD=obj._isNDFD
+        )[0]
+        full_name.append(base_name)
+
+        # Add optical properties with wavelengths if present
+        if hasattr(obj, 'scaledValueOfFirstWavelength'):
+            optical_type = str(obj.parameterNumber)
+            first_wl = obj.scaledValueOfFirstWavelength
+            second_wl = getattr(obj, 'scaledValueOfSecondWavelength', None)
+
+            # Special case for AE between 440-870nm
+            if optical_type == '111' and first_wl == 440 and second_wl == 870:
+                full_name.append("at 440-870nm")
+
+            # Handle wavelength-specific optical properties
+            elif optical_type in ['102', '103', '104', '105', '106']:
+                wavelength = f"{first_wl}nm"
+                if second_wl:
+                    wavelength = f"{first_wl}-{second_wl}nm"
+                full_name.append(f"at {wavelength}")
+
+        final = " ".join(full_name)
+
+
+        return final.replace('Aerosol Aerosol', 'Aerosol')
+
     def __set__(self, obj, value):
         raise RuntimeError(
-            "Cannot set the fullName of the message.  Instead set shortName OR set the appropriate discipline, parameterCategory, and parameterNumber.  The fullName will be set automatically from these other attributes."
+            "Cannot set the fullName of the message. Instead set shortName OR set the appropriate discipline, "
+            "parameterCategory, and parameterNumber. The fullName will be set automatically from these other attributes."
         )
 
 class Units:
@@ -983,9 +1127,118 @@ class Units:
         )
 
 class ShortName:
-    """ Short name of the variable (i.e. the variable abbreviation)."""
+    """Short name of the variable (i.e. the variable abbreviation)."""
     def __get__(self, obj, objtype=None):
-        return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[2]
+        if hasattr(obj, 'typeOfAerosol'):
+            # Build shortname from aerosol components
+            parts = []
+
+            # Get aerosol type
+            aero_type = str(obj.typeOfAerosol.value)
+            if aero_type in _AERO_TYPE_MAPPING:
+                parts.append(_AERO_TYPE_MAPPING[aero_type])
+
+           # Add size information if applicable
+            aero_size = ''
+            if hasattr(obj, 'typeOfIntervalForAerosolSize'):
+                interval_type = int(obj.typeOfIntervalForAerosolSize.value)
+                if float(obj.scaleFactorOfFirstWavelength) > 0:
+                    first_size = float(obj.scaledValueOfFirstSize) / float(obj.scaleFactorOfFirstWavelength)
+                else:
+                    first_size = float(obj.scaledValueOfFirstSize)
+                if first_size == 1:
+                    aero_size = 'pm1'
+                elif first_size == 25:
+                    aero_size = 'pm25'
+                elif first_size == 10:
+                    aero_size = 'pm10'
+                elif first_size == 20:
+                    aero_size = 'pm20'
+                elif hasattr(obj, 'scaledValueOfSecondSize'):
+                    if float(obj.scaleFactorOfFirstWavelength) > 0:
+                        second_size = float(obj.scaledValueOfSecondSize) / float(obj.scaleFactorOfSecondWavelength)
+                    else:
+                        second_size = float(obj.scaledValueOfSecondSize)
+                    if second_size > 0:
+                        if (first_size == 2.5 and second_size == 10):
+                            aero_size = 'PM25to10'
+                        elif (first_size == 10 and second_size == 20):
+                            aero_size = 'PM10to20'
+                        else:
+                            aero_size = f"{first_size}to{second_size}"
+
+            # Add optical and wavelength information
+            var_wavelength = ''
+            if hasattr(obj, 'parameterNumber'):
+                optical_type = str(obj.parameterNumber)
+
+                if hasattr(obj, 'scaledValueOfFirstWavelength'):
+                    if obj.scaledValueOfFirstWavelength > 0:
+                        first_wl = obj.scaledValueOfFirstWavelength
+                        second_wl = obj.scaledValueOfSecondWavelength if hasattr(obj, 'scaledValueOfSecondWavelength') else None
+
+                        # Special case for AE between 440-870nm
+                        if optical_type == '111' and first_wl == 440 and second_wl == 870:
+                            key = (optical_type, '440TO870')
+                        else:
+                            # Find matching wavelength band
+                            for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
+                                if (int(wl_key[1]) == first_wl and
+                                    (second_wl is None or int(wl_key[2]) == second_wl)):
+                                    key = (optical_type, wl_key[1], wl_key[2])
+                                    break
+                            else:
+                                # If no match found, use raw values
+                                if second_wl is not None:
+                                    key = (optical_type, f"{first_wl}TO{second_wl}")
+                                else:
+                                    key = (optical_type, str(first_wl))
+
+                        if key in _OPTICAL_WAVELENGTH_MAPPING:
+                            var_wavelength = _OPTICAL_WAVELENGTH_MAPPING[key]
+
+            # Add level information
+            level_str = ''
+            if hasattr(obj, 'typeOfFirstFixedSurface'):
+                first_level = str(obj.typeOfFirstFixedSurface.value)
+                if obj.scaledValueOfFirstFixedSurface > 0:
+                    first_value = str(obj.scaledValueOfFirstFixedSurface)
+                else:
+                    first_value = ''
+                if first_level in _LEVEL_MAPPING:
+                    level_str = f"{_LEVEL_MAPPING[first_level]}{first_value}"
+
+            # Get parameter type
+            param = ''
+            if hasattr(obj, 'parameterNumber'):
+                param_num = str(obj.parameterNumber)
+                if param_num in _PARAMETER_MAPPING:
+                    param = _PARAMETER_MAPPING[param_num]
+
+            # Combine all parts
+            if var_wavelength:
+                shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{var_wavelength}"
+            elif aero_size and param:
+                if level_str:
+                    shortname = f"{level_str}_{_AERO_TYPE_MAPPING[aero_type]}{aero_size}_{param}"
+                else:
+                    shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{aero_size}{param}"
+            elif aero_size:
+                if level_str:
+                    shortname = f"{level_str}_{_AERO_TYPE_MAPPING[aero_type]}{aero_size}"
+                else:
+                    shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{aero_size}"
+            elif level_str:
+                shortname = f"{level_str}_{_AERO_TYPE_MAPPING[aero_type]}{param}"
+            else:
+                shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{param}"
+
+            # print(shortname)
+            return shortname
+
+        # Default to original behavior if not aerosol or mappings not found
+        return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
+
     def __set__(self, obj, value):
         metadata = tables.get_metadata_from_shortname(value)
         if len(metadata) > 1:
@@ -2013,6 +2266,98 @@ class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitio
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
+@dataclass(init=False)
+class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.46](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-46.shtml)"""
+    _len = 26
+    _num = 46
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.47](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-47.shtml)"""
+#     _len = 27
+#     _num = 47
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+#     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+#     numberOfForecastsInEnsemble: int = field(init=False, repr=False, default=NumberOfForecastsInEnsemble())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate49(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.49](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-49.shtml)"""
+#     _len = 28
+#     _num = 49
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+#     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+#     numberOfForecastsInEnsemble: int = field(init=False, repr=False, default=NumberOfForecastsInEnsemble())
+#     typeOfWavelengthInterval: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate80(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.80](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-80.shtml)"""
+#     _len = 30
+#     _num = 80
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate81(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.81](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-81.shtml)"""
+#     _len = 31
+#     _num = 81
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+#     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+#     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+#     numberOfForecastsInEnsemble: int = field(init=False, repr=False, default=NumberOfForecastsInEnsemble())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate82(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.82](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-82.shtml)"""
+#     _len = 30
+#     _num = 82
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate83(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.83](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-83.shtml)"""
+#     _len = 31
+#     _num = 83
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+#     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+#     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+#     numberOfForecastsInEnsemble: int = field(init=False, repr=False, default=NumberOfForecastsInEnsemble())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate84(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.84](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-84.shtml)"""
+#     _len = 32
+#     _num = 84
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+#     typeOfWavelengthInterval: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
+
+# @dataclass(init=False)
+# class ProductDefinitionTemplate85(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+#     """[Product Definition Template 4.85](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-85.shtml)"""
+#     _len = 33
+#     _num = 85
+#     typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+#     sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+#     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+#     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+#     numberOfForecastsInEnsemble: int = field(init=False, repr=False, default=NumberOfForecastsInEnsemble())
+#     typeOfWavelengthInterval: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
+
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
     1: ProductDefinitionTemplate1,
@@ -2027,7 +2372,16 @@ _pdt_by_pdtn = {
     15: ProductDefinitionTemplate15,
     31: ProductDefinitionTemplate31,
     32: ProductDefinitionTemplate32,
+    46: ProductDefinitionTemplate46,
+    # 47: ProductDefinitionTemplate47,
     48: ProductDefinitionTemplate48,
+    # 49: ProductDefinitionTemplate49,
+    # 80: ProductDefinitionTemplate80,
+    # 81: ProductDefinitionTemplate81,
+    # 82: ProductDefinitionTemplate82,
+    # 83: ProductDefinitionTemplate83,
+    # 84: ProductDefinitionTemplate84,
+    # 85: ProductDefinitionTemplate85,
     }
 
 def pdt_class_by_pdtn(pdtn: int):
