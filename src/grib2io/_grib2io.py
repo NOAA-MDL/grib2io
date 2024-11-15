@@ -760,6 +760,60 @@ class _Grib2Message:
             '193', # PMTF
             '194', # PM2.5
             '195', # COLPM2.5
+            '196', # PM10
+
+            # Additional parameters from table_4_2_0_20
+            '0',   # Mass Density
+            '1',   # Column Mass density
+            '2',   # Mass Mixing Ratio (Mass Fraction in Air)
+            '3',   # Atmosphere Emission Mass Flux
+            '4',   # Atmosphere Net Production Mass Flux
+            '5',   # Atmosphere Gross Production Mass Flux
+            '6',   # Surface Dry Depsotiion Mass Flux
+            '7',   # Surface Wet Deposition Mass Flux
+            '8',   # Atmosphere Resuspension Mass Flux
+            '9',   # Large Scale Wet Dep Mass Flux
+            '10',  # Convective Wet Dep Mass Flux
+            '11',  # Sedimenation Mass Flux
+            '12',  # Dry Dep Mass Flux
+            '13',  # Transfer From Hydrophobic to Hydrophilic
+            '14',  #Transfer From SO2 (Sulphur Dioxide) to SO4 (Sulphate)','kg kg-1s-1','TRSDS'],
+            '15',  # Dry deposition velocity','m s-1','DDVEL'],
+            '16',  # Mass mixing ratio with respect to dry air','kg kg-1','MSSRDRYA'],
+            '17',  # Mass mixing ratio with respect to wet air','kg kg-1','MSSRWETA'],
+            '18',  # Potential of hydrogen (pH)','pH','POTHPH']
+            '50',  # Amount in Atmosphere','mol','AIA'],
+            '51',  # Concentration In Air','mol m-3','CONAIR'],
+            '52',  # Volume Mixing Ratio (Fraction in Air)','mol mol-1','VMXR'],
+            '53',  # Chemical Gross Production Rate of Concentration','mol m-3s-1','CGPRC'],
+            '54',  # Chemical Gross Destruction Rate of Concentration','mol m-3s-1','CGDRC'],
+            '55',  # Surface Flux','mol m-2s-1','SFLUX'],
+            '56',  # Changes Of Amount in Atmosphere','mol s-1','COAIA'],
+            '57',  # Total Yearly Average Burden of The Atmosphere>','mol','TYABA'],
+            '58',  # Total Yearly Average Atmospheric Loss','mol s-1','TYAAL'],
+            '59',  # Aerosol Number Concentration','m-3','ANCON'],
+            '60',  # Aerosol Specific Number Concentration','kg-1','ASNCON'],
+            '61',  # Maximum of Mass Density','kg m-3','MXMASSD'],
+            '62',  # Height of Mass Density','m','HGTMD'],
+            '63',  # Column-Averaged Mass Density in Layer','kg m-3','CAVEMDL'],
+            '64',  # Mole fraction with respect to dry air','mol mol-1','MOLRDRYA'],
+            '65',  # Mole fraction with respect to wet air','mol mol-1','MOLRWETA'],
+            '66',  # Column-integrated in-cloud scavenging rate by precipitation','kg m-2 s-1','CINCLDSP'],
+            '67',  # Column-integrated below-cloud scavenging rate by precipitation','kg m-2 s-1','CBLCLDSP'],
+            '68',  # Column-integrated release rate from evaporating precipitation','kg m-2 s-1','CIRELREP'],
+            '69',  # Column-integrated in-cloud scavenging rate by large-scale precipitation','kg m-2 s-1','CINCSLSP'],
+            '70',  # Column-integrated below-cloud scavenging rate by large-scale precipitation','kg m-2 s-1','CBECSLSP'],
+            '71',  # Column-integrated release rate from evaporating large-scale precipitation','kg m-2 s-1','CRERELSP'],
+            '72',  # Column-integrated in-cloud scavenging rate by convective precipitation','kg m-2 s-1','CINCSRCP'],
+            '73',  # Column-integrated below-cloud scavenging rate by convective precipitation','kg m-2 s-1','CBLCSRCP'],
+            '74',  # Column-integrated release rate from evaporating convective precipitation','kg m-2 s-1','CIRERECP'],
+            '75',  # Wildfire flux','kg m-2 s-1','WFIREFLX'],
+            '76',  # Emission Rate','kg kg-1 s-1','EMISFLX'],
+            '77',  # Surface Emission flux','kg m-2 s-1','SFCEFLX'],
+            '78',  # Column integrated eastward mass flux','kg m-2 s-1','CEMF'],
+            '79',  # Column integrated northward mass flux','kg m-2 s-1','CNMF'],
+            '80',  # Column integrated divergence of mass flux','kg m-2 s-1','CDIVMF'],
+            '81',  # Column integrated net source','kg m-2 s-1','CNETS'],
 
             # Backscatter and optical parameters
             '100', # SADEN
@@ -774,24 +828,19 @@ class _Grib2Message:
             '110', # ALEGRD
             '111', # ANGSTEXP
             '112', # SCTAOTK
-
-            # Additional parameters from table_4_2_0_20
-            '59',  # ANCON
-            '60',  # ASNCON
-            '61',  # MXMASSD
-            '62',  # HGTMD
-            '63'   # CAVEMDL
         ]
 
         is_aero_template = self.productDefinitionTemplateNumber.value in aero_templates
-        is_aero_param = (str(self.parameterCategory) == '13' and
-                        str(self.parameterNumber) in aero_params)
+        is_aero_param = ((str(self.parameterCategory) == '13') |
+                     (str(self.parameterCategory) == '20')) and str(self.parameterNumber) in aero_params
 
         # Check table 4.205 aerosol presence
         is_aero_type = (str(self.parameterCategory) == '205' and
                         str(self.parameterNumber) == '1')
 
-        return is_aero_template or is_aero_param or is_aero_type
+        # is_aero_param_t_4_2_0_20 = ((str(self.parameterCategory) == '20') and str(self.parameterNumber) in aero_params_t_4_2_0_20)
+
+        return is_aero_template or is_aero_param or is_aero_type #or is_aero_param_t_4_2_0_20
 
     @property
     def gdtn(self):

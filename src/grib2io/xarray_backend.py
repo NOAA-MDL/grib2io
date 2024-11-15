@@ -110,11 +110,11 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # assign attributes
         ds.attrs['engine'] = 'grib2io'
 
-        # Add time as a CF / COARDS compliant dimension
-        timestamp = pd.to_datetime(ds.validDate.values)
-        ds['time'] = timestamp
-        ds['time'].attrs['units'] = timestamp.strftime('hours since %Y-%m-%d')
-        ds['time'] = ds['time'].reset_coords(drop=True)
+        # # Add time as a CF / COARDS compliant dimension
+        # timestamp = pd.to_datetime(ds.validDate.values)
+        # ds['time'] = timestamp
+        # ds['time'].attrs['units'] = timestamp.strftime('hours since %Y-%m-%d')
+        # ds['time'] = ds['time'].reset_coords(drop=True)
         return ds.expand_dims(['time'])
 
 

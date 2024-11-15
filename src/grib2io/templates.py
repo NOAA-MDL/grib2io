@@ -36,7 +36,7 @@ _timeinterval_pdtns = [
 ]
 
 _AERO_TYPE_MAPPING = {
-    '62000': '',      # Total Aerosol
+    '62000': '',        # Total Aerosol
     '62001': 'du',      # Dust
     '62002': 'h2o',     # Water
     '62003': 'nh4',     # Ammonium
@@ -1076,40 +1076,41 @@ class FullName:
         full_name = []
 
         # Get aerosol type from table 4.233
-        if hasattr(obj, 'typeOfAerosol'):
+        if not hasattr(obj, 'typeOfAerosol'):
+            return tables.get_varinfo_from_table(obj.section0[2],*obj.section4[2:4],isNDFD=obj._isNDFD)[0]
+        elif obj.typeOfAerosol is not None:
             aero_type = str(obj.typeOfAerosol.value)
             if aero_type in tables.table_4_233:
                 full_name.append(tables.table_4_233[aero_type][0])
 
-        # Get base name from GRIB2 table
-        base_name = tables.get_varinfo_from_table(
-            obj.section0[2],
-            *obj.section4[2:4],
-            isNDFD=obj._isNDFD
-        )[0]
-        full_name.append(base_name)
+            # Get base name from GRIB2 table
+            base_name = tables.get_varinfo_from_table(
+                obj.section0[2],
+                *obj.section4[2:4],
+                isNDFD=obj._isNDFD
+            )[0]
+            full_name.append(base_name)
 
-        # Add optical properties with wavelengths if present
-        if hasattr(obj, 'scaledValueOfFirstWavelength'):
-            optical_type = str(obj.parameterNumber)
-            first_wl = obj.scaledValueOfFirstWavelength
-            second_wl = getattr(obj, 'scaledValueOfSecondWavelength', None)
+            # Add optical properties with wavelengths if present
+            if hasattr(obj, 'scaledValueOfFirstWavelength'):
+                optical_type = str(obj.parameterNumber)
+                first_wl = obj.scaledValueOfFirstWavelength
+                second_wl = getattr(obj, 'scaledValueOfSecondWavelength', None)
 
-            # Special case for AE between 440-870nm
-            if optical_type == '111' and first_wl == 440 and second_wl == 870:
-                full_name.append("at 440-870nm")
+                # Special case for AE between 440-870nm
+                if optical_type == '111' and first_wl == 440 and second_wl == 870:
+                    full_name.append("at 440-870nm")
 
-            # Handle wavelength-specific optical properties
-            elif optical_type in ['102', '103', '104', '105', '106']:
-                wavelength = f"{first_wl}nm"
-                if second_wl:
-                    wavelength = f"{first_wl}-{second_wl}nm"
-                full_name.append(f"at {wavelength}")
+                # Handle wavelength-specific optical properties
+                elif optical_type in ['102', '103', '104', '105', '106']:
+                    wavelength = f"{first_wl}nm"
+                    if second_wl:
+                        wavelength = f"{first_wl}-{second_wl}nm"
+                    full_name.append(f"at {wavelength}")
 
-        final = " ".join(full_name)
+            final = " ".join(full_name)
 
-
-        return final.replace('Aerosol Aerosol', 'Aerosol')
+            return final.replace('Aerosol Aerosol', 'Aerosol')
 
     def __set__(self, obj, value):
         raise RuntimeError(
@@ -1129,21 +1130,34 @@ class Units:
 class ShortName:
     """Short name of the variable (i.e. the variable abbreviation)."""
     def __get__(self, obj, objtype=None):
-        if hasattr(obj, 'typeOfAerosol'):
+
+        if not hasattr(obj, 'typeOfAerosol'):
+            return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
+        elif obj.typeOfAerosol is not None:
             # Build shortname from aerosol components
             parts = []
 
             # Get aerosol type
+            print(obj.typeOfAerosol, obj._msgnum)
+            # print(shortname)
+            print('typeOfAerosol:', obj.typeOfAerosol)
+            print('typeOfFirstFixedSurface:', obj.typeOfFirstFixedSurface)
+            print('scaledValueOfFirstFixedSurface:', obj.scaledValueOfFirstFixedSurface)
+
+            print('parameterNumber:', obj.parameterNumber)
+            print('parameterCategeory:', obj.parameterCategory)
             aero_type = str(obj.typeOfAerosol.value)
             if aero_type in _AERO_TYPE_MAPPING:
                 parts.append(_AERO_TYPE_MAPPING[aero_type])
 
+
            # Add size information if applicable
             aero_size = ''
             if hasattr(obj, 'typeOfIntervalForAerosolSize'):
+
                 interval_type = int(obj.typeOfIntervalForAerosolSize.value)
-                if float(obj.scaleFactorOfFirstWavelength) > 0:
-                    first_size = float(obj.scaledValueOfFirstSize) / float(obj.scaleFactorOfFirstWavelength)
+                if float(obj.scaleFactorOfFirstSize) > 0:
+                    first_size = float(obj.scaledValueOfFirstSize) / float(obj.scaleFactorOfFirstSize)
                 else:
                     first_size = float(obj.scaledValueOfFirstSize)
                 if first_size == 1:
@@ -1155,8 +1169,8 @@ class ShortName:
                 elif first_size == 20:
                     aero_size = 'pm20'
                 elif hasattr(obj, 'scaledValueOfSecondSize'):
-                    if float(obj.scaleFactorOfFirstWavelength) > 0:
-                        second_size = float(obj.scaledValueOfSecondSize) / float(obj.scaleFactorOfSecondWavelength)
+                    if float(obj.scaleFactorOfSecondSize) > 0:
+                        second_size = float(obj.scaledValueOfSecondSize) / float(obj.scaleFactorOfSecondSize)
                     else:
                         second_size = float(obj.scaledValueOfSecondSize)
                     if second_size > 0:
@@ -1173,6 +1187,7 @@ class ShortName:
                 optical_type = str(obj.parameterNumber)
 
                 if hasattr(obj, 'scaledValueOfFirstWavelength'):
+                    print('scaledValueOfFirstWavelength:', obj.scaledValueOfFirstWavelength)
                     if obj.scaledValueOfFirstWavelength > 0:
                         first_wl = obj.scaledValueOfFirstWavelength
                         second_wl = obj.scaledValueOfSecondWavelength if hasattr(obj, 'scaledValueOfSecondWavelength') else None
@@ -1233,7 +1248,13 @@ class ShortName:
             else:
                 shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{param}"
 
-            # print(shortname)
+            print(shortname)
+            print('typeOfAerosol:', obj.typeOfAerosol)
+            print('typeOfFirstFixedSurface:', obj.typeOfFirstFixedSurface)
+            print('scaledValueOfFirstFixedSurface:', obj.scaledValueOfFirstFixedSurface)
+            print('scaledValueOfFirstWavelength:', obj.scaledValueOfFirstWavelength)
+            print('parameterNumber:', obj.parameterNumber)
+            print('parameterCategeory:', obj.parameterCategory)
             return shortname
 
         # Default to original behavior if not aerosol or mappings not found
@@ -1857,10 +1878,20 @@ class ScaledValueOfCentralWaveNumber:
         pass
 
 class TypeOfAerosol:
-    """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
+
     _key = {48:2}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.233')
+# class TypeOfAerosol:
+#     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
+#     _key = {
+#         46: 15,  # Position for aerosol type in template 46
+#         48: 15   # Position for aerosol type in template 48
+#     }
+    def __get__(self, obj, objtype=None):
+        if obj.pdtn not in self._key:
+            return None
+        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2], table='4.233')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
