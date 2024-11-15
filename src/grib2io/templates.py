@@ -36,7 +36,7 @@ _timeinterval_pdtns = [
 ]
 
 _AERO_TYPE_MAPPING = {
-    '62000': '',        # Total Aerosol
+    '62000': 'tot',     # Total Aerosol
     '62001': 'du',      # Dust
     '62002': 'h2o',     # Water
     '62003': 'nh4',     # Ammonium
@@ -61,27 +61,28 @@ _AERO_TYPE_MAPPING = {
     '62023': 'aerola',  # Aerosol Low Absorption
     '62025': 'vash',    # Volcanic Ash
     '62036': 'brc',     # Brown Carbon
+    '65535': 'RRFSVar'
 }
 
 _PARAMETER_MAPPING = {
-    '0': 'mr',       # Mass Density (Concentration) [kg m-3]
-    '1': 'colmd',    # Column-Integrated Mass Density [kg m-2]
-    '2': 'mmr',      # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
-    '3': 'EmisFlux', # Atmosphere Emission Mass Flux [kg m-2s-1]
-    '6': 'DryDepFlx',# Surface Dry Deposition Mass Flux [kg m-2s-1]
-    '7': 'WetDepFlx',# Surface Wet Deposition Mass Flux [kg m-2s-1]
-    '8': 'ResuspFlx',# Atmosphere Re-Emission Mass Flux [kg m-2s-1]
-    '9': 'WetDepLS', # Wet Deposition by Large-Scale Precipitation Mass Flux [kg m-2s-1]
+    '0': 'mr',        # Mass Density (Concentration) [kg m-3]
+    '1': 'colmd',     # Column-Integrated Mass Density [kg m-2]
+    '2': 'mmr',       # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
+    '3': 'EmisFlux',  # Atmosphere Emission Mass Flux [kg m-2s-1]
+    '6': 'DryDepFlx', # Surface Dry Deposition Mass Flux [kg m-2s-1]
+    '7': 'WetDepFlx', # Surface Wet Deposition Mass Flux [kg m-2s-1]
+    '8': 'ResuspFlx', # Atmosphere Re-Emission Mass Flux [kg m-2s-1]
+    '9': 'WetDepLS',  # Wet Deposition by Large-Scale Precipitation Mass Flux [kg m-2s-1]
     '10':'WetDepConv',# Wet Deposition by Convective Precipitation Mass Flux [kg m-2s-1]
-    '11':'Sed',      # Sedimentation Mass Flux [kg m-2s-1]
-    '12':'DryDepFlx',# Dry Deposition Mass Flux [kg m-2s-1]
-    '15':'DryDepVel',# Dry deposition velocity [m s-1]
-    '16':'mr_dry',   # Mass mixing ratio with respect to dry air [kg kg-1]
-    '17':'mr_wet',   # Mass mixing ratio with respect to wet air [kg kg-1]
-    '52':'vmr',      # Volume Mixing Ratio (Fraction in Air) [mol mol-1]
-    '75':'WFFlx',    # Wildfire Flux
-    '76':'EmisFlx',  # Emission Flux
-    '77':'SfcEmisFlx'# Surface Emission Flux
+    '11':'Sed',       # Sedimentation Mass Flux [kg m-2s-1]
+    '12':'DryDepFlx', # Dry Deposition Mass Flux [kg m-2s-1]
+    '15':'DryDepVel', # Dry deposition velocity [m s-1]
+    '16':'mr_dry',    # Mass mixing ratio with respect to dry air [kg kg-1]
+    '17':'mr_wet',    # Mass mixing ratio with respect to wet air [kg kg-1]
+    '52':'vmr',       # Volume Mixing Ratio (Fraction in Air) [mol mol-1]
+    '75':'WFFlx',     # Wildfire Flux
+    '76':'EmisFlx',   # Emission Flux
+    '77':'SfcEmisFlx' # Surface Emission Flux
 }
 
 _OPTICAL_WAVELENGTH_MAPPING = {
@@ -1132,34 +1133,34 @@ class ShortName:
     def __get__(self, obj, objtype=None):
 
         if not hasattr(obj, 'typeOfAerosol'):
+            print('here')
             return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
-        elif obj.typeOfAerosol is not None:
+        else:
             # Build shortname from aerosol components
+            print("obj._msgnum:", obj._msgnum)
+            print('typeOfAerosol:', obj.typeOfAerosol)
+            print('typeOfFirstFixedSurface:', obj.typeOfFirstFixedSurface)
+            print('parameterNumber:', obj.parameterNumber)
+            print('parameterCategeory:', obj.parameterCategory)
             parts = []
 
             # Get aerosol type
-            print(obj.typeOfAerosol, obj._msgnum)
-            # print(shortname)
-            print('typeOfAerosol:', obj.typeOfAerosol)
-            print('typeOfFirstFixedSurface:', obj.typeOfFirstFixedSurface)
-            print('scaledValueOfFirstFixedSurface:', obj.scaledValueOfFirstFixedSurface)
-
-            print('parameterNumber:', obj.parameterNumber)
-            print('parameterCategeory:', obj.parameterCategory)
-            aero_type = str(obj.typeOfAerosol.value)
-            if aero_type in _AERO_TYPE_MAPPING:
-                parts.append(_AERO_TYPE_MAPPING[aero_type])
+            if obj.typeOfAerosol is not None:
+                aero_type = str(obj.typeOfAerosol.value)
+                if aero_type in _AERO_TYPE_MAPPING:
+                    parts.append(_AERO_TYPE_MAPPING[aero_type])
+            else:
+                aero_type = ""
 
 
            # Add size information if applicable
-            aero_size = ''
-            if hasattr(obj, 'typeOfIntervalForAerosolSize'):
-
+            aero_size = ""
+            if hasattr(obj, 'scaledValueOfFirstSize'):
+                print('HERE')
                 interval_type = int(obj.typeOfIntervalForAerosolSize.value)
-                if float(obj.scaleFactorOfFirstSize) > 0:
-                    first_size = float(obj.scaledValueOfFirstSize) / float(obj.scaleFactorOfFirstSize)
-                else:
+                if float(obj.scaledValueOfFirstSize) > 0:
                     first_size = float(obj.scaledValueOfFirstSize)
+                print(first_size)
                 if first_size == 1:
                     aero_size = 'pm1'
                 elif first_size == 25:
@@ -1168,12 +1169,12 @@ class ShortName:
                     aero_size = 'pm10'
                 elif first_size == 20:
                     aero_size = 'pm20'
-                elif hasattr(obj, 'scaledValueOfSecondSize'):
-                    if float(obj.scaleFactorOfSecondSize) > 0:
-                        second_size = float(obj.scaledValueOfSecondSize) / float(obj.scaleFactorOfSecondSize)
-                    else:
-                        second_size = float(obj.scaledValueOfSecondSize)
-                    if second_size > 0:
+                print('aero_size:', aero_size)
+                if (getattr(obj, 'scaledValueOfSecondSize', None) is not None and
+                    getattr(obj, 'typeOfIntervalForAerosolSize', None) is not None and
+                    obj.typeOfIntervalForAerosolSize.value == 6):
+                    second_size = float(obj.scaledValueOfSecondSize)
+                    if second_size is not None:
                         if (first_size == 2.5 and second_size == 10):
                             aero_size = 'PM25to10'
                         elif (first_size == 10 and second_size == 20):
@@ -1248,10 +1249,16 @@ class ShortName:
             else:
                 shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{param}"
 
-            print(shortname)
+            print(shortname, obj._msgnum)
             print('typeOfAerosol:', obj.typeOfAerosol)
             print('typeOfFirstFixedSurface:', obj.typeOfFirstFixedSurface)
-            print('scaledValueOfFirstFixedSurface:', obj.scaledValueOfFirstFixedSurface)
+            print('scaleFactorOfFirstSize:', obj.scaleFactorOfFirstSize)
+            print('scaledValueOfFirstSize:', obj.scaledValueOfFirstSize)
+            print('scaledValueOfSecondSize:', obj.scaledValueOfSecondSize)
+            print('scaleFactorOfFirstSize:', obj.scaleFactorOfFirstSize)
+            print('aero_size:', aero_size)
+
+            print('scaledValueOfFirstWavelength:', obj.scaledValueOfFirstWavelength)
             print('scaledValueOfFirstWavelength:', obj.scaledValueOfFirstWavelength)
             print('parameterNumber:', obj.parameterNumber)
             print('parameterCategeory:', obj.parameterCategory)
@@ -1687,6 +1694,7 @@ class SecondOfEndOfTimePeriod:
 class Duration:
     """Duration of time period. NOTE: This is a `datetime.timedelta` object."""
     def __get__(self, obj, objtype=None):
+        print(obj.section4[1],obj.section4[2:])
         return utils.get_duration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
         if obj.pdtn in _continuous_pdtns:
@@ -1878,20 +1886,10 @@ class ScaledValueOfCentralWaveNumber:
         pass
 
 class TypeOfAerosol:
-
-    _key = {48:2}
+    """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
+    _key = {46:2, 48:2}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.233')
-# class TypeOfAerosol:
-#     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
-#     _key = {
-#         46: 15,  # Position for aerosol type in template 46
-#         48: 15   # Position for aerosol type in template 48
-#     }
-    def __get__(self, obj, objtype=None):
-        if obj.pdtn not in self._key:
-            return None
-        return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2], table='4.233')
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 

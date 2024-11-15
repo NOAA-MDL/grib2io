@@ -838,8 +838,6 @@ class _Grib2Message:
         is_aero_type = (str(self.parameterCategory) == '205' and
                         str(self.parameterNumber) == '1')
 
-        # is_aero_param_t_4_2_0_20 = ((str(self.parameterCategory) == '20') and str(self.parameterNumber) in aero_params_t_4_2_0_20)
-
         return is_aero_template or is_aero_param or is_aero_type #or is_aero_param_t_4_2_0_20
 
     @property
@@ -951,6 +949,7 @@ class _Grib2Message:
             A formatted string representation of the object, including
             selected attributes.
         """
+        # print(self._msgnum,self.shortName, self._isAerosol)
         return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
                 f'{self.fullName} ({self.units}):{self.level}:'
                 f'{self.leadTime+self.duration}')
