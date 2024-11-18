@@ -949,7 +949,6 @@ class _Grib2Message:
             A formatted string representation of the object, including
             selected attributes.
         """
-        # print(self._msgnum,self.shortName, self._isAerosol)
         return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
                 f'{self.fullName} ({self.units}):{self.level}:'
                 f'{self.leadTime+self.duration}')
