@@ -115,7 +115,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # ds['time'] = timestamp
         # ds['time'].attrs['units'] = timestamp.strftime('hours since %Y-%m-%d')
         # ds['time'] = ds['time'].reset_coords(drop=True)
-        return ds.expand_dims(['time'])
+        # return ds.expand_dims('time')
+        return ds
 
 
 class GribBackendArray(BackendArray):
