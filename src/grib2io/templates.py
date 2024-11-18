@@ -1654,7 +1654,6 @@ class SecondOfEndOfTimePeriod:
 class Duration:
     """Duration of time period. NOTE: This is a `datetime.timedelta` object."""
     def __get__(self, obj, objtype=None):
-        print(obj.section4[1],obj.section4[2:])
         return utils.get_duration(obj.section4[1],obj.section4[2:])
     def __set__(self, obj, value):
         if obj.pdtn in _continuous_pdtns:
