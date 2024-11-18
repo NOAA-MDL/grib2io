@@ -2514,6 +2514,8 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
 #     secondOfEndOfOverallTimeInterval: int = field(init=False,repr=False,default=SecondOfEndOfOverallTimeInterval())
 #     numberOfTimeRange: int = field(init=False,repr=False,default=NumberOfTimeRange())
 #     numberOfMissingInStatisticalProcess: int = field(init=False,repr=False,default=NumberOfMissingInStatisticalProcess())@dataclass(init=False)
+
+@dataclass(init=False)
 class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitionTemplateSurface):
     """[Product Definition Template 48](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-48.shtml)"""
     _len = 26
