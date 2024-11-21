@@ -1182,7 +1182,8 @@ class ShortName:
                 else:
                     # Find matching wavelength band
                     for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
-                        if (int(wl_key[1]) == first_wl and
+                        if (wl_key[0] == optical_type and  # Check optical_type first
+                            int(wl_key[1]) == first_wl and
                             (second_wl is None or int(wl_key[2]) == second_wl)):
                             key = wl_key
                             break
