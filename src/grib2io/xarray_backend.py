@@ -37,6 +37,12 @@ AVAILABLE_NON_GEO_DIMS = [
     "thresholdLowerLimit",
     "thresholdUpperLimit",
     "valueOfFirstFixedSurface",
+    "aerosolType",
+    "scaledValueOfFirstWavelength",
+    "scaledValueOfSecondWavelength",
+    "scaledValueOfCentralWaveNumber",
+    "scaledValueOfFirstSize",
+    "scaledValueOfSecondSize"
 ]
 
 
@@ -514,6 +520,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     DataArray
         DataArray without coordinates
     """
+
     dim_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is not None and len(cube[k]) > 1]
     constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
@@ -798,7 +805,7 @@ class Grib2ioDataSet:
 
         return newds
 
-      
+
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
 
