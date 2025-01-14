@@ -1,4 +1,3 @@
-from matplotlib.pylab import noncentral_f
 import pytest
 import numpy as np
 import grib2io
