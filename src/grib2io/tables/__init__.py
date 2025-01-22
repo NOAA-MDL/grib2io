@@ -1,9 +1,9 @@
 """Functions for retrieving data from NCEP GRIB2 Tables."""
 
 from functools import lru_cache
-
 from typing import Optional, Union, List
 from numpy.typing import ArrayLike
+import itertools
 
 from .section0 import *
 from .section1 import *
@@ -14,6 +14,9 @@ from .section6 import *
 from .originating_centers import *
 
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20]
+
+AEROSOL_PDTNS = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
+AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
 
 def get_table(table: str, expand: bool=False) -> dict:
     """
@@ -279,3 +282,108 @@ def get_wgrib2_level_string(pdtn: int, pdt: ArrayLike) -> str:
         vals = (val1)
     if '%g' in lvlstr: lvlstr %= vals
     return lvlstr
+
+
+def _build_aerosol_shortname(obj) -> str:
+    """
+    """
+
+    _OPTICAL_WAVELENGTH_MAPPING = get_table('aerosol_optical_wavelength')
+    _LEVEL_MAPPING = get_table('aerosol_level')
+    _PARAMETER_MAPPING = get_table('aerosol_parameter')
+    _AERO_TYPE_MAPPING = get_table('aerosol_type')
+
+    # Build shortname from aerosol components
+    parts = []
+
+    # Get aerosol type
+    aero_type = str(obj.typeOfAerosol.value) if obj.typeOfAerosol is not None else ""
+
+    # Add size information if applicable
+    aero_size = ""
+    if hasattr(obj, 'scaledValueOfFirstSize'):
+        if float(obj.scaledValueOfFirstSize) > 0:
+            first_size = float(obj.scaledValueOfFirstSize)
+
+            # Map common PM sizes
+            size_map = {1: 'pm1', 25: 'pm25', 10: 'pm10', 20: 'pm20'}
+            aero_size = size_map.get(first_size, f"pm{int(first_size)}")
+
+            # Check for size intervals
+            if (hasattr(obj, 'scaledValueOfSecondSize') and
+                obj.scaledValueOfSecondSize is not None and
+                hasattr(obj, 'typeOfIntervalForAerosolSize') and
+                obj.typeOfIntervalForAerosolSize.value == 6):
+
+                second_size = float(obj.scaledValueOfSecondSize)
+                if second_size > 0:
+                    if (first_size == 2.5 and second_size == 10):
+                        aero_size = 'PM25to10'
+                    elif (first_size == 10 and second_size == 20):
+                        aero_size = 'PM10to20'
+                    else:
+                        aero_size = f"PM{int(first_size)}to{int(second_size)}"
+
+    # Add optical and wavelength information
+    var_wavelength = ''
+    if (hasattr(obj, 'parameterNumber') and
+        hasattr(obj, 'scaledValueOfFirstWavelength') and
+        hasattr(obj, 'scaledValueOfSecondWavelength')):
+
+        optical_type = str(obj.parameterNumber)
+        if obj.scaledValueOfFirstWavelength > 0:
+            first_wl = obj.scaledValueOfFirstWavelength
+            second_wl = obj.scaledValueOfSecondWavelength
+
+            # Special case for AE between 440-870nm
+            if optical_type == '111' and first_wl == 440 and second_wl == 870:
+                key = (optical_type, '440TO870')
+            else:
+                # Find matching wavelength band
+                for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
+                    if (wl_key[0] == optical_type and  # Check optical_type first
+                        int(wl_key[1]) == first_wl and
+                        (second_wl is None or int(wl_key[2]) == second_wl)):
+                        key = wl_key
+                        break
+                else:
+                    # If no match found, use raw values
+                    key = (optical_type, str(first_wl),
+                          str(second_wl) if second_wl is not None else '')
+
+            # FIX THIS...
+            if key in _OPTICAL_WAVELENGTH_MAPPING.keys():
+                var_wavelength = _OPTICAL_WAVELENGTH_MAPPING[key]
+
+    # Add level information
+    level_str = ''
+    if hasattr(obj, 'typeOfFirstFixedSurface'):
+        first_level = str(obj.typeOfFirstFixedSurface.value)
+        first_value = str(obj.scaledValueOfFirstFixedSurface) if obj.scaledValueOfFirstFixedSurface > 0 else ''
+        if first_level in _LEVEL_MAPPING:
+            level_str = f"{_LEVEL_MAPPING[first_level]}{first_value}"
+
+    # Get parameter type
+    param = ''
+    if hasattr(obj, 'parameterNumber'):
+        param_num = str(obj.parameterNumber)
+        if param_num in _PARAMETER_MAPPING:
+            param = _PARAMETER_MAPPING[param_num]
+
+    # Build the final shortname
+    if var_wavelength and aero_type in _AERO_TYPE_MAPPING:
+        shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{var_wavelength}"
+    elif aero_type in _AERO_TYPE_MAPPING:
+        parts = []
+        if level_str:
+            parts.append(level_str)
+        parts.append(_AERO_TYPE_MAPPING[aero_type])
+        if aero_size:
+            parts.append(aero_size)
+        if param:
+            parts.append(param)
+        shortname = '_'.join(parts) if len(parts) > 1 else parts[0]
+    else:
+        return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
+
+    return shortname

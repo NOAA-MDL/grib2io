@@ -902,132 +902,133 @@ table_4_228 = {
 '255':'Missing',
 }
 
-table_4_230 = {'0': ['Ozone', 'O3'],
- '1': ['Water Vapour', 'H2O'],
- '2': ['Methane', 'CH4'],
- '3': ['Carbon Dioxide', 'CO2'],
- '4': ['Carbon Monoxide', 'CO'],
- '5': ['Nitrogen Dioxide', 'NO2'],
- '6': ['Nitrous Oxide', 'N2O'],
- '7': ['Formaldehyde', 'HCHO'],
- '8': ['Sulphur Dioxide', 'SO2'],
- '9': ['Ammonia', 'NH3'],
- '10': ['Ammonium', 'NH4+'],
- '11': ['Nitrogen Monoxide', 'NO'],
- '12': ['Atomic Oxygen', 'O'],
- '13': ['Nitrate Radical', 'NO3'],
- '14': ['Hydroperoxyl Radical', 'HO2'],
- '15': ['Dinitrogen Pentoxide', 'H2O5'],
- '16': ['Nitrous Acid', 'HONO'],
- '17': ['Nitric Acid', 'HNO3'],
- '18': ['Peroxynitric Acid', 'HO2NO2'],
- '19': ['Hydrogen Peroxide', 'H2O2'],
- '20': ['Molecular Hydrogen', 'H'],
- '21': ['Atomic Nitrogen', 'N'],
- '22': ['Sulphate', 'SO42-'],
- '23': ['Radon', 'Rn'],
- '24': ['Elemental Mercury', 'Hg(O)'],
- '25': ['Divalent Mercury', 'Hg2+'],
- '26': ['Atomic Chlorine', 'Cl'],
- '27': ['Chlorine Monoxide', 'ClO'],
- '28': ['Dichlorine Peroxide', 'Cl2O2'],
- '29': ['Hypochlorous Acid', 'HClO'],
- '30': ['Chlorine Nitrate', 'ClONO2'],
- '31': ['Chlorine Dioxide', 'ClO2'],
- '32': ['Atomic Bromide', 'Br'],
- '33': ['Bromine Monoxide', 'BrO'],
- '34': ['Bromine Chloride', 'BrCl'],
- '35': ['Hydrogen Bromide', 'HBr'],
- '36': ['Hypobromous Acid', 'HBrO'],
- '37': ['Bromine Nitrate', 'BrONO2'],
- '38': ['Oxygen', 'O2'],
- '39-9999': ['Reserved', 'unknown'],
- '10000': ['Hydroxyl Radical', 'OH'],
- '10001': ['Methyl Peroxy Radical', 'CH3O2'],
- '10002': ['Methyl Hydroperoxide', 'CH3O2H'],
- '10003': ['Reserved', 'unknown'],
- '10004': ['Methanol', 'CH3OH'],
- '10005': ['Formic Acid', 'CH3OOH'],
- '10006': ['Hydrogen Cyanide', 'HCN'],
- '10007': ['Aceto Nitrile', 'CH3CN'],
- '10008': ['Ethane', 'C2H6'],
- '10009': ['Ethene (= Ethylene)', 'C2H4'],
- '10010': ['Ethyne (= Acetylene)', 'C2H2'],
- '10011': ['Ethanol', 'C2H5OH'],
- '10012': ['Acetic Acid', 'C2H5OOH'],
- '10013': ['Peroxyacetyl Nitrate', 'CH3C(O)OONO2'],
- '10014': ['Propane', 'C3H8'],
- '10015': ['Propene', 'C3H6'],
- '10016': ['Butanes', 'C4H10'],
- '10017': ['Isoprene', 'C5H10'],
- '10018': ['Alpha Pinene', 'C10H16'],
- '10019': ['Beta Pinene', 'C10H16'],
- '10020': ['Limonene', 'C10H16'],
- '10021': ['Benzene', 'C6H6'],
- '10022': ['Toluene', 'C7H8'],
- '10023': ['Xylene', 'C8H10'],
- '10024-10499': ['Reserved', 'unknown'],
- '10500': ['Dimethyl Sulphide', 'CH3SCH3'],
- '10501-20000': ['Reserved', 'unknown'],
- '20001': ['Hydrogen Chloride', 'HCL'],
- '20002': ['CFC-11', 'unknown'],
- '20003': ['CFC-12', 'unknown'],
- '20004': ['CFC-113', 'unknown'],
- '20005': ['CFC-113a', 'unknown'],
- '20006': ['CFC-114', 'unknown'],
- '20007': ['CFC-115', 'unknown'],
- '20008': ['HCFC-22', 'unknown'],
- '20009': ['HCFC-141b', 'unknown'],
- '20010': ['HCFC-142b', 'unknown'],
- '20011': ['Halon-1202', 'unknown'],
- '20012': ['Halon-1211', 'unknown'],
- '20013': ['Halon-1301', 'unknown'],
- '20014': ['Halon-2402', 'unknown'],
- '20015': ['Methyl Chloride (HCC-40)', 'unknown'],
- '20016': ['Carbon Tetrachloride (HCC-10)', 'unknown'],
- '20017': ['HCC-140a', 'CH3CCl3'],
- '20018': ['Methyl Bromide (HBC-40B1)', 'unknown'],
- '20019': ['Hexachlorocyclohexane (HCH)', 'unknown'],
- '20020': ['Alpha Hexachlorocyclohexane', 'unknown'],
- '20021': ['Hexachlorobiphenyl (PCB-153)', 'unknown'],
- '20022-29999': ['Reserved', 'unknown'],
- '30000': ['Radioactive Pollutant (Tracer, defined by originating centre)', 'unknown'],
- '30001-50000': ['Reserved', 'unknown'],
- '60000': ['HOx Radical (OH+HO2)', 'unknown'],
- '60001': ['Total Inorganic and Organic Peroxy Radicals (HO2+RO2)', 'RO2'],
- '60002': ['Passive Ozone', 'unknown'],
- '60003': ['NOx Expressed As Nitrogen', 'NOx'],
- '60004': ['All Nitrogen Oxides (NOy) Expressed As Nitrogen', 'NOy'],
- '60005': ['Total Inorganic Chlorine', 'Clx'],
- '60006': ['Total Inorganic Bromine', 'Brx'],
- '60007': ['Total Inorganic Chlorine Except HCl, ClONO2: ClOx', 'unknown'],
- '60008': ['Total Inorganic Bromine Except Hbr, BrONO2:BrOx', 'unknown'],
- '60009': ['Lumped Alkanes', 'unknown'],
- '60010': ['Lumped Alkenes', 'unknown'],
- '60011': ['Lumped Aromatic Coumpounds', 'unknown'],
- '60012': ['Lumped Terpenes', 'unknown'],
- '60013': ['Non-Methane Volatile Organic Compounds Expressed as Carbon','NMVOC'],
- '60014': ['Anthropogenic Non-Methane Volatile Organic Compounds Expressed as Carbon','aNMVOC'],
- '60015': ['Biogenic Non-Methane Volatile Organic Compounds Expressed as Carbon','bNMVOC'],
- '60016': ['Lumped Oxygenated Hydrocarbons', 'OVOC'],
- '60017-61999': ['Reserved', 'unknown'],
- '62000': ['Total Aerosol', 'unknown'],
- '62001': ['Dust Dry', 'unknown'],
- '62002': ['water In Ambient', 'unknown'],
- '62003': ['Ammonium Dry', 'unknown'],
- '62004': ['Nitrate Dry', 'unknown'],
- '62005': ['Nitric Acid Trihydrate', 'unknown'],
- '62006': ['Sulphate Dry', 'unknown'],
- '62007': ['Mercury Dry', 'unknown'],
- '62008': ['Sea Salt Dry', 'unknown'],
- '62009': ['Black Carbon Dry', 'unknown'],
- '62010': ['Particulate Organic Matter Dry', 'unknown'],
- '62011': ['Primary Particulate Organic Matter Dry', 'unknown'],
- '62012': ['Secondary Particulate Organic Matter Dry', 'unknown'],
- '62034': ['Brown Carbon Dry', 'unknown'],
- '62035-65534': ['Reserved', 'unknown'],
- '65535': ['Missing', 'unknown']
- }
+table_4_230 = {
+'0':['Ozone','O3'],
+'1':['Water Vapour','H2O'],
+'2':['Methane','CH4'],
+'3':['Carbon Dioxide','CO2'],
+'4':['Carbon Monoxide','CO'],
+'5':['Nitrogen Dioxide','NO2'],
+'6':['Nitrous Oxide','N2O'],
+'7':['Formaldehyde','HCHO'],
+'8':['Sulphur Dioxide','SO2'],
+'9':['Ammonia','NH3'],
+'10':['Ammonium','NH4+'],
+'11':['Nitrogen Monoxide','NO'],
+'12':['Atomic Oxygen','O'],
+'13':['Nitrate Radical','NO3'],
+'14':['Hydroperoxyl Radical','HO2'],
+'15':['Dinitrogen Pentoxide','H2O5'],
+'16':['Nitrous Acid','HONO'],
+'17':['Nitric Acid','HNO3'],
+'18':['Peroxynitric Acid','HO2NO2'],
+'19':['Hydrogen Peroxide','H2O2'],
+'20':['Molecular Hydrogen','H'],
+'21':['Atomic Nitrogen','N'],
+'22':['Sulphate','SO42-'],
+'23':['Radon','Rn'],
+'24':['Elemental Mercury','Hg(O)'],
+'25':['Divalent Mercury','Hg2+'],
+'26':['Atomic Chlorine','Cl'],
+'27':['Chlorine Monoxide','ClO'],
+'28':['Dichlorine Peroxide','Cl2O2'],
+'29':['Hypochlorous Acid','HClO'],
+'30':['Chlorine Nitrate','ClONO2'],
+'31':['Chlorine Dioxide','ClO2'],
+'32':['Atomic Bromide','Br'],
+'33':['Bromine Monoxide','BrO'],
+'34':['Bromine Chloride','BrCl'],
+'35':['Hydrogen Bromide','HBr'],
+'36':['Hypobromous Acid','HBrO'],
+'37':['Bromine Nitrate','BrONO2'],
+'38':['Oxygen','O2'],
+'39-9999':['Reserved','unknown'],
+'10000':['Hydroxyl Radical','OH'],
+'10001':['Methyl Peroxy Radical','CH3O2'],
+'10002':['Methyl Hydroperoxide','CH3O2H'],
+'10003':['Reserved','unknown'],
+'10004':['Methanol','CH3OH'],
+'10005':['Formic Acid','CH3OOH'],
+'10006':['Hydrogen Cyanide','HCN'],
+'10007':['Aceto Nitrile','CH3CN'],
+'10008':['Ethane','C2H6'],
+'10009':['Ethene (= Ethylene)','C2H4'],
+'10010':['Ethyne (= Acetylene)','C2H2'],
+'10011':['Ethanol','C2H5OH'],
+'10012':['Acetic Acid','C2H5OOH'],
+'10013':['Peroxyacetyl Nitrate','CH3C(O)OONO2'],
+'10014':['Propane','C3H8'],
+'10015':['Propene','C3H6'],
+'10016':['Butanes','C4H10'],
+'10017':['Isoprene','C5H10'],
+'10018':['Alpha Pinene','C10H16'],
+'10019':['Beta Pinene','C10H16'],
+'10020':['Limonene','C10H16'],
+'10021':['Benzene','C6H6'],
+'10022':['Toluene','C7H8'],
+'10023':['Xylene','C8H10'],
+'10024-10499':['Reserved','unknown'],
+'10500':['Dimethyl Sulphide','CH3SCH3'],
+'10501-20000':['Reserved','unknown'],
+'20001':['Hydrogen Chloride','HCL'],
+'20002':['CFC-11','unknown'],
+'20003':['CFC-12','unknown'],
+'20004':['CFC-113','unknown'],
+'20005':['CFC-113a','unknown'],
+'20006':['CFC-114','unknown'],
+'20007':['CFC-115','unknown'],
+'20008':['HCFC-22','unknown'],
+'20009':['HCFC-141b','unknown'],
+'20010':['HCFC-142b','unknown'],
+'20011':['Halon-1202','unknown'],
+'20012':['Halon-1211','unknown'],
+'20013':['Halon-1301','unknown'],
+'20014':['Halon-2402','unknown'],
+'20015':['Methyl Chloride (HCC-40)','unknown'],
+'20016':['Carbon Tetrachloride (HCC-10)','unknown'],
+'20017':['HCC-140a','CH3CCl3'],
+'20018':['Methyl Bromide (HBC-40B1)','unknown'],
+'20019':['Hexachlorocyclohexane (HCH)','unknown'],
+'20020':['Alpha Hexachlorocyclohexane','unknown'],
+'20021':['Hexachlorobiphenyl (PCB-153)','unknown'],
+'20022-29999':['Reserved','unknown'],
+'30000':['Radioactive Pollutant (Tracer, defined by originating centre)','unknown'],
+'30001-50000':['Reserved','unknown'],
+'60000':['HOx Radical (OH+HO2)','unknown'],
+'60001':['Total Inorganic and Organic Peroxy Radicals (HO2+RO2)','RO2'],
+'60002':['Passive Ozone','unknown'],
+'60003':['NOx Expressed As Nitrogen','NOx'],
+'60004':['All Nitrogen Oxides (NOy) Expressed As Nitrogen','NOy'],
+'60005':['Total Inorganic Chlorine','Clx'],
+'60006':['Total Inorganic Bromine','Brx'],
+'60007':['Total Inorganic Chlorine Except HCl, ClONO2: ClOx','unknown'],
+'60008':['Total Inorganic Bromine Except Hbr, BrONO2:BrOx','unknown'],
+'60009':['Lumped Alkanes','unknown'],
+'60010':['Lumped Alkenes','unknown'],
+'60011':['Lumped Aromatic Coumpounds','unknown'],
+'60012':['Lumped Terpenes','unknown'],
+'60013':['Non-Methane Volatile Organic Compounds Expressed as Carbon','NMVOC'],
+'60014':['Anthropogenic Non-Methane Volatile Organic Compounds Expressed as Carbon','aNMVOC'],
+'60015':['Biogenic Non-Methane Volatile Organic Compounds Expressed as Carbon','bNMVOC'],
+'60016':['Lumped Oxygenated Hydrocarbons','OVOC'],
+'60017-61999':['Reserved','unknown'],
+'62000':['Total Aerosol','unknown'],
+'62001':['Dust Dry','unknown'],
+'62002':['water In Ambient','unknown'],
+'62003':['Ammonium Dry','unknown'],
+'62004':['Nitrate Dry','unknown'],
+'62005':['Nitric Acid Trihydrate','unknown'],
+'62006':['Sulphate Dry','unknown'],
+'62007':['Mercury Dry','unknown'],
+'62008':['Sea Salt Dry','unknown'],
+'62009':['Black Carbon Dry','unknown'],
+'62010':['Particulate Organic Matter Dry','unknown'],
+'62011':['Primary Particulate Organic Matter Dry','unknown'],
+'62012':['Secondary Particulate Organic Matter Dry','unknown'],
+'62034':['Brown Carbon Dry','unknown'],
+'62035-65534':['Reserved','unknown'],
+'65535':['Missing','unknown'],
+}
 
 table_4_233 = {
 '0':['Ozone','O3'],
@@ -1671,3 +1672,123 @@ table_wgrib2_level_string = {
 '255': ["missing","reserved"],
 }
 
+
+# ----------------------------------------------------------------------------------------
+# The following tables are for Aerosol GRIB2 messages.
+#
+# These were added by https://github.com/bbakernoaa
+#
+# https://github.com/NOAA-MDL/grib2io/commit/4b19aee239be010cb0557f220bf06180c414bbe2 
+# ----------------------------------------------------------------------------------------
+
+#ORIG _AERO_TYPE_MAPPING = {
+table_aerosol_type = {
+    '62000': 'tot',     # Total Aerosol
+    '62001': 'du',      # Dust
+    '62002': 'h2o',     # Water
+    '62003': 'nh4',     # Ammonium
+    '62004': 'no3',     # Nitrate
+    '62005': 'nat',     # NAT
+    '62006': 'so4',     # Sulfate
+    '62007': 'hg',      # Mercury
+    '62008': 'ss',      # Sea Salt
+    '62009': 'bc',      # Black Carbon
+    '62010': 'om',      # Organic Matter
+    '62011': 'pom',     # Primary Organic Matter
+    '62012': 'som',     # Secondary Organic Matter
+    '62013': 'bchi',    # Black Carbon Hydrophilic
+    '62014': 'bcho',    # Black Carbon Hydrophobic
+    '62015': 'omhi',    # Organic Matter Hydrophilic
+    '62016': 'omho',    # Organic Matter Hydrophobic
+    '62017': 'no3hi',   # Nitrate Hydrophilic
+    '62018': 'no3ho',   # Nitrate Hydrophobic
+    '62020': 'smkha',   # Smoke High Absorption
+    '62021': 'smkla',   # Smoke Low Absorption
+    '62022': 'aeroha',  # Aerosol High Absorption
+    '62023': 'aerola',  # Aerosol Low Absorption
+    '62025': 'vash',    # Volcanic Ash
+    '62036': 'brc',     # Brown Carbon
+    '65535': 'RRFSVar'
+}
+
+#ORIG _PARAMETER_MAPPING = {
+table_aerosol_parameter = {
+    '0': 'mr',        # Mass Density (Concentration) [kg m-3]
+    '1': 'colmd',     # Column-Integrated Mass Density [kg m-2]
+    '2': 'mmr',       # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
+    '3': 'EmisFlux',  # Atmosphere Emission Mass Flux [kg m-2s-1]
+    '6': 'DryDepFlx', # Surface Dry Deposition Mass Flux [kg m-2s-1]
+    '7': 'WetDepFlx', # Surface Wet Deposition Mass Flux [kg m-2s-1]
+    '8': 'ResuspFlx', # Atmosphere Re-Emission Mass Flux [kg m-2s-1]
+    '9': 'WetDepLS',  # Wet Deposition by Large-Scale Precipitation Mass Flux [kg m-2s-1]
+    '10':'WetDepConv',# Wet Deposition by Convective Precipitation Mass Flux [kg m-2s-1]
+    '11':'Sed',       # Sedimentation Mass Flux [kg m-2s-1]
+    '12':'DryDepFlx', # Dry Deposition Mass Flux [kg m-2s-1]
+    '15':'DryDepVel', # Dry deposition velocity [m s-1]
+    '16':'mr_dry',    # Mass mixing ratio with respect to dry air [kg kg-1]
+    '17':'mr_wet',    # Mass mixing ratio with respect to wet air [kg kg-1]
+    '52':'vmr',       # Volume Mixing Ratio (Fraction in Air) [mol mol-1]
+    '75':'WFFlx',     # Wildfire Flux
+    '76':'EmisFlx',   # Emission Flux
+    '77':'SfcEmisFlx' # Surface Emission Flux
+}
+
+#ORIG _OPTICAL_WAVELENGTH_MAPPING = {
+table_aerosol_optical_wavelength = {
+    # AOD
+    ('102', '338','342'): 'AOD340',
+    ('102', '430', '450'): 'AOD440',
+    ('102', '545', '565'): 'AOD550',
+    ('102', '620', '670'): 'AOD645',
+    ('102', '841', '876'): 'AOD870',
+    ('102', '1628', '1652'): 'AOD1640',
+    ('102', '11000', '11200'): 'AOD11100',
+
+    # SSA
+    ('103', '338','342'): 'SSA340',
+    ('103', '430', '450'): 'SSA440',
+    ('103', '545', '565'): 'SSA550',
+    ('103', '620', '670'): 'SSA645',
+    ('103', '841', '876'): 'SSA870',
+
+    # Asymmetry Parameter
+    ('104', '338','342'): 'Asy340',
+    ('104', '430', '450'): 'Asy440',
+    ('104', '545', '565'): 'Asy550',
+    ('104', '620', '670'): 'Asy645',
+    ('104', '841', '876'): 'Asy870',
+
+    # Extinction Coefficient
+    ('105', '338','342'): 'ExtCoeff340',
+    ('105', '430', '450'): 'ExtCoeff440',
+    ('105', '545', '565'): 'ExtCoeff550',
+    ('105', '620', '670'): 'ExtCoeff645',
+    ('105', '841', '876'): 'ExtCoeff870',
+
+    # Absorption Coefficient
+    ('106', '338','342'): 'AbsCoeff340',
+    ('106', '430', '450'): 'AbsCoeff440',
+    ('106', '545', '565'): 'AbsCoeff550',
+    ('106', '620', '670'): 'AbsCoeff645',
+    ('106', '841', '876'): 'AbsCoeff870',
+
+    # Lidar Parameters
+    ('107', '532'): 'LidarBackScatSat532',
+    ('108', '532'): 'LidarBackScat532',
+    ('109', '532'): 'LidarExtSat532',
+    ('110', '532'): 'LidarExt532',
+
+    # Special Cases
+    ('111', '440TO870'): 'AngExp440TO870',  # Angstrom Exponent
+    ('112', '545', '565'): 'ScatAOD550'  # Scattering AOD
+}
+
+#ORIG _LEVEL_MAPPING = {
+table_aerosol_level = {
+    '1': 'sfc',      # Surface
+    '100': 'pres',   # Isobaric Surface (hPa)
+    '101': 'msl',    # Mean Sea Level
+    '102': 'amsl',   # Specific Altitude Above MSL (m)
+    '103': 'agl',   # Specified Height Above Ground (m)
+    '104': 'sigma',   # Sigma Level
+}
