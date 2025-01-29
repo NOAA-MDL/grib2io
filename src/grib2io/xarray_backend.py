@@ -424,15 +424,12 @@ def parse_grib_index(index, filters):
     # productDefinitionTemplateNumber
     non_geo_dims = list()
 
-    total_dim_count = 1
-
     #TODO Eventually re-work this section making 'non_geo_dims'
 
     # refDate always added for now (could add only based on
     # typOfGeneratingProcess)
     if 'refDate' not in index.columns:
         index = index.assign(refDate=index.msg.apply(lambda msg: msg.refDate))
-        total_dim_count *= index['refDate'].nunique()
     @dataclass(init=False)
     class RefDateDim:
         refDate: pd.Index = PdIndex()
@@ -442,7 +439,6 @@ def parse_grib_index(index, filters):
     # typOfGeneratingProcess)
     if 'leadTime' not in index.columns:
         index = index.assign(leadTime=index.msg.apply(lambda msg: msg.leadTime))
-        total_dim_count *= index['leadTime'].nunique()
     @dataclass(init=False)
     class LeadTimeDim:
         leadTime: pd.Index = PdIndex()
@@ -450,32 +446,26 @@ def parse_grib_index(index, filters):
 
     if 'valueOfFirstFixedSurface' not in index.columns:
         index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
-        total_dim_count *= index['valueOfFirstFixedSurface'].nunique()
     @dataclass(init=False)
     class ValueOfFirstFixedSurfaceDim:
         valueOfFirstFixedSurface: pd.Index = PdIndex()
     non_geo_dims.append(ValueOfFirstFixedSurfaceDim)
 
-    # Logic for parsing possible dims from specific product definition section
+    # logic for parsing possible dims from specific product definition section
 
     if pdtn in {5,9}:
         # Probability forecasts at a horizontal level or in a horizontal layer
-        # in a continuous or non-continuous time interval.  (see Template 4.9)
+        # in a continuous or non-continuous time interval.  (see Template
+        # 4.9)
         index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
         index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
-        total_dim_count *= index['thresholdLowerLimit'].nunique() # Only need to do this with one attr
 
-        if index['thresholdLowerLimit'].nunique() > 1 and \
-           index['thresholdLowerLimit'].nunique() == total_dim_count:
+        if index['thresholdLowerLimit'].nunique() > 1:
             @dataclass(init=False)
             class ThresholdLowerLimitDim:
                 thresholdLowerLimit: pd.Index = PdIndex()
             non_geo_dims.append(ThresholdLowerLimitDim)
-
-        index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
-        total_dim_count *= index['thresholdUpperLimit'].nunique()
-        if index['thresholdUpperLimit'].nunique() > 1 and \
-           index['thresholdUpperLimit'].nunique() == total_dim_count:
+        if index['thresholdUpperLimit'].nunique() > 1:
             @dataclass(init=False)
             class ThresholdUpperLimitDim:
                 thresholdUpperLimit: pd.Index = PdIndex()
@@ -483,50 +473,31 @@ def parse_grib_index(index, filters):
 
     if pdtn in {6,10}:
         # Percentile forecasts at a horizontal level or in a horizontal layer
-        # in a continuous or non-continuous time interval.  (see Template 4.10)
-        if 'percentileValue' not in index.columns:
-            index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
-            total_dim_count *= index['percentileValue'].nunique()
+        # in a continuous or non-continuous time interval.  (see Template
+        # 4.10)
+        index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
 
-        if index['percentileValue'].nunique() >= 1:
-            if index['percentileValue'].nunique() in {1,total_dim_count}:
-                @dataclass(init=False)
-                class PercentileValueDim:
-                    percentileValue: pd.Index = PdIndex()
-                non_geo_dims.append(PercentileValueDim)
-            else:
-                unique_percentile = index.percentileValue.unique()
-                raise ValueError(f'filter to a single percentileValue; found: {[str(i) for i in unique_percentile]}')
+        @dataclass(init=False)
+        class PercentileValueDim:
+            percentileValue: pd.Index = PdIndex()
+        non_geo_dims.append(PercentileValueDim)
 
     if pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
         if 'duration' not in index.columns:
             index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
-            total_dim_count *= index['duration'].nunique()
 
-        if index['duration'].nunique() >= 1:
-            if index['duration'].nunique() in {1,total_dim_count}:
-                @dataclass(init=False)
-                class Duration:
-                    duration: pd.Index = PdIndex()
-                non_geo_dims.append(Duration)
-            else:
-                unique_duration = index.duration.unique()
-                raise ValueError(f'filter to a single duration; found: {[str(i) for i in unique_duration]}')
+        @dataclass(init=False)
+        class Duration:
+            duration: pd.Index = PdIndex()
+        non_geo_dims.append(Duration)
 
     if pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
         if 'perturbationNumber' not in index.columns:
             index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
-            total_dim_count *= index['perturbationNumber'].nunique()
-
-        if index['perturbationNumber'].nunique() >= 1:
-            if index['perturbationNumber'].nunique() in {1,total_dim_count}:
-                @dataclass(init=False)
-                class perturbationNumber:
-                    perturbationNumber: pd.Index = PdIndex()
-                non_geo_dims.append(perturbationNumber)
-            else:
-                unique_pertnum = index.duration.unique()
-                raise ValueError(f'filter to a single duration; found: {[str(i) for i in unique_pertnum]}')
+        @dataclass(init=False)
+        class perturbationNumber:
+            perturbationNumber: pd.Index = PdIndex()
+        non_geo_dims.append(perturbationNumber)
 
     return index, non_geo_dims
 
@@ -549,10 +520,26 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     DataArray
         DataArray without coordinates
     """
+
     dim_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is not None and len(cube[k]) > 1]
     constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
 
+    dims_total = 1
+    dims_to_filter = []
+    for dim_name, dim_len, in dims.items():
+        if dim_name not in {'x','y','station'}:
+            dims_total *= dim_len
+            dims_to_filter.append(dim_name)
+
+    # Check number of GRIB2 message indexed compared to non-X/Y
+    # dimensions.
+    if dims_total != len(index):
+        raise ValueError(
+            f"DataArray dimensions are not compatible with number of GRIB2 messages; DataArray has {dims_total} "
+            f"and GRIB2 index has {len(index)}. Consider applying a filter for dimensions: {dims_to_filter}"
+            )
+ 
     data = OnDiskArray(filename, index, cube)
     lock = LOCK
     data = GribBackendArray(data, lock)
