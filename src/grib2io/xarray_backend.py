@@ -525,6 +525,21 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
 
+    dims_total = 1
+    dims_to_filter = []
+    for dim_name, dim_len, in dims.items():
+        if dim_name not in {'x','y','station'}:
+            dims_total *= dim_len
+            dims_to_filter.append(dim_name)
+
+    # Check number of GRIB2 message indexed compared to non-X/Y
+    # dimensions.
+    if dims_total != len(index):
+        raise ValueError(
+            f"DataArray dimensions are not compatible with number of GRIB2 messages; DataArray has {dims_total} "
+            f"and GRIB2 index has {len(index)}. Consider applying a filter for dimensions: {dims_to_filter}"
+            )
+ 
     data = OnDiskArray(filename, index, cube)
     lock = LOCK
     data = GribBackendArray(data, lock)

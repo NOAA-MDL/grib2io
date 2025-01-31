@@ -46,3 +46,8 @@ def test_interp_with_openmp_threads(request):
         assert da.shape == (1, 1597, 2345)
     except(ModuleNotFoundError):
         pytest.skip()
+
+def test_valueerror_multiple_durations_to_filter(request):
+    data = request.config.rootdir / 'tests' / 'data'
+    with pytest.raises(ValueError, match=r"DataArray dimensions are not compatible with number of GRIB2 messages; DataArray has 4 and GRIB2 index has 2. Consider applying a filter for dimensions: \['leadTime', 'duration'\]"):
+        ds = xr.open_dataset(data / "2024101012_Milton_Adv22_e70_cum_dat.grb", engine="grib2io")
