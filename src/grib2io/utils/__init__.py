@@ -100,9 +100,9 @@ def get_leadtime(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     leadTime
         datetime.timedelta object representing the lead time of the GRIB2 message.
     """
-    lt = tables.get_value_from_table(pdt[templates.UnitOfForecastTime._key[pdtn]], 'scale_time_hours')
+    lt = tables.get_value_from_table(pdt[templates.UnitOfForecastTime._key[pdtn]], 'scale_time_seconds')
     lt *= pdt[templates.ValueOfForecastTime._key[pdtn]]
-    return datetime.timedelta(hours=int(lt))
+    return datetime.timedelta(seconds=int(lt))
 
 
 def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
@@ -129,12 +129,12 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
         ntime = pdt[templates.NumberOfTimeRanges._key[pdtn]]
         duration_unit = tables.get_value_from_table(
             pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]],
-            'scale_time_hours')
+            'scale_time_seconds')
         d = ntime * duration_unit * pdt[
             templates.TimeRangeOfStatisticalProcess._key[pdtn]]
     else:
         d = 0
-    return datetime.timedelta(hours=int(d))
+    return datetime.timedelta(seconds=int(d))
 
 
 def decode_wx_strings(lus: bytes) -> Dict[int, str]:
