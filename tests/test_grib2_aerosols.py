@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import grib2io
 
-test_file = "tests/data/gefs.chem.t00z.a2d_0p25.f000.grib2_subset"
+test_file = "tests/input_data/gefs.chem.t00z.a2d_0p25.f000.grib2_subset"
 
 
 section4_eval = {'totAsy340': np.array([    0,    48,    20,   104, 62000,     0,     6,    20,     0,

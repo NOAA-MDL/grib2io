@@ -36,7 +36,7 @@ def test_da_write(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_da.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "productDefinitionTemplateNumber": 0,
@@ -67,7 +67,7 @@ def test_ds_write(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "productDefinitionTemplateNumber": 0,
@@ -108,7 +108,7 @@ def test_ds_write_levels(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds_levels.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "productDefinitionTemplateNumber": 0,
@@ -138,7 +138,7 @@ def test_ds_write_leadtime(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds_leadtime.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,
@@ -174,7 +174,7 @@ def test_ds_write_leadtime_and_layers(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds_leadtime_and_layers.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 100,
@@ -217,7 +217,7 @@ def test_ds_write_leadtime_and_refdate(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds_leadtime_and_refdate.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,
@@ -267,7 +267,7 @@ def test_ds_write_messed_up(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_grib2_ds_messed_up.grib2"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,
@@ -300,7 +300,7 @@ def test_ds_to_zarr(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_zarr.zarr"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,
@@ -351,7 +351,7 @@ def test_ds_to_netcdf(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "test_to_netcdf.nc"
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,

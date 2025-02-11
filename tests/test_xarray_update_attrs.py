@@ -5,8 +5,8 @@ import xarray as xr
 
 TESTGRIB = xr.open_mfdataset(
     [
-        "tests/data/gfs_20221107/gfs.t00z.pgrb2.1p00.f009_subset",
-        "tests/data/gfs_20221107/gfs.t00z.pgrb2.1p00.f012_subset",
+        "tests/input_data/gfs_20221107/gfs.t00z.pgrb2.1p00.f009_subset",
+        "tests/input_data/gfs_20221107/gfs.t00z.pgrb2.1p00.f012_subset",
     ],
     combine="nested",
     concat_dim="leadTime",

@@ -4,7 +4,7 @@ import datetime
 import grib2io
 
 def test_datetime_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data' / 'gfs_20221107'
+    data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'
     with grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset') as f:
         msg = f['TMAX'][0]
 

@@ -4,7 +4,7 @@ import datetime
 import grib2io
 
 def test_datetime_attrs(request):
-    data = request.config.rootdir / 'tests' / 'data'
+    data = request.config.rootdir / 'tests' / 'input_data'
 
     f = grib2io.open(data / 'ds.temp.bin')
     msg = f[0]
