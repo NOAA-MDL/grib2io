@@ -40,6 +40,16 @@ jobs:
         cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_PNG=ON -DBUILD_AEC=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
         sudo make install
+
+    - name: Install NCEPLIBS-ip
+      run: |
+        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
+        tar -xzvf v5.1.0.tar.gz
+        cd NCEPLIBS-ip-5.1.0
+        mkdir build && cd build
+        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON ..
+        make -j2
+        sudo make install
         
     - name: Install grib2io and test
       run: |

@@ -25,7 +25,7 @@ jobs:
       run: |
         brew install jasper libpng libaec
         brew tap eengl/nceplibs
-        brew install nceplibs-g2c
+        brew install nceplibs-g2c nceplibs-ip
 
     - name: Install python dependencies via pip
       run: |
