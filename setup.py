@@ -7,12 +7,14 @@ import os
 import platform
 import subprocess
 import sys
+import warnings
 
 # This maps package names to library names used in the
 # library filename.
 pkgname_to_libname = {
     'g2c': ['g2c'],
     'aec': ['aec'],
+    'ip': ['ip_4'],
     'jasper': ['jasper'],
     'jpeg': ['turbojpeg', 'jpeg'],
     'openjpeg': ['openjp2'],
@@ -24,7 +26,7 @@ def get_grib2io_version():
         ver = f.readline().strip()
     return ver
 
-def get_package_info(name, config, static=False):
+def get_package_info(name, config, static=False, required=True):
     pkg_dir = os.environ.get(name.upper()+'_DIR')
     pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
     pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
@@ -41,10 +43,15 @@ def get_package_info(name, config, static=False):
 
         if pkg_dir is None:
             for l in pkgname_to_libname[name]:
-                libname = os.path.dirname(find_library(l, static=static))
+                libname = find_library(l, static=static, required=required)
                 if libname is not None: break
-            pkg_libdir = libname
-            pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+            name = l
+            if libname is None:
+                pkg_libdir = None
+                pkg_incdir = None
+            else:
+                pkg_libdir = os.path.dirname(libname)
+                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
 
     else:
         # Env var was set
@@ -54,9 +61,11 @@ def get_package_info(name, config, static=False):
             pkg_libdir = os.path.join(pkg_dir,'lib64')
         if os.path.exists(os.path.join(pkg_dir,'include')):
             pkg_incdir = os.path.join(pkg_dir,'include')
-    return (pkg_incdir, pkg_libdir)
+        elif os.path.exists(os.path.join(pkg_dir,'include_4')):
+            pkg_incdir = os.path.join(pkg_dir,'include_4')
+    return (name, pkg_incdir, pkg_libdir)
 
-def find_library(name, dirs=None, static=False):
+def find_library(name, dirs=None, static=False, required=True):
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
 
@@ -87,13 +96,16 @@ def find_library(name, dirs=None, static=False):
         libs = Path(d).rglob(f"lib{name}{libext}")
         out.extend(libs)
     if not out:
-        raise ValueError(f"""
+        if required:
+            raise ValueError(f"""
 
 The library "lib{name}{libext}" could not be found in any of the following
 directories:
 {dirs}
 
 """)
+        else:
+            return None
     return out[0].absolute().resolve().as_posix()
 
 # ----------------------------------------------------------------------------------------
@@ -102,8 +114,10 @@ directories:
 VERSION = get_grib2io_version()
 
 usestaticlibs = False
-libraries = ['g2c']
+build_with_ip = True
+libraries = []
 
+extension_modules = []
 extra_objects = []
 incdirs = []
 libdirs = []
@@ -115,6 +129,7 @@ from Cython.Distutils import build_ext
 cmdclass = {'build_ext': build_ext}
 redtoreg_pyx = 'src/ext/redtoreg.pyx'
 g2clib_pyx  = 'src/ext/g2clib.pyx'
+iplib_pyx = 'src/ext/iplib.pyx'
 
 # ----------------------------------------------------------------------------------------
 # Read setup.cfg
@@ -134,11 +149,27 @@ if os.environ.get('USE_STATIC_LIBS'):
 usestaticlibs = config.get('options', 'use_static_libs', fallback=usestaticlibs)
 
 # ----------------------------------------------------------------------------------------
-# Get g2c information
+# Get g2c information (THIS IS REQUIRED)
 # ----------------------------------------------------------------------------------------
-pkginfo = get_package_info(libraries[0], config, static=usestaticlibs)
-incdirs.append(pkginfo[0])
-libdirs.append(pkginfo[1])
+pkginfo = get_package_info('g2c', config, static=usestaticlibs, required=True)
+if None in pkginfo:
+    raise ValueError(f"NCEPLIBS-g2c library not found. grib2io will not build.")
+else:
+    libraries.append(pkginfo[0])
+    incdirs.append(pkginfo[1])
+    libdirs.append(pkginfo[2])
+
+# ----------------------------------------------------------------------------------------
+# Get NCEPLIBS-ip information
+# ----------------------------------------------------------------------------------------
+pkginfo = get_package_info('ip', config, static=usestaticlibs, required=False)
+if None in pkginfo:
+    warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
+    build_with_ip = False
+else:
+    libraries.append(pkginfo[0])
+    incdirs.append(pkginfo[1])
+    libdirs.append(pkginfo[2])
 
 # ----------------------------------------------------------------------------------------
 # Perform work to determine required static library files.
@@ -176,6 +207,8 @@ libdirs = [] if usestaticlibs else list(set(libdirs))
 extra_objects = list(set(extra_objects)) if usestaticlibs else []
 
 print(f'Use static libs: {usestaticlibs}')
+print(f'Build with NCEPLIBS-ip: {build_with_ip}')
+print(f'\t{libraries = }')
 print(f'\t{incdirs = }')
 print(f'\t{libdirs = }')
 print(f'\t{extra_objects = }')
@@ -190,9 +223,20 @@ g2clibext = Extension('grib2io.g2clib',
                       libraries = libraries,
                       runtime_library_dirs = libdirs,
                       extra_objects = extra_objects)
+extension_modules.append(g2clibext)
 redtoregext = Extension('grib2io.redtoreg',
                         [redtoreg_pyx],
                         include_dirs = [numpy.get_include()])
+extension_modules.append(redtoregext)
+if build_with_ip:
+    iplibext = Extension('grib2io.iplib',
+                         [iplib_pyx],
+                         include_dirs = ['./src/ext']+incdirs,
+                         library_dirs = libdirs,
+                         libraries = libraries,
+                         runtime_library_dirs = libdirs,
+                         extra_objects = extra_objects)
+    extension_modules.append(iplibext)
 
 # ----------------------------------------------------------------------------------------
 # Create __config__.py
@@ -220,7 +264,7 @@ with open(os.path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py.  See pyproject.toml for package metadata.
 # ----------------------------------------------------------------------------------------
-setup(ext_modules = [g2clibext,redtoregext],
+setup(ext_modules = extension_modules,
       cmdclass = cmdclass,
       long_description = long_description,
       long_description_content_type = 'text/markdown')
