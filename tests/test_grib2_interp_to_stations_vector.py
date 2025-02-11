@@ -2,7 +2,6 @@ import pytest
 import numpy as np
 import datetime
 import grib2io
-#import grib2io_interp
 
 np.set_printoptions(formatter={'float': '{: 0.5f}'.format})
 
@@ -10,8 +9,6 @@ np.set_printoptions(formatter={'float': '{: 0.5f}'.format})
 #            KPHL,     KPIT,     KMFL,     KORD,     KDEN,     KSFO
 lats = [  39.8605,  40.4846,  25.7542,  41.9602,  39.8466,  37.6196]
 lons = [ -75.2708, -80.2145, -80.3839, -87.9316,-104.6562,-122.3656]
-
-#print(f'{grib2io_interp.__version__ = }')
 
 def test_bicubic_interp_to_stations(request):
     data = request.config.rootdir / 'tests' / 'input_data'
