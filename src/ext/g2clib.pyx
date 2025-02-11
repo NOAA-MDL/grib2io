@@ -1,3 +1,5 @@
+# cython: language_level=3, boundscheck=False
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 """
 Cython code to provide python interfaces to functions in the NCEP g2c library.
 
