@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build-macos:
-    
+
     name: Python (${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     env:
@@ -13,8 +13,8 @@ jobs:
       matrix:
         os: ["macos-latest",]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-	libtype: ["True", "False"]
-   
+        staticlib: [ "True", "False" ]
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -37,8 +37,7 @@ jobs:
 
     - name: Install grib2io and test
       run: |
-        echo "USE_STATIC_LIBS=${{ matrix.libtype }}" >> $GITHUB_ENV
         python --version
-        pip install .
+        USE_STATIC_LIBS=${{ matrix.staticlib }} pip install .
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/	
