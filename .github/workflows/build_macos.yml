@@ -13,7 +13,11 @@ jobs:
       matrix:
         os: ["macos-latest",]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-	use-static-libs: [True, False]
+	include:
+          - env:
+	      USE_STATIC_LIBS: "True"
+          - env:
+	      USE_STATIC_LIBS: "False"
    
     steps:
     - uses: actions/checkout@v4
@@ -38,6 +42,6 @@ jobs:
     - name: Install grib2io and test
       run: |
         python --version
-        USE_STATIC_LIBS=${{ matrix.use-static-libs }} pip install .
+        pip install .
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/	
