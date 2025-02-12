@@ -13,7 +13,7 @@ jobs:
       matrix:
         os: ["macos-latest",]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
-	use-static-libs: ["True", "False"]
+	use-static-libs: [True, False]
    
     steps:
     - uses: actions/checkout@v4
@@ -36,8 +36,6 @@ jobs:
         python3 -m pip install -r requirements.txt
 
     - name: Install grib2io and test
-      with:
-        use-static-libs: ${{ matrix.use-static-libs }}
       run: |
         python --version
         USE_STATIC_LIBS=${{ matrix.use-static-libs }} pip install .
