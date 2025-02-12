@@ -15,15 +15,15 @@ cdef extern from "<stdbool.h>":
 
 
 cdef extern from "iplib.h":
-    void ipolates_grib2(int* ip, int* ipopt, int* igdtnumi, int* igdtmpli, int* igdtleni, 
-                        int* igdtnumo, int* igdtmplo, int* igdtleno, 
-                        int* mi, int* mo, int* km, int* ibi, bool* li, float* gi, 
-                        int* no, float* rlat, float* rlon, int* ibo, bool* lo, float* go, int* iret)
-    void ipolatev_grib2(int* ip, int* ipopt, int* igdtnumi, int* igdtmpli, int* igdtleni, 
-                        int* igdtnumo, int* igdtmplo, int* igdtleno, 
-                        int* mi, int* mo, int* km, int* ibi, bool* li, float* ui, float* vi,
-                        int* no, float* rlat, float* rlon, float* crot, float* srot, int* ibo, bool* lo,
-                        float* uo, float* vo, int* iret)
+    void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
+                        int *igdtnumo, int *igdtmplo, int *igdtleno, 
+                        int *mi, int *mo, int *km, int *ibi, bool *li, float *gi, 
+                        int *no, float *rlat, float *rlon, int *ibo, bool *lo, float *go, int *iret)
+    void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
+                        int *igdtnumo, int *igdtmplo, int *igdtleno, 
+                        int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
+                        int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
+                        float *uo, float *vo, int *iret)
     
 
 def interpolate_scalar(int ip,
@@ -113,11 +113,11 @@ def interpolate_scalar(int ip,
     cdef int i
 
     # Use memoryviews for direct C access to array data.
-    cdef float* rlat_ptr = &rlat[0]
-    cdef float* rlon_ptr = &rlon[0]
-    cdef int32_t* ibo_ptr = &ibo[0]
-    cdef uint8_t* lo_ptr = &lo[0,0]
-    cdef float* go_ptr = &go[0,0]
+    cdef float *rlat_ptr = &rlat[0]
+    cdef float *rlon_ptr = &rlon[0]
+    cdef int32_t *ibo_ptr = &ibo[0]
+    cdef uint8_t *lo_ptr = &lo[0,0]
+    cdef float *go_ptr = &go[0,0]
 
     if lats is not None and lons is not None and igdtnumo == -1:
         for i in range(lats.shape[0]):
@@ -232,14 +232,14 @@ def interpolate_vector(int ip,
     cdef int i
 
     # Use memoryviews for direct C access to array data.
-    cdef float* rlat_ptr = &rlat[0]
-    cdef float* rlon_ptr = &rlon[0]
-    cdef float* crot_ptr = &crot[0]
-    cdef float* srot_ptr = &srot[0]
-    cdef int32_t* ibo_ptr = &ibo[0]
-    cdef uint8_t* lo_ptr = &lo[0,0]
-    cdef float* uo_ptr = &uo[0,0]
-    cdef float* vo_ptr = &vo[0,0]
+    cdef float *rlat_ptr = &rlat[0]
+    cdef float *rlon_ptr = &rlon[0]
+    cdef float *crot_ptr = &crot[0]
+    cdef float *srot_ptr = &srot[0]
+    cdef int32_t *ibo_ptr = &ibo[0]
+    cdef uint8_t *lo_ptr = &lo[0,0]
+    cdef float *uo_ptr = &uo[0,0]
+    cdef float *vo_ptr = &vo[0,0]
 
     if lats is not None and lons is not None and igdtnumo == -1:
         for i in range(lats.shape[0]):
