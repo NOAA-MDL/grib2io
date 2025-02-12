@@ -8,10 +8,25 @@ file can contain one or more GRIB2 messages.
 
 GRIB2 file IO is performed directly in Python.  The unpacking/packing of GRIB2
 integer, coded metadata and data sections is performed by the g2c library
-functions via the g2clib Cython wrapper module.  The decoding/encoding of GRIB2
-metadata is translated into more descriptive, plain language metadata by looking
-up the integer code values against the appropriate GRIB2 code tables.  These
-code tables are a part of the grib2io module.
+functions via the g2clib Cython extension module.  The decoding/encoding of GRIB2
+metadata is translated into more descriptive, plain language metadata by providing
+a mapping of the integer coded metadata to the appropriate GRIB2 code tables. The
+NCEP GRIB2 code tables are a part of the grib2io package.
+
+Interpolation
+=============
+As of grib2io VERSION, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+Fortran library is now a part of the grib2io package.  The separate component package, grib2io-interp,
+has been deprecated.  grib2io-interp provided interpolation via F2PY interface to
+NCEPLIBS-ip, which has become difficult since the 
+[removal of distutils](https://peps.python.org/pep-0632/) from Python 3.12+.
+
+NCEPLIBS-ip top-level interpolation Fortran subroutines contain the `BIND(C)` attribute which
+provides an equivalent C-interface.  grib2io now provides a Cython-based interface, `iplib`,
+to these Fortran subroutines via their C-interface.
+
+If NCEPLIBS-ip was built with OpenMP support, grib2io will also provide a Cython-based
+interface, `openmp_handler`, for getting and setting the number of OpenMP threads.
 
 Tutorials
 =========
@@ -1307,8 +1322,9 @@ class _Grib2Message:
             Template attributes.
         num_threads : int, optional
             Number of OpenMP threads to use for interpolation. The default
-            value is 1. If grib2io_interp was not built with OpenMP, then
-            this keyword argument and value will have no impact.
+            value is 1. If NCEPLIBS-ip and grib2io's iplib extension module
+            was not built with OpenMP, then this keyword argument and value
+            will have no impact.
 
         Returns
         -------
@@ -1652,8 +1668,8 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
     """
     This is the module-level interpolation function.
 
-    This interfaces with the grib2io_interp component package that interfaces to
-    the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+    This interfaces with the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    through grib2io's internal iplib Cython extension module.
 
     Parameters
     ----------
@@ -1690,8 +1706,9 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         more information on how these are used.
     num_threads : int, optional
         Number of OpenMP threads to use for interpolation. The default
-        value is 1. If grib2io_interp was not built with OpenMP, then
-        this keyword argument and value will have no impact.
+        value is 1. If NCEPLIBS-ip and grib2io's iplib extension module
+        was not built with OpenMP, then this keyword argument and value
+        will have no impact.
 
     Returns
     -------
@@ -1701,19 +1718,16 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         the assumptions that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
-#    import grib2io_interp
-#    from grib2io_interp import interpolate
-#
-#    prev_num_threads = 1
-#    try:
-#        import grib2io_interp
-#        if grib2io_interp.has_openmp_support:
-#            prev_num_threads = grib2io_interp.get_openmp_threads()
-#            grib2io_interp.set_openmp_threads(num_threads)
-#    except(AttributeError):
-#        pass
 
     from . import iplib
+
+    prev_num_threads = 1
+    try:
+        from . import openmp_handler
+        prev_num_threads = openmp_handler.get_openmp_threads()
+        openmp_handler.set_openmp_threads(num_threads)
+    except(AttributeError):
+        pass
 
     if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
@@ -1765,11 +1779,10 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         vo = np.where(lo==0,np.nan,vo).reshape(newshp)
         out = (uo,vo)
 
-#    try:
-#        if grib2io_interp.has_openmp_support:
-#            grib2io_interp.set_openmp_threads(prev_num_threads)
-#    except(AttributeError):
-#        pass
+    try:
+        openmp_handler.set_openmp_threads(prev_num_threads)
+    except(AttributeError):
+        pass
 
     return out
 
@@ -1779,9 +1792,8 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     """
     Module-level interpolation function for interpolation to stations.
 
-    Interfaces with the grib2io_interp component package that interfaces to the
-    [NCEPLIBS-ip
-    library](https://github.com/NOAA-EMC/NCEPLIBS-ip). It supports scalar and
+    Interfaces with the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    via grib2io's iplib Cython exntension module. It supports scalar and
     vector interpolation according to the type of object a.
 
     Parameters
@@ -1821,8 +1833,9 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
         more information on how these are used.
     num_threads : int, optional
         Number of OpenMP threads to use for interpolation. The default
-        value is 1. If grib2io_interp was not built with OpenMP, then
-        this keyword argument and value will have no impact.
+        value is 1. If NCEPLIBS-ip and grib2io's iplib extension module
+        was not built with OpenMP, then this keyword argument and value
+        will have no impact.
 
     Returns
     -------
@@ -1832,19 +1845,15 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
         the assumptions that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
-#    import grib2io_interp
-#    from grib2io_interp import interpolate
-#
-#    prev_num_threads = 1
-#    try:
-#        import grib2io_interp
-#        if grib2io_interp.has_openmp_support:
-#            prev_num_threads = grib2io_interp.get_openmp_threads()
-#            grib2io_interp.set_openmp_threads(num_threads)
-#    except(AttributeError):
-#        pass
-
     from . import iplib
+
+    prev_num_threads = 1
+    try:
+        from . import openmp_handler
+        prev_num_threads = openmp_handler.get_openmp_threads()
+        openmp_handler.set_openmp_threads(num_threads)
+    except(AttributeError):
+        pass
 
     if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
@@ -1910,11 +1919,10 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
                                                             lons=np.array(lons, dtype=np.float32))
         out = (uo.reshape(newshp),vo.reshape(newshp))
 
-#    try:
-#        if grib2io_interp.has_openmp_support:
-#            grib2io_interp.set_openmp_threads(prev_num_threads)
-#    except(AttributeError):
-#        pass
+    try:
+        openmp_handler.set_openmp_threads(prev_num_threads)
+    except(AttributeError):
+        pass
 
     return out
 

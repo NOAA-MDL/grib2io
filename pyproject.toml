@@ -44,7 +44,6 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-interp = ["grib2io-interp >= 1.0.0"]
 xarray = ["xarray"]
 
 [project.entry-points."xarray.backends"]

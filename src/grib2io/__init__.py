@@ -9,6 +9,8 @@ __all__ = ['open', 'show_config', 'interpolate', 'interpolate_to_stations',
 try:
     from . import __config__
     __version__ = __config__.grib2io_version
+    has_interpolation = __config__.has_interpolation
+    has_openmp_support = __config__.has_openmp_support
 except(ImportError):
     pass
 
@@ -27,10 +29,14 @@ g2c_version = __g2clib_version__
 
 def show_config():
     """Print grib2io build configuration information."""
-    print(f'grib2io version {__version__} Configuration:\n')
-    print(f'\tg2c library version: {__g2clib_version__}')
+    print(f'grib2io version {__version__} Configuration:')
+    print(f'')
+    print(f'NCEPLIBS-g2c library version: {__g2clib_version__}')
     print(f'\tJPEG compression support: {has_jpeg_support}')
     print(f'\tPNG compression support: {has_png_support}')
     print(f'\tAEC compression support: {has_aec_support}')
     print(f'')
-    print(f'\tNCEP GRIB2 Table Version: {_ncep_grib2_table_version}')
+    print(f'NCEPLIPS-ip support: {has_interpolation}')
+    print(f'\tOpenMP support: {has_openmp_support}')
+    print(f'')
+    print(f'NCEP GRIB2 Table Version: {_ncep_grib2_table_version}')
