@@ -36,9 +36,10 @@ def get_package_info(name, config, static=False, required=True):
         if pkg_dir is None:
             if static:
                 pkg_lib = config.get('static_libs',name+'_lib',fallback=None)
-                pkg_libdir = os.path.dirname(pkg_lib)
-                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
-                pkg_dir = os.path.dirname(pkg_libdir)
+                if pkg_lib is not None:
+                    pkg_libdir = os.path.dirname(pkg_lib)
+                    pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                    pkg_dir = os.path.dirname(pkg_libdir)
 
         if pkg_dir is None:
             for l in pkgname_to_libname[name]:
@@ -136,12 +137,12 @@ def run_otool_command(filename):
     cmdout = cmd.stdout.decode('utf-8')
     return cmdout
 
-def check_for_openmp(ip_lib, static_lib=False):
+def check_for_openmp(ip_lib, static=False):
     """Check for OpenMP"""
     check = False
     info = ''
     libname = ''
-    if static_lib:
+    if static:
         if sys.platform in {'darwin','linux'}:
             info = run_nm_command(ip_lib)
             if 'GOMP' in info:
@@ -243,7 +244,7 @@ if use_static_libs:
 
     # We already found g2c info, so iterate over libraries from [1:]
     for l in dep_libraries[1:]:
-        incdir, libdir = get_package_info(l, config, static=use_static_libs)
+        libname, incdir, libdir = get_package_info(l, config, static=use_static_libs)
         incdirs.append(incdir)
         libdirs.append(libdir)
         if use_static_libs:
@@ -265,13 +266,17 @@ else:
 # ----------------------------------------------------------------------------------------
 # Check for OpenMP library objects are in the ip library
 # ----------------------------------------------------------------------------------------
-if use_static_libs:
-    ip_staticlib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
-    extra_objects.append(ip_staticlib)
-    build_with_openmp, openmp_libname = check_for_openmp(ip_staticlib)
-else:
-    iplib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
-    build_with_openmp, openmp_libname = check_for_openmp(iplib)
+if build_with_ip:
+    if use_static_libs:
+        ip_staticlib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
+        extra_objects.append(ip_staticlib)
+        build_with_openmp, openmp_libname = check_for_openmp(ip_staticlib, static=use_static_libs)
+        if build_with_openmp:
+            openmp_staticlib = find_library(openmp_libname, static=use_static_libs)
+            extra_objects.append(openmp_staticlib)
+    else:
+        iplib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
+        build_with_openmp, openmp_libname = check_for_openmp(iplib, static=use_static_libs)
 
 # ----------------------------------------------------------------------------------------
 # Final clean up 
@@ -282,7 +287,7 @@ incdirs.append(numpy.get_include())
 libdirs = [] if use_static_libs else list(set(libdirs))
 extra_objects = list(set(extra_objects)) if use_static_libs else []
 
-if build_with_openmp:
+if build_with_openmp and not use_static_libs:
     libraries.append(openmp_libname)
 
 print(f'Use static libs: {use_static_libs}')
@@ -339,12 +344,16 @@ cnt = \
 grib2io_version = '%(grib2io_version)s'
 has_interpolation = %(has_interpolation)s
 has_openmp_support = %(has_openmp_support)s
+use_static_libs = %(use_static_libs)s
+extra_objects = %(extra_objects)s
 """
 a = open('src/grib2io/__config__.py','w')
 cfgdict = {}
 cfgdict['grib2io_version'] = VERSION
 cfgdict['has_interpolation'] = build_with_ip
 cfgdict['has_openmp_support'] = build_with_openmp
+cfgdict['use_static_libs'] = use_static_libs
+cfgdict['extra_objects'] = extra_objects
 try:
     a.write(cnt % cfgdict)
 finally:

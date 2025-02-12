@@ -11,6 +11,8 @@ try:
     __version__ = __config__.grib2io_version
     has_interpolation = __config__.has_interpolation
     has_openmp_support = __config__.has_openmp_support
+    use_static_libs = __config__.use_static_libs
+    extra_objects = __config__.extra_objects
 except(ImportError):
     pass
 
@@ -38,5 +40,9 @@ def show_config():
     print(f'')
     print(f'NCEPLIPS-ip support: {has_interpolation}')
     print(f'\tOpenMP support: {has_openmp_support}')
+    print(f'')
+    print(f'Static libs: {use_static_libs}')
+    for lib in extra_objects:
+        print(f'\t{lib}')
     print(f'')
     print(f'NCEP GRIB2 Table Version: {_ncep_grib2_table_version}')
