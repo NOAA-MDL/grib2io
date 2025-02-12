@@ -248,7 +248,12 @@ class RefDate:
             timestamp = (value - np.datetime64("1970-01-01T00:00:00")) / np.timedelta64(
                 1, "s"
             )
-            value = datetime.datetime.utcfromtimestamp(timestamp)
+            try:
+                # Python >= 3.10
+                value = datetime.datetime.fromtimestamp(timestamp, datetime.UTC)
+            except(AttributeError):
+                # Python < 3.10
+                value = datetime.datetime.utcfromtimestamp(timestamp)
         if isinstance(value, datetime.datetime):
             obj.section1[5] = value.year
             obj.section1[6] = value.month
