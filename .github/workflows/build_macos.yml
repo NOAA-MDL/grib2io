@@ -38,4 +38,5 @@ jobs:
       run: |
         python --version
         pip install .
+	python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/	
