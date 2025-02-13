@@ -4,4 +4,5 @@
 #
 # pip install pdoc
 # ---------------------------------------------------------------------------------------- 
-pdoc --docformat numpy -o 'docs' ./src/grib2io
+BUILD_LIB=$(find . -name "lib*" -type d)
+pdoc --docformat numpy -o 'docs' $BUILD_LIB/grib2io 

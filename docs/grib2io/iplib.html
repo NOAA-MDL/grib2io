@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="generator" content="pdoc 14.7.0"/>
-    <title>grib2io.tables.section4_discipline1 API documentation</title>
+    <title>grib2io.iplib API documentation</title>
 
     <style>/*! * Bootstrap Reboot v5.0.0 (https://getbootstrap.com/) * Copyright 2011-2021 The Bootstrap Authors * Copyright 2011-2021 Twitter, Inc. * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE) * Forked from Normalize.css, licensed MIT (https://github.com/necolas/normalize.css/blob/master/LICENSE.md) */*,::after,::before{box-sizing:border-box}@media (prefers-reduced-motion:no-preference){:root{scroll-behavior:smooth}}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans","Liberation Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";font-size:1rem;font-weight:400;line-height:1.5;color:#212529;background-color:#fff;-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}hr{margin:1rem 0;color:inherit;background-color:currentColor;border:0;opacity:.25}hr:not([size]){height:1px}h1,h2,h3,h4,h5,h6{margin-top:0;margin-bottom:.5rem;font-weight:500;line-height:1.2}h1{font-size:calc(1.375rem + 1.5vw)}@media (min-width:1200px){h1{font-size:2.5rem}}h2{font-size:calc(1.325rem + .9vw)}@media (min-width:1200px){h2{font-size:2rem}}h3{font-size:calc(1.3rem + .6vw)}@media (min-width:1200px){h3{font-size:1.75rem}}h4{font-size:calc(1.275rem + .3vw)}@media (min-width:1200px){h4{font-size:1.5rem}}h5{font-size:1.25rem}h6{font-size:1rem}p{margin-top:0;margin-bottom:1rem}abbr[data-bs-original-title],abbr[title]{-webkit-text-decoration:underline dotted;text-decoration:underline dotted;cursor:help;-webkit-text-decoration-skip-ink:none;text-decoration-skip-ink:none}address{margin-bottom:1rem;font-style:normal;line-height:inherit}ol,ul{padding-left:2rem}dl,ol,ul{margin-top:0;margin-bottom:1rem}ol ol,ol ul,ul ol,ul ul{margin-bottom:0}dt{font-weight:700}dd{margin-bottom:.5rem;margin-left:0}blockquote{margin:0 0 1rem}b,strong{font-weight:bolder}small{font-size:.875em}mark{padding:.2em;background-color:#fcf8e3}sub,sup{position:relative;font-size:.75em;line-height:0;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}a{color:#0d6efd;text-decoration:underline}a:hover{color:#0a58ca}a:not([href]):not([class]),a:not([href]):not([class]):hover{color:inherit;text-decoration:none}code,kbd,pre,samp{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:1em;direction:ltr;unicode-bidi:bidi-override}pre{display:block;margin-top:0;margin-bottom:1rem;overflow:auto;font-size:.875em}pre code{font-size:inherit;color:inherit;word-break:normal}code{font-size:.875em;color:#d63384;word-wrap:break-word}a>code{color:inherit}kbd{padding:.2rem .4rem;font-size:.875em;color:#fff;background-color:#212529;border-radius:.2rem}kbd kbd{padding:0;font-size:1em;font-weight:700}figure{margin:0 0 1rem}img,svg{vertical-align:middle}table{caption-side:bottom;border-collapse:collapse}caption{padding-top:.5rem;padding-bottom:.5rem;color:#6c757d;text-align:left}th{text-align:inherit;text-align:-webkit-match-parent}tbody,td,tfoot,th,thead,tr{border-color:inherit;border-style:solid;border-width:0}label{display:inline-block}button{border-radius:0}button:focus:not(:focus-visible){outline:0}button,input,optgroup,select,textarea{margin:0;font-family:inherit;font-size:inherit;line-height:inherit}button,select{text-transform:none}[role=button]{cursor:pointer}select{word-wrap:normal}select:disabled{opacity:1}[list]::-webkit-calendar-picker-indicator{display:none}[type=button],[type=reset],[type=submit],button{-webkit-appearance:button}[type=button]:not(:disabled),[type=reset]:not(:disabled),[type=submit]:not(:disabled),button:not(:disabled){cursor:pointer}::-moz-focus-inner{padding:0;border-style:none}textarea{resize:vertical}fieldset{min-width:0;padding:0;margin:0;border:0}legend{float:left;width:100%;padding:0;margin-bottom:.5rem;font-size:calc(1.275rem + .3vw);line-height:inherit}@media (min-width:1200px){legend{font-size:1.5rem}}legend+*{clear:left}::-webkit-datetime-edit-day-field,::-webkit-datetime-edit-fields-wrapper,::-webkit-datetime-edit-hour-field,::-webkit-datetime-edit-minute,::-webkit-datetime-edit-month-field,::-webkit-datetime-edit-text,::-webkit-datetime-edit-year-field{padding:0}::-webkit-inner-spin-button{height:auto}[type=search]{outline-offset:-2px;-webkit-appearance:textfield}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-color-swatch-wrapper{padding:0}::file-selector-button{font:inherit}::-webkit-file-upload-button{font:inherit;-webkit-appearance:button}output{display:inline-block}iframe{border:0}summary{display:list-item;cursor:pointer}progress{vertical-align:baseline}[hidden]{display:none!important}</style>
     <style>/*! syntax-highlighting.css */pre{line-height:125%;}span.linenos{color:inherit; background-color:transparent; padding-left:5px; padding-right:20px;}.pdoc-code .hll{background-color:#ffffcc}.pdoc-code{background:#f8f8f8;}.pdoc-code .c{color:#3D7B7B; font-style:italic}.pdoc-code .err{border:1px solid #FF0000}.pdoc-code .k{color:#008000; font-weight:bold}.pdoc-code .o{color:#666666}.pdoc-code .ch{color:#3D7B7B; font-style:italic}.pdoc-code .cm{color:#3D7B7B; font-style:italic}.pdoc-code .cp{color:#9C6500}.pdoc-code .cpf{color:#3D7B7B; font-style:italic}.pdoc-code .c1{color:#3D7B7B; font-style:italic}.pdoc-code .cs{color:#3D7B7B; font-style:italic}.pdoc-code .gd{color:#A00000}.pdoc-code .ge{font-style:italic}.pdoc-code .gr{color:#E40000}.pdoc-code .gh{color:#000080; font-weight:bold}.pdoc-code .gi{color:#008400}.pdoc-code .go{color:#717171}.pdoc-code .gp{color:#000080; font-weight:bold}.pdoc-code .gs{font-weight:bold}.pdoc-code .gu{color:#800080; font-weight:bold}.pdoc-code .gt{color:#0044DD}.pdoc-code .kc{color:#008000; font-weight:bold}.pdoc-code .kd{color:#008000; font-weight:bold}.pdoc-code .kn{color:#008000; font-weight:bold}.pdoc-code .kp{color:#008000}.pdoc-code .kr{color:#008000; font-weight:bold}.pdoc-code .kt{color:#B00040}.pdoc-code .m{color:#666666}.pdoc-code .s{color:#BA2121}.pdoc-code .na{color:#687822}.pdoc-code .nb{color:#008000}.pdoc-code .nc{color:#0000FF; font-weight:bold}.pdoc-code .no{color:#880000}.pdoc-code .nd{color:#AA22FF}.pdoc-code .ni{color:#717171; font-weight:bold}.pdoc-code .ne{color:#CB3F38; font-weight:bold}.pdoc-code .nf{color:#0000FF}.pdoc-code .nl{color:#767600}.pdoc-code .nn{color:#0000FF; font-weight:bold}.pdoc-code .nt{color:#008000; font-weight:bold}.pdoc-code .nv{color:#19177C}.pdoc-code .ow{color:#AA22FF; font-weight:bold}.pdoc-code .w{color:#bbbbbb}.pdoc-code .mb{color:#666666}.pdoc-code .mf{color:#666666}.pdoc-code .mh{color:#666666}.pdoc-code .mi{color:#666666}.pdoc-code .mo{color:#666666}.pdoc-code .sa{color:#BA2121}.pdoc-code .sb{color:#BA2121}.pdoc-code .sc{color:#BA2121}.pdoc-code .dl{color:#BA2121}.pdoc-code .sd{color:#BA2121; font-style:italic}.pdoc-code .s2{color:#BA2121}.pdoc-code .se{color:#AA5D1F; font-weight:bold}.pdoc-code .sh{color:#BA2121}.pdoc-code .si{color:#A45A77; font-weight:bold}.pdoc-code .sx{color:#008000}.pdoc-code .sr{color:#A45A77}.pdoc-code .s1{color:#BA2121}.pdoc-code .ss{color:#19177C}.pdoc-code .bp{color:#008000}.pdoc-code .fm{color:#0000FF}.pdoc-code .vc{color:#19177C}.pdoc-code .vg{color:#19177C}.pdoc-code .vi{color:#19177C}.pdoc-code .vm{color:#19177C}.pdoc-code .il{color:#666666}</style>
@@ -16,11 +16,11 @@
     <nav class="pdoc">
         <label id="navtoggle" for="togglestate" class="pdoc-button"><svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke-linecap='round' stroke="currentColor" stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/></svg></label>
         <input id="togglestate" type="checkbox" aria-hidden="true" tabindex="-1">
-        <div>            <a class="pdoc-button module-list-button" href="../tables.html">
+        <div>            <a class="pdoc-button module-list-button" href="../grib2io.html">
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-in-left" viewBox="0 0 16 16">
   <path fill-rule="evenodd" d="M10 3.5a.5.5 0 0 0-.5-.5h-8a.5.5 0 0 0-.5.5v9a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-2a.5.5 0 0 1 1 0v2A1.5 1.5 0 0 1 9.5 14h-8A1.5 1.5 0 0 1 0 12.5v-9A1.5 1.5 0 0 1 1.5 2h8A1.5 1.5 0 0 1 11 3.5v2a.5.5 0 0 1-1 0v-2z"/>
   <path fill-rule="evenodd" d="M4.146 8.354a.5.5 0 0 1 0-.708l3-3a.5.5 0 1 1 .708.708L5.707 7.5H14.5a.5.5 0 0 1 0 1H5.707l2.147 2.146a.5.5 0 0 1-.708.708l-3-3z"/>
-</svg>                &nbsp;grib2io.tables</a>
+</svg>                &nbsp;grib2io</a>
 
 
             <input type="search" placeholder="Search..." role="searchbox" aria-label="search"
@@ -31,13 +31,10 @@
             <h2>API Documentation</h2>
                 <ul class="memberlist">
             <li>
-                    <a class="variable" href="#table_4_2_1_0">table_4_2_1_0</a>
+                    <a class="function" href="#interpolate_scalar">interpolate_scalar</a>
             </li>
             <li>
-                    <a class="variable" href="#table_4_2_1_1">table_4_2_1_1</a>
-            </li>
-            <li>
-                    <a class="variable" href="#table_4_2_1_2">table_4_2_1_2</a>
+                    <a class="function" href="#interpolate_vector">interpolate_vector</a>
             </li>
     </ul>
 
@@ -53,125 +50,125 @@
     <main class="pdoc">
             <section class="module-info">
                     <h1 class="modulename">
-<a href="./../../grib2io.html">grib2io</a><wbr>.<a href="./../tables.html">tables</a><wbr>.section4_discipline1    </h1>
+<a href="./../grib2io.html">grib2io</a><wbr>.iplib    </h1>
+
+                        <div class="docstring"><p>Cython code to provide python interfaces to functions in the NCEPLIBS-ip library.</p>
+
+<p>IMPORTANT: Make changes to this file, not the C code that Cython generates.</p>
+</div>
 
                 
-                        <input id="mod-section4_discipline1-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-
-                        <label class="view-source-button" for="mod-section4_discipline1-view-source"><span>View Source</span></label>
-
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos"> 1</span></a><span class="n">table_4_2_1_0</span>  <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-2"><a href="#L-2"><span class="linenos"> 2</span></a><span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Flash Flood Guidance (Encoded as an accumulation over a floating subinterval of time between the reference time and valid time)&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;FFLDG&#39;</span><span class="p">],</span>
-</span><span id="L-3"><a href="#L-3"><span class="linenos"> 3</span></a><span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Flash Flood Runoff (Encoded as an accumulation over a floating subinterval of time)&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;FFLDRO&#39;</span><span class="p">],</span>
-</span><span id="L-4"><a href="#L-4"><span class="linenos"> 4</span></a><span class="s1">&#39;2&#39;</span><span class="p">:[</span><span class="s1">&#39;Remotely Sensed Snow Cover&#39;</span><span class="p">,</span><span class="s1">&#39;See Table 4.215&#39;</span><span class="p">,</span><span class="s1">&#39;RSSC&#39;</span><span class="p">],</span>
-</span><span id="L-5"><a href="#L-5"><span class="linenos"> 5</span></a><span class="s1">&#39;3&#39;</span><span class="p">:[</span><span class="s1">&#39;Elevation of Snow Coveblack Terrain&#39;</span><span class="p">,</span><span class="s1">&#39;See Table 4.216&#39;</span><span class="p">,</span><span class="s1">&#39;ESCT&#39;</span><span class="p">],</span>
-</span><span id="L-6"><a href="#L-6"><span class="linenos"> 6</span></a><span class="s1">&#39;4&#39;</span><span class="p">:[</span><span class="s1">&#39;Snow Water Equivalent Percent of Normal&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;SWEPON&#39;</span><span class="p">],</span>
-</span><span id="L-7"><a href="#L-7"><span class="linenos"> 7</span></a><span class="s1">&#39;5&#39;</span><span class="p">:[</span><span class="s1">&#39;Baseflow-Groundwater Runoff&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;BGRUN&#39;</span><span class="p">],</span>
-</span><span id="L-8"><a href="#L-8"><span class="linenos"> 8</span></a><span class="s1">&#39;6&#39;</span><span class="p">:[</span><span class="s1">&#39;Storm Surface Runoff&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;SSRUN&#39;</span><span class="p">],</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos"> 9</span></a><span class="s1">&#39;7&#39;</span><span class="p">:[</span><span class="s1">&#39;Discharge from Rivers or Streams&#39;</span><span class="p">,</span><span class="s1">&#39;m3 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;DISRS&#39;</span><span class="p">],</span>
-</span><span id="L-10"><a href="#L-10"><span class="linenos">10</span></a><span class="s1">&#39;8&#39;</span><span class="p">:[</span><span class="s1">&#39;Group Water Upper Storage&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;GWUPS&#39;</span><span class="p">],</span>
-</span><span id="L-11"><a href="#L-11"><span class="linenos">11</span></a><span class="s1">&#39;9&#39;</span><span class="p">:[</span><span class="s1">&#39;Group Water Lower Storage&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;GWLOWS&#39;</span><span class="p">],</span>
-</span><span id="L-12"><a href="#L-12"><span class="linenos">12</span></a><span class="s1">&#39;10&#39;</span><span class="p">:[</span><span class="s1">&#39;Side Flow into River Channel&#39;</span><span class="p">,</span><span class="s1">&#39;m3 s-1 m-1&#39;</span><span class="p">,</span><span class="s1">&#39;SFLORC&#39;</span><span class="p">],</span>
-</span><span id="L-13"><a href="#L-13"><span class="linenos">13</span></a><span class="s1">&#39;11&#39;</span><span class="p">:[</span><span class="s1">&#39;River Storage of Water&#39;</span><span class="p">,</span><span class="s1">&#39;m3&#39;</span><span class="p">,</span><span class="s1">&#39;RVERSW&#39;</span><span class="p">],</span>
-</span><span id="L-14"><a href="#L-14"><span class="linenos">14</span></a><span class="s1">&#39;12&#39;</span><span class="p">:[</span><span class="s1">&#39;Flood Plain Storage of Water&#39;</span><span class="p">,</span><span class="s1">&#39;m3&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPSW&#39;</span><span class="p">],</span>
-</span><span id="L-15"><a href="#L-15"><span class="linenos">15</span></a><span class="s1">&#39;13&#39;</span><span class="p">:[</span><span class="s1">&#39;Depth of Water on Soil Surface&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;DEPWSS&#39;</span><span class="p">],</span>
-</span><span id="L-16"><a href="#L-16"><span class="linenos">16</span></a><span class="s1">&#39;14&#39;</span><span class="p">:[</span><span class="s1">&#39;Upstream Accumulated Precipitation&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;UPAPCP&#39;</span><span class="p">],</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos">17</span></a><span class="s1">&#39;15&#39;</span><span class="p">:[</span><span class="s1">&#39;Upstream Accumulated Snow Melt&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;UPASM&#39;</span><span class="p">],</span>
-</span><span id="L-18"><a href="#L-18"><span class="linenos">18</span></a><span class="s1">&#39;16&#39;</span><span class="p">:[</span><span class="s1">&#39;Percolation Rate&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;PERRATE&#39;</span><span class="p">],</span>
-</span><span id="L-19"><a href="#L-19"><span class="linenos">19</span></a><span class="s1">&#39;17&#39;</span><span class="p">:[</span><span class="s1">&#39;River outflow of water&#39;</span><span class="p">,</span><span class="s1">&#39;m3 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;RVEROW&#39;</span><span class="p">],</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos">20</span></a><span class="s1">&#39;18&#39;</span><span class="p">:[</span><span class="s1">&#39;Floodplain outflow of water&#39;</span><span class="p">,</span><span class="s1">&#39;m3 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPOW&#39;</span><span class="p">],</span>
-</span><span id="L-21"><a href="#L-21"><span class="linenos">21</span></a><span class="s1">&#39;19&#39;</span><span class="p">:[</span><span class="s1">&#39;Floodpath outflow of water&#39;</span><span class="p">,</span><span class="s1">&#39;m3 s-1&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPATHOW&#39;</span><span class="p">],</span>
-</span><span id="L-22"><a href="#L-22"><span class="linenos">22</span></a><span class="s1">&#39;20&#39;</span><span class="p">:[</span><span class="s1">&#39;Water on surface&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;WATSURF&#39;</span><span class="p">],</span>
-</span><span id="L-23"><a href="#L-23"><span class="linenos">23</span></a><span class="s1">&#39;21-191&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-24"><a href="#L-24"><span class="linenos">24</span></a><span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-25"><a href="#L-25"><span class="linenos">25</span></a><span class="s1">&#39;192&#39;</span><span class="p">:[</span><span class="s1">&#39;Baseflow-Groundwater Runoff&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;BGRUN&#39;</span><span class="p">],</span>
-</span><span id="L-26"><a href="#L-26"><span class="linenos">26</span></a><span class="s1">&#39;193&#39;</span><span class="p">:[</span><span class="s1">&#39;Storm Surface Runoff&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;SSRUN&#39;</span><span class="p">],</span>
-</span><span id="L-27"><a href="#L-27"><span class="linenos">27</span></a><span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-28"><a href="#L-28"><span class="linenos">28</span></a><span class="p">}</span>
-</span><span id="L-29"><a href="#L-29"><span class="linenos">29</span></a><span class="n">table_4_2_1_1</span>  <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-30"><a href="#L-30"><span class="linenos">30</span></a><span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation)&#39;</span><span class="p">,</span><span class="s1">&#39;kg m-2&#39;</span><span class="p">,</span><span class="s1">&#39;CPPOP&#39;</span><span class="p">],</span>
-</span><span id="L-31"><a href="#L-31"><span class="linenos">31</span></a><span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Percent Precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period)&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;PPOSP&#39;</span><span class="p">],</span>
-</span><span id="L-32"><a href="#L-32"><span class="linenos">32</span></a><span class="s1">&#39;2&#39;</span><span class="p">:[</span><span class="s1">&#39;Probability of 0.01 inch of precipitation (POP)&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;POP&#39;</span><span class="p">],</span>
-</span><span id="L-33"><a href="#L-33"><span class="linenos">33</span></a><span class="s1">&#39;3-191&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-34"><a href="#L-34"><span class="linenos">34</span></a><span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-35"><a href="#L-35"><span class="linenos">35</span></a><span class="s1">&#39;192&#39;</span><span class="p">:[</span><span class="s1">&#39;Probability of Freezing Precipitation&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;CPOZP&#39;</span><span class="p">],</span>
-</span><span id="L-36"><a href="#L-36"><span class="linenos">36</span></a><span class="s1">&#39;193&#39;</span><span class="p">:[</span><span class="s1">&#39;Percent of Frozen Precipitation&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;CPOFP&#39;</span><span class="p">],</span>
-</span><span id="L-37"><a href="#L-37"><span class="linenos">37</span></a><span class="s1">&#39;194&#39;</span><span class="p">:[</span><span class="s1">&#39;Probability of precipitation exceeding flash flood guidance values&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;PPFFG&#39;</span><span class="p">],</span>
-</span><span id="L-38"><a href="#L-38"><span class="linenos">38</span></a><span class="s1">&#39;195&#39;</span><span class="p">:[</span><span class="s1">&#39;Probability of Wetting Rain, exceeding in 0.10&quot; in a given time period&#39;</span><span class="p">,</span><span class="s1">&#39;%&#39;</span><span class="p">,</span><span class="s1">&#39;CWR&#39;</span><span class="p">],</span>
-</span><span id="L-39"><a href="#L-39"><span class="linenos">39</span></a><span class="s1">&#39;196&#39;</span><span class="p">:[</span><span class="s1">&#39;Binary Probability of precipitation exceeding average recurrence intervals (ARI)&#39;</span><span class="p">,</span><span class="s1">&#39;see Code table 4.222&#39;</span><span class="p">,</span><span class="s1">&#39;QPFARI&#39;</span><span class="p">],</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos">40</span></a><span class="s1">&#39;197&#39;</span><span class="p">:[</span><span class="s1">&#39;Binary Probability of precipitation exceeding flash flood guidance values&#39;</span><span class="p">,</span><span class="s1">&#39;see Code table 4.222&#39;</span><span class="p">,</span><span class="s1">&#39;QPFFFG&#39;</span><span class="p">],</span>
-</span><span id="L-41"><a href="#L-41"><span class="linenos">41</span></a><span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-42"><a href="#L-42"><span class="linenos">42</span></a><span class="p">}</span>
-</span><span id="L-43"><a href="#L-43"><span class="linenos">43</span></a><span class="n">table_4_2_1_2</span>  <span class="o">=</span> <span class="p">{</span>
-</span><span id="L-44"><a href="#L-44"><span class="linenos">44</span></a><span class="s1">&#39;0&#39;</span><span class="p">:[</span><span class="s1">&#39;Water Depth&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;WDPTHIL&#39;</span><span class="p">],</span>
-</span><span id="L-45"><a href="#L-45"><span class="linenos">45</span></a><span class="s1">&#39;1&#39;</span><span class="p">:[</span><span class="s1">&#39;Water Temperature&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;WTMPIL&#39;</span><span class="p">],</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos">46</span></a><span class="s1">&#39;2&#39;</span><span class="p">:[</span><span class="s1">&#39;Water Fraction&#39;</span><span class="p">,</span><span class="s1">&#39;Proportion&#39;</span><span class="p">,</span><span class="s1">&#39;WFRACT&#39;</span><span class="p">],</span>
-</span><span id="L-47"><a href="#L-47"><span class="linenos">47</span></a><span class="s1">&#39;3&#39;</span><span class="p">:[</span><span class="s1">&#39;Sediment Thickness&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;SEDTK&#39;</span><span class="p">],</span>
-</span><span id="L-48"><a href="#L-48"><span class="linenos">48</span></a><span class="s1">&#39;4&#39;</span><span class="p">:[</span><span class="s1">&#39;Sediment Temperature&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;SEDTMP&#39;</span><span class="p">],</span>
-</span><span id="L-49"><a href="#L-49"><span class="linenos">49</span></a><span class="s1">&#39;5&#39;</span><span class="p">:[</span><span class="s1">&#39;Ice Thickness&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;ICTKIL&#39;</span><span class="p">],</span>
-</span><span id="L-50"><a href="#L-50"><span class="linenos">50</span></a><span class="s1">&#39;6&#39;</span><span class="p">:[</span><span class="s1">&#39;Ice Temperature&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;ICETIL&#39;</span><span class="p">],</span>
-</span><span id="L-51"><a href="#L-51"><span class="linenos">51</span></a><span class="s1">&#39;7&#39;</span><span class="p">:[</span><span class="s1">&#39;Ice Cover&#39;</span><span class="p">,</span><span class="s1">&#39;Proportion&#39;</span><span class="p">,</span><span class="s1">&#39;ICECIL&#39;</span><span class="p">],</span>
-</span><span id="L-52"><a href="#L-52"><span class="linenos">52</span></a><span class="s1">&#39;8&#39;</span><span class="p">:[</span><span class="s1">&#39;Land Cover (0=water, 1=land)&#39;</span><span class="p">,</span><span class="s1">&#39;Proportion&#39;</span><span class="p">,</span><span class="s1">&#39;LANDIL&#39;</span><span class="p">],</span>
-</span><span id="L-53"><a href="#L-53"><span class="linenos">53</span></a><span class="s1">&#39;9&#39;</span><span class="p">:[</span><span class="s1">&#39;Shape Factor with Respect to Salinity Profile&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;SFSAL&#39;</span><span class="p">],</span>
-</span><span id="L-54"><a href="#L-54"><span class="linenos">54</span></a><span class="s1">&#39;10&#39;</span><span class="p">:[</span><span class="s1">&#39;Shape Factor with Respect to Temperature Profile in Thermocline&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;SFTMP&#39;</span><span class="p">],</span>
-</span><span id="L-55"><a href="#L-55"><span class="linenos">55</span></a><span class="s1">&#39;11&#39;</span><span class="p">:[</span><span class="s1">&#39;Attenuation Coefficient of Water with Respect to Solar Radiation&#39;</span><span class="p">,</span><span class="s1">&#39;m-1&#39;</span><span class="p">,</span><span class="s1">&#39;ACWSR&#39;</span><span class="p">],</span>
-</span><span id="L-56"><a href="#L-56"><span class="linenos">56</span></a><span class="s1">&#39;12&#39;</span><span class="p">:[</span><span class="s1">&#39;Salinity&#39;</span><span class="p">,</span><span class="s1">&#39;kg kg-1&#39;</span><span class="p">,</span><span class="s1">&#39;SALTIL&#39;</span><span class="p">],</span>
-</span><span id="L-57"><a href="#L-57"><span class="linenos">57</span></a><span class="s1">&#39;13&#39;</span><span class="p">:[</span><span class="s1">&#39;Cross Sectional Area of Flow in Channel&#39;</span><span class="p">,</span><span class="s1">&#39;m2&#39;</span><span class="p">,</span><span class="s1">&#39;CSAFC&#39;</span><span class="p">],</span>
-</span><span id="L-58"><a href="#L-58"><span class="linenos">58</span></a><span class="s1">&#39;14&#39;</span><span class="p">:[</span><span class="s1">&#39;Snow temperature&#39;</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="s1">&#39;LNDSNOWT&#39;</span><span class="p">],</span>
-</span><span id="L-59"><a href="#L-59"><span class="linenos">59</span></a><span class="s1">&#39;15&#39;</span><span class="p">:[</span><span class="s1">&#39;Lake depth&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;LDEPTH&#39;</span><span class="p">],</span>
-</span><span id="L-60"><a href="#L-60"><span class="linenos">60</span></a><span class="s1">&#39;16&#39;</span><span class="p">:[</span><span class="s1">&#39;River depth&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;RDEPTH&#39;</span><span class="p">],</span>
-</span><span id="L-61"><a href="#L-61"><span class="linenos">61</span></a><span class="s1">&#39;17&#39;</span><span class="p">:[</span><span class="s1">&#39;Floodplain depth&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPDEPTH&#39;</span><span class="p">],</span>
-</span><span id="L-62"><a href="#L-62"><span class="linenos">62</span></a><span class="s1">&#39;18&#39;</span><span class="p">:[</span><span class="s1">&#39;Floodplain flooded fraction&#39;</span><span class="p">,</span><span class="s1">&#39;proportion&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPFLFR&#39;</span><span class="p">],</span>
-</span><span id="L-63"><a href="#L-63"><span class="linenos">63</span></a><span class="s1">&#39;19&#39;</span><span class="p">:[</span><span class="s1">&#39;Floodplain flooded area&#39;</span><span class="p">,</span><span class="s1">&#39;m2&#39;</span><span class="p">,</span><span class="s1">&#39;FLDPFLAR&#39;</span><span class="p">],</span>
-</span><span id="L-64"><a href="#L-64"><span class="linenos">64</span></a><span class="s1">&#39;20&#39;</span><span class="p">:[</span><span class="s1">&#39;River Fraction&#39;</span><span class="p">,</span><span class="s1">&#39;proportion&#39;</span><span class="p">,</span><span class="s1">&#39;RVERFR&#39;</span><span class="p">],</span>
-</span><span id="L-65"><a href="#L-65"><span class="linenos">65</span></a><span class="s1">&#39;21&#39;</span><span class="p">:[</span><span class="s1">&#39;River area&#39;</span><span class="p">,</span><span class="s1">&#39;m2&#39;</span><span class="p">,</span><span class="s1">&#39;RVERAR&#39;</span><span class="p">],</span>
-</span><span id="L-66"><a href="#L-66"><span class="linenos">66</span></a><span class="s1">&#39;22&#39;</span><span class="p">:[</span><span class="s1">&#39;Fraction of river coverage plus river related flooding&#39;</span><span class="p">,</span><span class="s1">&#39;proportion&#39;</span><span class="p">,</span><span class="s1">&#39;FRCRF&#39;</span><span class="p">],</span>
-</span><span id="L-67"><a href="#L-67"><span class="linenos">67</span></a><span class="s1">&#39;23&#39;</span><span class="p">:[</span><span class="s1">&#39;Area of river coverage plus river related flooding&#39;</span><span class="p">,</span><span class="s1">&#39;m2&#39;</span><span class="p">,</span><span class="s1">&#39;ARCRF&#39;</span><span class="p">],</span>
-</span><span id="L-68"><a href="#L-68"><span class="linenos">68</span></a><span class="s1">&#39;24-191&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-69"><a href="#L-69"><span class="linenos">69</span></a><span class="s1">&#39;192-254&#39;</span><span class="p">:[</span><span class="s1">&#39;Reserved for Local Use&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-70"><a href="#L-70"><span class="linenos">70</span></a><span class="s1">&#39;255&#39;</span><span class="p">:[</span><span class="s1">&#39;Missing&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">,</span><span class="s1">&#39;unknown&#39;</span><span class="p">],</span>
-</span><span id="L-71"><a href="#L-71"><span class="linenos">71</span></a><span class="p">}</span>
-</span></pre></div>
-
-
+                
+                
             </section>
-                <section id="table_4_2_1_0">
-                    <div class="attr variable">
-            <span class="name">table_4_2_1_0</span>        =
-<input id="table_4_2_1_0-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="table_4_2_1_0-view-value"></label><span class="default_value">{&#39;0&#39;: [&#39;Flash Flood Guidance (Encoded as an accumulation over a floating subinterval of time between the reference time and valid time)&#39;, &#39;kg m-2&#39;, &#39;FFLDG&#39;], &#39;1&#39;: [&#39;Flash Flood Runoff (Encoded as an accumulation over a floating subinterval of time)&#39;, &#39;kg m-2&#39;, &#39;FFLDRO&#39;], &#39;2&#39;: [&#39;Remotely Sensed Snow Cover&#39;, &#39;See Table 4.215&#39;, &#39;RSSC&#39;], &#39;3&#39;: [&#39;Elevation of Snow Coveblack Terrain&#39;, &#39;See Table 4.216&#39;, &#39;ESCT&#39;], &#39;4&#39;: [&#39;Snow Water Equivalent Percent of Normal&#39;, &#39;%&#39;, &#39;SWEPON&#39;], &#39;5&#39;: [&#39;Baseflow-Groundwater Runoff&#39;, &#39;kg m-2&#39;, &#39;BGRUN&#39;], &#39;6&#39;: [&#39;Storm Surface Runoff&#39;, &#39;kg m-2&#39;, &#39;SSRUN&#39;], &#39;7&#39;: [&#39;Discharge from Rivers or Streams&#39;, &#39;m3 s-1&#39;, &#39;DISRS&#39;], &#39;8&#39;: [&#39;Group Water Upper Storage&#39;, &#39;kg m-2&#39;, &#39;GWUPS&#39;], &#39;9&#39;: [&#39;Group Water Lower Storage&#39;, &#39;kg m-2&#39;, &#39;GWLOWS&#39;], &#39;10&#39;: [&#39;Side Flow into River Channel&#39;, &#39;m3 s-1 m-1&#39;, &#39;SFLORC&#39;], &#39;11&#39;: [&#39;River Storage of Water&#39;, &#39;m3&#39;, &#39;RVERSW&#39;], &#39;12&#39;: [&#39;Flood Plain Storage of Water&#39;, &#39;m3&#39;, &#39;FLDPSW&#39;], &#39;13&#39;: [&#39;Depth of Water on Soil Surface&#39;, &#39;kg m-2&#39;, &#39;DEPWSS&#39;], &#39;14&#39;: [&#39;Upstream Accumulated Precipitation&#39;, &#39;kg m-2&#39;, &#39;UPAPCP&#39;], &#39;15&#39;: [&#39;Upstream Accumulated Snow Melt&#39;, &#39;kg m-2&#39;, &#39;UPASM&#39;], &#39;16&#39;: [&#39;Percolation Rate&#39;, &#39;kg m-2 s-1&#39;, &#39;PERRATE&#39;], &#39;17&#39;: [&#39;River outflow of water&#39;, &#39;m3 s-1&#39;, &#39;RVEROW&#39;], &#39;18&#39;: [&#39;Floodplain outflow of water&#39;, &#39;m3 s-1&#39;, &#39;FLDPOW&#39;], &#39;19&#39;: [&#39;Floodpath outflow of water&#39;, &#39;m3 s-1&#39;, &#39;FLDPATHOW&#39;], &#39;20&#39;: [&#39;Water on surface&#39;, &#39;kg m-2&#39;, &#39;WATSURF&#39;], &#39;21-191&#39;: [&#39;Reserved&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;192-254&#39;: [&#39;Reserved for Local Use&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;192&#39;: [&#39;Baseflow-Groundwater Runoff&#39;, &#39;kg m-2&#39;, &#39;BGRUN&#39;], &#39;193&#39;: [&#39;Storm Surface Runoff&#39;, &#39;kg m-2&#39;, &#39;SSRUN&#39;], &#39;255&#39;: [&#39;Missing&#39;, &#39;unknown&#39;, &#39;unknown&#39;]}</span>
+                <section id="interpolate_scalar">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">interpolate_scalar</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">ip</span>,</span><span class="param">	<span class="n">ipopt</span>,</span><span class="param">	<span class="n">igdtnumi</span>,</span><span class="param">	<span class="n">igdtmpli</span>,</span><span class="param">	<span class="n">igdtnumo</span>,</span><span class="param">	<span class="n">igdtmplo</span>,</span><span class="param">	<span class="n">mi</span>,</span><span class="param">	<span class="n">mo</span>,</span><span class="param">	<span class="n">km</span>,</span><span class="param">	<span class="n">ibi</span>,</span><span class="param">	<span class="n">li</span>,</span><span class="param">	<span class="n">gi</span>,</span><span class="param">	<span class="n">lats</span><span class="o">=</span><span class="kc">None</span>,</span><span class="param">	<span class="n">lons</span><span class="o">=</span><span class="kc">None</span></span><span class="return-annotation">):</span></span>
 
         
     </div>
-    <a class="headerlink" href="#table_4_2_1_0"></a>
+    <a class="headerlink" href="#interpolate_scalar"></a>
     
-    
+            <div class="docstring"><p>Cython function wrapper for NCEPLIBS-ip subroutine, ipolates_grib2, to perform
+interpolation for scalar fields.</p>
+
+<p>This function calls ipolates_grib2 via the C interface. Only
+horizontal interpolation is performed and OpenMP threading is
+supported through this function so long as NCEPLIBS-ip was
+built with OpenMP.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>ip</strong>: Interpolation method</li>
+<li><strong>ipopt</strong>: Interpolation options</li>
+<li><strong>igdtnumi</strong>: Grid definition template number for the input grid.</li>
+<li><strong>igdtmpli</strong>: Grid definition template array input grid.</li>
+<li><strong>igdtnumo</strong>: Grid definition template number for the output grid. Note: igdtnumo&lt;0 
+means interpolate to random station points.</li>
+<li><strong>igdtmplo</strong>: Grid definition template array for the output grid.</li>
+<li><strong>mi</strong>: Skip number between input grid fields if km>1 or dimension of input grid fields if km=1.</li>
+<li><strong>mo</strong>: Skip number between output grid fields if km>1 or dimension of output grid fields if km=1.</li>
+<li><strong>km</strong>: Number of fields to interpolate.</li>
+<li><strong>ibi</strong>: Input bitmap flags.</li>
+<li><strong>li</strong>: Input bitmaps (if respective ibi(k)=1).</li>
+<li><strong>gi</strong>: Input fields to interpolate.</li>
+<li><strong>lats</strong>: Optional 1D array of input station latitudes.</li>
+<li><strong>lons</strong>: Optional 1D array of input station longitudes.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<ul>
+<li><strong>no</strong>: Number of output points (only if kgdso(1)&lt;0).</li>
+<li><strong>rlat</strong>: Output latitudes in degrees (if kgdso(1)&lt;0).</li>
+<li><strong>rlon</strong>: Output longitudes in degrees (if kgdso(1)&lt;0).</li>
+<li><strong>ibo</strong>: Output bitmap flags.</li>
+<li><strong>lo</strong>: Output bitmaps (always output).</li>
+<li><strong>go</strong>: Output fields interpolated.</li>
+<li><strong>iret</strong>: Return code.</li>
+</ul>
+</div>
+
 
                 </section>
-                <section id="table_4_2_1_1">
-                    <div class="attr variable">
-            <span class="name">table_4_2_1_1</span>        =
-<input id="table_4_2_1_1-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="table_4_2_1_1-view-value"></label><span class="default_value">{&#39;0&#39;: [&#39;Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation)&#39;, &#39;kg m-2&#39;, &#39;CPPOP&#39;], &#39;1&#39;: [&#39;Percent Precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period)&#39;, &#39;%&#39;, &#39;PPOSP&#39;], &#39;2&#39;: [&#39;Probability of 0.01 inch of precipitation (POP)&#39;, &#39;%&#39;, &#39;POP&#39;], &#39;3-191&#39;: [&#39;Reserved&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;192-254&#39;: [&#39;Reserved for Local Use&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;192&#39;: [&#39;Probability of Freezing Precipitation&#39;, &#39;%&#39;, &#39;CPOZP&#39;], &#39;193&#39;: [&#39;Percent of Frozen Precipitation&#39;, &#39;%&#39;, &#39;CPOFP&#39;], &#39;194&#39;: [&#39;Probability of precipitation exceeding flash flood guidance values&#39;, &#39;%&#39;, &#39;PPFFG&#39;], &#39;195&#39;: [&#39;Probability of Wetting Rain, exceeding in 0.10&#34; in a given time period&#39;, &#39;%&#39;, &#39;CWR&#39;], &#39;196&#39;: [&#39;Binary Probability of precipitation exceeding average recurrence intervals (ARI)&#39;, &#39;see Code table 4.222&#39;, &#39;QPFARI&#39;], &#39;197&#39;: [&#39;Binary Probability of precipitation exceeding flash flood guidance values&#39;, &#39;see Code table 4.222&#39;, &#39;QPFFFG&#39;], &#39;255&#39;: [&#39;Missing&#39;, &#39;unknown&#39;, &#39;unknown&#39;]}</span>
+                <section id="interpolate_vector">
+                    <div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">interpolate_vector</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">ip</span>,</span><span class="param">	<span class="n">ipopt</span>,</span><span class="param">	<span class="n">igdtnumi</span>,</span><span class="param">	<span class="n">igdtmpli</span>,</span><span class="param">	<span class="n">igdtnumo</span>,</span><span class="param">	<span class="n">igdtmplo</span>,</span><span class="param">	<span class="n">mi</span>,</span><span class="param">	<span class="n">mo</span>,</span><span class="param">	<span class="n">km</span>,</span><span class="param">	<span class="n">ibi</span>,</span><span class="param">	<span class="n">li</span>,</span><span class="param">	<span class="n">ui</span>,</span><span class="param">	<span class="n">vi</span>,</span><span class="param">	<span class="n">lats</span><span class="o">=</span><span class="kc">None</span>,</span><span class="param">	<span class="n">lons</span><span class="o">=</span><span class="kc">None</span></span><span class="return-annotation">):</span></span>
 
         
     </div>
-    <a class="headerlink" href="#table_4_2_1_1"></a>
+    <a class="headerlink" href="#interpolate_vector"></a>
     
-    
+            <div class="docstring"><p>Cython function wrapper for NCEPLIBS-ip subroutine, ipolatev_grib2, to perform
+interpolation for vector fields.</p>
 
-                </section>
-                <section id="table_4_2_1_2">
-                    <div class="attr variable">
-            <span class="name">table_4_2_1_2</span>        =
-<input id="table_4_2_1_2-view-value" class="view-value-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
-            <label class="view-value-button pdoc-button" for="table_4_2_1_2-view-value"></label><span class="default_value">{&#39;0&#39;: [&#39;Water Depth&#39;, &#39;m&#39;, &#39;WDPTHIL&#39;], &#39;1&#39;: [&#39;Water Temperature&#39;, &#39;K&#39;, &#39;WTMPIL&#39;], &#39;2&#39;: [&#39;Water Fraction&#39;, &#39;Proportion&#39;, &#39;WFRACT&#39;], &#39;3&#39;: [&#39;Sediment Thickness&#39;, &#39;m&#39;, &#39;SEDTK&#39;], &#39;4&#39;: [&#39;Sediment Temperature&#39;, &#39;K&#39;, &#39;SEDTMP&#39;], &#39;5&#39;: [&#39;Ice Thickness&#39;, &#39;m&#39;, &#39;ICTKIL&#39;], &#39;6&#39;: [&#39;Ice Temperature&#39;, &#39;K&#39;, &#39;ICETIL&#39;], &#39;7&#39;: [&#39;Ice Cover&#39;, &#39;Proportion&#39;, &#39;ICECIL&#39;], &#39;8&#39;: [&#39;Land Cover (0=water, 1=land)&#39;, &#39;Proportion&#39;, &#39;LANDIL&#39;], &#39;9&#39;: [&#39;Shape Factor with Respect to Salinity Profile&#39;, &#39;unknown&#39;, &#39;SFSAL&#39;], &#39;10&#39;: [&#39;Shape Factor with Respect to Temperature Profile in Thermocline&#39;, &#39;unknown&#39;, &#39;SFTMP&#39;], &#39;11&#39;: [&#39;Attenuation Coefficient of Water with Respect to Solar Radiation&#39;, &#39;m-1&#39;, &#39;ACWSR&#39;], &#39;12&#39;: [&#39;Salinity&#39;, &#39;kg kg-1&#39;, &#39;SALTIL&#39;], &#39;13&#39;: [&#39;Cross Sectional Area of Flow in Channel&#39;, &#39;m2&#39;, &#39;CSAFC&#39;], &#39;14&#39;: [&#39;Snow temperature&#39;, &#39;K&#39;, &#39;LNDSNOWT&#39;], &#39;15&#39;: [&#39;Lake depth&#39;, &#39;m&#39;, &#39;LDEPTH&#39;], &#39;16&#39;: [&#39;River depth&#39;, &#39;m&#39;, &#39;RDEPTH&#39;], &#39;17&#39;: [&#39;Floodplain depth&#39;, &#39;m&#39;, &#39;FLDPDEPTH&#39;], &#39;18&#39;: [&#39;Floodplain flooded fraction&#39;, &#39;proportion&#39;, &#39;FLDPFLFR&#39;], &#39;19&#39;: [&#39;Floodplain flooded area&#39;, &#39;m2&#39;, &#39;FLDPFLAR&#39;], &#39;20&#39;: [&#39;River Fraction&#39;, &#39;proportion&#39;, &#39;RVERFR&#39;], &#39;21&#39;: [&#39;River area&#39;, &#39;m2&#39;, &#39;RVERAR&#39;], &#39;22&#39;: [&#39;Fraction of river coverage plus river related flooding&#39;, &#39;proportion&#39;, &#39;FRCRF&#39;], &#39;23&#39;: [&#39;Area of river coverage plus river related flooding&#39;, &#39;m2&#39;, &#39;ARCRF&#39;], &#39;24-191&#39;: [&#39;Reserved&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;192-254&#39;: [&#39;Reserved for Local Use&#39;, &#39;unknown&#39;, &#39;unknown&#39;], &#39;255&#39;: [&#39;Missing&#39;, &#39;unknown&#39;, &#39;unknown&#39;]}</span>
+<p>This function calls ipolatev_grib2 via the C interface. Only
+horizontal interpolation is performed and OpenMP threading is
+supported through this function so long as NCEPLIBS-ip was
+built with OpenMP.</p>
 
-        
-    </div>
-    <a class="headerlink" href="#table_4_2_1_2"></a>
-    
-    
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>ip</strong>: Interpolation method</li>
+<li><strong>ipopt</strong>: Interpolation options</li>
+<li><strong>igdtnumi</strong>: Grid definition template number for the input grid.</li>
+<li><strong>igdtmpli</strong>: Grid definition template array input grid.</li>
+<li><strong>igdtnumo</strong>: Grid definition template number for the output grid. Note: igdtnumo&lt;0
+means interpolate to random station points.</li>
+<li><strong>igdtmplo</strong>: Grid definition template array for the output grid.</li>
+<li><strong>mi</strong>: Skip number between input grid fields if km>1 or dimension of input grid fields if km=1.</li>
+<li><strong>mo</strong>: Skip number between output grid fields if km>1 or dimension of output grid fields if km=1.</li>
+<li><strong>km</strong>: Number of fields to interpolate.</li>
+<li><strong>ibi</strong>: Input bitmap flags.</li>
+<li><strong>li</strong>: Input bitmaps (if respective ibi(k)=1).</li>
+<li><strong>ui</strong>: Input u-component fields to interpolate.</li>
+<li><strong>vi</strong>: Input v-component fields to interpolate.</li>
+<li><strong>lats</strong>: Optional 1D array of input station latitudes.</li>
+<li><strong>lons</strong>: Optional 1D array of input station longitudes.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<ul>
+<li><strong>no</strong>: Number of output points (only if kgdso(1)&lt;0).</li>
+<li><strong>rlat</strong>: Output latitudes in degrees (if kgdso(1)&lt;0).</li>
+<li><strong>rlon</strong>: Output longitudes in degrees (if kgdso(1)&lt;0).</li>
+<li><strong>crot</strong>: Vector rotation cosines (if igdtnumo>=0).</li>
+<li><strong>srot</strong>: Vector rotation sines (if igdtnumo>=0).</li>
+<li><strong>ibo</strong>: Output bitmap flags.</li>
+<li><strong>lo</strong>: Output bitmaps (always output).</li>
+<li><strong>uo</strong>: Output u-component fields interpolated.</li>
+<li><strong>vo</strong>: Output v-component fields interpolated.</li>
+<li><strong>iret</strong>: Return code.</li>
+</ul>
+</div>
+
 
                 </section>
     </main>
@@ -227,7 +224,7 @@
                 script.async = true;
                 script.onload = () => resolve(window.pdocSearch);
                 script.onerror = (e) => reject(e);
-                script.src = "../../search.js";
+                script.src = "../search.js";
                 document.getElementsByTagName("head")[0].appendChild(script);
             });
         } catch (e) {
@@ -269,7 +266,7 @@
             }
             for (let result of results.slice(0, 10)) {
                 let doc = result.doc;
-                let url = `../../${doc.modulename.replaceAll(".", "/")}.html`;
+                let url = `../${doc.modulename.replaceAll(".", "/")}.html`;
                 if (doc.qualname) {
                     url += `#${doc.qualname}`;
                 }
