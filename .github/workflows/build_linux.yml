@@ -22,7 +22,7 @@ jobs:
     - name: Install Ubuntu Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install cmake gfortran libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev
+        sudo apt-get install cmake gfortran libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev libopenblas-serial-dev
 
     - name: Install python dependencies via pip
       run: |
@@ -40,9 +40,20 @@ jobs:
         cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_PNG=ON -DBUILD_AEC=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
         sudo make install
+
+    - name: Install NCEPLIBS-ip
+      run: |
+        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
+        tar -xzvf v5.1.0.tar.gz
+        cd NCEPLIBS-ip-5.1.0
+        mkdir build && cd build
+        cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON -DBLA_VENDOR=OpenBLAS ..
+        make -j2
+        sudo make install
         
     - name: Install grib2io and test
       run: |
         python --version
         pip install .
+        python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/

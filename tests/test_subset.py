@@ -7,7 +7,7 @@ import grib2io
 
 @pytest.fixture()
 def inp_ds(request):
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "typeOfFirstFixedSurface": 103,
@@ -32,7 +32,7 @@ def inp_ds(request):
 
 @pytest.fixture()
 def inp_msgs(request):
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     with grib2io.open(datadir / "gfs.t00z.pgrb2.1p00.f012_subset") as imsgs:
         yield imsgs

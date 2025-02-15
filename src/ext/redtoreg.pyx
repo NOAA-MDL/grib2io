@@ -1,5 +1,9 @@
+# cython: language_level=3, boundscheck=False
+# distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
+
 import numpy as np
 cimport numpy as npc
+
 def _redtoreg(object nlonsin, npc.ndarray lonsperlat, npc.ndarray redgrid, \
               object missval):
     """

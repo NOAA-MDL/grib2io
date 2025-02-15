@@ -6,7 +6,7 @@ def test_da_repr(tmp_path, request):
     target_dir = tmp_path / "test_to_grib2"
     target_dir.mkdir()
 
-    datadir = request.config.rootdir / "tests" / "data" / "gfs_20221107"
+    datadir = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
 
     filters = {
         "productDefinitionTemplateNumber": 0,
