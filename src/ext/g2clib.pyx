@@ -515,45 +515,64 @@ def grib2_create(cnp.ndarray[cnp.int64_t, ndim=1] listsec0,
     return gribmsg, iret
 
 
-def grib2_end(gribmsg):
+def grib2_addlocal(gribmsg,
+                   sec2):
     """
-    Finalizes a GRIB2 message after all grids and fields have been added.
-    It adds the End Section ( "7777" ) to the end of the GRIB message
-    and calculates the length and stores it in the appropriate place in Section 0.
-    This routine is used with routines "g2_create", "g2_addgrid", and
-    "g2_addfield" to create a complete GRIB2 message. g2_create must be
-    called first to initialize a new GRIB2 message.
+    This routine adds a Local Use Section (Section 2) to a GRIB2 message.
+    It is used with routines "g2_create", "g2_addgrid", "g2_addfield",
+    and "g2_gribend" to create a complete GRIB2 message. g2_create must
+    be called first to initialize a new GRIB2 message.
 
-    gribmsg, iret = grib2_end(gribmsg)
+    USAGE: int g2_addlocal(unsigned char *cgrib,unsigned char *csec2,
+                           g2int lcsec2)
+    INPUT ARGUMENTS:
+    cgrib    - Char array that contains the GRIB2 message to which section
+               2 should be added.
+    csec2    - Character array containing information to be added in
+               Section 2.
+    lcsec2   - Number of bytes of character array csec2 to be added to
+               Section 2.
 
-    INPUT ARGUMENT:
-    gribmsg  - String containing all the data sections added
-               be previous calls to g2_create, g2_addgrid,
-               and g2_addfield.
-
-    OUTPUT ARGUMENTS:
-    gribmsg  - String containing the finalized GRIB2 message
+    OUTPUT ARGUMENT:
+    cgrib    - Char array to contain the updated GRIB2 message.
+               Must be allocated large enough to store the entire
+               GRIB2 message.
 
     RETURN VALUES:
     iret     - Return code.
-             > 0 = Length of the final GRIB2 message in bytes.
+             > 0 = Current size of updated GRIB2 message
               -1 = GRIB message was not initialized.  Need to call
-                   routine g2_create first.
-              -2 = GRIB message already complete.
+                   routine gribcreate first.
+              -2 = GRIB message already complete.  Cannot add new section.
               -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 7.
+              -4 = Previous Section was not 1 or 7.
+
+    REMARKS: Note that the Local Use Section ( Section 2 ) can only follow
+             Section 1 or Section 7 in a GRIB2 message.
     """
-    cdef g2int iret
     cdef unsigned char *cgrib
-    # add some extra space to grib message (enough to hold section 8).
-    gribmsg = gribmsg + b"        "
+    cdef unsigned char *csec2
+    cdef g2int lensec2
+    cdef g2int iret
+
+    iret = 0
+    lensec2 = len(sec2)
+    gribmsg = gribmsg + (5+lensec2)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iret = g2_gribend(cgrib)
+    csec2 = <unsigned char *>PyBytes_AsString(sec2)
+
+    iret = g2_addlocal(
+        cgrib,
+        csec2,
+        lensec2,
+    )
     if iret < 0:
-       msg = "error in grib2_end, error code = %i" % iret
+       msg = f"Error in grib2_addlocal, error code = {iret}"
        raise RuntimeError(msg)
+
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
+
 
 def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):
     """
@@ -750,51 +769,47 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
     return gribmsg, iret
 
 
-def grib2_addlocal(gribmsg,object sec2):
+def grib2_end(gribmsg):
     """
-    This routine adds a Local Use Section (Section 2) to a GRIB2 message.
-    It is used with routines "g2_create", "g2_addgrid", "g2_addfield",
-    and "g2_gribend" to create a complete GRIB2 message. g2_create must
-    be called first to initialize a new GRIB2 message.
+    Finalizes a GRIB2 message after all grids and fields have been added.
+    It adds the End Section ( "7777" ) to the end of the GRIB message
+    and calculates the length and stores it in the appropriate place in Section 0.
+    This routine is used with routines "g2_create", "g2_addgrid", and
+    "g2_addfield" to create a complete GRIB2 message. g2_create must be
+    called first to initialize a new GRIB2 message.
 
-    USAGE: int g2_addlocal(unsigned char *cgrib,unsigned char *csec2,
-                           g2int lcsec2)
-    INPUT ARGUMENTS:
-    cgrib    - Char array that contains the GRIB2 message to which section
-               2 should be added.
-    csec2    - Character array containing information to be added in
-               Section 2.
-    lcsec2   - Number of bytes of character array csec2 to be added to
-               Section 2.
+    gribmsg, iret = grib2_end(gribmsg)
 
-    OUTPUT ARGUMENT:
-    cgrib    - Char array to contain the updated GRIB2 message.
-               Must be allocated large enough to store the entire
-               GRIB2 message.
+    INPUT ARGUMENT:
+    gribmsg  - String containing all the data sections added
+               be previous calls to g2_create, g2_addgrid,
+               and g2_addfield.
+
+    OUTPUT ARGUMENTS:
+    gribmsg  - String containing the finalized GRIB2 message
 
     RETURN VALUES:
     iret     - Return code.
-             > 0 = Current size of updated GRIB2 message
+             > 0 = Length of the final GRIB2 message in bytes.
               -1 = GRIB message was not initialized.  Need to call
-                   routine gribcreate first.
-              -2 = GRIB message already complete.  Cannot add new section.
+                   routine g2_create first.
+              -2 = GRIB message already complete.
               -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 1 or 7.
-
-    REMARKS: Note that the Local Use Section ( Section 2 ) can only follow
-             Section 1 or Section 7 in a GRIB2 message.
+              -4 = Previous Section was not 7.
     """
-    cdef unsigned char *cgrib
-    cdef unsigned char *csec2
-    cdef g2int lcsec2
     cdef g2int iret
-    lcsec2 = len(sec2)
-    gribmsg = gribmsg + 4*(5+lcsec2)*b" "
+    cdef unsigned char *cgrib
+
+    iret = 0
+
+    # Add some extra space to grib message (enough to hold section 8).
+    gribmsg = gribmsg + 8*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    csec2 = <unsigned char *>PyBytes_AsString(sec2)
-    iret = g2_addlocal(cgrib,csec2,lcsec2)
+
+    iret = g2_gribend(cgrib)
     if iret < 0:
-       msg = "error in grib2_addlocal, error code = %i" % iret
+       msg = f"Error in grib2_end, error code = {iret}"
        raise RuntimeError(msg)
+
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
