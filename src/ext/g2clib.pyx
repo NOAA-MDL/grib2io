@@ -19,16 +19,11 @@ cimport numpy as cnp
 # ----------------------------------------------------------------------------------------
 cdef extern from "Python.h":
     # To access integers
-    object PyInt_FromLong(long)
     long PyInt_AsLong(object)
-    # To access doubles
-    object PyFloat_FromDouble(double)
     # To access strings
     char * PyBytes_AsString(object string)
     object PyBytes_FromString(char *s)
     object PyBytes_FromStringAndSize(char *s, size_t size)
-    int PyObject_AsReadBuffer(object, void **rbuf, Py_ssize_t *len)
-    int PyObject_CheckReadBuffer(object)
 
 # ----------------------------------------------------------------------------------------
 # Definitions from NCEPLIBS-g2c.
