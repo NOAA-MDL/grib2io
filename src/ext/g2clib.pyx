@@ -6,7 +6,13 @@ Cython code to provide python interfaces to functions in the NCEP g2c library.
 IMPORTANT: Make changes to this file, not the C code that Cython generates.
 """
 
-import math
+cimport cython
+from cpython.buffer cimport Py_buffer, PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE, PyBUF_WRITABLE
+from libc.stdlib cimport free
+from libc.string cimport memcpy
+
+import numpy as np
+cimport numpy as cnp
 
 # ----------------------------------------------------------------------------------------
 # Some helper definitions from the Python API
@@ -21,15 +27,8 @@ cdef extern from "Python.h":
     char * PyBytes_AsString(object string)
     object PyBytes_FromString(char *s)
     object PyBytes_FromStringAndSize(char *s, size_t size)
-    int PyObject_AsWriteBuffer(object, void **rbuf, Py_ssize_t *len)
     int PyObject_AsReadBuffer(object, void **rbuf, Py_ssize_t *len)
     int PyObject_CheckReadBuffer(object)
-
-# ----------------------------------------------------------------------------------------
-# Definitions from std C libraries
-# ----------------------------------------------------------------------------------------
-cdef extern from "stdlib.h":
-    void free(void *ptr)
 
 # ----------------------------------------------------------------------------------------
 # Definitions from NCEPLIBS-g2c.
@@ -77,8 +76,10 @@ cdef extern from "grib2.h":
                      g2float *,g2int ,g2int ,g2int *)
     g2int g2_gribend(unsigned char *)
 
+# ----------------------------------------------------------------------------------------
+# Define some g2clib attributes
+# ----------------------------------------------------------------------------------------
 __version__ = G2C_VERSION.decode("utf-8")[-5:]
-
 _has_png = G2_PNG_ENABLED
 _has_jpeg = G2_JPEG2000_ENABLED
 _has_aec = G2_AEC_ENABLED
@@ -88,44 +89,44 @@ _has_aec = G2_AEC_ENABLED
 # ----------------------------------------------------------------------------------------
 cdef _toarray(void *items, object a):
     """
-    Fill a numpy array from the grib2 file.  Note that this free()s the items argument!
+    Fill a numpy array from the grib2 file. Note that this free()s the items argument!
     """
-    cdef void *abuf
+    cdef char *abuf
     cdef Py_ssize_t buflen
-    cdef g2int *idata
-    cdef int *idata32
-    cdef g2float *fdata
+    cdef Py_buffer view
+    cdef Py_ssize_t itemsize
 
     # Get pointer to data buffer.
-    PyObject_AsWriteBuffer(a, &abuf, &buflen)
+    if PyObject_GetBuffer(a, &view, PyBUF_WRITABLE) == -1:
+        raise ValueError("Object does not support writable buffer protocol")
 
-    if str(a.dtype) == "int32":
-      idata32 = <int *>abuf
-      # Fill buffer.
-      for i from 0 <= i < len(a):
-        idata32[i] = (<int *>items)[i]
-    elif str(a.dtype) == "int64":
-      idata = <g2int *>abuf
-      # Fill buffer.
-      for i from 0 <= i < len(a):
-        idata[i] = (<g2int *>items)[i]
-    elif str(a.dtype) == "float32":
-      fdata = <g2float *>abuf
-      # Fill buffer.
-      for i from 0 <= i < len(a):
-        fdata[i] = (<g2float *>items)[i]
-    else:
-      free(items)
-      raise RuntimeError("unknown array type %s" % a.dtype)
+    try:
+        abuf = <char *>view.buf
+        buflen = view.len
 
-    free(items)
-    return a
+        # Determine item size based on dtype
+        itemsize = a.itemsize  # NumPy dtype item size
+
+        # Ensure the sizes match before copying
+        if buflen != len(a) * itemsize:
+            PyBuffer_Release(&view)
+            free(items)
+            raise RuntimeError("Buffer size mismatch")
+
+        # Use memcpy to copy data efficiently
+        memcpy(abuf, items, buflen)
+
+        return a
+
+    finally:
+        free(items)
+        PyBuffer_Release(&view)
 
 
 # ----------------------------------------------------------------------------------------
 # Routine for reading GRIB2 files.
 # ----------------------------------------------------------------------------------------
-def unpack1(gribmsg, ipos, object zeros):
+def unpack1(gribmsg, ipos, object arr):
     """              .      .    .                                       .
     Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
 
@@ -162,20 +163,20 @@ def unpack1(gribmsg, ipos, object zeros):
                    6 = Memory allocation error
     """
     cdef unsigned char *cgrib
-    cdef g2int i, iofst, ierr, idslen
+    cdef g2int i, iofst, iret, idslen
     cdef g2int *ids
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    ierr = g2_unpack1(cgrib, &iofst, &ids, &idslen)
-    if ierr != 0:
-       msg = "Error unpacking section 1 - error code = %i" % ierr
+    iret = g2_unpack1(cgrib, &iofst, &ids, &idslen)
+    if iret != 0:
+       msg = "Error unpacking section 1 - error code = %i" % iret
        raise RuntimeError(msg)
 
-    idsect = _toarray(ids, zeros(idslen, "i8"))
+    idsect = _toarray(ids, arr(idslen, "i8"))
     return idsect,iofst//8
 
 
-def unpack3(gribmsg, ipos, object zeros):
+def unpack3(gribmsg, ipos, object arr):
     """
     Unpacks Section 3 (Grid Definition Section) as defined in GRIB Edition 2.
 
@@ -214,22 +215,22 @@ def unpack3(gribmsg, ipos, object zeros):
     cdef g2int *igds
     cdef g2int *igdstmpl
     cdef g2int *ideflist
-    cdef g2int mapgridlen, iofst, idefnum, ierr
+    cdef g2int mapgridlen, iofst, idefnum, iret
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    ierr=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
-    if ierr != 0:
-       msg = "Error unpacking section 3 - error code = %i" % ierr
+    iret=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
+    if iret != 0:
+       msg = "Error unpacking section 3 - error code = %i" % iret
        raise RuntimeError(msg)
 
-    gdtmpl = _toarray(igdstmpl, zeros(mapgridlen, "i8"))
-    gds = _toarray(igds, zeros(5, "i8"))
-    deflist = _toarray(ideflist, zeros(idefnum, "i8"))
+    gdtmpl = _toarray(igdstmpl, arr(mapgridlen, "i8"))
+    gds = _toarray(igds, arr(5, "i8"))
+    deflist = _toarray(ideflist, arr(idefnum, "i8"))
 
     return gds,gdtmpl,deflist,iofst//8
 
 
-def unpack4(gribmsg,ipos,object zeros):
+def unpack4(gribmsg,ipos,object arr):
     """
     Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
 
@@ -264,22 +265,22 @@ def unpack4(gribmsg,ipos,object zeros):
     cdef unsigned char *cgrib
     cdef g2int *ipdstmpl
     cdef g2float *icoordlist
-    cdef g2int mappdslen, iofst, ipdsnum, ierr, numcoord
+    cdef g2int mappdslen, iofst, ipdsnum, iret, numcoord
     numcoord = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    ierr=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
-    if ierr != 0:
-       msg = "Error unpacking section 4 - error code = %i" % ierr
+    iret=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
+    if iret != 0:
+       msg = "Error unpacking section 4 - error code = %i" % iret
        raise RuntimeError(msg)
 
-    pdtmpl = _toarray(ipdstmpl, zeros(mappdslen, "i8"))
-    coordlist = _toarray(icoordlist, zeros(numcoord, "f4"))
+    pdtmpl = _toarray(ipdstmpl, arr(mappdslen, "i8"))
+    coordlist = _toarray(icoordlist, arr(numcoord, "f4"))
 
     return numcoord,pdtmpl,ipdsnum,coordlist,iofst//8
 
 
-def unpack5(gribmsg,ipos,object zeros):
+def unpack5(gribmsg,ipos,object arr):
     """
     Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
 
@@ -312,19 +313,19 @@ def unpack5(gribmsg,ipos,object zeros):
     """
     cdef unsigned char *cgrib
     cdef g2int *idrstmpl
-    cdef g2int iofst, ierr, ndpts, idrsnum, mapdrslen
+    cdef g2int iofst, iret, ndpts, idrsnum, mapdrslen
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    ierr=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
-    if ierr != 0:
-       msg = "Error unpacking section 5 - error code = %i" % ierr
+    iret=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
+    if iret != 0:
+       msg = "Error unpacking section 5 - error code = %i" % iret
        raise RuntimeError(msg)
 
-    drtmpl = _toarray(idrstmpl, zeros(mapdrslen, "i8"))
+    drtmpl = _toarray(idrstmpl, arr(mapdrslen, "i8"))
     return drtmpl,idrsnum,ndpts,iofst//8
 
 
-def unpack6(gribmsg,ndpts,ipos,object zeros):
+def unpack6(gribmsg,ndpts,ipos,object arr):
     """
     Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
 
@@ -355,24 +356,33 @@ def unpack6(gribmsg,ndpts,ipos,object zeros):
     """
     cdef object bitmap
     cdef unsigned char *cgrib
-    cdef g2int iofst, ierr, ngpts, ibmap
+    cdef g2int iofst, iret, ngpts, ibmap
     cdef g2int *bmap
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
     ngpts = <g2int>PyInt_AsLong(ndpts)
-    ierr=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
-    if ierr != 0:
-        msg = "Error unpacking section 6 - error code = %i" % ierr
+    iret=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
+    if iret != 0:
+        msg = "Error unpacking section 6 - error code = %i" % iret
         raise RuntimeError(msg)
     if ibmap == 0:
-        bitmap = _toarray(bmap, zeros(ngpts, "i8"))
+        bitmap = _toarray(bmap, arr(ngpts, "i8"))
     else:
         bitmap = None
         free(bmap)
     return bitmap,ibmap
 
 
-def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object zeros,printminmax=False,storageorder="C"):
+def unpack7(gribmsg, 
+            int gdtnum,
+            cnp.ndarray[cnp.int64_t, ndim=1] gdtmpl,
+            int drtnum,
+            cnp.ndarray[cnp.int64_t, ndim=1] drtmpl,
+            int ndpts,
+            int ipos,
+            object arr,
+            printminmax=False,
+            storageorder="C"):
     """
     Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
 
@@ -414,46 +424,59 @@ def unpack7(gribmsg,gdtnum,object gdtmpl,drtnum,object drtmpl,ndpts,ipos,object 
                  6 = Memory allocation error
     """
     cdef unsigned char *cgrib
-    cdef g2int iofst, ierr, ngpts, idrsnum, igdsnum
-    cdef g2int *igdstmpl
-    cdef g2int *idrstmpl
+    cdef g2int iofst, iret #, ngpts, idrsnum, igdsnum
+    #cdef g2int *igdstmpl
+    #cdef g2int *idrstmpl
     cdef g2float *fld
-    cdef void *drtmpldat
-    cdef void *gdtmpldat
-    cdef float rmin, rmax
-    cdef int n
+    #cdef void *drtmpldat
+    #cdef void *gdtmpldat
+    #cdef float rmin, rmax
+    #cdef int n
+
+    cdef g2int[:] igdstmpl_view = gdtmpl
+    cdef g2int[:] idrstmpl_view = drtmpl
+
     cdef Py_ssize_t buflen
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    ngpts = <g2int>PyInt_AsLong(ndpts)
-    idrsnum = <g2int>PyInt_AsLong(drtnum)
-    igdsnum = <g2int>PyInt_AsLong(gdtnum)
-    PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)
-    PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)
-    idrstmpl = <g2int *>drtmpldat
-    igdstmpl = <g2int *>gdtmpldat
-    ierr=g2_unpack7(cgrib,&iofst,igdsnum,igdstmpl,idrsnum,idrstmpl,ngpts,&fld)
-    if ierr != 0:
-       msg = "Error unpacking section 7 - error code = %i" % ierr
+    #ngpts = <g2int>PyInt_AsLong(ndpts)
+    #idrsnum = <g2int>PyInt_AsLong(drtnum)
+    #igdsnum = <g2int>PyInt_AsLong(gdtnum)
+    #PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)
+    #PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)
+    #idrstmpl = <g2int *>drtmpldat
+    #igdstmpl = <g2int *>gdtmpldat
+    iret = g2_unpack7(
+        cgrib,
+        &iofst,
+        <g2int>gdtnum,
+        <g2int *>&igdstmpl_view[0],
+        <g2int>drtnum,
+        <g2int *>&idrstmpl_view[0],
+        <g2int>ndpts,
+        &fld)
+    if iret != 0:
+       msg = "Error unpacking section 7 - error code = %i" % iret
        raise RuntimeError(msg)
 
 
-    if printminmax:
-        rmax=-<float>9.9e31
-        rmin=<float>9.9e31
-        for n from 0 <= n < ndpts:
-            if fld[n] > rmax: rmax=fld[n]
-            if fld[n] < rmin: rmin=fld[n]
-        fldmax = PyFloat_FromDouble(rmax)
-        fldmin = PyFloat_FromDouble(rmin)
-        bitsofprecision = drtmpl[3]
-        digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
-        format = "%."+repr(digitsofprecision+1)+"g"
-        minmaxstring = "min/max="+format+"/"+format
-        minmaxstring = minmaxstring % (fldmin,fldmax)
-        print(minmaxstring)
+#    if printminmax:
+#        rmax=-<float>9.9e31
+#        rmin=<float>9.9e31
+#        for n from 0 <= n < ndpts:
+#            if fld[n] > rmax: rmax=fld[n]
+#            if fld[n] < rmin: rmin=fld[n]
+#        fldmax = PyFloat_FromDouble(rmax)
+#        fldmin = PyFloat_FromDouble(rmin)
+#        bitsofprecision = drtmpl[3]
+#        digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
+#        format = "%."+repr(digitsofprecision+1)+"g"
+#        minmaxstring = "min/max="+format+"/"+format
+#        minmaxstring = minmaxstring % (fldmin,fldmax)
+#        print(minmaxstring)
 
-    data = _toarray(fld, zeros(ngpts, "f4", order=storageorder))
+#    data = _toarray(fld, arr(ngpts, "f4", order=storageorder))
+    data = _toarray(fld, arr(ndpts, "f4", order=storageorder))
     return data
 
 # ----------------------------------------------------------------------------------------
@@ -468,7 +491,7 @@ def grib2_create(object listsec0, object listsec1):
     to initialize a new GRIB2 message. Also, a call to grib2_gribend is
     required to complete GRIB2 message after all fields have been added.
 
-    gribmsg, ierr = grib2_create(listsec0, listsec1)
+    gribmsg, iret = grib2_create(listsec0, listsec1)
 
     INPUT ARGUMENTS:
 
@@ -494,13 +517,13 @@ def grib2_create(object listsec0, object listsec1):
 
    OUTPUT ARGUMENTS:
    gribmsg  - string containing the new GRIB2 message.
-   ierr     - return code.
+   iret     - return code.
               > 0 = Current size of new GRIB2 message
                -1 = Tried to use for version other than GRIB Edition 2
     """
     cdef g2int *isec0
     cdef g2int *isec1
-    cdef g2int ierr
+    cdef g2int iret
     cdef void *listsec0dat
     cdef void *listsec1dat
     cdef Py_ssize_t buflen
@@ -513,12 +536,12 @@ def grib2_create(object listsec0, object listsec1):
     PyObject_AsReadBuffer(listsec1, &listsec1dat, &buflen)
     isec0 = <g2int *>listsec0dat
     isec1 = <g2int *>listsec1dat
-    ierr = g2_create(cgrib,isec0,isec1)
-    if ierr < 0:
-       msg = "Error in grib2_create, error code = %i" % ierr
+    iret = g2_create(cgrib,isec0,isec1)
+    if iret < 0:
+       msg = "Error in grib2_create, error code = %i" % iret
        raise RuntimeError(msg)
-    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
-    return gribmsg, ierr
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+    return gribmsg, iret
 
 
 def grib2_end(gribmsg):
@@ -530,7 +553,7 @@ def grib2_end(gribmsg):
     "g2_addfield" to create a complete GRIB2 message. g2_create must be
     called first to initialize a new GRIB2 message.
 
-    gribmsg, ierr = grib2_end(gribmsg)
+    gribmsg, iret = grib2_end(gribmsg)
 
     INPUT ARGUMENT:
     gribmsg  - String containing all the data sections added
@@ -541,7 +564,7 @@ def grib2_end(gribmsg):
     gribmsg  - String containing the finalized GRIB2 message
 
     RETURN VALUES:
-    ierr     - Return code.
+    iret     - Return code.
              > 0 = Length of the final GRIB2 message in bytes.
               -1 = GRIB message was not initialized.  Need to call
                    routine g2_create first.
@@ -549,17 +572,17 @@ def grib2_end(gribmsg):
               -3 = Sum of Section byte counts doesn"t add to total byte count
               -4 = Previous Section was not 7.
     """
-    cdef g2int ierr
+    cdef g2int iret
     cdef unsigned char *cgrib
     # add some extra space to grib message (enough to hold section 8).
     gribmsg = gribmsg + b"        "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    ierr = g2_gribend(cgrib)
-    if ierr < 0:
-       msg = "error in grib2_end, error code = %i" % ierr
+    iret = g2_gribend(cgrib)
+    if iret < 0:
+       msg = "error in grib2_end, error code = %i" % iret
        raise RuntimeError(msg)
-    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
-    return gribmsg, ierr
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+    return gribmsg, iret
 
 def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):
     """
@@ -568,7 +591,7 @@ def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum 
     a complete GRIB2 message. g2_create must be called first to initialize a new
     GRIB2 message.
 
-    gribmsg, ierr = grib2_addgrid(gribmsg,gds,gdstmpl,ideflist)
+    gribmsg, iret = grib2_addgrid(gribmsg,gds,gdstmpl,ideflist)
 
     INPUT ARGUMENTS:
     cgrib    - Char array that contains the GRIB2 message to which
@@ -599,7 +622,7 @@ def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum 
                GRIB2 message.
 
     RETURN VALUES:
-    ierr     - Return code.
+    iret     - Return code.
              > 0 = Current size of updated GRIB2 message
               -1 = GRIB message was not initialized.  Need to call
                    routine gribcreate first.
@@ -608,7 +631,7 @@ def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum 
               -4 = Previous Section was not 1, 2 or 7.
               -5 = Could not find requested Grid Definition Template.
     """
-    cdef g2int ierr, idefnum
+    cdef g2int iret, idefnum
     cdef g2int *igds
     cdef g2int *igdstmpl
     cdef g2int *ideflist
@@ -630,12 +653,12 @@ def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum 
        idefnum = 0
     gribmsg = gribmsg + 4*(256+4+gds[2]+1)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    ierr = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
-    if ierr < 0:
-       msg = "error in grib2_addgrid, error code = %i" % ierr
+    iret = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
+    if iret < 0:
+       msg = "error in grib2_addgrid, error code = %i" % iret
        raise RuntimeError(msg)
-    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
-    return gribmsg, ierr
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+    return gribmsg, iret
 
 
 def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
@@ -653,7 +676,7 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
     the GRIB2 message. A call to g2_gribend is required to complete
     GRIB2 message after all fields have been added.
 
-    gribmsg, ierr = g2_addfield(gribmsg,pdsnum,pdstmpl,coordlist,drsnum,
+    gribmsg, iret = g2_addfield(gribmsg,pdsnum,pdstmpl,coordlist,drsnum,
                                drstmpl,fld,ngrdpts,ibmap,bmap)
     INPUT ARGUMENT LIST:
     cgrib    - Char array that contains the GRIB2 message to which sections
@@ -694,7 +717,7 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
                GRIB2 message.
 
     RETURN VALUES:
-    ierr     - Return code.
+    iret     - Return code.
              > 0 = Current size of updated GRIB2 message
               -1 = GRIB message was not initialized.  Need to call
                    routine gribcreate first.
@@ -710,7 +733,7 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
                    using DRT 5.51.
              -10 = Error packing data field.
     """
-    cdef g2int ierr,ipdsnum,numcoord,idrsnum
+    cdef g2int iret,ipdsnum,numcoord,idrsnum
     cdef g2int *ipdstmpl
     cdef g2int *idrstmpl
     cdef g2float *fld
@@ -748,12 +771,12 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
         bmap = NULL
     gribmsg = gribmsg + 4*(len(drstmpl)+ngrdpts+4)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    ierr = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
-    if ierr < 0:
-       msg = "error in grib2_addfield, error code = %i" % ierr
+    iret = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
+    if iret < 0:
+       msg = "error in grib2_addfield, error code = %i" % iret
        raise RuntimeError(msg)
-    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
-    return gribmsg, ierr
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+    return gribmsg, iret
 
 
 def grib2_addlocal(gribmsg,object sec2):
@@ -779,7 +802,7 @@ def grib2_addlocal(gribmsg,object sec2):
                GRIB2 message.
 
     RETURN VALUES:
-    ierr     - Return code.
+    iret     - Return code.
              > 0 = Current size of updated GRIB2 message
               -1 = GRIB message was not initialized.  Need to call
                    routine gribcreate first.
@@ -793,14 +816,14 @@ def grib2_addlocal(gribmsg,object sec2):
     cdef unsigned char *cgrib
     cdef unsigned char *csec2
     cdef g2int lcsec2
-    cdef g2int ierr
+    cdef g2int iret
     lcsec2 = len(sec2)
     gribmsg = gribmsg + 4*(5+lcsec2)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     csec2 = <unsigned char *>PyBytes_AsString(sec2)
-    ierr = g2_addlocal(cgrib,csec2,lcsec2)
-    if ierr < 0:
-       msg = "error in grib2_addlocal, error code = %i" % ierr
+    iret = g2_addlocal(cgrib,csec2,lcsec2)
+    if iret < 0:
+       msg = "error in grib2_addlocal, error code = %i" % iret
        raise RuntimeError(msg)
-    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, ierr)
-    return gribmsg, ierr
+    gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+    return gribmsg, iret
