@@ -373,7 +373,7 @@ def unpack6(gribmsg,ndpts,ipos,object arr):
     return bitmap,ibmap
 
 
-def unpack7(gribmsg, 
+def unpack7(gribmsg,
             int gdtnum,
             cnp.ndarray[cnp.int64_t, ndim=1] gdtmpl,
             int drtnum,
@@ -381,7 +381,6 @@ def unpack7(gribmsg,
             int ndpts,
             int ipos,
             object arr,
-            printminmax=False,
             storageorder="C"):
     """
     Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
@@ -413,7 +412,6 @@ def unpack7(gribmsg,
               array modules can be used simply by changing the import statement
               in your python code.
     storageorder - "C" for row-major, or "F" for column-major (Default "C")
-    printminmax - if True, min/max of fld is printed.
 
     RETURNS:
     fld      - Numpy array (float32) containing the unpacked data field.
@@ -424,28 +422,16 @@ def unpack7(gribmsg,
                  6 = Memory allocation error
     """
     cdef unsigned char *cgrib
-    cdef g2int iofst, iret #, ngpts, idrsnum, igdsnum
-    #cdef g2int *igdstmpl
-    #cdef g2int *idrstmpl
+    cdef g2int iofst
+    cdef g2int iret
     cdef g2float *fld
-    #cdef void *drtmpldat
-    #cdef void *gdtmpldat
-    #cdef float rmin, rmax
-    #cdef int n
-
     cdef g2int[:] igdstmpl_view = gdtmpl
     cdef g2int[:] idrstmpl_view = drtmpl
 
-    cdef Py_ssize_t buflen
+    iret = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
     iofst = <g2int>PyInt_AsLong(ipos*8)
-    #ngpts = <g2int>PyInt_AsLong(ndpts)
-    #idrsnum = <g2int>PyInt_AsLong(drtnum)
-    #igdsnum = <g2int>PyInt_AsLong(gdtnum)
-    #PyObject_AsReadBuffer(drtmpl, &drtmpldat, &buflen)
-    #PyObject_AsReadBuffer(gdtmpl, &gdtmpldat, &buflen)
-    #idrstmpl = <g2int *>drtmpldat
-    #igdstmpl = <g2int *>gdtmpldat
+
     iret = g2_unpack7(
         cgrib,
         &iofst,
@@ -454,35 +440,20 @@ def unpack7(gribmsg,
         <g2int>drtnum,
         <g2int *>&idrstmpl_view[0],
         <g2int>ndpts,
-        &fld)
+        &fld
+    )
     if iret != 0:
-       msg = "Error unpacking section 7 - error code = %i" % iret
+       msg = f"Error in unpack7, error code = {iret}"
        raise RuntimeError(msg)
 
-
-#    if printminmax:
-#        rmax=-<float>9.9e31
-#        rmin=<float>9.9e31
-#        for n from 0 <= n < ndpts:
-#            if fld[n] > rmax: rmax=fld[n]
-#            if fld[n] < rmin: rmin=fld[n]
-#        fldmax = PyFloat_FromDouble(rmax)
-#        fldmin = PyFloat_FromDouble(rmin)
-#        bitsofprecision = drtmpl[3]
-#        digitsofprecision = int(math.ceil(math.log10(math.pow(2,bitsofprecision))))
-#        format = "%."+repr(digitsofprecision+1)+"g"
-#        minmaxstring = "min/max="+format+"/"+format
-#        minmaxstring = minmaxstring % (fldmin,fldmax)
-#        print(minmaxstring)
-
-#    data = _toarray(fld, arr(ngpts, "f4", order=storageorder))
     data = _toarray(fld, arr(ndpts, "f4", order=storageorder))
     return data
 
 # ----------------------------------------------------------------------------------------
 # Routines for writing grib2 files.
 # ----------------------------------------------------------------------------------------
-def grib2_create(object listsec0, object listsec1):
+def grib2_create(cnp.ndarray[cnp.int64_t, ndim=1] listsec0,
+                 cnp.ndarray[cnp.int64_t, ndim=1] listsec1):
     """
     Initializes a new GRIB2 message and packs GRIB2 sections 0
     (Indicator Section) and 1 (Identification Section). This routine
@@ -521,25 +492,25 @@ def grib2_create(object listsec0, object listsec1):
               > 0 = Current size of new GRIB2 message
                -1 = Tried to use for version other than GRIB Edition 2
     """
-    cdef g2int *isec0
-    cdef g2int *isec1
     cdef g2int iret
-    cdef void *listsec0dat
-    cdef void *listsec1dat
-    cdef Py_ssize_t buflen
     cdef unsigned char *cgrib
-    # cgrib needs to be big enough to hold sec0 and sec1.
-    lgrib = 4*(len(listsec0)+len(listsec1))
-    gribmsg = lgrib*b" "
+    cdef g2int[:] listsec0_view = listsec0
+    cdef g2int[:] listsec1_view = listsec1
+
+    iret = 0
+    lengrib = 16 + (4*len(listsec1)) # Section 0 is always 16 bytes.
+    gribmsg = lengrib * b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    PyObject_AsReadBuffer(listsec0, &listsec0dat, &buflen)
-    PyObject_AsReadBuffer(listsec1, &listsec1dat, &buflen)
-    isec0 = <g2int *>listsec0dat
-    isec1 = <g2int *>listsec1dat
-    iret = g2_create(cgrib,isec0,isec1)
+
+    iret = g2_create(
+        cgrib,
+        <g2int *>&listsec0_view[0],
+        <g2int *>&listsec1_view[0],
+    )
     if iret < 0:
-       msg = "Error in grib2_create, error code = %i" % iret
-       raise RuntimeError(msg)
+        msg = f"Error in grib2_create, error code = {iret}"
+        raise RuntimeError(msg)
+
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
 
