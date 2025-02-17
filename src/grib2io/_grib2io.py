@@ -733,7 +733,7 @@ class _Grib2Message:
         self._auto_nans = _AUTO_NANS
         self._coordlist = None
         self._data = None
-        self._deflist = None
+        self._deflist = np.zeros((0), dtype=np.int64)
         self._msgnum = -1
         self._ondiskarray = None
         self._orig_section5 = np.copy(self.section5)
@@ -1621,7 +1621,7 @@ def _data(
         fld = fld1
 
     # Check for reduced grid.
-    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist is not None:
+    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist.shape[0] > 0: 
         from . import redtoreg
         nx = 2*ny
         lonsperlat = msg._deflist

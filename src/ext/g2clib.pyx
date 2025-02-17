@@ -574,7 +574,10 @@ def grib2_addlocal(gribmsg,
     return gribmsg, iret
 
 
-def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum = 0):
+def grib2_addgrid(gribmsg,
+                  cnp.ndarray[cnp.int64_t, ndim=1] gds,
+                  cnp.ndarray[cnp.int64_t, ndim=1] gdstmpl,
+                  cnp.ndarray[cnp.int64_t, ndim=1] deflist):
     """
     Packs up a Grid Definition Section (Section 3) and adds it to a GRIB2 message.
     It is used with routines "g2_create", "g2_addfield" and "g2_gribend" to create
@@ -621,32 +624,27 @@ def grib2_addgrid(gribmsg,object gds,object gdstmpl,object deflist=None, defnum 
               -4 = Previous Section was not 1, 2 or 7.
               -5 = Could not find requested Grid Definition Template.
     """
-    cdef g2int iret, idefnum
-    cdef g2int *igds
-    cdef g2int *igdstmpl
-    cdef g2int *ideflist
-    cdef unsigned char  *cgrib
-    cdef void *gdsdat
-    cdef void *deflistdat
-    cdef void *gdstmpldat
-    cdef Py_ssize_t buflen
-    PyObject_AsReadBuffer(gds, &gdsdat, &buflen)
-    PyObject_AsReadBuffer(gdstmpl, &gdstmpldat, &buflen)
-    igds = <g2int *>gdsdat
-    igdstmpl = <g2int *>gdstmpldat
-    if igds[2] != 0:
-       PyObject_AsReadBuffer(deflist, &deflistdat, &buflen)
-       ideflist = <g2int *>deflistdat
-       idefnum = <g2int>PyInt_AsLong(len(deflist))
-    else:
-       ideflist = NULL
-       idefnum = 0
+    cdef unsigned char *cgrib
+    cdef g2int[:] gds_view = gds
+    cdef g2int[:] gdstmpl_view = gdstmpl
+    cdef g2int[:] deflist_view = deflist
+    cdef g2int iret
+
+    iret = 0
     gribmsg = gribmsg + 4*(256+4+gds[2]+1)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iret = g2_addgrid(cgrib, igds, igdstmpl, ideflist, idefnum)
+
+    iret = g2_addgrid(
+        cgrib,
+        <g2int *>&gds_view[0],
+        <g2int *>&gdstmpl_view[0],
+        <g2int *>&deflist_view[0],
+        <g2int>len(deflist),
+    )
     if iret < 0:
-       msg = "error in grib2_addgrid, error code = %i" % iret
+       msg = f"Error in grib2_addgrid, error code {iret}"
        raise RuntimeError(msg)
+
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
 
