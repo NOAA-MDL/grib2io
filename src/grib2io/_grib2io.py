@@ -302,19 +302,19 @@ class open():
                         section2 = self._filehandle.read(secsize-5)
                     elif secnum == 3:
                         # Unpack Section 3
-                        gds, gdt, deflist, grbpos = g2clib.unpack3(secmsg,grbpos,np.empty)
+                        gds, gdt, deflist, grbpos = g2clib.unpack3(secmsg)
                         gds = gds.tolist()
                         gdt = gdt.tolist()
                         section3 = np.concatenate((gds,gdt))
                         section3 = np.where(section3==4294967295,-1,section3)
                     elif secnum == 4:
                         # Unpack Section 4
-                        numcoord, pdt, pdtnum, coordlist, grbpos = g2clib.unpack4(secmsg,grbpos,np.empty)
+                        pdtnum, pdt, coordlist, numcoord, grbpos = g2clib.unpack4(secmsg)
                         pdt = pdt.tolist()
                         section4 = np.concatenate((np.array((numcoord,pdtnum)),pdt))
                     elif secnum == 5:
                         # Unpack Section 5
-                        drt, drtn, npts, self._pos = g2clib.unpack5(secmsg,grbpos,np.empty)
+                        drtn, drt, npts, self._pos = g2clib.unpack5(secmsg)
                         section5 = np.concatenate((np.array((npts,drtn)),drt))
                         section5 = np.where(section5==4294967295,-1,section5)
                     elif secnum == 6:
@@ -1573,7 +1573,7 @@ def _data(
         bmap_size,num = struct.unpack('>IB',filehandle.read(5))
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
-        bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
+        bmapflag, bmap = g2clib.unpack6(filehandle.read(bmap_size), msg.section3[1])
         if bmap is not None:
             msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
 

@@ -122,7 +122,7 @@ cdef _toarray(void *items, object a):
 # Routine for reading GRIB2 files.
 # ----------------------------------------------------------------------------------------
 def unpack1(gribmsg):
-    """              .      .    .                                       .
+    """
     Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
 
     idsect,ipos = unpack1(gribmsg,ipos)
@@ -182,7 +182,7 @@ def unpack1(gribmsg):
     return idsect, iofst//8
 
 
-def unpack3(gribmsg, ipos, object arr):
+def unpack3(gribmsg):
     """
     Unpacks Section 3 (Grid Definition Section) as defined in GRIB Edition 2.
 
@@ -218,25 +218,39 @@ def unpack3(gribmsg, ipos, object arr):
                    6 = memory allocation error
     """
     cdef unsigned char *cgrib
+    cdef g2int iret
+    cdef g2int igdtlen
+    cdef g2int idefnum
+    cdef g2int iofst
     cdef g2int *igds
     cdef g2int *igdstmpl
     cdef g2int *ideflist
-    cdef g2int mapgridlen, iofst, idefnum, iret
+
+    iret = 0
+    iofst = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
-    iret=g2_unpack3(cgrib,&iofst,&igds,&igdstmpl,&mapgridlen,&ideflist,&idefnum)
+
+    iret = g2_unpack3(
+        cgrib,
+        &iofst,
+        &igds,
+        &igdstmpl,
+        &igdtlen,
+        &ideflist,
+        &idefnum,
+    )
     if iret != 0:
-       msg = "Error unpacking section 3 - error code = %i" % iret
+       msg = f"Error unpacking section 3, error code = {iret}"
        raise RuntimeError(msg)
 
-    gdtmpl = _toarray(igdstmpl, arr(mapgridlen, "i8"))
-    gds = _toarray(igds, arr(5, "i8"))
-    deflist = _toarray(ideflist, arr(idefnum, "i8"))
+    gds = _toarray(igds, np.empty(5, "i8"))
+    gdtmpl = _toarray(igdstmpl, np.empty(igdtlen, "i8"))
+    deflist = _toarray(ideflist, np.empty(idefnum, "i8"))
 
-    return gds,gdtmpl,deflist,iofst//8
+    return gds, gdtmpl, deflist, iofst//8
 
 
-def unpack4(gribmsg,ipos,object arr):
+def unpack4(gribmsg):
     """
     Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
 
@@ -269,24 +283,39 @@ def unpack4(gribmsg,ipos,object arr):
                  6 = Memory allocation error
     """
     cdef unsigned char *cgrib
-    cdef g2int *ipdstmpl
-    cdef g2float *icoordlist
-    cdef g2int mappdslen, iofst, ipdsnum, iret, numcoord
+    cdef g2int iret
+    cdef g2int iofst
+    cdef g2int pdtnum
+    cdef g2int pdtlen
+    cdef g2int numcoord
+    cdef g2int *pdtmpl_ptr
+    cdef g2float *coordlist_ptr
+
+    iret = 0
+    iofst = 0
     numcoord = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
-    iret=g2_unpack4(cgrib,&iofst,&ipdsnum,&ipdstmpl,&mappdslen,&icoordlist,&numcoord)
+
+    iret = g2_unpack4(
+        cgrib,
+        &iofst,
+        &pdtnum,
+        &pdtmpl_ptr,
+        &pdtlen,
+        &coordlist_ptr,
+        &numcoord,
+    )
     if iret != 0:
-       msg = "Error unpacking section 4 - error code = %i" % iret
+       msg = f"Error unpacking section 4,error code = {iret}"
        raise RuntimeError(msg)
 
-    pdtmpl = _toarray(ipdstmpl, arr(mappdslen, "i8"))
-    coordlist = _toarray(icoordlist, arr(numcoord, "f4"))
+    pdtmpl = _toarray(pdtmpl_ptr, np.empty(pdtlen, "i8"))
+    coordlist = _toarray(coordlist_ptr, np.empty(numcoord, "f4"))
 
-    return numcoord,pdtmpl,ipdsnum,coordlist,iofst//8
+    return pdtnum, pdtmpl, coordlist, numcoord, iofst//8
 
 
-def unpack5(gribmsg,ipos,object arr):
+def unpack5(gribmsg):
     """
     Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
 
@@ -318,20 +347,34 @@ def unpack5(gribmsg,ipos,object arr):
                      Representation Template
     """
     cdef unsigned char *cgrib
-    cdef g2int *idrstmpl
-    cdef g2int iofst, iret, ndpts, idrsnum, mapdrslen
+    cdef g2int iret
+    cdef g2int iofst
+    cdef g2int ndpts
+    cdef g2int drtnum
+    cdef g2int drtlen
+    cdef g2int *drtmpl_ptr
+
+    iret = 0
+    iofst = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
-    iret=g2_unpack5(cgrib,&iofst,&ndpts,&idrsnum,&idrstmpl,&mapdrslen)
+    iret = g2_unpack5(
+        cgrib,
+        &iofst,
+        &ndpts,
+        &drtnum,
+        &drtmpl_ptr,
+        &drtlen)
     if iret != 0:
-       msg = "Error unpacking section 5 - error code = %i" % iret
+       msg = f"Error unpacking section 5, error code = {iret}"
        raise RuntimeError(msg)
 
-    drtmpl = _toarray(idrstmpl, arr(mapdrslen, "i8"))
-    return drtmpl,idrsnum,ndpts,iofst//8
+    drtmpl = _toarray(drtmpl_ptr, np.empty(drtlen, "i8"))
+
+    return drtnum, drtmpl, ndpts, iofst//8
 
 
-def unpack6(gribmsg,ndpts,ipos,object arr):
+def unpack6(gribmsg,
+            int ndpts):
     """
     Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
 
@@ -360,23 +403,35 @@ def unpack6(gribmsg,ndpts,ipos,object arr):
                  4 = Unrecognized pre-defined bit-map.
                  6 = Memory allocation error
     """
-    cdef object bitmap
     cdef unsigned char *cgrib
-    cdef g2int iofst, iret, ngpts, ibmap
-    cdef g2int *bmap
+    cdef g2int iret
+    cdef g2int iofst
+    cdef g2int ibitmap
+    cdef g2int *bitmap_ptr
+
+    iret = 0
+    ibitmap = 0
+    iofst = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
-    ngpts = <g2int>PyInt_AsLong(ndpts)
-    iret=g2_unpack6(cgrib,&iofst,ngpts,&ibmap,&bmap)
+
+    iret = g2_unpack6(
+        cgrib,
+        &iofst,
+        <g2int>ndpts,
+        <g2int *>&ibitmap,
+        &bitmap_ptr,
+    )
     if iret != 0:
-        msg = "Error unpacking section 6 - error code = %i" % iret
+        msg = f"Error unpacking section 6, error code = {iret}"
         raise RuntimeError(msg)
-    if ibmap == 0:
-        bitmap = _toarray(bmap, arr(ngpts, "i8"))
+
+    if ibitmap == 0:
+        bitmap = _toarray(bitmap_ptr, np.empty(ndpts, "i8"))
     else:
         bitmap = None
-        free(bmap)
-    return bitmap,ibmap
+        free(bitmap_ptr)
+
+    return ibitmap, bitmap
 
 
 def unpack7(gribmsg,
