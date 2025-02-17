@@ -296,7 +296,7 @@ class open():
                     # Unpack section
                     if secnum == 1:
                         # Unpack Section 1
-                        section1, grbpos = g2clib.unpack1(secmsg,grbpos,np.empty)
+                        section1, grbpos = g2clib.unpack1(secmsg)
                     elif secnum == 2:
                         # Unpack Section 2
                         section2 = self._filehandle.read(secsize-5)
@@ -1589,8 +1589,8 @@ def _data(
     ipos = 0
     npvals = msg.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,ipos,
-                          np.empty,storageorder=storageorder)
+    fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
+                          storageorder=storageorder)
 
     # Handle the missing values
     if msg.bitMapFlag in {0,254}:

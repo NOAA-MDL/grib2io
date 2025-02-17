@@ -121,7 +121,7 @@ cdef _toarray(void *items, object a):
 # ----------------------------------------------------------------------------------------
 # Routine for reading GRIB2 files.
 # ----------------------------------------------------------------------------------------
-def unpack1(gribmsg, ipos, object arr):
+def unpack1(gribmsg):
     """              .      .    .                                       .
     Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
 
@@ -158,17 +158,28 @@ def unpack1(gribmsg, ipos, object arr):
                    6 = Memory allocation error
     """
     cdef unsigned char *cgrib
-    cdef g2int i, iofst, iret, idslen
+    cdef g2int iret
+    cdef g2int iofst
+    cdef g2int idslen
     cdef g2int *ids
+
+    iret = 0
+    iofst = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
-    iret = g2_unpack1(cgrib, &iofst, &ids, &idslen)
+
+    iret = g2_unpack1(
+        cgrib,
+        &iofst,
+        &ids,
+        &idslen,
+    )
     if iret != 0:
-       msg = "Error unpacking section 1 - error code = %i" % iret
+       msg = f"Error unpacking section 1, error code = {iret}"
        raise RuntimeError(msg)
 
-    idsect = _toarray(ids, arr(idslen, "i8"))
-    return idsect,iofst//8
+    idsect = _toarray(ids, np.empty(idslen, "i8"))
+
+    return idsect, iofst//8
 
 
 def unpack3(gribmsg, ipos, object arr):
@@ -374,8 +385,6 @@ def unpack7(gribmsg,
             int drtnum,
             cnp.ndarray[cnp.int64_t, ndim=1] drtmpl,
             int ndpts,
-            int ipos,
-            object arr,
             storageorder="C"):
     """
     Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
@@ -424,8 +433,8 @@ def unpack7(gribmsg,
     cdef g2int[:] idrstmpl_view = drtmpl
 
     iret = 0
+    iofst = 0
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iofst = <g2int>PyInt_AsLong(ipos*8)
 
     iret = g2_unpack7(
         cgrib,
@@ -441,7 +450,8 @@ def unpack7(gribmsg,
        msg = f"Error in unpack7, error code = {iret}"
        raise RuntimeError(msg)
 
-    data = _toarray(fld, arr(ndpts, "f4", order=storageorder))
+    data = _toarray(fld, np.empty(ndpts, "f4", order=storageorder))
+
     return data
 
 # ----------------------------------------------------------------------------------------
