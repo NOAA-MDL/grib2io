@@ -649,9 +649,15 @@ def grib2_addgrid(gribmsg,
     return gribmsg, iret
 
 
-def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
-                   drsnum,object drstmpl,object field,
-                   ibitmap,object bitmap):
+def grib2_addfield(gribmsg,
+                   int pdsnum,
+                   cnp.ndarray[cnp.int64_t, ndim=1] pdstmpl,
+                   cnp.ndarray[cnp.float32_t, ndim=1] coordlist,
+                   int drsnum,
+                   cnp.ndarray[cnp.int64_t, ndim=1] drstmpl,
+                   cnp.ndarray[cnp.float32_t, ndim=1] field,
+                   int ibitmap,
+                   cnp.ndarray[cnp.int64_t, ndim=1] bitmap):
     """
     Packs up Sections 4 through 7 for a given field
     and adds them to a GRIB2 message.  They are Product Definition Section,
@@ -721,48 +727,35 @@ def grib2_addfield(gribmsg,pdsnum,object pdstmpl,object coordlist,
                    using DRT 5.51.
              -10 = Error packing data field.
     """
-    cdef g2int iret,ipdsnum,numcoord,idrsnum
-    cdef g2int *ipdstmpl
-    cdef g2int *idrstmpl
-    cdef g2float *fld
-    cdef g2float *fcoordlist
-    cdef g2int *bmap
-    cdef g2int ngrdpts, ibmap
-    cdef void *pdtmpldat
-    cdef void *drtmpldat
-    cdef void *coordlistdat
-    cdef void *fielddat
-    cdef void *bitmapdat
-    cdef Py_ssize_t buflen
     cdef unsigned char *cgrib
-    ipdsnum = <g2int>PyInt_AsLong(pdsnum)
-    PyObject_AsReadBuffer(pdstmpl, &pdtmpldat, &buflen)
-    ipdstmpl = <g2int *>pdtmpldat
-    idrsnum = <g2int>PyInt_AsLong(drsnum)
-    PyObject_AsReadBuffer(drstmpl, &drtmpldat, &buflen)
-    idrstmpl = <g2int *>drtmpldat
-    if coordlist is not None:
-        PyObject_AsReadBuffer(coordlist, &coordlistdat, &buflen)
-        fcoordlist = <g2float *>coordlistdat
-        numcoord = len(coordlist)
-    else:
-        fcoordlist = NULL
-        numcoord = 0
-    PyObject_AsReadBuffer(field, &fielddat, &buflen)
-    fld = <g2float *>fielddat
-    ibmap = <g2int>PyInt_AsLong(ibitmap)
-    ngrdpts = len(field)
-    if ibitmap == 0 or ibitmap == 254:
-        PyObject_AsReadBuffer(bitmap, &bitmapdat, &buflen)
-        bmap  = <g2int *>bitmapdat
-    else:
-        bmap = NULL
-    gribmsg = gribmsg + 4*(len(drstmpl)+ngrdpts+4)*b" "
+    cdef g2int iret #,ipdsnum,numcoord,idrsnum
+    cdef g2int[:] pdstmpl_view = pdstmpl
+    cdef float[:] coordlist_view = coordlist
+    cdef g2int[:] drstmpl_view = drstmpl
+    cdef float[:] field_view = field
+    cdef g2int[:] bitmap_view = bitmap
+
+    iret = 0
+    gribmsg = gribmsg + 4*(len(drstmpl)+len(field)+4)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
-    iret = g2_addfield(cgrib,ipdsnum,ipdstmpl,fcoordlist,numcoord,idrsnum,idrstmpl,fld,ngrdpts,ibmap,bmap)
+
+    iret = g2_addfield(
+        cgrib,
+        pdsnum,
+        <g2int *>&pdstmpl_view[0],
+        <float *>&coordlist_view[0],
+        <g2int>len(coordlist),
+        drsnum,
+        <g2int *>&drstmpl_view[0],
+        <float *>&field_view[0],
+        <g2int>len(field),
+        ibitmap,
+        <g2int *>&bitmap_view[0],
+    )
     if iret < 0:
-       msg = "error in grib2_addfield, error code = %i" % iret
+       msg = f"Error in grib2_addfield, error code = {iret}"
        raise RuntimeError(msg)
+
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
 

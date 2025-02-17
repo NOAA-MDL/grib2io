@@ -731,7 +731,7 @@ class _Grib2Message:
     def __post_init__(self):
         """Set some attributes after init."""
         self._auto_nans = _AUTO_NANS
-        self._coordlist = None
+        self._coordlist = np.zeros((0), dtype=np.float32)
         self._data = None
         self._deflist = np.zeros((0), dtype=np.int64)
         self._msgnum = -1
@@ -968,12 +968,6 @@ class _Grib2Message:
         else:
             bmap = None
 
-        # Prepare optional coordinate list
-        if self._coordlist is not None:
-            crdlist = np.array(self._coordlist,'f')
-        else:
-            crdlist = None
-
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
         if bitmapflag in {0,254}:
@@ -991,7 +985,7 @@ class _Grib2Message:
         # Add sections 4, 5, 6, and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
                                                     self.productDefinitionTemplate,
-                                                    crdlist,
+                                                    self._coordlist,
                                                     self.drtn,
                                                     self.dataRepresentationTemplate,
                                                     fld,
