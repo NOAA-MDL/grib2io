@@ -18,9 +18,6 @@ cimport numpy as cnp
 # Some helper definitions from the Python API
 # ----------------------------------------------------------------------------------------
 cdef extern from "Python.h":
-    # To access integers
-    long PyInt_AsLong(object)
-    # To access strings
     char * PyBytes_AsString(object string)
     object PyBytes_FromString(char *s)
     object PyBytes_FromStringAndSize(char *s, size_t size)
@@ -177,7 +174,7 @@ def unpack1(gribmsg):
        msg = f"Error unpacking section 1, error code = {iret}"
        raise RuntimeError(msg)
 
-    idsect = _toarray(ids, np.empty(idslen, "i8"))
+    idsect = _toarray(ids, np.empty(idslen, np.int64))
 
     return idsect, iofst//8
 
@@ -243,9 +240,9 @@ def unpack3(gribmsg):
        msg = f"Error unpacking section 3, error code = {iret}"
        raise RuntimeError(msg)
 
-    gds = _toarray(igds, np.empty(5, "i8"))
-    gdtmpl = _toarray(igdstmpl, np.empty(igdtlen, "i8"))
-    deflist = _toarray(ideflist, np.empty(idefnum, "i8"))
+    gds = _toarray(igds, np.empty(5, np.int64))
+    gdtmpl = _toarray(igdstmpl, np.empty(igdtlen, np.int64))
+    deflist = _toarray(ideflist, np.empty(idefnum, np.int64))
 
     return gds, gdtmpl, deflist, iofst//8
 
@@ -309,8 +306,8 @@ def unpack4(gribmsg):
        msg = f"Error unpacking section 4,error code = {iret}"
        raise RuntimeError(msg)
 
-    pdtmpl = _toarray(pdtmpl_ptr, np.empty(pdtlen, "i8"))
-    coordlist = _toarray(coordlist_ptr, np.empty(numcoord, "f4"))
+    pdtmpl = _toarray(pdtmpl_ptr, np.empty(pdtlen, np.int64))
+    coordlist = _toarray(coordlist_ptr, np.empty(numcoord, np.float32))
 
     return pdtnum, pdtmpl, coordlist, numcoord, iofst//8
 
@@ -368,7 +365,7 @@ def unpack5(gribmsg):
        msg = f"Error unpacking section 5, error code = {iret}"
        raise RuntimeError(msg)
 
-    drtmpl = _toarray(drtmpl_ptr, np.empty(drtlen, "i8"))
+    drtmpl = _toarray(drtmpl_ptr, np.empty(drtlen, np.int64))
 
     return drtnum, drtmpl, ndpts, iofst//8
 
@@ -426,7 +423,7 @@ def unpack6(gribmsg,
         raise RuntimeError(msg)
 
     if ibitmap == 0:
-        bitmap = _toarray(bitmap_ptr, np.empty(ndpts, "i8"))
+        bitmap = _toarray(bitmap_ptr, np.empty(ndpts, np.int64))
     else:
         bitmap = None
         free(bitmap_ptr)
@@ -505,7 +502,7 @@ def unpack7(gribmsg,
        msg = f"Error in unpack7, error code = {iret}"
        raise RuntimeError(msg)
 
-    data = _toarray(fld, np.empty(ndpts, "f4", order=storageorder))
+    data = _toarray(fld, np.empty(ndpts, np.float32, order=storageorder))
 
     return data
 
