@@ -1,7 +1,7 @@
 # cython: language_level=3, boundscheck=False
 # distutils: define_macros=NPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION
 """
-Cython code to provide python interfaces to functions in the NCEP g2c library.
+Cython interfaces to functions in the NCEPLIBS-g2c library.
 
 IMPORTANT: Make changes to this file, not the C code that Cython generates.
 """
@@ -80,7 +80,7 @@ _has_aec = G2_AEC_ENABLED
 # ----------------------------------------------------------------------------------------
 cdef _toarray(void *items, object a):
     """
-    Fill a numpy array from the grib2 file. Note that this free()s the items argument!
+    Function to fill a Numpy array with data from GRIB2 unpacking.
     """
     cdef char *abuf
     cdef Py_ssize_t buflen
@@ -131,7 +131,7 @@ def unpack1(gribmsg):
 
     Returns
     -------
-    idsect : np.ndarray
+    ids : np.ndarray
         1D Numpy array containing unpacked section1 values.
 
     ipos : int
@@ -141,7 +141,7 @@ def unpack1(gribmsg):
     cdef g2int iret
     cdef g2int iofst
     cdef g2int idslen
-    cdef g2int *ids
+    cdef g2int *ids_ptr
 
     iret = 0
     iofst = 0
@@ -150,16 +150,16 @@ def unpack1(gribmsg):
     iret = g2_unpack1(
         cgrib,
         &iofst,
-        &ids,
+        &ids_ptr,
         &idslen,
     )
     if iret != 0:
        msg = f"Error unpacking section 1, error code = {iret}"
        raise RuntimeError(msg)
 
-    idsect = _toarray(ids, np.empty(idslen, np.int64))
+    ids = _toarray(ids_ptr, np.empty(idslen, np.int64))
 
-    return idsect, iofst//8
+    return ids, iofst//8
 
 
 def unpack3(gribmsg):
@@ -194,9 +194,9 @@ def unpack3(gribmsg):
     cdef g2int igdtlen
     cdef g2int idefnum
     cdef g2int iofst
-    cdef g2int *igds
-    cdef g2int *igdstmpl
-    cdef g2int *ideflist
+    cdef g2int *gds_ptr
+    cdef g2int *gdtmpl_ptr
+    cdef g2int *deflist_ptr
 
     iret = 0
     iofst = 0
@@ -205,19 +205,19 @@ def unpack3(gribmsg):
     iret = g2_unpack3(
         cgrib,
         &iofst,
-        &igds,
-        &igdstmpl,
+        &gds_ptr,
+        &gdtmpl_ptr,
         &igdtlen,
-        &ideflist,
+        &deflist_ptr,
         &idefnum,
     )
     if iret != 0:
        msg = f"Error unpacking section 3, error code = {iret}"
        raise RuntimeError(msg)
 
-    gds = _toarray(igds, np.empty(5, np.int64))
-    gdtmpl = _toarray(igdstmpl, np.empty(igdtlen, np.int64))
-    deflist = _toarray(ideflist, np.empty(idefnum, np.int64))
+    gds = _toarray(gds_ptr, np.empty(5, np.int64))
+    gdtmpl = _toarray(gdtmpl_ptr, np.empty(igdtlen, np.int64))
+    deflist = _toarray(deflist_ptr, np.empty(idefnum, np.int64))
 
     return gds, gdtmpl, deflist, iofst//8
 
