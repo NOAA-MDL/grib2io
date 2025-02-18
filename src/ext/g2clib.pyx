@@ -51,21 +51,20 @@ cdef extern from "grib2.h":
     cdef int G2_AEC_ENABLED
     ctypedef long g2int      # 64-bit signed integer
     ctypedef float g2float   # 32-bit floating-point
-    g2int g2_unpack1(unsigned char *,g2int *,g2int **,g2int *)
-    g2int g2_unpack3(unsigned char *,g2int *,g2int **,g2int **,
-                         g2int *,g2int **,g2int *)
-    g2int g2_unpack4(unsigned char *,g2int *,g2int *,g2int **,
-                         g2int *,g2float **,g2int *)
-    g2int g2_unpack5(unsigned char *,g2int *,g2int *,g2int *, g2int **,g2int *)
-    g2int g2_unpack6(unsigned char *,g2int *,g2int ,g2int *, g2int **)
-    g2int g2_unpack7(unsigned char *,g2int *,g2int ,g2int *,
-                         g2int ,g2int *,g2int ,g2float **)
-    g2int g2_create(unsigned char *,g2int *,g2int *)
-    g2int g2_addlocal(unsigned char *,unsigned char *,g2int )
-    g2int g2_addgrid(unsigned char *,g2int *,g2int *,g2int *,g2int )
-    g2int g2_addfield(unsigned char *,g2int ,g2int *,
-                     g2float *,g2int ,g2int ,g2int *,
-                     g2float *,g2int ,g2int ,g2int *)
+    g2int g2_unpack1(unsigned char *, g2int *, g2int **, g2int *)
+    g2int g2_unpack3(unsigned char *, g2int *, g2int **, g2int **,
+                     g2int *, g2int **, g2int *)
+    g2int g2_unpack4(unsigned char *, g2int *, g2int *, g2int **,
+                     g2int *, g2float **, g2int *)
+    g2int g2_unpack5(unsigned char *, g2int *, g2int *, g2int *, g2int **, g2int *)
+    g2int g2_unpack6(unsigned char *, g2int *, g2int, g2int *, g2int **)
+    g2int g2_unpack7(unsigned char *, g2int *, g2int ,g2int *, g2int , g2int *,
+                     g2int, g2float **)
+    g2int g2_create(unsigned char *, g2int *, g2int *)
+    g2int g2_addlocal(unsigned char *, unsigned char *, g2int)
+    g2int g2_addgrid(unsigned char *, g2int *, g2int *, g2int *, g2int)
+    g2int g2_addfield(unsigned char *, g2int , g2int *, g2float *, g2int, g2int,
+                      g2int *, g2float *, g2int, g2int , g2int *)
     g2int g2_gribend(unsigned char *)
 
 # ----------------------------------------------------------------------------------------
@@ -120,39 +119,23 @@ cdef _toarray(void *items, object a):
 # ----------------------------------------------------------------------------------------
 def unpack1(gribmsg):
     """
-    Unpacks Section 1 (Identification Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 1 (Identification Section)
 
-    idsect,ipos = unpack1(gribmsg,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack1().
 
-    INPUTS:
-     gribmsg - Chararcter string containing Section 1 of the GRIB2 message
-     ipos    - Byte offset for the beginning of Section 1 in gribmsg.
-     zeros   - Numeric/numpy array/scip.base zeros function (used to allocate
-               output python arrays).  Python is used to allocate the arrays
-               so no implementation-specific (Numeric, numpy array, scipy_core)
-               C API functions need to be used.  This means that any of these
-               array modules can be used simply by changing the import statement
-               in your python code.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 1 of the GRIB2 message.
 
-    RETURNS:
-     ipos    - Byte offset at the end of Section 1.
-     idsect  - Numpy array containing information read from Section 1, the Identification section.
-               idsect[0]   = Identification of originating Centre (see Common Code Table C-1)
-               idsect[1]   = Identification of originating Sub-centre
-               idsect[2]   = GRIB Master Tables Version Number (see Code Table 1.0)
-               idsect[3]   = GRIB Local Tables Version Number (see Code Table 1.1)
-               idsect[4]   = Significance of Reference Time (Code Table 1.2)
-               idsect[5]   = Year (4-digits)
-               idsect[6]   = Month
-               idsect[7]   = Day
-               idsect[8]   = Hour
-               idsect[9]   = Minute
-               idsect[10]  = Second
-               idsect[11]  = Production status of processed data (see Code Table 1.3)
-               idsect[12]  = Type of processed data (see Code Table 1.4)
+    Returns
+    -------
+    idsect : np.ndarray
+        1D Numpy array containing unpacked section1 values.
 
-    ERROR CODES:   2 = Array passed is not section 1
-                   6 = Memory allocation error
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iret
@@ -181,38 +164,30 @@ def unpack1(gribmsg):
 
 def unpack3(gribmsg):
     """
-    Unpacks Section 3 (Grid Definition Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 3 (Grid Definition Section)
 
-    gds,gdtmpl,deflist,ipos = unpack3(gribmsg,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack3().
 
-    INPUTS:
-    cgrib    - Char array ontaining Section 3 of the GRIB2 message
-    iofst    - Byte offset for the beginning of Section 3 in cgrib.
-    zeros    - Numeric/numpy array/scip.base zeros function (used to allocate
-               output python arrays).  Python is used to allocate the arrays
-               so no implementation-specific (Numeric, numpy array, scipy_core)
-               C API functions need to be used.  This means that any of these
-               array modules can be used simply by changing the import statement
-               in your python code.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 3 of the GRIB2 message.
 
-    RETURNS:
-    ipos     - Byte offset at the end of Section 3, returned.
-    gds      - Numpy array containg information read from the appropriate GRIB Grid
-               Definition Section 3 for the field being returned.
-               gds[0] = Source of grid definition (see Code Table 3.0)
-               gds[1] = Number of grid points in the defined grid.
-               gds[2] = Number of octets needed for each additional grid points definition.
-               gds[3] = Interpretation of list for optional points definition.  (Code Table 3.11)
-               gds[4] = Grid Definition Template Number (Code Table 3.1)
-    gdstmpl -  Numpy array containing the data values for the specified Grid Definition
-               Template (NN=gds[4]). Each element of this integer array contains an
-               entry (in the order specified) of Grid Defintion Template 3.NN
-    deflist -  Used if gds[2] != 0, Numpy array containing the number of
-               grid points contained in each row or column.
+    Returns
+    -------
+    gds : np.ndarray
+        1D Numpy array containing the grid defintion section values.
 
-    ERROR CODES:   2 = Not Section 3
-                   5 = "GRIB" message contains an undefined Grid Definition Template.
-                   6 = memory allocation error
+    gdtmpl : np.ndarray
+        1D Numpy array containing the grid defintion template values.
+
+    deflist : np.ndarray
+        Used if gds[2] != 0, 1D Numpy array containing the number of
+        grid points contained in each row or column.
+
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iret
@@ -249,35 +224,34 @@ def unpack3(gribmsg):
 
 def unpack4(gribmsg):
     """
-    Unpacks Section 4 (Product Definition Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 4 (Product Definition Section)
 
-    pdtmpl,pdtnum,coordlist,ipos = unpack4(gribmsg,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack4().
 
-    INPUTS:
-    gribmsg  - Character string containing Section 4 of the GRIB2 message
-    ipos     - Byte offset of the beginning of Section 4 in cgrib.
-    zeros    - Numeric/numpy array/scip.base zeros function (used to allocate
-               output python arrays).  Python is used to allocate the arrays
-               so no implementation-specific (Numeric, numpy array, scipy_core)
-               C API functions need to be used.  This means that any of these
-               array modules can be used simply by changing the import statement
-               in your python code.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 4 of the GRIB2 message.
 
-    RETURNS:
-    numcoord  - Number of coordinate values after template.
-    pdtmpl    - Numpy array containing the data values for the specified Product Definition
-                Template (N=ipdsnum). Each element of this integer array contains
-                an entry (in the order specified) of Product Defintion Template 4.N
-    pdtnum    - Product Definition Template Number ( see Code Table 4.0)
-    coordlist - Numpy array containing floating point values intended to document
-                the vertical discretisation associated to model data
-                on hybrid coordinate vertical levels.  (part of Section 4)
-    ipos      - Byte offset of the end of Section 4, returned.
+    Returns
+    -------
+    pdtnum : int
+        GRIB2 Product Definition Template number.
 
-    ERROR CODES: 2 = Not section 4
-                 5 = "GRIB" message contains an undefined Product Definition
-                     Template.
-                 6 = Memory allocation error
+    pdtmpl : np.ndarray
+        1D Numpy array containing the product defintion template values.
+
+    coordlist : np.ndarray
+        1D Numpy array containing floating point values intended to document
+        the vertical discretisation associated to model data on hybrid 
+        coordinate vertical levels.
+
+    numcoord : int
+        Number of coordinate values after template.
+
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iret
@@ -314,34 +288,34 @@ def unpack4(gribmsg):
 
 def unpack5(gribmsg):
     """
-    Unpacks Section 5 (Data Representation Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 5 (Data Representation Section)
 
-    drtmpl,drtnum,ndpts,ipos = unpack5(gribmsg,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack5().
 
-    INPUTS:
-    gribmsg  - Character string containing Section 5 of the GRIB2 message
-    ipos     - Byte offset for the beginning of Section 5 in cgrib.
-    zeros    - Numeric/numpy array/scip.base zeros function (used to allocate
-               output python arrays).  Python is used to allocate the arrays
-               so no implementation-specific (Numeric, numpy array, scipy_core)
-               C API functions need to be used.  This means that any of these
-               array modules can be used simply by changing the import statement
-               in your python code.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 4 of the GRIB2 message.
 
-    RETURNS:
-    drtmpl  -  Numpy array containing the data values for
-               the specified Data Representation
-               Template ( N=idrsnum ).  Each element of this integer
-               array contains an entry (in the order specified) of Data
-               Representation Template 5.N
-    drtnum   - Data Representation Template Number ( see Code Table 5.0)
-    ndpts    - Number of data points to be unpacked (in sxns 6 and 7).
-    ipos     - Byte offset at the end of Section 5.
+    Returns
+    -------
+    drtnum : int
+        GRIB2 Data Representation Template number.
 
-    ERROR CODES: 2 = Not Section 5
-                 6 = Memory allocation error
-                 7 = "GRIB" message contains an undefined Data
-                     Representation Template
+    drtmpl : np.ndarray
+        1D Numpy array containing the data representation template values.
+
+    coordlist : np.ndarray
+        1D Numpy array containing floating point values intended to document
+        the vertical discretisation associated to model data on hybrid
+        coordinate vertical levels.
+
+    ndpts : int
+        Number of data points to be unpacked.
+
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iret
@@ -373,32 +347,29 @@ def unpack5(gribmsg):
 def unpack6(gribmsg,
             int ndpts):
     """
-    Unpacks Section 6 (Bit-Map Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 6 (Bitmap Section)
 
-    bitmap = unpack6(gribmsg,ndpts,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack6().
 
-    INPUTS:
-    gribmsg  - String containing Section 6 of the GRIB2 message
-    ndpts    - Number of grid points specified in the bit-map (from
-               gds[1] returned by unpack3).
-    ipos     - Byte offset of the beginning of Section 6 in cgrib.
-    zeros    - Numeric/numpy array/scip.base zeros function (used to allocate
-               output python arrays).  Python is used to allocate the arrays
-               so no implementation-specific (Numeric, numpy array, scipy_core)
-               C API functions need to be used.  This means that any of these
-               array modules can be used simply by changing the import statement
-               in your python code.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 4 of the GRIB2 message.
 
-    RETURNS:
-    bmap     - numpy array array containing decoded bitmap. (if ibmap=0).  Otherwise None.
-    ibmap    - Bitmap indicator (see Code Table 6.0)
-                   0 = bitmap applies and is included in Section 6.
-               1-253 = Predefined bitmap applies
-                 254 = Previously defined bitmap applies to this field
+    ndpts : int
+        Number of data points to be unpacked.
 
-    ERROR CODES: 2 = Not Section 6
-                 4 = Unrecognized pre-defined bit-map.
-                 6 = Memory allocation error
+    Returns
+    -------
+    ibitmap : int
+        Bit map indicator.
+
+    bitmap : np.ndarray
+        1D Numpy array containing the decoded bitmap.
+
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iret
@@ -428,7 +399,7 @@ def unpack6(gribmsg,
         bitmap = None
         free(bitmap_ptr)
 
-    return ibitmap, bitmap
+    return ibitmap, bitmap, iofst//8
 
 
 def unpack7(gribmsg,
@@ -439,50 +410,50 @@ def unpack7(gribmsg,
             int ndpts,
             storageorder="C"):
     """
-    Unpacks Section 7 (Data Section) as defined in GRIB Edition 2.
+    Unpacks GRIB2 Section 6 (Bitmap Section)
 
-    fld,fldmin,fldmax = unpack7(gribmsg,gdtnum,gdtmpl,drtnum,drtmpl,ndpts,ipos)
+    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack6().
 
-    INPUTS:
-    gribmsg  - String containing Section 7 of the GRIB2 message
-    gdtnum   - Grid Definition Template Number ( see Code Table 3.0)
-               ( Only used for DRS Template 5.51 )
-    gdtmpl   - numpy array containing the data values for
-               the specified Grid Definition
-               Template ( N=igdsnum ).  Each element of this integer
-               array contains an entry (in the order specified) of Grid
-               Definition Template 3.N
-               ( Only used for DRS Template 5.51 )
-    drtnum   - Data Representation Template Number ( see Code Table 5.0)
-    drtmpl   - numpy array containing the data values for
-               the specified Data Representation
-               Template ( N=idrsnum ).  Each element of this integer
-               array contains an entry (in the order specified) of Data
-               Representation Template 5.N
-    ndpts    - Number of data points unpacked and returned.
-    ipos     - Byte offset of the beginning of Section 7 in cgrib.
-    zeros    - Numeric/numpy array/scip.base zeros function (used to allocate
-              output python arrays).  Python is used to allocate the arrays
-              so no implementation-specific (Numeric, numpy array, scipy_core)
-              C API functions need to be used.  This means that any of these
-              array modules can be used simply by changing the import statement
-              in your python code.
-    storageorder - "C" for row-major, or "F" for column-major (Default "C")
+    Parameters
+    ----------
+    gribmsg : bytes
+        Python bytes object containing packed section 4 of the GRIB2 message.
 
-    RETURNS:
-    fld      - Numpy array (float32) containing the unpacked data field.
+    gdtnum : int
+        Grid Defintion Template number.
 
-    ERROR CODES: 2 = Not section 7
-                 4 = Unrecognized Data Representation Template
-                 5 = Need one of GDT 3.50 through 3.53 to decode DRT 5.51
-                 6 = Memory allocation error
+    gdtmpl : np.ndarray
+        1D Numpy array containing the grid defintion template values.
+
+    drtnum : int
+        Data Representation Template number.
+
+    drtmpl : np.ndarray
+        1D Numpy array containing the data representation template values.
+
+    ndpts : int
+        Number of data points to be unpacked.
+
+    storageorder : {'C', 'F'}, optional
+        Specify memory layout of unpacked data. The newly created array
+        will be in 'C' order (row major) unless 'F' is specified, in which
+        case it will be in Fortran order (column major). 
+
+    Returns
+    -------
+    fld : np.ndarray
+        1D Numpy array of floating-point values of the unpacked grid.
+
+    ipos : int
+        Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
     cdef g2int iofst
     cdef g2int iret
-    cdef g2float *fld
+    cdef g2float *fld_ptr
     cdef g2int[:] igdstmpl_view = gdtmpl
-    cdef g2int[:] idrstmpl_view = drtmpl
+    cdef g2int[:] idrtmpl_view = drtmpl
 
     iret = 0
     iofst = 0
@@ -494,118 +465,103 @@ def unpack7(gribmsg,
         <g2int>gdtnum,
         <g2int *>&igdstmpl_view[0],
         <g2int>drtnum,
-        <g2int *>&idrstmpl_view[0],
+        <g2int *>&idrtmpl_view[0],
         <g2int>ndpts,
-        &fld
+        &fld_ptr
     )
     if iret != 0:
        msg = f"Error in unpack7, error code = {iret}"
        raise RuntimeError(msg)
 
-    data = _toarray(fld, np.empty(ndpts, np.float32, order=storageorder))
+    fld = _toarray(fld_ptr, np.empty(ndpts, np.float32, order=storageorder))
 
-    return data
+    return fld, iofst//8
 
 # ----------------------------------------------------------------------------------------
-# Routines for writing grib2 files.
+# Routines for creating a GRIB2 message
 # ----------------------------------------------------------------------------------------
-def grib2_create(cnp.ndarray[cnp.int64_t, ndim=1] listsec0,
-                 cnp.ndarray[cnp.int64_t, ndim=1] listsec1):
+def grib2_create(cnp.ndarray[cnp.int64_t, ndim=1] sec0,
+                 cnp.ndarray[cnp.int64_t, ndim=1] sec1):
     """
-    Initializes a new GRIB2 message and packs GRIB2 sections 0
-    (Indicator Section) and 1 (Identification Section). This routine
-    is used with routines "g2_addgrid", "grib2_addfield", and "grib2_gribend"
-    to create a complete GRIB2 message. grib2_create must be called first
-    to initialize a new GRIB2 message. Also, a call to grib2_gribend is
-    required to complete GRIB2 message after all fields have been added.
+    Initializes a new GRIB2 message.
 
-    gribmsg, iret = grib2_create(listsec0, listsec1)
+    This Cython function serves as a wrapper to NCEPLIBS-g2c function,
+    g2_create() which packs GRIB2 sections 0 (Indicator Section) and 1
+    (Identification Section).
 
-    INPUT ARGUMENTS:
+    Parameters
+    ----------
+    sec0 : np.ndarray
+        1D Numpy array of length 2 containing the GRIB2 discipline [0] and
+        GRIB Edition Number [1] which is 2 for GRIB2.
+    
+    sec1 : np.ndarray
+        1D Numpy array containing section 1 values. 
 
-    listsec0 - Numpy array containing info needed for GRIB Indicator Section 0.
-               Must have length >= 2.
-               listsec0[0] = Discipline-GRIB Master Table Number (see Code Table 0.0)
-               listsec0[1] = GRIB Edition Number (currently 2)
-    listsec1 - Numpy array containing info needed for GRIB Identification Section 1.
-               Must have len >= 13.
-               listsec1[0]  = Id of orginating centre (Common Code Table C-1)
-               listsec1[1]  = Id of orginating sub-centre (local table)
-               listsec1[2]  = GRIB Master Tables Version Number (Code Table 1.0)
-               listsec1[3]  = GRIB Local Tables Version Number (Code Table 1.1)
-               listsec1[4]  = Significance of Reference Time (Code Table 1.2)
-               listsec1[5]  = Reference Time - Year (4 digits)
-               listsec1[6]  = Reference Time - Month
-               listsec1[7]  = Reference Time - Day
-               listsec1[8]  = Reference Time - Hour
-               listsec1[9]  = Reference Time - Minute
-               listsec1[10] = Reference Time - Second
-               listsec1[11] = Production status of data (Code Table 1.3)
-               listsec1[12] = Type of processed data (Code Table 1.4)
+    Returns
+    -------
+    gribmsg : bytes
+        Byte string containing the new GRIB2 message.
 
-   OUTPUT ARGUMENTS:
-   gribmsg  - string containing the new GRIB2 message.
-   iret     - return code.
-              > 0 = Current size of new GRIB2 message
-               -1 = Tried to use for version other than GRIB Edition 2
+    iret : int
+        When > 0, the current size of new GRIB2 message or if < 0, then
+        an error code.
     """
     cdef g2int iret
     cdef unsigned char *cgrib
-    cdef g2int[:] listsec0_view = listsec0
-    cdef g2int[:] listsec1_view = listsec1
+    cdef g2int[:] sec0_view = sec0
+    cdef g2int[:] sec1_view = sec1
 
     iret = 0
-    lengrib = 16 + (4*len(listsec1)) # Section 0 is always 16 bytes.
+    lengrib = 16 + (4*len(sec1)) # Section 0 is always 16 bytes.
     gribmsg = lengrib * b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
 
     iret = g2_create(
         cgrib,
-        <g2int *>&listsec0_view[0],
-        <g2int *>&listsec1_view[0],
+        <g2int *>&sec0_view[0],
+        <g2int *>&sec1_view[0],
     )
     if iret < 0:
         msg = f"Error in grib2_create, error code = {iret}"
         raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+
     return gribmsg, iret
 
 
 def grib2_addlocal(gribmsg,
                    sec2):
     """
-    This routine adds a Local Use Section (Section 2) to a GRIB2 message.
-    It is used with routines "g2_create", "g2_addgrid", "g2_addfield",
-    and "g2_gribend" to create a complete GRIB2 message. g2_create must
-    be called first to initialize a new GRIB2 message.
+    Adds section 2 data to GRIB2 message.
 
-    USAGE: int g2_addlocal(unsigned char *cgrib,unsigned char *csec2,
-                           g2int lcsec2)
-    INPUT ARGUMENTS:
-    cgrib    - Char array that contains the GRIB2 message to which section
-               2 should be added.
-    csec2    - Character array containing information to be added in
-               Section 2.
-    lcsec2   - Number of bytes of character array csec2 to be added to
-               Section 2.
+    This Cython function serves as a wrapper to NCEPLIBS-g2c function,
+    grib2_addlocal() which adds a Local Use Section (Section 2) to a
+    GRIB2 message.
 
-    OUTPUT ARGUMENT:
-    cgrib    - Char array to contain the updated GRIB2 message.
-               Must be allocated large enough to store the entire
-               GRIB2 message.
+    It should be noted here that is the repsonsibility of the user
+    to provide code and/or instructions for decoding and encoding
+    content of section 2 specific to your use case. 
 
-    RETURN VALUES:
-    iret     - Return code.
-             > 0 = Current size of updated GRIB2 message
-              -1 = GRIB message was not initialized.  Need to call
-                   routine gribcreate first.
-              -2 = GRIB message already complete.  Cannot add new section.
-              -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 1 or 7.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Bytes string containing the new GRIB2 message, returned from
+        grib2_create().
 
-    REMARKS: Note that the Local Use Section ( Section 2 ) can only follow
-             Section 1 or Section 7 in a GRIB2 message.
+    sec2 : bytes
+        Bytes string containing section 2 content. 
+
+    Returns
+    -------
+    gribmsg : bytes
+        Byte string containing the updated GRIB2 message with section
+        2 data added.
+
+    iret : int
+        When > 0, the current size of new GRIB2 message or if < 0, then
+        an error code.
     """
     cdef unsigned char *cgrib
     cdef unsigned char *csec2
@@ -636,50 +592,37 @@ def grib2_addgrid(gribmsg,
                   cnp.ndarray[cnp.int64_t, ndim=1] gdstmpl,
                   cnp.ndarray[cnp.int64_t, ndim=1] deflist):
     """
-    Packs up a Grid Definition Section (Section 3) and adds it to a GRIB2 message.
-    It is used with routines "g2_create", "g2_addfield" and "g2_gribend" to create
-    a complete GRIB2 message. g2_create must be called first to initialize a new
-    GRIB2 message.
+    Adds section 3 data to GRIB2 message.
 
-    gribmsg, iret = grib2_addgrid(gribmsg,gds,gdstmpl,ideflist)
+    This Cython function serves as a wrapper to NCEPLIBS-g2c function,
+    grib2_addgrid() which adds a Grid Definition Section (Section 3).
 
-    INPUT ARGUMENTS:
-    cgrib    - Char array that contains the GRIB2 message to which
-               section should be added.
-    gds      - Contains information needed for GRIB Grid Definition Section 3
-               Must be dimensioned >= 5.
-               gds[0] = Source of grid definition (see Code Table 3.0)
-               gds[1] = Number of grid points in the defined grid.
-               gds[2] = Number of octets needed for each
-                           additional grid points definition.
-                           Used to define number of
-                           points in each row ( or column ) for
-                           non-regular grids.
-                           = 0, if using regular grid.
-               gds[3] = Interpretation of list for optional points
-                           definition.  (Code Table 3.11)
-               gds[4] = Grid Definition Template Number (Code Table 3.1)
-    gdstmpl  - Contains the data values for the specified Grid Definition
-               Template ( NN=gds[4] ).  Each element of this integer
-               array contains an entry (in the order specified) of Grid
-               Defintion Template 3.NN
-    deflist  - (Used if gds[2] != 0)  This array contains the
-               number of grid points contained in each row ( or column )
+    Parameters
+    ----------
+    gribmsg : bytes
+        Bytes string containing the new GRIB2 message, returned from
+        grib2_create() or grib2_addlocal() if there contains local
+        use content.
 
-    OUTPUT ARGUMENTS:
-    cgrib    - Char array to contain the updated GRIB2 message.
-               Must be allocated large enough to store the entire
-               GRIB2 message.
+    gds : np.ndarray
+        1D Numpy array containing the grid defintion section values.
 
-    RETURN VALUES:
-    iret     - Return code.
-             > 0 = Current size of updated GRIB2 message
-              -1 = GRIB message was not initialized.  Need to call
-                   routine gribcreate first.
-              -2 = GRIB message already complete.  Cannot add new section.
-              -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 1, 2 or 7.
-              -5 = Could not find requested Grid Definition Template.
+    gdtmpl : np.ndarray
+        1D Numpy array containing the grid defintion template values.
+
+    deflist : np.ndarray
+        Used if gds[2] != 0, 1D Numpy array containing the number of
+        grid points contained in each row or column.
+
+    Returns
+    -------
+    gribmsg : bytes
+        Byte string containing the updated GRIB2 message with section
+        3 data added.
+
+    iret : int
+        When > 0, the current size of new GRIB2 message or if < 0, then
+        an error code.
     """
     cdef unsigned char *cgrib
     cdef g2int[:] gds_view = gds
@@ -707,105 +650,86 @@ def grib2_addgrid(gribmsg,
 
 
 def grib2_addfield(gribmsg,
-                   int pdsnum,
-                   cnp.ndarray[cnp.int64_t, ndim=1] pdstmpl,
+                   int pdtnum,
+                   cnp.ndarray[cnp.int64_t, ndim=1] pdtmpl,
                    cnp.ndarray[cnp.float32_t, ndim=1] coordlist,
-                   int drsnum,
-                   cnp.ndarray[cnp.int64_t, ndim=1] drstmpl,
-                   cnp.ndarray[cnp.float32_t, ndim=1] field,
+                   int drtnum,
+                   cnp.ndarray[cnp.int64_t, ndim=1] drtmpl,
+                   cnp.ndarray[cnp.float32_t, ndim=1] fld,
                    int ibitmap,
                    cnp.ndarray[cnp.int64_t, ndim=1] bitmap):
     """
-    Packs up Sections 4 through 7 for a given field
-    and adds them to a GRIB2 message.  They are Product Definition Section,
-    Data Representation Section, Bit-Map Section and Data Section, respectively.
-    This routine is used with routines "g2_create",
-    "g2_addgrid", and "g2_gribend" to create a complete GRIB2 message.
-    g2_create must be called first to initialize a new GRIB2 message.
-    g2_addgrid must be called after g2_create and
-    before this routine to add the appropriate grid description to
-    the GRIB2 message. A call to g2_gribend is required to complete
-    GRIB2 message after all fields have been added.
+    Adds sections 4 (Product Definition Section), 5 (Data Representation
+    Section), 6 (Bitmap Section), and 7 (Data Section) data to GRIB2
+    message.
 
-    gribmsg, iret = g2_addfield(gribmsg,pdsnum,pdstmpl,coordlist,drsnum,
-                               drstmpl,fld,ngrdpts,ibmap,bmap)
-    INPUT ARGUMENT LIST:
-    cgrib    - Char array that contains the GRIB2 message to which sections
-               4 through 7 should be added.
-    pdsnum   - Product Definition Template Number ( see Code Table 4.0)
-    pdstmpl  - numpy array with data values for the specified Product Definition
-               Template ( N=pdsnum ).  Each element of this integer
-               array contains an entry (in the order specified) of Product
-               Defintion Template 4.N
-    coordlist- numpy array (float32) containg floating point values intended to
-               document the vertical discretisation associated to model data
-               on hybrid coordinate vertical levels.
-    numcoord - number of values in array coordlist.
-    drsnum   - Data Representation Template Number ( see Code Table 5.0 )
-    drstmpl  - numpy array with data values for the specified Data Representation
-               Template ( N=drsnum ).  Each element of this integer
-               array contains an entry (in the order specified) of Data
-               Representation Template 5.N
-               Note that some values in this template (eg. reference
-               values, number of bits, etc...) may be changed by the
-               data packing algorithms.
-               Use this to specify scaling factors and order of
-               spatial differencing, if desired.
-    field    - numpy array (float32) of data points to pack.
-    ngrdpts  - Number of data points in grid.
-               i.e.  size of fld and bmap.
-    ibitmap  - Bitmap indicator ( see Code Table 6.0 )
-               0 = bitmap applies and is included in Section 6.
-               1-253 = Predefined bitmap applies
-               254 = Previously defined bitmap applies to this field
-               255 = Bit map does not apply to this product.
-    bitmap   - numpy array (int32) containing bitmap to be added.
-               (if ibitmap=0 or 254)
+    This Cython function serves as a wrapper to NCEPLIBS-g2c function,
+    grib2_addfield(). 
 
-    OUTPUT ARGUMENT LIST:
-    gribmsg  - String with the updated GRIB2 message.
-               Must be allocated large enough to store the entire
-               GRIB2 message.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Bytes string containing the new GRIB2 message, returned from
+        grib2_addgrid().
 
-    RETURN VALUES:
-    iret     - Return code.
-             > 0 = Current size of updated GRIB2 message
-              -1 = GRIB message was not initialized.  Need to call
-                   routine gribcreate first.
-              -2 = GRIB message already complete.  Cannot add new section.
-              -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 3 or 7.
-              -5 = Could not find requested Product Definition Template.
-              -6 = Section 3 (GDS) not previously defined in message
-              -7 = Tried to use unsupported Data Representationi Template
-              -8 = Specified use of a previously defined bitmap, but one
-                   does not exist in the GRIB message.
-              -9 = GDT of one of 5.50 through 5.53 required to pack field
-                   using DRT 5.51.
-             -10 = Error packing data field.
+    pdtnum : int
+        GRIB2 Product Definition Template number.
+
+    pdtmpl : np.ndarray
+        1D Numpy array containing the product defintion template values.
+
+    coordlist : np.ndarray
+        1D Numpy array containing floating point values intended to document
+        the vertical discretisation associated to model data on hybrid
+        coordinate vertical levels.
+
+    drtnum : int
+        GRIB2 Data Representation Template number.
+
+    drtmpl : np.ndarray
+        1D Numpy array containing the data representation template values.
+
+    fld : np.ndarray
+        1D Numpy array of floating-point values of the data to be packed.
+
+    ibitmap : int
+        Bit map indicator.
+
+    bitmap : np.ndarray
+        1D Numpy array containing the decoded bitmap.
+
+    Returns
+    -------
+    gribmsg : bytes
+        Byte string containing the updated GRIB2 message with sections
+        4, 5, 6, and 7 added.
+
+    iret : int
+        When > 0, the current size of new GRIB2 message or if < 0, then
+        an error code.
     """
     cdef unsigned char *cgrib
-    cdef g2int iret #,ipdsnum,numcoord,idrsnum
-    cdef g2int[:] pdstmpl_view = pdstmpl
+    cdef g2int iret
+    cdef g2int[:] pdtmpl_view = pdtmpl
     cdef float[:] coordlist_view = coordlist
-    cdef g2int[:] drstmpl_view = drstmpl
-    cdef float[:] field_view = field
+    cdef g2int[:] drtmpl_view = drtmpl
+    cdef float[:] fld_view = fld
     cdef g2int[:] bitmap_view = bitmap
 
     iret = 0
-    gribmsg = gribmsg + 4*(len(drstmpl)+len(field)+4)*b" "
+    gribmsg = gribmsg + 4*(len(drtmpl)+len(fld)+4)*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
 
     iret = g2_addfield(
         cgrib,
-        pdsnum,
-        <g2int *>&pdstmpl_view[0],
+        pdtnum,
+        <g2int *>&pdtmpl_view[0],
         <float *>&coordlist_view[0],
         <g2int>len(coordlist),
-        drsnum,
-        <g2int *>&drstmpl_view[0],
-        <float *>&field_view[0],
-        <g2int>len(field),
+        drtnum,
+        <g2int *>&drtmpl_view[0],
+        <float *>&fld_view[0],
+        <g2int>len(fld),
         ibitmap,
         <g2int *>&bitmap_view[0],
     )
@@ -819,38 +743,31 @@ def grib2_addfield(gribmsg,
 
 def grib2_end(gribmsg):
     """
-    Finalizes a GRIB2 message after all grids and fields have been added.
-    It adds the End Section ( "7777" ) to the end of the GRIB message
-    and calculates the length and stores it in the appropriate place in Section 0.
-    This routine is used with routines "g2_create", "g2_addgrid", and
-    "g2_addfield" to create a complete GRIB2 message. g2_create must be
-    called first to initialize a new GRIB2 message.
+    Finalizes GRIB2 message.
 
-    gribmsg, iret = grib2_end(gribmsg)
+    This Cython function serves as a wrapper to NCEPLIBS-g2c function,
+    grib2_end() which adds the End Section ( "7777" ) to the end of the
+    GRIB message and calculates the length and stores it in the appropriate
+    place in Section 0.
 
-    INPUT ARGUMENT:
-    gribmsg  - String containing all the data sections added
-               be previous calls to g2_create, g2_addgrid,
-               and g2_addfield.
+    Parameters
+    ----------
+    gribmsg : bytes
+        Bytes string containing the new GRIB2 message.
 
-    OUTPUT ARGUMENTS:
-    gribmsg  - String containing the finalized GRIB2 message
+    Returns
+    -------
+    gribmsg : bytes
+        Byte string containing the complete GRIB2 message.
 
-    RETURN VALUES:
-    iret     - Return code.
-             > 0 = Length of the final GRIB2 message in bytes.
-              -1 = GRIB message was not initialized.  Need to call
-                   routine g2_create first.
-              -2 = GRIB message already complete.
-              -3 = Sum of Section byte counts doesn"t add to total byte count
-              -4 = Previous Section was not 7.
+    iret : int
+        When > 0, the current size of new GRIB2 message or if < 0, then
+        an error code.
     """
     cdef g2int iret
     cdef unsigned char *cgrib
 
     iret = 0
-
-    # Add some extra space to grib message (enough to hold section 8).
     gribmsg = gribmsg + 8*b" "
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
 
@@ -860,4 +777,5 @@ def grib2_end(gribmsg):
        raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
+
     return gribmsg, iret

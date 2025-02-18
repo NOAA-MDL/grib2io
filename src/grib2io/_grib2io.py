@@ -1573,7 +1573,7 @@ def _data(
         bmap_size,num = struct.unpack('>IB',filehandle.read(5))
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
-        bmapflag, bmap = g2clib.unpack6(filehandle.read(bmap_size), msg.section3[1])
+        bmapflag, bmap, ipos = g2clib.unpack6(filehandle.read(bmap_size), msg.section3[1])
         if bmap is not None:
             msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
 
@@ -1589,8 +1589,8 @@ def _data(
     ipos = 0
     npvals = msg.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
-                          storageorder=storageorder)
+    fld1, ipos = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
+                                storageorder=storageorder)
 
     # Handle the missing values
     if msg.bitMapFlag in {0,254}:
