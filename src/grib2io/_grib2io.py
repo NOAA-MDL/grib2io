@@ -296,25 +296,25 @@ class open():
                     # Unpack section
                     if secnum == 1:
                         # Unpack Section 1
-                        section1, grbpos = g2clib.unpack1(secmsg,grbpos,np.empty)
+                        section1, grbpos = g2clib.unpack1(secmsg)
                     elif secnum == 2:
                         # Unpack Section 2
                         section2 = self._filehandle.read(secsize-5)
                     elif secnum == 3:
                         # Unpack Section 3
-                        gds, gdt, deflist, grbpos = g2clib.unpack3(secmsg,grbpos,np.empty)
+                        gds, gdt, deflist, grbpos = g2clib.unpack3(secmsg)
                         gds = gds.tolist()
                         gdt = gdt.tolist()
                         section3 = np.concatenate((gds,gdt))
                         section3 = np.where(section3==4294967295,-1,section3)
                     elif secnum == 4:
                         # Unpack Section 4
-                        numcoord, pdt, pdtnum, coordlist, grbpos = g2clib.unpack4(secmsg,grbpos,np.empty)
+                        pdtnum, pdt, coordlist, numcoord, grbpos = g2clib.unpack4(secmsg)
                         pdt = pdt.tolist()
                         section4 = np.concatenate((np.array((numcoord,pdtnum)),pdt))
                     elif secnum == 5:
                         # Unpack Section 5
-                        drt, drtn, npts, self._pos = g2clib.unpack5(secmsg,grbpos,np.empty)
+                        drtn, drt, npts, self._pos = g2clib.unpack5(secmsg)
                         section5 = np.concatenate((np.array((npts,drtn)),drt))
                         section5 = np.where(section5==4294967295,-1,section5)
                     elif secnum == 6:
@@ -731,9 +731,9 @@ class _Grib2Message:
     def __post_init__(self):
         """Set some attributes after init."""
         self._auto_nans = _AUTO_NANS
-        self._coordlist = None
+        self._coordlist = np.zeros((0), dtype=np.float32)
         self._data = None
-        self._deflist = None
+        self._deflist = np.zeros((0), dtype=np.int64)
         self._msgnum = -1
         self._ondiskarray = None
         self._orig_section5 = np.copy(self.section5)
@@ -968,12 +968,6 @@ class _Grib2Message:
         else:
             bmap = None
 
-        # Prepare optional coordinate list
-        if self._coordlist is not None:
-            crdlist = np.array(self._coordlist,'f')
-        else:
-            crdlist = None
-
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
         if bitmapflag in {0,254}:
@@ -991,7 +985,7 @@ class _Grib2Message:
         # Add sections 4, 5, 6, and 7.
         self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
                                                     self.productDefinitionTemplate,
-                                                    crdlist,
+                                                    self._coordlist,
                                                     self.drtn,
                                                     self.dataRepresentationTemplate,
                                                     fld,
@@ -1579,7 +1573,7 @@ def _data(
         bmap_size,num = struct.unpack('>IB',filehandle.read(5))
         filehandle.seek(filehandle.tell()-5)
         ipos = 0
-        bmap,bmapflag = g2clib.unpack6(filehandle.read(bmap_size),msg.section3[1],ipos,np.empty)
+        bmapflag, bmap, ipos = g2clib.unpack6(filehandle.read(bmap_size), msg.section3[1])
         if bmap is not None:
             msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
 
@@ -1595,8 +1589,8 @@ def _data(
     ipos = 0
     npvals = msg.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1 = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,ipos,
-                          np.empty,storageorder=storageorder)
+    fld1, ipos = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
+                                storageorder=storageorder)
 
     # Handle the missing values
     if msg.bitMapFlag in {0,254}:
@@ -1621,7 +1615,7 @@ def _data(
         fld = fld1
 
     # Check for reduced grid.
-    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist is not None:
+    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist.shape[0] > 0: 
         from . import redtoreg
         nx = 2*ny
         lonsperlat = msg._deflist
