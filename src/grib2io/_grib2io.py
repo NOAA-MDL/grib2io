@@ -914,7 +914,7 @@ class _Grib2Message:
                         [a for a in dir(self.__class__.__mro__[_find_class_index(sect)]) if not a.startswith('_')]
             else:
                 attrs = templates._section_attrs[sect]+\
-                        self.__class__.__mro__[_find_class_index(sect)]._attrs
+                        self.__class__.__mro__[_find_class_index(sect)]._attrs()
         else:
             attrs = []
         if values:
