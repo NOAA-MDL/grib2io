@@ -16,7 +16,7 @@ jobs:
         staticlib: [ "True", "False" ]
 	exclude:
           - python-version: "3.13"
-          - staticlib: "True"
+            staticlib: "True"
 
     steps:
     - uses: actions/checkout@v4
