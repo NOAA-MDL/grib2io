@@ -2,6 +2,7 @@ from ctypes.util import find_library as ctypes_find_library
 from pathlib import Path
 from setuptools import setup, Extension
 import configparser
+import copy
 import numpy
 import os
 import platform
@@ -314,13 +315,19 @@ redtoregext = Extension('grib2io.redtoreg',
                         include_dirs = [numpy.get_include()])
 extension_modules.append(redtoregext)
 if build_with_ip:
+    # TEST
+    iplib_extra_objects = copy.deepcopy(extra_objects)
+    if use_static_libs:
+        ftnlib = find_library('gfortran', static=True)
+        iplib_extra_objects.append(ftnlib)
+    # TEST
     iplibext = Extension('grib2io.iplib',
                          [iplib_pyx],
                          include_dirs = ['./src/ext']+incdirs,
                          library_dirs = libdirs,
                          libraries = libraries,
                          runtime_library_dirs = libdirs,
-                         extra_objects = extra_objects)
+                         extra_objects = iplib_extra_objects)
     extension_modules.append(iplibext)
 
     if build_with_openmp:
@@ -329,7 +336,7 @@ if build_with_ip:
                               include_dirs = incdirs,
                               library_dirs = libdirs,
                               libraries = libraries,
-                              runtime_library_dirs = libraries,
+                              runtime_library_dirs = libdirs,
                               extra_compile_args = ['-fopenmp'],
                               extra_link_args = ['-fopenmp'],
                               extra_objects = extra_objects)
