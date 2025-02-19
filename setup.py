@@ -43,13 +43,9 @@ def get_package_info(name, config, static=False, required=True):
                     pkg_dir = os.path.dirname(pkg_libdir)
 
         if pkg_dir is None:
-            try:
-                for l in pkgname_to_libname[name]:
-                    libname = find_library(l, static=static, required=required)
-                    if libname is not None: break
-            except(KeyError):
-                libname = find_library(name, static=static, required=required)
-                l = name
+            for l in pkgname_to_libname[name]:
+                libname = find_library(l, static=static, required=required)
+                if libname is not None: break
             name = l
             if libname is None:
                 pkg_libdir = None
@@ -319,18 +315,12 @@ redtoregext = Extension('grib2io.redtoreg',
                         include_dirs = [numpy.get_include()])
 extension_modules.append(redtoregext)
 if build_with_ip:
-    # TEST
-    iplib_libdirs = copy.deepcopy(libdirs)
-    if use_static_libs:
-        stuff = get_package_info('gfortran', config)
-        iplib_libdirs.append(stuff[2])
-    # TEST
     iplibext = Extension('grib2io.iplib',
                          [iplib_pyx],
                          include_dirs = ['./src/ext']+incdirs,
                          library_dirs = libdirs,
                          libraries = libraries,
-                         runtime_library_dirs = iplib_libdirs,
+                         runtime_library_dirs = libdirs,
                          extra_objects = extra_objects)
     extension_modules.append(iplibext)
 
