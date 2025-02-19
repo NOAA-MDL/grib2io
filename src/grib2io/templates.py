@@ -82,7 +82,7 @@ class Grib2Metadata:
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
     def __str__(self):
-        return f'{self.value} - {self.definition()}'
+        return f'{self.value} - {self.definition}'
     def __eq__(self,other):
         return self.value == other or self.definition[0] == other
     def __gt__(self,other):
@@ -99,9 +99,9 @@ class Grib2Metadata:
         return hash(self.value)
     def __index__(self):
         return int(self.value)
+    @property
     def definition(self):
-        defn = tables.get_value_from_table(self.value,self.table)
-        return defn
+        return tables.get_value_from_table(self.value,self.table)
     def show_table(self):
         """Provide the table related to this metadata."""
         return tables.get_table(self.table)
