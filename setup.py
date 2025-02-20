@@ -327,10 +327,11 @@ if build_with_ip:
                                    required=False,
                                    include_file="omp.h")
 
-        extmod_config['iplib']['libraries'].append(pkginfo[0])
-        extmod_config['iplib']['incdirs'].append(pkginfo[1])
-        extmod_config['iplib']['libdirs'].append(pkginfo[2])
-        extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
+        if None not in pkginfo:
+            extmod_config['iplib']['libraries'].append(pkginfo[0])
+            extmod_config['iplib']['incdirs'].append(pkginfo[1])
+            extmod_config['iplib']['libdirs'].append(pkginfo[2])
+            extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
 
     if use_static_libs:
         for l in extmod_config['iplib']['libraries']:
