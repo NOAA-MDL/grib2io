@@ -325,6 +325,12 @@ if build_with_ip:
         extmod_config['iplib']['libraries'] = []
         extmod_config['iplib']['libdirs'] = []
 
+        # Need Fortran runtime even when static.
+        pkginfo = get_package_info('gfortran', config, static=use_static_libs, required=False)
+        extmod_config['iplib']['libraries'].append(pkginfo[0])
+        extmod_config['iplib']['incdirs'].append(pkginfo[1])
+        extmod_config['iplib']['libdirs'].append(pkginfo[2])
+
     extmod_config['iplib']['incdirs'].append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
