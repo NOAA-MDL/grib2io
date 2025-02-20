@@ -74,6 +74,7 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
 
 
 def find_include_file(file, root=None):
+    incfile = ''
     if root is None:
         return None
     for path, subdirs, files in os.walk(root):
