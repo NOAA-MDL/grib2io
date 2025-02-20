@@ -320,12 +320,14 @@ if build_with_ip:
                               static=use_static_libs)
 
     build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=use_static_libs)
+    print(build_with_openmp, openmp_libname, ftn_libname)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
                                    config,
                                    static=use_static_libs,
                                    required=False,
                                    include_file="omp.h")
+        print(pkginfo)
 
         if None not in pkginfo:
             extmod_config['iplib']['libraries'].append(pkginfo[0])
