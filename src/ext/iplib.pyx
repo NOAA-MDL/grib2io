@@ -10,7 +10,7 @@ from cython.parallel import prange
 from libc.stdint cimport uint8_t, int32_t
 from libc.stdlib cimport malloc, free
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
 
 cdef extern from "<stdbool.h>":
     ctypedef int bool
@@ -36,17 +36,17 @@ cdef extern from "omp.h":
     
 
 def interpolate_scalar(int ip,
-                   np.ndarray[np.int32_t, ndim=1] ipopt,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ipopt,
                    int igdtnumi,
-                   np.ndarray[np.int32_t, ndim=1] igdtmpli,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
                    int igdtnumo,
-                   np.ndarray[np.int32_t, ndim=1] igdtmplo,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmplo,
                    int mi,
                    int mo,
                    int km,
-                   np.ndarray[np.int32_t, ndim=1] ibi,
-                   np.ndarray[np.uint8_t, ndim=2] li,
-                   np.ndarray[np.float32_t, ndim=2] gi,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ibi,
+                   cnp.ndarray[cnp.uint8_t, ndim=2] li,
+                   cnp.ndarray[cnp.float32_t, ndim=2] gi,
                    lats = None,
                    lons = None):
     """
@@ -109,11 +109,11 @@ def interpolate_scalar(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef np.ndarray[np.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
-    cdef np.ndarray[np.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef np.ndarray[np.float32_t, ndim=2] go = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
+    cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] go = np.zeros((mo, km), dtype=np.float32)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
@@ -143,18 +143,18 @@ def interpolate_scalar(int ip,
 
 
 def interpolate_vector(int ip,
-                   np.ndarray[np.int32_t, ndim=1] ipopt,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ipopt,
                    int igdtnumi,
-                   np.ndarray[np.int32_t, ndim=1] igdtmpli,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
                    int igdtnumo,
-                   np.ndarray[np.int32_t, ndim=1] igdtmplo,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmplo,
                    int mi,
                    int mo,
                    int km,
-                   np.ndarray[np.int32_t, ndim=1] ibi,
-                   np.ndarray[np.uint8_t, ndim=2] li,
-                   np.ndarray[np.float32_t, ndim=2] ui,
-                   np.ndarray[np.float32_t, ndim=2] vi,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ibi,
+                   cnp.ndarray[cnp.uint8_t, ndim=2] li,
+                   cnp.ndarray[cnp.float32_t, ndim=2] ui,
+                   cnp.ndarray[cnp.float32_t, ndim=2] vi,
                    lats = None,
                    lons = None):
     """
@@ -225,14 +225,14 @@ def interpolate_vector(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef np.ndarray[np.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] crot = np.ones(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] srot = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
-    cdef np.ndarray[np.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef np.ndarray[np.float32_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] crot = np.ones(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] srot = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
+    cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float32)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
