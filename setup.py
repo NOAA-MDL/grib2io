@@ -54,10 +54,10 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
                 pkg_incdir = None
             else:
                 pkg_libdir = os.path.dirname(libname)
-                if include_file is None:
-                    pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
-                else:
+                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                if include_file is not None:
                     incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
+                if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
     else:
@@ -74,7 +74,7 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
 
 
 def find_include_file(file, root=None):
-    incfile = ''
+    incfile = None
     if root is None:
         return None
     for path, subdirs, files in os.walk(root):
