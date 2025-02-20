@@ -57,8 +57,8 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
                 pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
                 if include_file is not None:
                     incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
-                if incfile is not None:
-                    pkg_incdir = os.path.dirname(incfile)
+                    if incfile is not None:
+                        pkg_incdir = os.path.dirname(incfile)
 
     else:
         # Env var was set
