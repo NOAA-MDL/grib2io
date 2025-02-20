@@ -27,8 +27,8 @@ grib2io provides a Python interface to the [NCEP GRIB2 C library](https://github
 
 grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) which **_was_** a module within [pygrib](https://github.com/jswhit/pygrib).  As of pygrib v2.1, development of ncepgrib2 was dropped in favor of continued development of the pygrib module which provides an interface to the ECMWF [ecCodes](https://github.com/ecmwf/eccodes) library.  grib2io aims to provide a fast, efficient, and easy-to-use interface to the NCEP g2c library.  One way to accomplish this is to leverage the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/) which are included in grib2io.  With these [tables](./grib2io/tables) included and functions interact with them, grib2io provides a translation of GRIB2's integer coded metadata to human-readable language.
 
-> [!NOTE]
-> As of version 2.4.0, grib2io-interp component package is no longer support.  Interpolation support is available in grib2io via Cython interface to [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+> [!IMPORTANT]
+> As of version 2.4.0, grib2io-interp component package is no longer supported.  Interpolation support is available in grib2io via Cython interface to [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).
 
 ## Documentation
 * [API documentation](https://noaa-mdl.github.io/grib2io/grib2io.html)
@@ -41,9 +41,6 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 * NumPy 1.22+
 * pyproj 1.9.6+
 * C compiler: GNU, Intel, and Apple Clang have been tested.
-
-## Optional Software
-* [grib2io-interp](https://github.com/NOAA-MDL/grib2io-interp) 1.0.0+ - Provides ability to perform spatial interpolation via the [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
 
 ## Required External Libraries
 
@@ -86,7 +83,7 @@ pip install .
 
 ## Development
 
-grib2io is the de-facto Python interface to the NCEPLIBS-g2c library.  Therefore, the development and evolution of grib2io will mainly focus on how best to serve that purpose and its primary users -- mainly meteorologists, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS); National Centers for Environmental Prediction (NCEP); and other NOAA and U.S. Government organizations.
+grib2io is the de facto Python interface to the NCEPLIBS-g2c library. Therefore, its development and evolution will primarily focus on serving that purpose and supporting its core users—mainly meteorologists, physical scientists, and software developers working within NOAA’s National Weather Service (NWS), the National Centers for Environmental Prediction (NCEP), and other NOAA and U.S. Government organizations.
 
 ## Disclaimer
 
