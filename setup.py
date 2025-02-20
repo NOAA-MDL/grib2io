@@ -26,7 +26,7 @@ def get_grib2io_version():
         ver = f.readline().strip()
     return ver
 
-def get_package_info(name, config, static=False, required=True):
+def get_package_info(name, config, static=False, required=True, include_file=None):
     pkg_dir = os.environ.get(name.upper()+'_DIR')
     pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
     pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
@@ -43,6 +43,8 @@ def get_package_info(name, config, static=False, required=True):
                     pkg_dir = os.path.dirname(pkg_libdir)
 
         if pkg_dir is None:
+            if name not in pkgname_to_libname.keys():
+                pkgname_to_libname[name] = [name]
             for l in pkgname_to_libname[name]:
                 libname = find_library(l, static=static, required=required)
                 if libname is not None: break
@@ -52,7 +54,11 @@ def get_package_info(name, config, static=False, required=True):
                 pkg_incdir = None
             else:
                 pkg_libdir = os.path.dirname(libname)
-                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                if include_file is None:
+                    pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                else:
+                    incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
+                    pkg_incdir = os.path.dirname(incfile)
 
     else:
         # Env var was set
@@ -65,6 +71,18 @@ def get_package_info(name, config, static=False, required=True):
         elif os.path.exists(os.path.join(pkg_dir,'include_4')):
             pkg_incdir = os.path.join(pkg_dir,'include_4')
     return (name, pkg_incdir, pkg_libdir)
+
+
+def find_include_file(file, root=None):
+    if root is None:
+        return None
+    for path, subdirs, files in os.walk(root):
+        for name in files:
+            if name == file:
+                incfile = os.path.join(path, name)
+                break
+    return incfile
+
 
 def find_library(name, dirs=None, static=False, required=True):
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
@@ -141,8 +159,21 @@ def run_otool_command(filename):
 def check_for_openmp(ip_lib, static=False):
     """Check for OpenMP"""
     check = False
+    is_apple_clang = False
     info = ''
     libname = ''
+
+    # Special check for macOS
+    if sys.platform == 'darwin':
+        try:
+            is_apple_clang = 'clang' in os.environ['CC']
+        except(KeyError):
+            is_apple_clang = True
+    if is_apple_clang:
+        check = True
+        libname = 'omp'
+        return check, libname
+        
     if static:
         if sys.platform in {'darwin','linux'}:
             info = run_nm_command(ip_lib)
@@ -175,15 +206,11 @@ VERSION = get_grib2io_version()
 
 use_static_libs = False
 build_with_ip = True
-libraries = []
-
-extension_modules = []
-extra_objects = []
-incdirs = []
-libdirs = []
-
 build_with_openmp = False
-openmp_libname = ''
+
+extmod_config = {}
+extension_modules = []
+all_extra_objects = []
 
 # ----------------------------------------------------------------------------------------
 # Build Cython sources
@@ -218,17 +245,15 @@ use_static_libs = config.get('options', 'use_static_libs', fallback=use_static_l
 pkginfo = get_package_info('g2c', config, static=use_static_libs, required=True)
 if None in pkginfo:
     raise ValueError(f"NCEPLIBS-g2c library not found. grib2io will not build.")
-else:
-    libraries.append(pkginfo[0])
-    incdirs.append(pkginfo[1])
-    libdirs.append(pkginfo[2])
 
-# ----------------------------------------------------------------------------------------
-# Perform work to determine required static library files.
-# ----------------------------------------------------------------------------------------
+extmod_config['g2clib'] = dict(libraries=[pkginfo[0]],
+                               incdirs=[pkginfo[1]],
+                               libdirs=[pkginfo[2]],
+                               extra_objects=[])
+
 if use_static_libs:
-    staticlib = find_library('g2c', dirs=libdirs, static=True)
-    extra_objects.append(staticlib)
+    staticlib = find_library('g2c', dirs=extmod_config['g2clib']['libdirs'], static=True)
+    extmod_config['g2clib']['extra_objects'].append(staticlib)
     cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
     symbols = cmd.stdout.decode('utf-8')
     dep_libraries = ['g2c']
@@ -246,11 +271,18 @@ if use_static_libs:
     # We already found g2c info, so iterate over libraries from [1:]
     for l in dep_libraries[1:]:
         libname, incdir, libdir = get_package_info(l, config, static=use_static_libs)
-        incdirs.append(incdir)
-        libdirs.append(libdir)
-        if use_static_libs:
-            l = pkgname_to_libname[l][0]
-            extra_objects.append(find_library(l, dirs=[libdir], static=use_static_libs))
+        extmod_config['g2clib']['libraries'].append(libname)
+        extmod_config['g2clib']['incdirs'].append(incdir)
+        extmod_config['g2clib']['libdirs'].append(libdir)
+
+        l = pkgname_to_libname[l][0]
+        extmod_config['g2clib']['extra_objects'].append(find_library(l, dirs=[libdir], static=use_static_libs))
+
+    # Clear out libraries and libdirs when using static libs
+    extmod_config['g2clib']['libraries'] = []
+    extmod_config['g2clib']['libdirs'] = []
+
+extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
 # Get NCEPLIBS-ip information
@@ -259,82 +291,81 @@ pkginfo = get_package_info('ip', config, static=use_static_libs, required=False)
 if None in pkginfo:
     warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
     build_with_ip = False
-else:
-    libraries.append(pkginfo[0])
-    incdirs.append(pkginfo[1])
-    libdirs.append(pkginfo[2])
 
-# ----------------------------------------------------------------------------------------
-# Check for OpenMP library objects are in the ip library
-# ----------------------------------------------------------------------------------------
 if build_with_ip:
+    extmod_config['iplib'] = dict(libraries=[pkginfo[0]],
+                                  incdirs=[pkginfo[1]],
+                                  libdirs=[pkginfo[2]],
+                                  extra_objects=[],
+                                  define_macros=[])
+
+    ip_libname = find_library(pkgname_to_libname['ip'][0],
+                              dirs=extmod_config['iplib']['libdirs'],
+                              static=use_static_libs)
+
+    build_with_openmp, openmp_libname = check_for_openmp(ip_libname, static=use_static_libs)
+    if build_with_openmp:
+        pkginfo = get_package_info(openmp_libname,
+                                   config,
+                                   static=use_static_libs,
+                                   required=False,
+                                   include_file="omp.h")
+
+        extmod_config['iplib']['libraries'].append(pkginfo[0])
+        extmod_config['iplib']['incdirs'].append(pkginfo[1])
+        extmod_config['iplib']['libdirs'].append(pkginfo[2])
+        extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
+
     if use_static_libs:
-        ip_staticlib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
-        extra_objects.append(ip_staticlib)
-        build_with_openmp, openmp_libname = check_for_openmp(ip_staticlib, static=use_static_libs)
-        if build_with_openmp:
-            openmp_staticlib = find_library(openmp_libname, static=use_static_libs)
-            extra_objects.append(openmp_staticlib)
-    else:
-        iplib = find_library(pkgname_to_libname['ip'][0], dirs=libdirs, static=use_static_libs)
-        build_with_openmp, openmp_libname = check_for_openmp(iplib, static=use_static_libs)
+        for l in extmod_config['iplib']['libraries']:
+            lname = find_library(l, dirs=extmod_config['iplib']['libdirs'], static=use_static_libs)
+            extmod_config['iplib']['extra_objects'].append(lname)
+
+        extmod_config['iplib']['libraries'] = []
+        extmod_config['iplib']['libdirs'] = []
+
+    extmod_config['iplib']['incdirs'].append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
-# Final clean up 
+# Summary 
 # ----------------------------------------------------------------------------------------
-libraries = [] if use_static_libs else list(set(libraries))
-incdirs = list(set(incdirs))
-incdirs.append(numpy.get_include())
-libdirs = [] if use_static_libs else list(set(libdirs))
-extra_objects = list(set(extra_objects)) if use_static_libs else []
-
-if build_with_openmp and not use_static_libs:
-    libraries.append(openmp_libname)
-
 print(f'Use static libs: {use_static_libs}')
 print(f'Build with NCEPLIBS-ip: {build_with_ip}')
 print(f'Needs OpenMP: {build_with_openmp}')
-print(f'\t{libraries = }')
-print(f'\t{incdirs = }')
-print(f'\t{libdirs = }')
-print(f'\t{extra_objects = }')
+for n, c in extmod_config.items():
+    print(f'Extension module name: {n}')
+    for k, v in c.items():
+        if k == 'extra_objects':
+            all_extra_objects.extend(v)
+        print(f'\t{k}: {v}')
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
 # ----------------------------------------------------------------------------------------
 g2clibext = Extension('grib2io.g2clib',
                       [g2clib_pyx],
-                      include_dirs = incdirs,
-                      library_dirs = libdirs,
-                      libraries = libraries,
-                      runtime_library_dirs = libdirs,
-                      extra_objects = extra_objects)
+                      include_dirs = extmod_config['g2clib']['incdirs'],
+                      library_dirs = extmod_config['g2clib']['libdirs'],
+                      libraries = extmod_config['g2clib']['libraries'],
+                      runtime_library_dirs = extmod_config['g2clib']['libdirs'],
+                      extra_objects = extmod_config['g2clib']['extra_objects'])
 extension_modules.append(g2clibext)
+
 redtoregext = Extension('grib2io.redtoreg',
                         [redtoreg_pyx],
                         include_dirs = [numpy.get_include()])
 extension_modules.append(redtoregext)
+
 if build_with_ip:
     iplibext = Extension('grib2io.iplib',
                          [iplib_pyx],
-                         include_dirs = ['./src/ext']+incdirs,
-                         library_dirs = libdirs,
-                         libraries = libraries,
-                         runtime_library_dirs = libdirs,
-                         extra_objects = extra_objects)
+                         include_dirs = ['./src/ext']+extmod_config['iplib']['incdirs'],
+                         library_dirs = extmod_config['iplib']['libdirs'],
+                         libraries = extmod_config['iplib']['libraries'],
+                         runtime_library_dirs = extmod_config['iplib']['libdirs'],
+                         extra_objects = extmod_config['iplib']['extra_objects'],
+                         define_macros = extmod_config['iplib']['define_macros'])
     extension_modules.append(iplibext)
-
-    if build_with_openmp:
-        openmpext = Extension('grib2io.openmp_handler',
-                              [openmp_pyx],
-                              include_dirs = incdirs,
-                              library_dirs = libdirs,
-                              libraries = libraries,
-                              runtime_library_dirs = libdirs,
-                              extra_compile_args = ['-fopenmp'],
-                              extra_link_args = ['-fopenmp'],
-                              extra_objects = extra_objects)
-        extension_modules.append(openmpext)
 
 # ----------------------------------------------------------------------------------------
 # Create __config__.py
@@ -354,7 +385,7 @@ cfgdict['grib2io_version'] = VERSION
 cfgdict['has_interpolation'] = build_with_ip
 cfgdict['has_openmp_support'] = build_with_openmp
 cfgdict['use_static_libs'] = use_static_libs
-cfgdict['extra_objects'] = extra_objects
+cfgdict['extra_objects'] = all_extra_objects
 try:
     a.write(cnt % cfgdict)
 finally:

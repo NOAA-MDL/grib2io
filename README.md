@@ -6,7 +6,8 @@
 [![Python 3.9](https://img.shields.io/badge/python-3.9-blue.svg)](https://www.python.org/downloads/release/python-390/)
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
-[![Python 3.11](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
 
 ![Build Linux](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_linux.yml/badge.svg)
 ![Build macOS](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_macos.yml/badge.svg)
@@ -26,12 +27,15 @@ grib2io provides a Python interface to the [NCEP GRIB2 C library](https://github
 
 grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) which **_was_** a module within [pygrib](https://github.com/jswhit/pygrib).  As of pygrib v2.1, development of ncepgrib2 was dropped in favor of continued development of the pygrib module which provides an interface to the ECMWF [ecCodes](https://github.com/ecmwf/eccodes) library.  grib2io aims to provide a fast, efficient, and easy-to-use interface to the NCEP g2c library.  One way to accomplish this is to leverage the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/) which are included in grib2io.  With these [tables](./grib2io/tables) included and functions interact with them, grib2io provides a translation of GRIB2's integer coded metadata to human-readable language.
 
+> [!NOTE]
+> As of version 2.4.0, grib2io-interp component package is no longer support.  Interpolation support is available in grib2io via Cython interface to [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+
 ## Documentation
 * [API documentation](https://noaa-mdl.github.io/grib2io/grib2io.html)
 * [User Guide Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
 
 ## Required Software
-* [Python](https://python.org) 3.8+
+* [Python](https://python.org) 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
 * [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
 * setuptools 34.0+
 * NumPy 1.22+
@@ -45,6 +49,11 @@ grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) whi
 
 ### NCEPLIBS-g2c
 The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required for grib2io.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the Anaconda ecosystem, then you can install via `conda install -c conda-forge nceplibs-g2c`.
+
+## Optional External Libraries
+
+### NCEPLIBS-ip
+The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the Anaconda ecosystem, then you can install via `conda install -c conda-forge nceplibs-ip`.
 
 ## Install
 
@@ -77,7 +86,7 @@ pip install .
 
 ## Development
 
-The intention of grib2io is to become the offical Python interface for the NCEP g2c library.  Therefore, the development evolution of grib2io will mainly focus on how best to serve that purpose and its primary users -- mainly meteorologists, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS) and National Centers for Environmental Prediction (NCEP), and other NOAA organizations.
+grib2io is the de-facto Python interface to the NCEPLIBS-g2c library.  Therefore, the development and evolution of grib2io will mainly focus on how best to serve that purpose and its primary users -- mainly meteorologists, physical scientists, and software developers supporting the missions within NOAA's National Weather Service (NWS); National Centers for Environmental Prediction (NCEP); and other NOAA and U.S. Government organizations.
 
 ## Disclaimer
 
