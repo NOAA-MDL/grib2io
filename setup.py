@@ -8,6 +8,7 @@ import os
 import platform
 import subprocess
 import sys
+import sysconfig
 import warnings
 
 # This maps package names to library names used in the library filename.
@@ -128,12 +129,14 @@ directories:
             return None
     return out[0].absolute().resolve().as_posix()
 
+
 def run_ar_command(filename):
     """Run the ar command"""
     cmd = subprocess.run(['ar','-t',filename],
                          stdout=subprocess.PIPE)
     cmdout = cmd.stdout.decode('utf-8')
     return cmdout
+
 
 def run_nm_command(filename):
     """Run the nm command"""
@@ -143,12 +146,14 @@ def run_nm_command(filename):
     cmdout = cmd.stdout.decode('utf-8')
     return cmdout
 
+
 def run_ldd_command(filename):
     """Run the ldd command"""
     cmd = subprocess.run(['ldd',filename],
                          stdout=subprocess.PIPE)
     cmdout = cmd.stdout.decode('utf-8')
     return cmdout
+
 
 def run_otool_command(filename):
     """Run the otool command"""
@@ -157,23 +162,22 @@ def run_otool_command(filename):
     cmdout = cmd.stdout.decode('utf-8')
     return cmdout
 
+
 def check_for_openmp(ip_lib, static=False):
     """Check for OpenMP"""
     check = False
     is_apple_clang = False
     info = ''
     libname = ''
+    ftnname = None
 
-    # Special check for macOS
+    # Special check for macOS, based on C compiler to be
+    # used here.
     if sys.platform == 'darwin':
         try:
             is_apple_clang = 'clang' in os.environ['CC']
         except(KeyError):
-            is_apple_clang = True
-    if is_apple_clang:
-        check = True
-        libname = 'omp'
-        return check, libname
+            is_apple_clang = 'clang' in sys.config.get_config_vars().get('CC')
         
     if static:
         if sys.platform in {'darwin','linux'}:
@@ -181,9 +185,11 @@ def check_for_openmp(ip_lib, static=False):
             if 'GOMP' in info:
                 check = True
                 libname = 'gomp'
+                ftnname = 'gfortran'
             elif 'kmpc' in info:
                 check = True
                 libname = 'iomp5'
+                ftnname = 'ifcore'
     else:
         if sys.platform == 'darwin':
             info = run_otool_command(ip_lib)
@@ -192,13 +198,22 @@ def check_for_openmp(ip_lib, static=False):
         if 'gomp' in info:
             check = True
             libname = 'gomp'
+            ftnname = 'gfortran'
         elif 'iomp5' in info:
             check = True
             libname = 'iomp5'
+            ftnname = 'ifcore'
         elif 'omp' in info:
             check = True
             libname = 'omp'
-    return check, libname
+            ftnname = 'gfortran'
+
+    # Final adjustment is macOS and clang.
+    if sys.platform == 'darwin' and is_apple_clang:
+        check = True
+        libname = 'omp'
+
+    return check, libname, ftnname
 
 # ----------------------------------------------------------------------------------------
 # Main part of setup.py
@@ -304,7 +319,7 @@ if build_with_ip:
                               dirs=extmod_config['iplib']['libdirs'],
                               static=use_static_libs)
 
-    build_with_openmp, openmp_libname = check_for_openmp(ip_libname, static=use_static_libs)
+    build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=use_static_libs)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
                                    config,
@@ -326,10 +341,13 @@ if build_with_ip:
         extmod_config['iplib']['libdirs'] = []
 
         # Need Fortran runtime even when static.
-        pkginfo = get_package_info('gfortran', config, static=use_static_libs, required=False)
-        extmod_config['iplib']['libraries'].append(pkginfo[0])
-        extmod_config['iplib']['incdirs'].append(pkginfo[1])
-        extmod_config['iplib']['libdirs'].append(pkginfo[2])
+        if ftn_libname is None:
+            pass
+        else:
+            pkginfo = get_package_info(ftn_libname, config, static=use_static_libs, required=False)
+            extmod_config['iplib']['libraries'].append(pkginfo[0])
+            extmod_config['iplib']['incdirs'].append(pkginfo[1])
+            extmod_config['iplib']['libdirs'].append(pkginfo[2])
 
     extmod_config['iplib']['incdirs'].append(numpy.get_include())
 
