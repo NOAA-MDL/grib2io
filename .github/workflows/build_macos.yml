@@ -8,17 +8,13 @@ jobs:
     name: Python (${{ matrix.python-version }}); USE_STATIC_LIBS=${{ matrix.staticlib }}
     runs-on: ${{ matrix.os }}
     env:
-      CC: gcc-12
+      CC: ${{ matrix.compiler }}
     strategy:
       matrix:
         os: ["macos-latest",]
+        compiler: ["clang", "gcc-12"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12","3.13"]
         staticlib: [ "True", "False" ]
-
-#        exclude:
-#          - os: "macos-latest"
-#            python-version: "3.13"
-#            staticlib: "True"
 
     steps:
     - uses: actions/checkout@v4
