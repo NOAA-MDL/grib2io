@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build-macos:
 
-    name: py(${{ matrix.python-version }})_cc=${{ matrix.compiler }}_static=${{ matrix.staticlib }}
+    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}_static=${{ matrix.staticlib }}
     runs-on: ${{ matrix.os }}
     env:
       CC: ${{ matrix.compiler }}

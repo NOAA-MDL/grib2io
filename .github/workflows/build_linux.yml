@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build-linux:
     
-    name: Python (${{ matrix.python-version }})
+    name: py${{ matrix.python-version }}
     runs-on: ubuntu-latest
     #env:
     strategy:
