@@ -28,10 +28,12 @@ def get_grib2io_version():
     return ver
 
 def get_package_info(name, config, static=False, required=True, include_file=None):
+    # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper()+'_DIR')
     pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
     pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
 
+    # Next try to get package information from setup.cfg
     if pkg_dir is None:
         # Env var not set
         pkg_dir = config.get('directories',name+'_dir',fallback=None)
@@ -71,6 +73,7 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
             pkg_incdir = os.path.join(pkg_dir,'include')
         elif os.path.exists(os.path.join(pkg_dir,'include_4')):
             pkg_incdir = os.path.join(pkg_dir,'include_4')
+
     return (name, pkg_incdir, pkg_libdir)
 
 
@@ -270,9 +273,9 @@ extmod_config['g2clib'] = dict(libraries=[pkginfo[0]],
 if use_static_libs:
     staticlib = find_library('g2c', dirs=extmod_config['g2clib']['libdirs'], static=True)
     extmod_config['g2clib']['extra_objects'].append(staticlib)
-    cmd = subprocess.run(['ar','-t',staticlib], stdout=subprocess.PIPE)
-    symbols = cmd.stdout.decode('utf-8')
-    dep_libraries = ['g2c']
+    symbols = run_ar_command(staticlib)
+
+    dep_libraries = []
     if 'aec' in symbols:
         dep_libraries.append('aec')
     if 'jpeg2000' in symbols:
@@ -284,8 +287,7 @@ if use_static_libs:
         dep_libraries.append('png')
         dep_libraries.append('z')
 
-    # We already found g2c info, so iterate over libraries from [1:]
-    for l in dep_libraries[1:]:
+    for l in dep_libraries:
         libname, incdir, libdir = get_package_info(l, config, static=use_static_libs)
         extmod_config['g2clib']['libraries'].append(libname)
         extmod_config['g2clib']['incdirs'].append(incdir)
@@ -320,14 +322,12 @@ if build_with_ip:
                               static=use_static_libs)
 
     build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=use_static_libs)
-    print(build_with_openmp, openmp_libname, ftn_libname)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
                                    config,
                                    static=use_static_libs,
                                    required=False,
                                    include_file="omp.h")
-        print(pkginfo)
 
         if None not in pkginfo:
             extmod_config['iplib']['libraries'].append(pkginfo[0])
