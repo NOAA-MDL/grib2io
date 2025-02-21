@@ -24,6 +24,8 @@ table_4_2_1_0  = {
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '192':['Baseflow-Groundwater Runoff','kg m-2','BGRUN'],
 '193':['Storm Surface Runoff','kg m-2','SSRUN'],
+'194':['Flood Hazard Outlook','unknown','FHO'],
+'196':['Area Hydrologic Discussion','unknown','AHD'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_1_1  = {

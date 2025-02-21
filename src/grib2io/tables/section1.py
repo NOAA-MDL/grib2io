@@ -32,8 +32,9 @@ table_1_0 = {
 '30':'Version Implemented on 15 November 2022',
 '31':'Version Implemented on 15 June 2023',
 '32':'Version Implemented on 30 November 2023',
-'33':'Pre-operational to be implemented by next amendment',
-'34-254':'Future Version',
+'33':'Version Implemented on 28 July 2024',
+'34':'Pre-operational to be implemented by next amendment',
+'35-254':'Future Version',
 '255':'Missing"',
 }
 
