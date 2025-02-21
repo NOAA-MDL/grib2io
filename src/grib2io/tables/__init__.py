@@ -4,6 +4,7 @@ from functools import lru_cache
 from typing import Optional, Union, List
 from numpy.typing import ArrayLike
 import itertools
+import importlib
 
 from .section0 import *
 from .section1 import *
@@ -13,10 +14,27 @@ from .section5 import *
 from .section6 import *
 from .originating_centers import *
 
+_varinfo_tables_datastore = {}
+
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20]
 
 AEROSOL_PDTNS = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
 AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
+
+def _load_varinfo_tables(modname: str):
+    """
+    Load variable information tables from sub modules into the local
+    varinfo table datastore (_varinfo_tables_datastore).
+
+    Parameters
+    ----------
+    modname
+        Module name to extract variable info tables from.
+    """
+    module = importlib.import_module(modname, package=__name__)
+    names = getattr(module, '__all__', [name for name in dir(module) if name.startswith('table_')])
+    _varinfo_tables_datastore.update({name: getattr(module, name) for name in names})
+
 
 def get_table(table: str, expand: bool=False) -> dict:
     """
@@ -127,20 +145,15 @@ def get_varinfo_from_table(
         Abbreviated name of the GRIB2 variable. "Unknown" if variable is not
         found.
     """
+    tblname = f'table_4_2_{discipline}_{parmcat}'
     if isNDFD:
-        try:
-            tblname = f'table_4_2_{discipline}_{parmcat}_ndfd'
-            modname = f'.section4_discipline{discipline}'
-            exec('from '+modname+' import *')
-            return locals()[tblname][str(parmnum)]
-        except(ImportError,KeyError):
-            pass
+        tblname += '_ndfd'
+    modname = f'.section4_discipline{discipline}'
+    if tblname not in _varinfo_tables_datastore.keys():
+        _load_varinfo_tables(modname)
     try:
-        tblname = f'table_4_2_{discipline}_{parmcat}'
-        modname = f'.section4_discipline{discipline}'
-        exec('from '+modname+' import *')
-        return locals()[tblname][str(parmnum)]
-    except(ImportError,KeyError):
+        return _varinfo_tables_datastore[tblname][str(parmnum)]
+    except(KeyError):
         return ['Unknown','Unknown','Unknown']
 
 

@@ -21,12 +21,11 @@ has been deprecated.  grib2io-interp provided interpolation via F2PY interface t
 NCEPLIBS-ip, which has become difficult since the 
 [removal of distutils](https://peps.python.org/pep-0632/) from Python 3.12+.
 
-NCEPLIBS-ip top-level interpolation Fortran subroutines contain the `BIND(C)` attribute which
+NCEPLIBS-ip interpolation Fortran subroutines contain the `BIND(C)` attribute which
 provides an equivalent C-interface.  grib2io now provides a Cython-based interface, `iplib`,
-to these Fortran subroutines via their C-interface.
-
-If NCEPLIBS-ip was built with OpenMP support, grib2io will also provide a Cython-based
-interface, `openmp_handler`, for getting and setting the number of OpenMP threads.
+to these Fortran subroutines via their C-interface.  If NCEPLIBS-ip was built with
+OpenMP support, `iplib` will provide functions for getting and setting the number of
+OpenMP threads.
 
 Tutorials
 =========
@@ -914,7 +913,7 @@ class _Grib2Message:
                         [a for a in dir(self.__class__.__mro__[_find_class_index(sect)]) if not a.startswith('_')]
             else:
                 attrs = templates._section_attrs[sect]+\
-                        self.__class__.__mro__[_find_class_index(sect)]._attrs
+                        self.__class__.__mro__[_find_class_index(sect)]._attrs()
         else:
             attrs = []
         if values:
@@ -1717,9 +1716,8 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
 
     prev_num_threads = 1
     try:
-        from . import openmp_handler
-        prev_num_threads = openmp_handler.get_openmp_threads()
-        openmp_handler.set_openmp_threads(num_threads)
+        prev_num_threads = iplib.get_openmp_threads()
+        iplib.set_openmp_threads(num_threads)
     except(AttributeError):
         pass
 
@@ -1774,7 +1772,7 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         out = (uo,vo)
 
     try:
-        openmp_handler.set_openmp_threads(prev_num_threads)
+        iplib.set_openmp_threads(prev_num_threads)
     except(AttributeError):
         pass
 
@@ -1843,9 +1841,8 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
 
     prev_num_threads = 1
     try:
-        from . import openmp_handler
-        prev_num_threads = openmp_handler.get_openmp_threads()
-        openmp_handler.set_openmp_threads(num_threads)
+        prev_num_threads = iplib.get_openmp_threads()
+        iplib.set_openmp_threads(num_threads)
     except(AttributeError):
         pass
 
@@ -1914,7 +1911,7 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
         out = (uo.reshape(newshp),vo.reshape(newshp))
 
     try:
-        openmp_handler.set_openmp_threads(prev_num_threads)
+        iplib.set_openmp_threads(prev_num_threads)
     except(AttributeError):
         pass
 

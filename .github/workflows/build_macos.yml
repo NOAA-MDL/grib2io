@@ -5,14 +5,15 @@ on: [push, pull_request]
 jobs:
   build-macos:
 
-    name: Python (${{ matrix.python-version }}); USE_STATIC_LIBS=${{ matrix.staticlib }}
+    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}_static=${{ matrix.staticlib }}
     runs-on: ${{ matrix.os }}
     env:
-      CC: gcc-12
+      CC: ${{ matrix.compiler }}
     strategy:
       matrix:
         os: ["macos-latest",]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        compiler: ["gcc-12"]
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12","3.13"]
         staticlib: [ "True", "False" ]
 
     steps:

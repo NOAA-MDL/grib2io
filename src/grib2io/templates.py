@@ -709,8 +709,8 @@ class GridDefinitionTemplate0:
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -729,7 +729,6 @@ class GridDefinitionTemplate1:
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -748,7 +747,6 @@ class GridDefinitionTemplate10:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -766,7 +764,6 @@ class GridDefinitionTemplate20:
     projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -788,7 +785,6 @@ class GridDefinitionTemplate30:
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -809,7 +805,6 @@ class GridDefinitionTemplate31:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -826,7 +821,6 @@ class GridDefinitionTemplate40:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     numberOfParallels: int = field(init=False, repr=False, default=NumberOfParallels())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -846,7 +840,6 @@ class GridDefinitionTemplate41:
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -857,7 +850,6 @@ class GridDefinitionTemplate50:
     _num = 50
     spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -873,7 +865,6 @@ class GridDefinitionTemplate32768:
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -891,7 +882,6 @@ class GridDefinitionTemplate32769:
     latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -1918,7 +1908,6 @@ class ProductDefinitionTemplateBase:
     unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
     valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -1938,7 +1927,6 @@ class ProductDefinitionTemplateSurface:
     unitOfSecondFixedSurface: str = field(init=False,repr=False,default=UnitOfSecondFixedSurface())
     valueOfSecondFixedSurface: int = field(init=False,repr=False,default=ValueOfSecondFixedSurface())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -1948,7 +1936,6 @@ class ProductDefinitionTemplate0(ProductDefinitionTemplateBase,ProductDefinition
     _len = 15
     _num = 0
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -1961,7 +1948,6 @@ class ProductDefinitionTemplate1(ProductDefinitionTemplateBase,ProductDefinition
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -1973,7 +1959,6 @@ class ProductDefinitionTemplate2(ProductDefinitionTemplateBase,ProductDefinition
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -1993,7 +1978,6 @@ class ProductDefinitionTemplate5(ProductDefinitionTemplateBase,ProductDefinition
     thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=False, default=Threshold())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2004,7 +1988,6 @@ class ProductDefinitionTemplate6(ProductDefinitionTemplateBase,ProductDefinition
     _num = 6
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2028,7 +2011,6 @@ class ProductDefinitionTemplate8(ProductDefinitionTemplateBase,ProductDefinition
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2062,7 +2044,6 @@ class ProductDefinitionTemplate9(ProductDefinitionTemplateBase,ProductDefinition
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2087,7 +2068,6 @@ class ProductDefinitionTemplate10(ProductDefinitionTemplateBase,ProductDefinitio
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2114,7 +2094,6 @@ class ProductDefinitionTemplate11(ProductDefinitionTemplateBase,ProductDefinitio
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2140,7 +2119,6 @@ class ProductDefinitionTemplate12(ProductDefinitionTemplateBase,ProductDefinitio
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2158,7 +2136,6 @@ class ProductDefinitionTemplate13(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2176,7 +2153,6 @@ class ProductDefinitionTemplate14(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2189,7 +2165,6 @@ class ProductDefinitionTemplate15(ProductDefinitionTemplateBase,ProductDefinitio
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2225,7 +2200,6 @@ class ProductDefinitionTemplate31:
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2241,7 +2215,6 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2339,7 +2312,6 @@ class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitio
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2374,7 +2346,6 @@ class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2417,7 +2388,6 @@ class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
     @classmethod
-    @property
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
@@ -2913,7 +2883,6 @@ class DataRepresentationTemplate0:
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -2939,7 +2908,6 @@ class DataRepresentationTemplate2:
     lengthOfLastGroup: int = field(init=False, repr=False, default=LengthOfLastGroup())
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -2967,7 +2935,6 @@ class DataRepresentationTemplate3:
     spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=False, default=SpatialDifferenceOrder())
     nBytesSpatialDifference: int = field(init=False, repr=False, default=NBytesSpatialDifference())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -2979,7 +2946,6 @@ class DataRepresentationTemplate4:
     _packingScheme = 'ieee-float'
     precision: Grib2Metadata = field(init=False, repr=False, default=Precision())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -2996,7 +2962,6 @@ class DataRepresentationTemplate40:
     typeOfCompression: Grib2Metadata = field(init=False, repr=False, default=TypeOfCompression())
     targetCompressionRatio: int = field(init=False, repr=False, default=TargetCompressionRatio())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -3011,7 +2976,6 @@ class DataRepresentationTemplate41:
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -3029,7 +2993,6 @@ class DataRepresentationTemplate42:
     blockSize: int = field(init=False, repr=False, default=BlockSize())
     refSampleInterval: int = field(init=False, repr=False, default=RefSampleInterval())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
@@ -3045,7 +3008,6 @@ class DataRepresentationTemplate50:
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     realOfCoefficient: float = field(init=False, repr=False, default=RealOfCoefficient())
     @classmethod
-    @property
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 

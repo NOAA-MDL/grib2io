@@ -6,9 +6,11 @@ Cython code to provide python interfaces to functions in the NCEPLIBS-ip library
 IMPORTANT: Make changes to this file, not the C code that Cython generates.
 """
 
+from cython.parallel import prange
 from libc.stdint cimport uint8_t, int32_t
+from libc.stdlib cimport malloc, free
 import numpy as np
-cimport numpy as np
+cimport numpy as cnp
 
 cdef extern from "<stdbool.h>":
     ctypedef int bool
@@ -24,20 +26,27 @@ cdef extern from "iplib.h":
                         int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
                         int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
                         float *uo, float *vo, int *iret)
+
+#ifdef IPLIB_WITH_OPENMP
+cdef extern from "omp.h":
+    int omp_get_max_threads()
+    void omp_set_num_threads(int)
+    int omp_get_num_threads()
+#endif
     
 
 def interpolate_scalar(int ip,
-                   np.ndarray[np.int32_t, ndim=1] ipopt,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ipopt,
                    int igdtnumi,
-                   np.ndarray[np.int32_t, ndim=1] igdtmpli,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
                    int igdtnumo,
-                   np.ndarray[np.int32_t, ndim=1] igdtmplo,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmplo,
                    int mi,
                    int mo,
                    int km,
-                   np.ndarray[np.int32_t, ndim=1] ibi,
-                   np.ndarray[np.uint8_t, ndim=2] li,
-                   np.ndarray[np.float32_t, ndim=2] gi,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ibi,
+                   cnp.ndarray[cnp.uint8_t, ndim=2] li,
+                   cnp.ndarray[cnp.float32_t, ndim=2] gi,
                    lats = None,
                    lons = None):
     """
@@ -100,11 +109,11 @@ def interpolate_scalar(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef np.ndarray[np.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
-    cdef np.ndarray[np.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef np.ndarray[np.float32_t, ndim=2] go = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
+    cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] go = np.zeros((mo, km), dtype=np.float32)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
@@ -134,18 +143,18 @@ def interpolate_scalar(int ip,
 
 
 def interpolate_vector(int ip,
-                   np.ndarray[np.int32_t, ndim=1] ipopt,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ipopt,
                    int igdtnumi,
-                   np.ndarray[np.int32_t, ndim=1] igdtmpli,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
                    int igdtnumo,
-                   np.ndarray[np.int32_t, ndim=1] igdtmplo,
+                   cnp.ndarray[cnp.int32_t, ndim=1] igdtmplo,
                    int mi,
                    int mo,
                    int km,
-                   np.ndarray[np.int32_t, ndim=1] ibi,
-                   np.ndarray[np.uint8_t, ndim=2] li,
-                   np.ndarray[np.float32_t, ndim=2] ui,
-                   np.ndarray[np.float32_t, ndim=2] vi,
+                   cnp.ndarray[cnp.int32_t, ndim=1] ibi,
+                   cnp.ndarray[cnp.uint8_t, ndim=2] li,
+                   cnp.ndarray[cnp.float32_t, ndim=2] ui,
+                   cnp.ndarray[cnp.float32_t, ndim=2] vi,
                    lats = None,
                    lons = None):
     """
@@ -216,14 +225,14 @@ def interpolate_vector(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef np.ndarray[np.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] crot = np.ones(mo, dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=1] srot = np.zeros(mo, dtype=np.float32)
-    cdef np.ndarray[np.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
-    cdef np.ndarray[np.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef np.ndarray[np.float32_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float32)
-    cdef np.ndarray[np.float32_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] crot = np.ones(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] srot = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
+    cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float32)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
@@ -254,3 +263,48 @@ def interpolate_vector(int ip,
                    uo_ptr, vo_ptr, &iret)
 
     return no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret
+
+
+#ifdef IPLIB_WITH_OPENMP
+def openmp_get_max_threads():
+    """
+    Returns the maximum number of OpenMP threads available.
+    """
+    return omp_get_max_threads()
+
+def openmp_set_num_threads(int num):
+    """
+    Sets the number of OpenMP threads to be used.
+
+    Parameters
+    ----------
+    num
+        Number of OpenMP threads to set. 
+    """
+    omp_set_num_threads(num)
+
+def openmp_get_num_threads():
+    """
+    Returns the number of threads in a parallel region.
+    """
+    cdef int num_threads = 1  # Default to 1 (if not in parallel region)
+    
+    # Parallel block with temporary memory to store thread count
+    cdef int *num_threads_ptr = <int*>malloc(sizeof(int))
+    if num_threads_ptr == NULL:
+        raise MemoryError("Failed to allocate memory for thread count.")
+    
+    num_threads_ptr[0] = 0  # Initialize
+
+    cdef int i
+    with nogil:
+        for i in prange(1):  # Start parallel region
+            # Acquire GIL before calling omp_get_num_threads
+            with gil:
+                num_threads_ptr[0] = omp_get_num_threads()
+
+    num_threads = num_threads_ptr[0]
+    free(num_threads_ptr)  # Clean up
+
+    return num_threads
+#endif

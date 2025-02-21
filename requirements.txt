@@ -1,6 +1,6 @@
 cython
 dask
-numpy<2
+numpy
 pyproj
 pytest
 xarray

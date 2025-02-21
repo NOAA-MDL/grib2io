@@ -1,7 +1,7 @@
 [build-system]
 requires = [
-  "Cython>=0.29.16",
-  "oldest-supported-numpy",
+  "Cython>=3",
+  "numpy",
   "setuptools>=61.0",
 ]
 build-backend = "setuptools.build_meta"
@@ -13,7 +13,7 @@ authors = [
   {name = "Eric Engle", email = "eric.engle@noaa.gov"},
   {name = "Adam Schnapp", email = "adam.schnapp@noaa.gov"},
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.8,<3.14"
 keywords = [
   "weather", "data-science", "numpy", "meteorology", "weather-data", "atmospheric-science",
   "grib2", "grib2-decoder", "grib2-encoder", "ncep",
@@ -23,6 +23,7 @@ license = {text = "MIT"}
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
+  "Programming Language :: Cython",
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.8",
@@ -30,8 +31,10 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
+  "Topic :: Scientific/Engineering :: Atmospheric Science",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Operating System :: POSIX",
   "Operating System :: POSIX :: Linux",
