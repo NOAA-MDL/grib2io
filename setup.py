@@ -180,7 +180,7 @@ def check_for_openmp(ip_lib, static=False):
         try:
             is_apple_clang = 'clang' in os.environ['CC']
         except(KeyError):
-            is_apple_clang = 'clang' in sys.config.get_config_vars().get('CC')
+            is_apple_clang = 'clang' in sysconfig.get_config_vars().get('CC')
         
     if static:
         if sys.platform in {'darwin','linux'}:
