@@ -19,6 +19,10 @@ void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdt
                     int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
                     float *uo, float *vo, int *iret);
 
+void use_ncep_post_arakawa();
+
+void unuse_ncep_post_arakawa();
+
 #ifdef __cplusplus
 }
 #endif

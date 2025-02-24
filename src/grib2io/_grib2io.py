@@ -843,6 +843,12 @@ class _Grib2Message:
         return np.nanmedian(self.data)
 
 
+    @property
+    def shape(self):
+        """Return median value of data."""
+        return self.griddef.shape
+
+
     def __repr__(self):
         """
         Return an unambiguous string representation of the object.
@@ -1948,7 +1954,7 @@ class Grib2GridDef:
 
     @property
     def shape(self):
-        return (self.ny, self.nx)
+        return (int(self.ny), int(self.nx))
 
 
 def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):

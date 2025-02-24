@@ -12,6 +12,8 @@ from libc.stdlib cimport malloc, free
 import numpy as np
 cimport numpy as cnp
 
+import warnings
+
 cdef extern from "<stdbool.h>":
     ctypedef int bool
 
@@ -26,6 +28,8 @@ cdef extern from "iplib.h":
                         int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
                         int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
                         float *uo, float *vo, int *iret)
+    void use_ncep_post_arakawa()
+    void unuse_ncep_post_arakawa()
 
 #ifdef IPLIB_WITH_OPENMP
 cdef extern from "omp.h":
@@ -263,6 +267,22 @@ def interpolate_vector(int ip,
                    uo_ptr, vo_ptr, &iret)
 
     return no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret
+
+
+def set_ncep_post_arakawa_flag(bool flag):
+    """
+    """
+    if flag:
+        use_ncep_post_arakawa()
+    else:
+        unuse_ncep_post_arakawa()
+
+
+def get_ncep_post_arakawa_flag():
+    """
+    """
+    msg = f"Cannot get ncep_post_arakawa_flag from iplib. This will be supported in a future version."
+    warnings.warn(msg)
 
 
 #ifdef IPLIB_WITH_OPENMP
