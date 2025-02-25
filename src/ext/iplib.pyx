@@ -269,7 +269,7 @@ def interpolate_vector(int ip,
     return no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret
 
 
-def set_ncep_post_arakawa_flag(bool flag):
+def set_ncep_post_arakawa_flag(bint flag):
     """
     """
     if flag:
