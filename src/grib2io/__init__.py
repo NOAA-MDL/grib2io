@@ -11,7 +11,8 @@ try:
     __version__ = __config__.grib2io_version
     has_interpolation = __config__.has_interpolation
     has_openmp_support = __config__.has_openmp_support
-    use_static_libs = __config__.use_static_libs
+    g2c_static = __config__.g2c_static
+    ip_static = __config__.ip_static
     extra_objects = __config__.extra_objects
 except(ImportError):
     pass
@@ -34,14 +35,16 @@ def show_config():
     print(f'grib2io version {__version__} Configuration:')
     print(f'')
     print(f'NCEPLIBS-g2c library version: {__g2clib_version__}')
+    print(f'\tStatic library: {g2c_static}')
     print(f'\tJPEG compression support: {has_jpeg_support}')
     print(f'\tPNG compression support: {has_png_support}')
     print(f'\tAEC compression support: {has_aec_support}')
     print(f'')
     print(f'NCEPLIPS-ip support: {has_interpolation}')
+    print(f'\tStatic library: {ip_static}')
     print(f'\tOpenMP support: {has_openmp_support}')
     print(f'')
-    print(f'Static libs: {use_static_libs}')
+    print(f'Static libs:')
     for lib in extra_objects:
         print(f'\t{lib}')
     print(f'')

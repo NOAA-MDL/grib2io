@@ -20,25 +20,50 @@ pkgname_to_libname = {
     'png': ['png'],
     'z': ['z'],}
 
+
+def check_lib_static(name):
+    """Check whether or not to build with a static library."""
+    bval = False
+    env_var_name = name.upper()+'_STATIC'
+    if os.environ.get(env_var_name):
+        val = os.environ.get(env_var_name)
+        if val not in {'True','False'}:
+            raise ValueError('Environment variable {env_var_name} must be \'True\' or \'False\'')
+        bval = True if val == 'True' else False
+    return bval
+
+
 def get_grib2io_version():
+    """Get the grib2ion version string."""
     with open("VERSION","rt") as f:
         ver = f.readline().strip()
     return ver
 
+
 def get_package_info(name, static=False, required=True, include_file=None):
-    """
-    """
+    """Get package information."""
     # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper()+'_DIR')
     pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
     pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
 
-    # Next try to get package information from setup.cfg
-    if pkg_dir is None:
+    # Return if include and lib dir env vars were set.
+    if pkg_incdir is not None and pkg_libdir is not None:
+        return name, pkg_incdir, pkg_libdir
 
-        if name not in pkgname_to_libname.keys():
-            pkgname_to_libname[name] = [name]
-        for l in pkgname_to_libname[name]:
+    if pkg_dir is not None:
+        if os.path.exists(os.path.join(pkg_dir,'lib')):
+            pkg_libdir = os.path.join(pkg_dir,'lib')
+        elif os.path.exists(os.path.join(pkg_dir,'lib64')):
+            pkg_libdir = os.path.join(pkg_dir,'lib64')
+        if os.path.exists(os.path.join(pkg_dir,'include')):
+            pkg_incdir = os.path.join(pkg_dir,'include')
+        elif os.path.exists(os.path.join(pkg_dir,'include_4')):
+            pkg_incdir = os.path.join(pkg_dir,'include_4')
+    else:
+        # No env vars set, now find everything.
+        libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
+        for l in libnames:
             libname = find_library(l, static=static, required=required)
             if libname is not None: break
         name = l
@@ -53,21 +78,11 @@ def get_package_info(name, static=False, required=True, include_file=None):
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
-    else:
-        # Env var was set
-        if os.path.exists(os.path.join(pkg_dir,'lib')):
-            pkg_libdir = os.path.join(pkg_dir,'lib')
-        elif os.path.exists(os.path.join(pkg_dir,'lib64')):
-            pkg_libdir = os.path.join(pkg_dir,'lib64')
-        if os.path.exists(os.path.join(pkg_dir,'include')):
-            pkg_incdir = os.path.join(pkg_dir,'include')
-        elif os.path.exists(os.path.join(pkg_dir,'include_4')):
-            pkg_incdir = os.path.join(pkg_dir,'include_4')
-
-    return (name, pkg_incdir, pkg_libdir)
+    return name, pkg_incdir, pkg_libdir
 
 
 def find_include_file(file, root=None):
+    """Find absolute path to include file."""
     incfile = None
     if root is None:
         return None
@@ -80,6 +95,7 @@ def find_include_file(file, root=None):
 
 
 def find_library(name, dirs=None, static=False, required=True):
+    """Find absolute path to library file."""
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
 
@@ -101,7 +117,7 @@ def find_library(name, dirs=None, static=False, required=True):
         if os.environ.get("CONDA_PREFIX"):
             dirs = [os.environ["CONDA_PREFIX"]]
         else:
-            dirs = ["/usr/local", "/sw", "/opt", "/opt/local", "/opt/homebrew", "/usr"]
+            dirs = ["/usr", "/usr/local", "/opt/local", "/opt/homebrew", "/opt", "/sw"]
     if os.environ.get("LD_LIBRARY_PATH"):
         dirs = dirs + os.environ.get("LD_LIBRARY_PATH").split(":")
 
@@ -213,7 +229,6 @@ def check_for_openmp(ip_lib, static=False):
 # ----------------------------------------------------------------------------------------
 VERSION = get_grib2io_version()
 
-use_static_libs = False
 build_with_ip = True
 build_with_openmp = False
 
@@ -232,18 +247,10 @@ iplib_pyx = 'src/ext/iplib.pyx'
 openmp_pyx = 'src/ext/openmp_handler.pyx'
 
 # ----------------------------------------------------------------------------------------
-# Check if static library linking is preferred.
-# ----------------------------------------------------------------------------------------
-if os.environ.get('USE_STATIC_LIBS'):
-    val = os.environ.get('USE_STATIC_LIBS')
-    if val not in {'True','False'}:
-        raise ValueError('Environment variable USE_STATIC_LIBS must be \'True\' or \'False\'')
-    use_static_libs = True if val == 'True' else False
-
-# ----------------------------------------------------------------------------------------
 # Get g2c information (THIS IS REQUIRED)
 # ----------------------------------------------------------------------------------------
-pkginfo = get_package_info('g2c', static=use_static_libs, required=True)
+g2c_static = check_lib_static('g2c')
+pkginfo = get_package_info('g2c', static=g2c_static, required=True)
 if None in pkginfo:
     raise ValueError(f"NCEPLIBS-g2c library not found. grib2io will not build.")
 
@@ -252,7 +259,7 @@ extmod_config['g2clib'] = dict(libraries=[pkginfo[0]],
                                libdirs=[pkginfo[2]],
                                extra_objects=[])
 
-if use_static_libs:
+if g2c_static:
     staticlib = find_library('g2c', dirs=extmod_config['g2clib']['libdirs'], static=True)
     extmod_config['g2clib']['extra_objects'].append(staticlib)
     symbols = run_ar_command(staticlib)
@@ -270,13 +277,13 @@ if use_static_libs:
         dep_libraries.append('z')
 
     for l in dep_libraries:
-        libname, incdir, libdir = get_package_info(l, static=use_static_libs)
+        libname, incdir, libdir = get_package_info(l, static=g2c_static)
         extmod_config['g2clib']['libraries'].append(libname)
         extmod_config['g2clib']['incdirs'].append(incdir)
         extmod_config['g2clib']['libdirs'].append(libdir)
 
         l = pkgname_to_libname[l][0]
-        extmod_config['g2clib']['extra_objects'].append(find_library(l, dirs=[libdir], static=use_static_libs))
+        extmod_config['g2clib']['extra_objects'].append(find_library(l, dirs=[libdir], static=g2c_static))
 
     # Clear out libraries and libdirs when using static libs
     extmod_config['g2clib']['libraries'] = []
@@ -287,7 +294,8 @@ extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 # ----------------------------------------------------------------------------------------
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
-pkginfo = get_package_info('ip', static=use_static_libs, required=False)
+ip_static = check_lib_static('ip')
+pkginfo = get_package_info('ip', static=ip_static, required=False)
 if None in pkginfo:
     warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
     build_with_ip = False
@@ -301,12 +309,12 @@ if build_with_ip:
 
     ip_libname = find_library(pkgname_to_libname['ip'][0],
                               dirs=extmod_config['iplib']['libdirs'],
-                              static=use_static_libs)
+                              static=ip_static)
 
-    build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=use_static_libs)
+    build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=ip_static)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
-                                   static=use_static_libs,
+                                   static=ip_static,
                                    required=False,
                                    include_file="omp.h")
 
@@ -316,9 +324,9 @@ if build_with_ip:
             extmod_config['iplib']['libdirs'].append(pkginfo[2])
             extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
 
-    if use_static_libs:
+    if ip_static:
         for l in extmod_config['iplib']['libraries']:
-            lname = find_library(l, dirs=extmod_config['iplib']['libdirs'], static=use_static_libs)
+            lname = find_library(l, dirs=extmod_config['iplib']['libdirs'], static=ip_static)
             extmod_config['iplib']['extra_objects'].append(lname)
 
         extmod_config['iplib']['libraries'] = []
@@ -328,7 +336,7 @@ if build_with_ip:
         if ftn_libname is None:
             pass
         else:
-            pkginfo = get_package_info(ftn_libname, static=use_static_libs, required=False)
+            pkginfo = get_package_info(ftn_libname, static=ip_static, required=False)
             extmod_config['iplib']['libraries'].append(pkginfo[0])
             extmod_config['iplib']['incdirs'].append(pkginfo[1])
             extmod_config['iplib']['libdirs'].append(pkginfo[2])
@@ -338,8 +346,9 @@ if build_with_ip:
 # ----------------------------------------------------------------------------------------
 # Summary 
 # ----------------------------------------------------------------------------------------
-print(f'Use static libs: {use_static_libs}')
+print(f'Build with NCEPLIBS-g2c static library: {g2c_static}')
 print(f'Build with NCEPLIBS-ip: {build_with_ip}')
+print(f'Build with NCEPLIBS-ip static library: {ip_static}')
 print(f'Needs OpenMP: {build_with_openmp}')
 for n, c in extmod_config.items():
     print(f'Extension module name: {n}')
@@ -383,17 +392,19 @@ cnt = \
 """# This file is generated by grib2io's setup.py
 # It contains configuration information when building this package.
 grib2io_version = '%(grib2io_version)s'
+g2c_static = %(g2c_static)s
 has_interpolation = %(has_interpolation)s
+ip_static = %(ip_static)s
 has_openmp_support = %(has_openmp_support)s
-use_static_libs = %(use_static_libs)s
 extra_objects = %(extra_objects)s
 """
 a = open('src/grib2io/__config__.py','w')
 cfgdict = {}
 cfgdict['grib2io_version'] = VERSION
+cfgdict['g2c_static'] = g2c_static
 cfgdict['has_interpolation'] = build_with_ip
+cfgdict['ip_static'] = ip_static
 cfgdict['has_openmp_support'] = build_with_openmp
-cfgdict['use_static_libs'] = use_static_libs
 cfgdict['extra_objects'] = all_extra_objects
 try:
     a.write(cnt % cfgdict)
