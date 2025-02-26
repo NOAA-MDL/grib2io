@@ -1,8 +1,6 @@
 from ctypes.util import find_library as ctypes_find_library
 from pathlib import Path
 from setuptools import setup, Extension
-import configparser
-import copy
 import numpy
 import os
 import platform
@@ -27,7 +25,9 @@ def get_grib2io_version():
         ver = f.readline().strip()
     return ver
 
-def get_package_info(name, config, static=False, required=True, include_file=None):
+def get_package_info(name, static=False, required=True, include_file=None):
+    """
+    """
     # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper()+'_DIR')
     pkg_incdir = os.environ.get(name.upper()+'_INCDIR')
@@ -35,33 +35,23 @@ def get_package_info(name, config, static=False, required=True, include_file=Non
 
     # Next try to get package information from setup.cfg
     if pkg_dir is None:
-        # Env var not set
-        pkg_dir = config.get('directories',name+'_dir',fallback=None)
-        if pkg_dir is None:
-            if static:
-                pkg_lib = config.get('static_libs',name+'_lib',fallback=None)
-                if pkg_lib is not None:
-                    pkg_libdir = os.path.dirname(pkg_lib)
-                    pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
-                    pkg_dir = os.path.dirname(pkg_libdir)
 
-        if pkg_dir is None:
-            if name not in pkgname_to_libname.keys():
-                pkgname_to_libname[name] = [name]
-            for l in pkgname_to_libname[name]:
-                libname = find_library(l, static=static, required=required)
-                if libname is not None: break
-            name = l
-            if libname is None:
-                pkg_libdir = None
-                pkg_incdir = None
-            else:
-                pkg_libdir = os.path.dirname(libname)
-                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
-                if include_file is not None:
-                    incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
-                    if incfile is not None:
-                        pkg_incdir = os.path.dirname(incfile)
+        if name not in pkgname_to_libname.keys():
+            pkgname_to_libname[name] = [name]
+        for l in pkgname_to_libname[name]:
+            libname = find_library(l, static=static, required=required)
+            if libname is not None: break
+        name = l
+        if libname is None:
+            pkg_libdir = None
+            pkg_incdir = None
+        else:
+            pkg_libdir = os.path.dirname(libname)
+            pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+            if include_file is not None:
+                incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
+                if incfile is not None:
+                    pkg_incdir = os.path.dirname(incfile)
 
     else:
         # Env var was set
@@ -242,13 +232,6 @@ iplib_pyx = 'src/ext/iplib.pyx'
 openmp_pyx = 'src/ext/openmp_handler.pyx'
 
 # ----------------------------------------------------------------------------------------
-# Read setup.cfg
-# ----------------------------------------------------------------------------------------
-setup_cfg = 'setup.cfg'
-config = configparser.ConfigParser()
-config.read(setup_cfg)
-
-# ----------------------------------------------------------------------------------------
 # Check if static library linking is preferred.
 # ----------------------------------------------------------------------------------------
 if os.environ.get('USE_STATIC_LIBS'):
@@ -256,12 +239,11 @@ if os.environ.get('USE_STATIC_LIBS'):
     if val not in {'True','False'}:
         raise ValueError('Environment variable USE_STATIC_LIBS must be \'True\' or \'False\'')
     use_static_libs = True if val == 'True' else False
-use_static_libs = config.get('options', 'use_static_libs', fallback=use_static_libs)
 
 # ----------------------------------------------------------------------------------------
 # Get g2c information (THIS IS REQUIRED)
 # ----------------------------------------------------------------------------------------
-pkginfo = get_package_info('g2c', config, static=use_static_libs, required=True)
+pkginfo = get_package_info('g2c', static=use_static_libs, required=True)
 if None in pkginfo:
     raise ValueError(f"NCEPLIBS-g2c library not found. grib2io will not build.")
 
@@ -288,7 +270,7 @@ if use_static_libs:
         dep_libraries.append('z')
 
     for l in dep_libraries:
-        libname, incdir, libdir = get_package_info(l, config, static=use_static_libs)
+        libname, incdir, libdir = get_package_info(l, static=use_static_libs)
         extmod_config['g2clib']['libraries'].append(libname)
         extmod_config['g2clib']['incdirs'].append(incdir)
         extmod_config['g2clib']['libdirs'].append(libdir)
@@ -305,7 +287,7 @@ extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 # ----------------------------------------------------------------------------------------
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
-pkginfo = get_package_info('ip', config, static=use_static_libs, required=False)
+pkginfo = get_package_info('ip', static=use_static_libs, required=False)
 if None in pkginfo:
     warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
     build_with_ip = False
@@ -324,7 +306,6 @@ if build_with_ip:
     build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=use_static_libs)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
-                                   config,
                                    static=use_static_libs,
                                    required=False,
                                    include_file="omp.h")
@@ -347,7 +328,7 @@ if build_with_ip:
         if ftn_libname is None:
             pass
         else:
-            pkginfo = get_package_info(ftn_libname, config, static=use_static_libs, required=False)
+            pkginfo = get_package_info(ftn_libname, static=use_static_libs, required=False)
             extmod_config['iplib']['libraries'].append(pkginfo[0])
             extmod_config['iplib']['incdirs'].append(pkginfo[1])
             extmod_config['iplib']['libdirs'].append(pkginfo[2])
