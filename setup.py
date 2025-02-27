@@ -54,16 +54,12 @@ def get_package_info(name, static=False, required=True, include_file=None):
             return libname, pkg_incdir, pkg_libdir
 
     if pkg_dir is not None:
-        if os.path.exists(os.path.join(pkg_dir,'lib')):
-            pkg_libdir = os.path.join(pkg_dir,'lib')
-        elif os.path.exists(os.path.join(pkg_dir,'lib64')):
-            pkg_libdir = os.path.join(pkg_dir,'lib64')
-        if os.path.exists(os.path.join(pkg_dir,'include')):
-            pkg_incdir = os.path.join(pkg_dir,'include')
-        elif os.path.exists(os.path.join(pkg_dir,'include_4')):
-            pkg_incdir = os.path.join(pkg_dir,'include_4')
         if name in {'g2c', 'ip'}:
             libname = pkgname_to_libname[name][0]
+            libpath = find_library(libname, dirs=[pkg_dir], static=static, required=required)
+            pkg_libdir = os.path.dirname(libpath)
+            incfile = find_include_file(include_file, root=pkg_dir)
+            pkg_incdir = os.path.dirname(incfile)
     else:
         # No env vars set, now find everything.
         libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
@@ -153,7 +149,7 @@ def run_ar_command(filename):
 
 def run_nm_command(filename):
     """Run the nm command"""
-    cmd = subprocess.run(['nm','-C',filename],
+    cmd = subprocess.run(['nm',filename],
                          stdout=subprocess.PIPE,
                          stderr=subprocess.DEVNULL)
     cmdout = cmd.stdout.decode('utf-8')
@@ -254,7 +250,7 @@ openmp_pyx = 'src/ext/openmp_handler.pyx'
 # Get g2c information (THIS IS REQUIRED)
 # ----------------------------------------------------------------------------------------
 g2c_static = check_lib_static('g2c')
-pkginfo = get_package_info('g2c', static=g2c_static, required=True)
+pkginfo = get_package_info('g2c', static=g2c_static, required=True, include_file="grib2.h")
 if None in pkginfo:
     raise ValueError(f"NCEPLIBS-g2c library not found. grib2io will not build.")
 
@@ -299,7 +295,7 @@ extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static('ip')
-pkginfo = get_package_info('ip', static=ip_static, required=False)
+pkginfo = get_package_info('ip', static=ip_static, required=False, include_file="iplib.h")
 if None in pkginfo:
     warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
     build_with_ip = False
