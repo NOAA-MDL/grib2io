@@ -48,8 +48,10 @@ def get_package_info(name, static=False, required=True, include_file=None):
     pkg_libdir = os.environ.get(name.upper()+'_LIBDIR')
 
     # Return if include and lib dir env vars were set.
-    if pkg_incdir is not None and pkg_libdir is not None:
-        return name, pkg_incdir, pkg_libdir
+    if name in {'g2c', 'ip'}:
+        if pkg_incdir is not None and pkg_libdir is not None:
+            libname = pkgname_to_libname[name][0]
+            return libname, pkg_incdir, pkg_libdir
 
     if pkg_dir is not None:
         if os.path.exists(os.path.join(pkg_dir,'lib')):
@@ -60,25 +62,27 @@ def get_package_info(name, static=False, required=True, include_file=None):
             pkg_incdir = os.path.join(pkg_dir,'include')
         elif os.path.exists(os.path.join(pkg_dir,'include_4')):
             pkg_incdir = os.path.join(pkg_dir,'include_4')
+        if name in {'g2c', 'ip'}:
+            libname = pkgname_to_libname[name][0]
     else:
         # No env vars set, now find everything.
         libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
         for l in libnames:
-            libname = find_library(l, static=static, required=required)
-            if libname is not None: break
-        name = l
-        if libname is None:
+            libpath = find_library(l, static=static, required=required)
+            if libpath is not None: break
+        libname = l
+        if libpath is None:
             pkg_libdir = None
             pkg_incdir = None
         else:
-            pkg_libdir = os.path.dirname(libname)
+            pkg_libdir = os.path.dirname(libpath)
             pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
             if include_file is not None:
                 incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
-    return name, pkg_incdir, pkg_libdir
+    return libname, pkg_incdir, pkg_libdir
 
 
 def find_include_file(file, root=None):
