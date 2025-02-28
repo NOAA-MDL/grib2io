@@ -10,4 +10,4 @@ graft docs
 graft src/ext
 graft src/grib2io
 graft tests
-global-exclude *.py[cod] *.c *.so
+global-exclude *.py[cod] *.c *.so *.DS_Store
