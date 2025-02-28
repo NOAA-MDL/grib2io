@@ -27,8 +27,10 @@ grib2io provides a Python interface to the [NCEP GRIB2 C library](https://github
 
 grib2io is the successor to [ncepgrib2](https://github.com/jswhit/ncepgrib2) which **_was_** a module within [pygrib](https://github.com/jswhit/pygrib).  As of pygrib v2.1, development of ncepgrib2 was dropped in favor of continued development of the pygrib module which provides an interface to the ECMWF [ecCodes](https://github.com/ecmwf/eccodes) library.  grib2io aims to provide a fast, efficient, and easy-to-use interface to the NCEP g2c library.  One way to accomplish this is to leverage the [NCEP GRIB2 Tables](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/) which are included in grib2io.  With these [tables](./grib2io/tables) included and functions interact with them, grib2io provides a translation of GRIB2's integer coded metadata to human-readable language.
 
+Optionally (but recommended), grib2io supports spatial interpolation via its internal Cython extension module, `iplib`, which provides an interface to the Fortran-based [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).  Grid to grid and grid to station points are supported with OpenMP threading, provided that NCEPLIBS-ip was built with OpenMP support.
+
 > [!IMPORTANT]
-> As of version 2.4.0, grib2io-interp component package is no longer supported.  Interpolation support is available in grib2io via Cython interface to [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).
+> **Beginning with grib2io v2.4.0, grib2io-interp component package is no longer supported.  Interpolation support is available in grib2io via Cython interface to [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip).**
 
 ## Documentation
 * [API documentation](https://noaa-mdl.github.io/grib2io/grib2io.html)
@@ -49,7 +51,7 @@ The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required
 
 ## Optional External Libraries
 
-### NCEPLIBS-ip
+### NCEPLIBS-ip (v5.0.0 or newer)
 The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the Anaconda ecosystem, then you can install via `conda install -c conda-forge nceplibs-ip`.
 
 ## Install
@@ -74,10 +76,11 @@ pip install .
 
 > [!NOTE]
 > ### Building with static libraries
-> The default behavior for building grib2io is to build against shared-object libraries.  However, in production environments, it is beneficial to build against static library files.  grib2io (v2.2.0+) allows for this type of build configuration.  To build against static library files, set the environment variable, `USE_STATIC_LIBS="True"` before your build/install command.  For example,
+> Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).
 > 
 >```shell
->export USE_STATIC_LIBS="True"
+>export G2C_STATIC=True
+>export IP_STATIC=True
 >pip install .
 >```
 

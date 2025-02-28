@@ -15,7 +15,7 @@ NCEP GRIB2 code tables are a part of the grib2io package.
 
 Interpolation
 =============
-As of grib2io VERSION, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+As of grib2io v2.4.0, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
 Fortran library is now a part of the grib2io package.  The separate component package, grib2io-interp,
 has been deprecated.  grib2io-interp provided interpolation via F2PY interface to
 NCEPLIBS-ip, which has become difficult since the 
