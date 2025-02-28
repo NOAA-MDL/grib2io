@@ -172,8 +172,8 @@ def run_otool_command(filename):
     return cmdout
 
 
-def check_for_openmp(ip_lib, static=False):
-    """Check for OpenMP"""
+def check_ip_for_openmp(ip_lib, static=False):
+    """Check for OpenMP in NCEPLIBS-ip"""
     check = False
     is_apple_clang = False
     info = ''
@@ -311,7 +311,7 @@ if build_with_ip:
                               dirs=extmod_config['iplib']['libdirs'],
                               static=ip_static)
 
-    build_with_openmp, openmp_libname, ftn_libname = check_for_openmp(ip_libname, static=ip_static)
+    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=ip_static)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
                                    static=ip_static,
