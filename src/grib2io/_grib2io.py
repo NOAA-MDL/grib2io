@@ -383,6 +383,7 @@ class open():
 
     @property
     def levels(self):
+        """Provides a unique tuple of level strings."""
         if self._hasindex and not self._nodata:
             return tuple(sorted(set([msg.level for msg in self._index['msg']])))
         else:
@@ -391,6 +392,7 @@ class open():
 
     @property
     def variables(self):
+        """Provides a unique tuple of variable shortName strings."""
         if self._hasindex and not self._nodata:
             return tuple(sorted(set([msg.shortName for msg in self._index['msg']])))
         else:
@@ -845,7 +847,7 @@ class _Grib2Message:
 
     @property
     def shape(self):
-        """Return median value of data."""
+        """Return shape of data."""
         return self.griddef.shape
 
 
@@ -1942,18 +1944,22 @@ class Grib2GridDef:
 
     @property
     def nx(self):
+        """Number of grid points in x-direction."""
         return self.gdt[7]
 
     @property
     def ny(self):
+        """Number of grid points in y-direction."""
         return self.gdt[8]
 
     @property
     def npoints(self):
+        """Total number of grid points."""
         return self.gdt[7] * self.gdt[8]
 
     @property
     def shape(self):
+        """Shape of the grid."""
         return (int(self.ny), int(self.nx))
 
 

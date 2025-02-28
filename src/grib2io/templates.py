@@ -101,6 +101,7 @@ class Grib2Metadata:
         return int(self.value)
     @property
     def definition(self):
+        """Provide the definition of the numeric metadata."""
         return tables.get_value_from_table(self.value,self.table)
     def show_table(self):
         """Provide the table related to this metadata."""
