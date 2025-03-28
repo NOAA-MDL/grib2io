@@ -134,8 +134,8 @@ def get_varinfo_from_table(
     parmnum
         Parameter Number value of a GRIB2 message.
     isNDFD: optional
-        If `True`, signals function to try to get variable information from the
-        supplemental NDFD tables.
+        If `True`, then attempt to get variable information from the
+        supplemental NDFD tables, otherwise fallback to default tables.
 
     Returns
     -------
@@ -147,16 +147,23 @@ def get_varinfo_from_table(
         Abbreviated name of the GRIB2 variable. "Unknown" if variable is not
         found.
     """
-    tblname = f'table_4_2_{discipline}_{parmcat}'
+    template = f'table_4_2_{discipline}_{parmcat}'
+    tbls = []
     if isNDFD:
-        tblname += '_ndfd'
-    modname = f'.section4_discipline{discipline}'
-    if tblname not in _varinfo_tables_datastore.keys():
-        _load_varinfo_tables(modname)
-    try:
-        return _varinfo_tables_datastore[tblname][str(parmnum)]
-    except(KeyError):
-        return ['Unknown','Unknown','Unknown']
+        tbls.append(template+'_ndfd')
+    tbls.append(template)
+    for tbl in tbls:
+        vartbl = None
+        modname = f'.section4_discipline{discipline}'
+        if tbl not in _varinfo_tables_datastore.keys():
+            _load_varinfo_tables(modname)
+        try:
+            vartbl = _varinfo_tables_datastore[tbl][str(parmnum)]
+        except(KeyError):
+            vartbl = ['Unknown','Unknown','Unknown']
+        if vartbl is not None:
+            break
+    return vartbl
 
 
 @lru_cache(maxsize=None)

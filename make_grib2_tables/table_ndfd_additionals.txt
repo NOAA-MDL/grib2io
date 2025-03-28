@@ -1,8 +1,83 @@
 # ----------------------------------------------------------------------------------------
+# Source: https://vlab.noaa.gov/web/mdl/ndfd-grib-all-sections#weather-keys-and-subkeys
+# ----------------------------------------------------------------------------------------
+table_ndfd_wx = {
+'<NoWx>': 'No Weather',
+'A': 'Hail',
+'BD': 'Blowing Dust',
+'BN': 'Blowing Sand',
+'BS': 'Blowing Snow',
+'F': 'Fog',
+'FR': 'Frost',
+'H': 'Haze',
+'IC': 'Ice Crystals',
+'IF': 'Ice Fog',
+'IP': 'Ice Pellets (sleet)',
+'K': 'Smoke',
+'L': 'Drizzle',
+'R': 'Rain',
+'RW': 'Rain Showers',
+'S': 'Snow',
+'SW': 'Snow Showers',
+'T': 'Thunder',
+'VA': 'Volcanic Ash',
+'WP': 'Water Spouts',
+'ZF': 'Freezing Fog',
+'ZL': 'Freezing Drizzle',
+'ZR': 'Freezing Rain',
+'ZY': 'Freezing Spray',
+}
+
+table_ndfd_wx_covprb = {
+'<NoCov>': 'No Coverage/probability',
+'Areas': 'Areas of',
+'Brf': 'Brief',
+'Chc': 'Chance',
+'Def': 'Definite',
+'Frq': 'Frequent',
+'Inter': 'Intermittent',
+'Iso': 'Isolated',
+'Lkly': 'Likely',
+'Num': 'Numerous',
+'Ocnl': 'Occasional',
+'Patchy': 'Patchy',
+'Pds': 'Periods of',
+'SChc': 'Slight Chance',
+'Sct': 'Scattered',
+'Wide': 'Widespread',
+}
+
+table_ndfd_wx_intensity = {
+'<NoInten>': 'No Intensity',
+'--': 'Very Light',
+'-': 'Light',
+'m': 'Moderate',
+'+': 'Heavy',
+}
+
+table_ndfd_wx_attribute = {
+'DmgW': 'Damaging Winds',
+'Dry': 'Dry',
+'FL': 'Frequent Lightning',
+'GW': 'Gusty Winds',
+'HvyRn': 'Heavy Rain',
+'LgA': 'Large Hail',
+'Mention': 'Include Unconditionally',
+'Mx': 'Mixture',
+'OBO': 'on Bridges and Overpasses',
+'OGA': 'on Grassy Areas',
+'OLA': 'on Outlying Areas',
+'OR': 'Or',
+'Primary': 'Highest Ranking',
+'SmA': 'Small Hail',
+'TOR': 'Tornado',
+}
+
+# ----------------------------------------------------------------------------------------
 # Source: https://vlab.noaa.gov/web/mdl/additional-grib-tables#hazard_keys
 # ----------------------------------------------------------------------------------------
 table_ndfd_hazards = {
-None: 'No Hazard',
+'<None>': 'No Hazard',
 'AF.W': 'Ash Fall Warning',
 'AF.Y': 'Ash Fall Advisory',
 'AS.Y': 'Air Stagnation Advisory',
