@@ -1233,8 +1233,10 @@ class _Grib2Message:
         """
         hold_auto_nans = _AUTO_NANS
         set_auto_nans(False)
-        if (np.all(self.section1[0:2]==[7,14]) and self.shortName == 'PWTHER') or \
-        (np.all(self.section1[0:2]==[8,65535]) and self.shortName == 'WX'):
+
+        if (np.all(self.section1[0:2] == [7, 14]) and self.shortName == "PWTHER") or (
+            self._isNDFD and self.shortName in {"WX", "WWA"}
+        ):
             keys = utils.decode_wx_strings(self.section2)
             if hasattr(self,'priMissingValue') and self.priMissingValue not in [None,0]:
                 keys[int(self.priMissingValue)] = 'Missing'

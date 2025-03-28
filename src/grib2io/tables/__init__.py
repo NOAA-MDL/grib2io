@@ -13,10 +13,12 @@ from .section4 import *
 from .section5 import *
 from .section6 import *
 from .originating_centers import *
+from .ndfd_additionals import *
 
 _varinfo_tables_datastore = {}
 
-GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20]
+# Note 209 is MRMS
+GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20, 209]
 
 AEROSOL_PDTNS = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
 AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
@@ -300,7 +302,6 @@ def get_wgrib2_level_string(pdtn: int, pdt: ArrayLike) -> str:
 def _build_aerosol_shortname(obj) -> str:
     """
     """
-
     _OPTICAL_WAVELENGTH_MAPPING = get_table('aerosol_optical_wavelength')
     _LEVEL_MAPPING = get_table('aerosol_level')
     _PARAMETER_MAPPING = get_table('aerosol_parameter')
@@ -400,3 +401,42 @@ def _build_aerosol_shortname(obj) -> str:
         return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
 
     return shortname
+
+
+@lru_cache(maxsize=None)
+def get_table_names(var_tables: bool=False) -> tuple:
+    """
+    Return the names of available GRIB2 tables.
+
+    The table dictionaries as they exist in grib2io are prefixed
+    with "table_". When accessing a table through the available
+    functions, the prefix is not necessary.
+
+    Parameters
+    ----------
+    var_tables : bool, optional
+        If True, include names of variable tables.
+        If False (default), include only non-variable tables.
+
+    Returns
+    -------
+    tuple of str
+        A tuple sorted names of available tables.
+    """
+    tables = [
+        name.replace("table_","") for name, val in globals().items()
+        if isinstance(val, dict) and name.startswith("table_")
+    ]
+
+    tables = [
+        t.replace("_",".") if t.startswith(tuple("0123456789")) else t for t in tables
+    ]
+
+    if var_tables:
+        for d in GRIB2_DISCIPLINES:
+            modname = f'.section4_discipline{d}'
+            _load_varinfo_tables(modname)
+        vt = [t.replace("table_","").replace("_",".") for t in _varinfo_tables_datastore.keys()]
+        tables.extend(vt)
+
+    return tuple(sorted(tables))
