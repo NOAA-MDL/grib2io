@@ -215,7 +215,9 @@ table_4_2_3_192  = {
 '83':['Simulated Brightness Temperature for ABI GOES-18, Band-14','K','SBTA1814'],
 '84':['Simulated Brightness Temperature for ABI GOES-18, Band-15','K','SBTA1815'],
 '85':['Simulated Brightness Temperature for ABI GOES-18, Band-16','K','SBTA1816'],
-'86-191':['Reserved','unknown','unknown'],
+'86':['Simulated Brightness Temperature for SSMIS-F17, Channel 12','K','SSMS1712'],
+'87':['Simulated Brightness Temperature for SSMIS-F17, Channel 13','K','SSMS1713'],
+'88-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
 }

@@ -107,6 +107,8 @@ do
 done
 sed 's/Pblackomiunknownt/Predominant/g' section4_discipline0.py > junk
 mv -v junk section4_discipline0.py
+
+# NDFD Elements for Discipline 0
 cat section4_discipline0.py table_ndfd_parameters_definitions.txt > junk
 mv -v junk section4_discipline0.py
 
@@ -196,4 +198,8 @@ do
    ./get-ncep-grib2-table.py $table >> section6.py
 done
 
-
+# ---------------------------------------------------------------------------------------- 
+# NDFD Keys
+# ---------------------------------------------------------------------------------------- 
+echo " -- Making ndfd_additionals.py"
+cat table_ndfd_additionals.txt >> ndfd_additionals.py
