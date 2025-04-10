@@ -341,7 +341,8 @@ class open():
                         self._index['isSubmessage'].append(_isSubmessage)
 
                         # Create Grib2Message with data.
-                        msg = Grib2Message(section0,section1,section2,section3,section4,section5,bmapflag)
+                        msg = Grib2Message(section0,section1,section2,section3,section4,section5)
+                        msg.bitMapFlag = bmapflag
                         msg._msgnum = self.messages-1
                         msg._deflist = deflist
                         msg._coordlist = coordlist
@@ -664,13 +665,13 @@ class _Grib2Message:
     GRIB2 Message base class.
     """
     # GRIB2 Sections
-    section0: NDArray = field(init=True,repr=False)
-    section1: NDArray = field(init=True,repr=False)
-    section2: bytes = field(init=True,repr=False)
-    section3: NDArray = field(init=True,repr=False)
-    section4: NDArray = field(init=True,repr=False)
-    section5: NDArray = field(init=True,repr=False)
-    bitMapFlag: templates.Grib2Metadata = field(init=True,repr=False,default=255)
+    section0: NDArray = field(init=True, repr=False)
+    section1: NDArray = field(init=True, repr=False)
+    section2: bytes = field(init=True, repr=False)
+    section3: NDArray = field(init=True, repr=False)
+    section4: NDArray = field(init=True, repr=False)
+    section5: NDArray = field(init=True, repr=False)
+    section6: NDArray = field(init=False, repr=False, default_factory=lambda: np.zeros((1), dtype=np.int64))
 
     # Section 0 looked up attributes
     indicatorSection: NDArray = field(init=False,repr=False,default=templates.IndicatorSection())
@@ -729,6 +730,9 @@ class _Grib2Message:
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
     typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
 
+    # Section 6
+    bitMapFlag: templates.Grib2Metadata = field(init=False, repr=False, default=templates.BitMapFlag())
+
     def __post_init__(self):
         """Set some attributes after init."""
         self._auto_nans = _AUTO_NANS
@@ -743,7 +747,7 @@ class _Grib2Message:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
             pass
-        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
+        self.bitMapFlag = 255 # Default to no bit map
         self.bitmap = None
 
     @property
@@ -1346,9 +1350,17 @@ class _Grib2Message:
         section3 = np.concatenate((gds,grid_def_out.gdt))
         drtn = self.drtn if drtn is None else drtn
 
-        msg = Grib2Message(section0,self.section1,self.section2,section3,
-                           self.section4,None,self.bitMapFlag.value,drtn=drtn)
+        msg = Grib2Message(
+            section0,
+            self.section1,
+            self.section2,
+            section3,
+            self.section4,
+            None,
+            drtn=drtn
+        )
 
+        msg.bitMapFlag = self.bitMapFlag.value
         msg._msgnum = -1
         msg._deflist = self._deflist
         msg._coordlist = self._coordlist
