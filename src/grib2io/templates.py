@@ -1,6 +1,7 @@
 """GRIB2 section templates classes and metadata descriptor classes."""
 from dataclasses import dataclass, field
 from collections import defaultdict
+from numpy.typing import NDArray
 from typing import Union
 import copy
 import datetime
@@ -12,19 +13,21 @@ from . import utils
 
 # This dict is used by grib2io.Grib2Message.attrs_by_section() method
 # to get attr names that defined in the Grib2Message base class.
-_section_attrs = {0:['discipline'],
-                  1:['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
-                     'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
-                     'refDate', 'productionStatus', 'typeOfData'],
-                  2:[],
-                  3:['sourceOfGridDefinition', 'numberOfDataPoints', 'interpretationOfListOfNumbers',
-                     'gridDefinitionTemplateNumber', 'shapeOfEarth', 'earthRadius', 'earthMajorAxis',
-                     'earthMinorAxis', 'resolutionAndComponentFlags', 'ny', 'nx', 'scanModeFlags'],
-                  4:[],
-                  5:['dataRepresentationTemplateNumber','numberOfPackedValues','typeOfValues'],
-                  6:['bitMapFlag'],
-                  7:[],
-                  8:[],}
+_section_attrs = {
+    0: ['discipline'],
+    1: ['originatingCenter', 'originatingSubCenter', 'masterTableInfo', 'localTableInfo',
+        'significanceOfReferenceTime', 'year', 'month', 'day', 'hour', 'minute', 'second',
+        'refDate', 'productionStatus', 'typeOfData'],
+    2: [],
+    3: ['gridDefinitionTemplateNumber', 'sourceOfGridDefinition', 'numberOfDataPoints',
+        'interpretationOfListOfNumbers', 'shapeOfEarth', 'earthRadius', 'earthMajorAxis',
+        'earthMinorAxis', 'resolutionAndComponentFlags', 'ny', 'nx', 'scanModeFlags'],
+    4: ['productDefinitionTemplateNumber'],
+    5: [], # Handled by packing attr
+    6: ['bitMapFlag'],
+    7: [],
+    8: [],
+}
 
 _continuous_pdtns = [
     int(k) for k, v in tables.get_table("4.0").items() if "a point in time" in v
@@ -106,6 +109,7 @@ class Grib2Metadata:
     def show_table(self):
         """Provide the table related to this metadata."""
         return tables.get_table(self.table)
+
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 0 metadata.
@@ -729,6 +733,7 @@ class GridDefinitionTemplate1:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -747,6 +752,7 @@ class GridDefinitionTemplate10:
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -764,6 +770,7 @@ class GridDefinitionTemplate20:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -785,6 +792,7 @@ class GridDefinitionTemplate30:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -805,6 +813,7 @@ class GridDefinitionTemplate31:
     standardLatitude2: float = field(init=False, repr=False, default=StandardLatitude2())
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -821,6 +830,7 @@ class GridDefinitionTemplate40:
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     numberOfParallels: int = field(init=False, repr=False, default=NumberOfParallels())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -840,6 +850,7 @@ class GridDefinitionTemplate41:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -850,6 +861,7 @@ class GridDefinitionTemplate50:
     _len = 5
     _num = 50
     spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -865,6 +877,7 @@ class GridDefinitionTemplate32768:
     longitudeCenterGridpoint: float = field(init=False, repr=False, default=LongitudeCenterGridpoint())
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -882,6 +895,7 @@ class GridDefinitionTemplate32769:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -1913,6 +1927,7 @@ class ProductDefinitionTemplateBase:
     minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
     unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
     valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1932,6 +1947,7 @@ class ProductDefinitionTemplateSurface:
     valueOfFirstFixedSurface: int = field(init=False,repr=False,default=ValueOfFirstFixedSurface())
     unitOfSecondFixedSurface: str = field(init=False,repr=False,default=UnitOfSecondFixedSurface())
     valueOfSecondFixedSurface: int = field(init=False,repr=False,default=ValueOfSecondFixedSurface())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1941,6 +1957,7 @@ class ProductDefinitionTemplate0(ProductDefinitionTemplateBase,ProductDefinition
     """[Product Definition Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-0.shtml)"""
     _len = 15
     _num = 0
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1953,6 +1970,7 @@ class ProductDefinitionTemplate1(ProductDefinitionTemplateBase,ProductDefinition
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1964,6 +1982,7 @@ class ProductDefinitionTemplate2(ProductDefinitionTemplateBase,ProductDefinition
     _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1983,6 +2002,7 @@ class ProductDefinitionTemplate5(ProductDefinitionTemplateBase,ProductDefinition
     thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
     thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=False, default=Threshold())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1993,6 +2013,7 @@ class ProductDefinitionTemplate6(ProductDefinitionTemplateBase,ProductDefinition
     _len = 16
     _num = 6
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2016,6 +2037,7 @@ class ProductDefinitionTemplate8(ProductDefinitionTemplateBase,ProductDefinition
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2049,6 +2071,7 @@ class ProductDefinitionTemplate9(ProductDefinitionTemplateBase,ProductDefinition
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2073,6 +2096,7 @@ class ProductDefinitionTemplate10(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2099,6 +2123,7 @@ class ProductDefinitionTemplate11(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2124,6 +2149,7 @@ class ProductDefinitionTemplate12(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2141,6 +2167,7 @@ class ProductDefinitionTemplate13(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2158,6 +2185,7 @@ class ProductDefinitionTemplate14(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2170,6 +2198,7 @@ class ProductDefinitionTemplate15(ProductDefinitionTemplateBase,ProductDefinitio
     statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2205,6 +2234,7 @@ class ProductDefinitionTemplate31:
     instrumentType: list = field(init=False,repr=False,default=InstrumentType())
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2220,6 +2250,7 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
     instrumentType: list = field(init=False,repr=False,default=InstrumentType())
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2317,6 +2348,7 @@ class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitio
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2351,6 +2383,7 @@ class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2393,6 +2426,7 @@ class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2423,6 +2457,10 @@ class ProductDefinitionTemplate49(ProductDefinitionTemplateBase, ProductDefiniti
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
 
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
 @dataclass(init=False)
 class ProductDefinitionTemplate80(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
     """[Product Definition Template 4.80](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-80.shtml)"""
@@ -2444,6 +2482,10 @@ class ProductDefinitionTemplate80(ProductDefinitionTemplateBase, ProductDefiniti
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
 class ProductDefinitionTemplate81(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2471,6 +2513,10 @@ class ProductDefinitionTemplate81(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
 class ProductDefinitionTemplate82(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2514,6 +2560,10 @@ class ProductDefinitionTemplate82(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
 
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
 @dataclass(init=False)
 class ProductDefinitionTemplate83(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
     """[Product Definition Template 4.83](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-83.shtml)"""
@@ -2550,6 +2600,10 @@ class ProductDefinitionTemplate83(ProductDefinitionTemplateBase, ProductDefiniti
     secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
     numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
     numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
 class ProductDefinitionTemplate84(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2596,6 +2650,10 @@ class ProductDefinitionTemplate84(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
 
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
 @dataclass(init=False)
 class ProductDefinitionTemplate85(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
     """[Product Definition Template 4.85](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-85.shtml)"""
@@ -2622,6 +2680,10 @@ class ProductDefinitionTemplate85(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
@@ -2671,7 +2733,7 @@ def pdt_class_by_pdtn(pdtn: int):
 class NumberOfPackedValues:
     """Number of Packed Values"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[0]
+        return int(obj.section5[0])
     def __set__(self, obj, value):
         pass
 
@@ -2687,33 +2749,33 @@ class DataRepresentationTemplate:
     def __get__(self, obj, objtype=None):
         return obj.section5[2:]
     def __set__(self, obj, value):
-        raise NotImplementedError
+        pass
 
 class RefValue:
     """Reference Value (represented as an IEEE 32-bit floating point value)"""
     def __get__(self, obj, objtype=None):
-        return utils.ieee_int_to_float(obj.section5[0+2])
+        return float(utils.ieee_int_to_float(obj.section5[0+2]))
     def __set__(self, obj, value):
         pass
 
 class BinScaleFactor:
     """Binary Scale Factor"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[1+2]
+        return int(obj.section5[1+2])
     def __set__(self, obj, value):
         obj.section5[1+2] = value
 
 class DecScaleFactor:
     """Decimal Scale Factor"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[2+2]
+        return int(obj.section5[2+2])
     def __set__(self, obj, value):
         obj.section5[2+2] = value
 
 class NBitsPacking:
     """Minimum number of bits for packing"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[3+2]
+        return int(obj.section5[3+2])
     def __set__(self, obj, value):
         obj.section5[3+2] = value
 
@@ -2744,7 +2806,7 @@ class PriMissingValue:
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj.section5[7+2]) if obj.section5[6+2] in {1,2} and obj.section5[7+2] != 255 else None
         elif obj.typeOfValues == 1:
-            return obj.section5[7+2] if obj.section5[6+2] in [1,2] else None
+            return int(obj.section5[7+2]) if obj.section5[6+2] in [1,2] else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
             obj.section5[7+2] = utils.ieee_float_to_int(value)
@@ -2758,7 +2820,7 @@ class SecMissingValue:
         if obj.typeOfValues == 0:
             return utils.ieee_int_to_float(obj.section5[8+2]) if obj.section5[6+2] in {1,2} and obj.section5[8+2] != 255 else None
         elif obj.typeOfValues == 1:
-            return obj.section5[8+2] if obj.section5[6+2] in {1,2} else None
+            return int(obj.section5[8+2]) if obj.section5[6+2] in {1,2} else None
     def __set__(self, obj, value):
         if obj.typeOfValues == 0:
             obj.section5[8+2] = utils.ieee_float_to_int(value)
@@ -2769,49 +2831,49 @@ class SecMissingValue:
 class NGroups:
     """Number of Groups"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[9+2]
+        return int(obj.section5[9+2])
     def __set__(self, obj, value):
         pass
 
 class RefGroupWidth:
     """Reference Group Width"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[10+2]
+        return int(obj.section5[10+2])
     def __set__(self, obj, value):
         pass
 
 class NBitsGroupWidth:
     """Number of bits for Group Width"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[11+2]
+        return int(obj.section5[11+2])
     def __set__(self, obj, value):
         pass
 
 class RefGroupLength:
     """Reference Group Length"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[12+2]
+        return int(obj.section5[12+2])
     def __set__(self, obj, value):
         pass
 
 class GroupLengthIncrement:
     """Group Length Increment"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[13+2]
+        return int(obj.section5[13+2])
     def __set__(self, obj, value):
         pass
 
 class LengthOfLastGroup:
     """Length of Last Group"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[14+2]
+        return int(obj.section5[14+2])
     def __set__(self, obj, value):
         pass
 
 class NBitsScaledGroupLength:
     """Number of bits of Scaled Group Length"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[15+2]
+        return int(obj.section5[15+2])
     def __set__(self, obj, value):
         pass
 
@@ -2825,7 +2887,7 @@ class SpatialDifferenceOrder:
 class NBytesSpatialDifference:
     """Number of bytes for Spatial Differencing"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[17+2]
+        return int(obj.section5[17+2])
     def __set__(self, obj, value):
         pass
 
@@ -2846,9 +2908,9 @@ class TypeOfCompression:
 class TargetCompressionRatio:
     """Target Compression Ratio"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[6+2]
+        return int(obj.section5[6+2])
     def __set__(self, obj, value):
-        pass
+        obj.section5[6+2] = value
 
 class RealOfCoefficient:
     """Real of Coefficient"""
@@ -2860,48 +2922,71 @@ class RealOfCoefficient:
 class CompressionOptionsMask:
     """Compression Options Mask for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[5+2]
+        return int(obj.section5[5+2])
     def __set__(self, obj, value):
         obj.section5[5+2] = value
 
 class BlockSize:
     """Block Size for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[6+2]
+        return int(obj.section5[6+2])
     def __set__(self, obj, value):
         obj.section5[6+2] = value
 
 class RefSampleInterval:
     """Reference Sample Interval for AEC/CCSDS"""
     def __get__(self, obj, objtype=None):
-        return obj.section5[7+2]
+        return int(obj.section5[7+2])
     def __set__(self, obj, value):
         obj.section5[7+2] = value
 
 @dataclass(init=False)
-class DataRepresentationTemplate0:
+class DataRepresentationTemplateBase:
+    """Base attributes for Data Representation Templates"""
+    numberOfPackedValues: int = field(init=False, repr=False, default=NumberOfPackedValues())
+    #dataRepresentationTemplateNumber: int = field(init=False, repr=False, default=DataRepresentationTemplateNumber())
+    #dataRepresentationTemplate: list = field(init=False, repr=False, default=DataRepresentationTemplate())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+    @classmethod
+    def _check_mutable(cls, name):
+        return name[0].lower()+name[1:] in cls._mutable 
+
+@dataclass(init=False)
+class DataRepresentationTemplate0(DataRepresentationTemplateBase):
     """[Data Representation Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-0.shtml)"""
     _len = 5
     _num = 0
-    _packingScheme = 'simple'
+    _name = 'simple'
+    _mutable = ('binScaleFactor', 'decScaleFactor', 'nBitsPacking')
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate2:
+class DataRepresentationTemplate2(DataRepresentationTemplateBase):
     """[Data Representation Template 2](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-2.shtml)"""
     _len = 16
     _num = 2
-    _packingScheme = 'complex'
+    _name = 'complex'
+    _mutable = (
+        'binScaleFactor', 'decScaleFactor', 'nBitsPacking', 'groupSplittingMethod',
+        'typeOfMissingValueManagement', 'priMissingValue', 'secMissingValue',
+    )
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
     priMissingValue: Union[float, int] = field(init=False, repr=False, default=PriMissingValue())
@@ -2913,20 +2998,27 @@ class DataRepresentationTemplate2:
     groupLengthIncrement: int = field(init=False, repr=False, default=GroupLengthIncrement())
     lengthOfLastGroup: int = field(init=False, repr=False, default=LengthOfLastGroup())
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate3:
+class DataRepresentationTemplate3(DataRepresentationTemplateBase):
     """[Data Representation Template 3](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-3.shtml)"""
     _len = 18
     _num = 3
-    _packingScheme = 'complex-spdiff'
+    _name = 'complex-sd'
+    _mutable = (
+        'binScaleFactor', 'decScaleFactor', 'nBitsPacking', 'groupSplittingMethod',
+        'typeOfMissingValueManagement', 'priMissingValue', 'secMissingValue',
+        'spatialDifferenceOrder',
+    )
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
     groupSplittingMethod: Grib2Metadata = field(init=False, repr=False, default=GroupSplittingMethod())
     typeOfMissingValueManagement: Grib2Metadata = field(init=False, repr=False, default=TypeOfMissingValueManagement())
     priMissingValue: Union[float, int] = field(init=False, repr=False, default=PriMissingValue())
@@ -2940,79 +3032,97 @@ class DataRepresentationTemplate3:
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
     spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=False, default=SpatialDifferenceOrder())
     nBytesSpatialDifference: int = field(init=False, repr=False, default=NBytesSpatialDifference())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate4:
+class DataRepresentationTemplate4(DataRepresentationTemplateBase):
     """[Data Representation Template 4](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-4.shtml)"""
     _len = 1
     _num = 4
-    _packingScheme = 'ieee-float'
+    _name = 'ieee-float'
+    _mutable = ('precision')
     precision: Grib2Metadata = field(init=False, repr=False, default=Precision())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate40:
+class DataRepresentationTemplate40(DataRepresentationTemplateBase):
     """[Data Representation Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-40.shtml)"""
     _len = 7
     _num = 40
-    _packingScheme = 'jpeg'
+    _name = 'jpeg'
+    _mutable = ('binScaleFactor', 'decScaleFactor', 'nBitsPacking', 'typeOfCompression',
+        'targetCompressionRatio',
+    )
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
     typeOfCompression: Grib2Metadata = field(init=False, repr=False, default=TypeOfCompression())
     targetCompressionRatio: int = field(init=False, repr=False, default=TargetCompressionRatio())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate41:
+class DataRepresentationTemplate41(DataRepresentationTemplateBase):
     """[Data Representation Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-41.shtml)"""
     _len = 5
     _num = 41
-    _packingScheme = 'png'
+    _name = 'png'
+    _mutable = ('binScaleFactor', 'decScaleFactor', 'nBitsPacking')
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate42:
+class DataRepresentationTemplate42(DataRepresentationTemplateBase):
     """[Data Representation Template 42](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-42.shtml)"""
     _len = 8
     _num = 42
-    _packingScheme = 'aec'
+    _name = 'aec'
+    _mutable = ('binScaleFactor', 'decScaleFactor', 'nBitsPacking', 'compressionOptionsMask',
+        'blockSize', 'refSampleInterval',
+    )
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+    typeOfValues: int = field(init=False,repr=False,default=TypeOfValues())
     compressionOptionsMask: int = field(init=False, repr=False, default=CompressionOptionsMask())
     blockSize: int = field(init=False, repr=False, default=BlockSize())
     refSampleInterval: int = field(init=False, repr=False, default=RefSampleInterval())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
 
 @dataclass(init=False)
-class DataRepresentationTemplate50:
+class DataRepresentationTemplate50(DataRepresentationTemplateBase):
     """[Data Representation Template 50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp5-50.shtml)"""
     _len = 5
     _num = 0
-    _packingScheme = 'spectral-simple'
+    _name = 'spectral-simple'
+    _mutable = ('binScaleFactor', 'decScaleFactor', 'nBitsPacking', 'realOfCoefficient')
     refValue: float = field(init=False, repr=False, default=RefValue())
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     realOfCoefficient: float = field(init=False, repr=False, default=RealOfCoefficient())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -3043,6 +3153,12 @@ def drt_class_by_drtn(drtn: int):
         Data Representation template class object (not an instance).
     """
     return _drt_by_drtn[drtn]
+
+_MAP_PACKING_SCHEME_NAME_TO_NUM = {
+    v._name: k for k, v in _drt_by_drtn.items()
+}
+
+PACKING_SCHEMES = list(_MAP_PACKING_SCHEME_NAME_TO_NUM.keys())
 
 # ----------------------------------------------------------------------------------------
 # Descriptor Classes for Section 6 metadata.
