@@ -102,31 +102,31 @@ def test_section5(request):
                                           15,          0,          1,          0, 1649987994,
                                           -1,       3127,          0,          4,          1,
                                            1,         49,          8,          2,          2])
-    assert msg.dataRepresentationTemplateNumber.value == 3
-    assert msg.dataRepresentationTemplateNumber.definition == 'Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)'
-    assert msg.numberOfPackedValues == 65160
-    assert msg.typeOfValues.value == 0
-    assert msg.typeOfValues.definition == 'Floating Point'
-    assert msg.refValue == -2000.000244140625
-    assert msg.binScaleFactor == 0
-    assert msg.decScaleFactor == 2
-    assert msg.nBitsPacking == 15
-    assert msg.groupSplittingMethod.value == 1
-    assert msg.groupSplittingMethod.definition == 'General Group Splitting'
-    assert msg.typeOfMissingValueManagement.value == 0
-    assert msg.typeOfMissingValueManagement.definition == 'No explicit missing values included within the data values'
-    assert msg.priMissingValue == None
-    assert msg.secMissingValue == None
-    assert msg.nGroups == 3127
-    assert msg.refGroupWidth == 0
-    assert msg.nBitsGroupWidth == 4
-    assert msg.refGroupLength == 1
-    assert msg.groupLengthIncrement == 1
-    assert msg.lengthOfLastGroup == 49
-    assert msg.nBitsScaledGroupLength == 8
-    assert msg.spatialDifferenceOrder.value == 2
-    assert msg.spatialDifferenceOrder.definition == 'Second-Order Spatial Differencing'
-    assert msg.nBytesSpatialDifference == 2
+    assert msg.packing.dataRepresentationTemplateNumber.value == 3
+    assert msg.packing.dataRepresentationTemplateNumber.definition == 'Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)'
+    assert msg.packing.numberOfPackedValues == 65160
+    assert msg.packing.typeOfValues.value == 0
+    assert msg.packing.typeOfValues.definition == 'Floating Point'
+    assert msg.packing.refValue == -2000.000244140625
+    assert msg.packing.binScaleFactor == 0
+    assert msg.packing.decScaleFactor == 2
+    assert msg.packing.nBitsPacking == 15
+    assert msg.packing.groupSplittingMethod.value == 1
+    assert msg.packing.groupSplittingMethod.definition == 'General Group Splitting'
+    assert msg.packing.typeOfMissingValueManagement.value == 0
+    assert msg.packing.typeOfMissingValueManagement.definition == 'No explicit missing values included within the data values'
+    assert msg.packing.priMissingValue == None
+    assert msg.packing.secMissingValue == None
+    assert msg.packing.nGroups == 3127
+    assert msg.packing.refGroupWidth == 0
+    assert msg.packing.nBitsGroupWidth == 4
+    assert msg.packing.refGroupLength == 1
+    assert msg.packing.groupLengthIncrement == 1
+    assert msg.packing.lengthOfLastGroup == 49
+    assert msg.packing.nBitsScaledGroupLength == 8
+    assert msg.packing.spatialDifferenceOrder.value == 2
+    assert msg.packing.spatialDifferenceOrder.definition == 'Second-Order Spatial Differencing'
+    assert msg.packing.nBytesSpatialDifference == 2
     np.testing.assert_array_equal(expected_section5, msg.section5)
 
 def test_data(request):

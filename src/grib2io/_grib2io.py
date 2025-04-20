@@ -346,11 +346,18 @@ class open():
                         msg._msgnum = self.messages-1
                         msg._deflist = deflist
                         msg._coordlist = coordlist
+                        msg._orig_section5 = section5
                         if not self._nodata:
-                            msg._ondiskarray = Grib2MessageOnDiskArray((msg.ny,msg.nx), 2,
-                                                                TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
-                                                                self._filehandle,
-                                                                msg, pos, _secpos[6], _secpos[7])
+                            msg._ondiskarray = Grib2MessageOnDiskArray(
+                                (msg.ny,msg.nx),
+                                2,
+                                TYPE_OF_VALUES_DTYPE[msg.packing.typeOfValues],
+                                self._filehandle,
+                                msg,
+                                pos,
+                                _secpos[6],
+                                _secpos[7]
+                            )
                         self._index['msg'].append(msg)
 
                         # If here, then we have moved through GRIB2 section 1-7.
@@ -560,11 +567,15 @@ class Grib2Message:
     Creation class for a GRIB2 message.
 
     This class returns a dynamically-created Grib2Message object that
-    inherits from `_Grib2Message` and grid, product, data representation
-    template classes according to the template numbers for the respective
-    sections. If `section3`, `section4`, or `section5` are omitted, then
-    the appropriate keyword arguments for the template number `gdtn=`,
-    `pdtn=`, or `drtn=` must be provided.
+    inherits from `_Grib2Message`, grid definition, and product
+    definition template classes according to the template numbers for
+    the respective sections. If `section3` or `section4` are omitted,
+    then the appropriate keyword arguments for the template number
+    `gdtn=` or `pdtn=` must be provided.
+
+    .. versionadded:: 3.0.0 
+        Packing information is no longer required when creating a
+        Grib2Message object. `section5` or `drtn` are optional.
 
     Parameters
     ----------
@@ -589,12 +600,17 @@ class Grib2Message:
         definition template class, and a data representation template
         class.
     """
-    def __new__(self, section0: NDArray = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
-                      section1: NDArray = np.zeros((13),dtype=np.int64),
-                      section2: Optional[bytes] = None,
-                      section3: Optional[NDArray] = None,
-                      section4: Optional[NDArray] = None,
-                      section5: Optional[NDArray] = None, *args, **kwargs):
+    def __new__(
+        self,
+        section0: NDArray = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
+        section1: NDArray = np.zeros((13),dtype=np.int64),
+        section2: Optional[bytes] = None,
+        section3: Optional[NDArray] = None,
+        section4: Optional[NDArray] = None,
+        section5: Optional[NDArray] = None,
+        *args,
+        **kwargs,
+    ):
 
         if np.all(section1==0):
             try:
@@ -633,30 +649,25 @@ class Grib2Message:
             Pdt = templates.pdt_class_by_pdtn(pdtn)
             bases.append(Pdt)
 
-        if section5 is None:
-            if 'drtn' in kwargs.keys():
-                drtn = kwargs['drtn']
-                Drt = templates.drt_class_by_drtn(drtn)
-                bases.append(Drt)
-                section5 = np.zeros((Drt._len+2),dtype=np.int64)
-                section5[1] = drtn
-            else:
-                raise ValueError("Must provide GRIB2 Data Representation Template Number or section 5 array")
-        else:
-            drtn = section5[1]
-            Drt = templates.drt_class_by_drtn(drtn)
-            bases.append(Drt)
-
-        # attempt to use existing Msg class if it has already been made with gdtn,pdtn,drtn combo
+        # At this point, we can create the new Grib2Message object, then add packing
+        # information.
         try:
-            Msg = _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"]
+            Msg = _msg_class_store[f"{gdtn}:{pdtn}"]
         except KeyError:
             @dataclass(init=False, repr=False)
             class Msg(_Grib2Message, *bases):
                 pass
-            _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"] = Msg
+            _msg_class_store[f"{gdtn}:{pdtn}"] = Msg
+        _msg = Msg(section0, section1, section2, section3, section4, *args)
 
-        return Msg(section0, section1, section2, section3, section4, section5, *args)
+        # Add section5 if present.
+        if section5 is None:
+            if 'drtn' in kwargs.keys():
+                _msg.set_packing(kwargs['drtn'])
+        else:
+            _msg.set_packing(section5[1], section5=section5)
+
+        return _msg
 
 
 @dataclass
@@ -664,13 +675,12 @@ class _Grib2Message:
     """
     GRIB2 Message base class.
     """
-    # GRIB2 Sections
+    # GRIB2 Sections. IMPORTANT: section5 now stored in self.packing attr.
     section0: NDArray = field(init=True, repr=False)
     section1: NDArray = field(init=True, repr=False)
     section2: bytes = field(init=True, repr=False)
     section3: NDArray = field(init=True, repr=False)
     section4: NDArray = field(init=True, repr=False)
-    section5: NDArray = field(init=True, repr=False)
     section6: NDArray = field(init=False, repr=False, default_factory=lambda: np.zeros((1), dtype=np.int64))
 
     # Section 0 looked up attributes
@@ -723,13 +733,6 @@ class _Grib2Message:
     productDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
     productDefinitionTemplate: NDArray = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
 
-    # Section 5 looked up common attributes.  Other looked up attributes are
-    # available according to the Data Representation Template.
-    numberOfPackedValues: int = field(init=False,repr=False,default=templates.NumberOfPackedValues())
-    dataRepresentationTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
-    dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
-    typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
-
     # Section 6
     bitMapFlag: templates.Grib2Metadata = field(init=False, repr=False, default=templates.BitMapFlag())
 
@@ -741,12 +744,13 @@ class _Grib2Message:
         self._deflist = np.zeros((0), dtype=np.int64)
         self._msgnum = -1
         self._ondiskarray = None
-        self._orig_section5 = np.copy(self.section5)
+        self._orig_section5 = None
         self._signature = self._generate_signature()
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
         except(TypeError):
             pass
+        self.packing = None
         self.bitMapFlag = 255 # Default to no bit map
         self.bitmap = None
 
@@ -766,10 +770,17 @@ class _Grib2Message:
                         str(self.parameterNumber) == '1')
         return is_aero_template or is_aero_param or is_aero_type
 
+
+    @property
+    def section5(self):
+        """Return the section5 array"""
+        return self.packing.section5
+
+
     @property
     def gdtn(self):
         """Return Grid Definition Template Number"""
-        return self.section3[4]
+        return int(self.section3[4])
 
 
     @property
@@ -781,7 +792,7 @@ class _Grib2Message:
     @property
     def pdtn(self):
         """Return Product Definition Template Number."""
-        return self.section4[1]
+        return int(self.section4[1])
 
 
     @property
@@ -793,18 +804,24 @@ class _Grib2Message:
     @property
     def drtn(self):
         """Return Data Representation Template Number."""
-        return self.section5[1]
+        if self.packing is None:
+            warnings.warn("GRIB2 packing not set.")
+            return None
+        return int(self.packing.section5[1])
 
 
     @property
     def drt(self):
         """Return Data Representation Template."""
-        return self.dataRepresentationTemplate
+        if self.packing is None:
+            warnings.warn("GRIB2 packing not set.")
+            return None
+        return self.packing.dataRepresentationTemplate
 
 
     @property
     def pdy(self):
-        """Return the PDY ('YYYYMMDD')."""
+        """Return refDate in 'YYYYMMDD' format"""
         return ''.join([str(i) for i in self.section1[5:8]])
 
 
@@ -866,8 +883,9 @@ class _Grib2Message:
             sections 0, 1, 3, 4, 5, and 6.
         """
         info = ''
-        for sect in [0,1,3,4,5,6]:
-            for k,v in self.attrs_by_section(sect,values=True).items():
+        _sections = [0,1,3,4,5,6]
+        for sect in _sections:
+            for k,v in self.attrs_by_section(sect, values=True).items(): 
                 info += f'Section {sect}: {k} = {v}\n'
         return info
 
@@ -888,9 +906,16 @@ class _Grib2Message:
 
     def _generate_signature(self):
         """Generature SHA-1 hash string from GRIB2 integer sections."""
-        return hashlib.sha1(np.concatenate((self.section0,self.section1,
-                                            self.section3,self.section4,
-                                            self.section5))).hexdigest()
+        return hashlib.sha1(
+            np.concatenate(
+                (
+                    self.section0,
+                    self.section1,
+                    self.section3,
+                    self.section4,
+                )
+            )
+        ).hexdigest()
 
 
     def attrs_by_section(self, sect: int, values: bool=False):
@@ -912,9 +937,9 @@ class _Grib2Message:
         """
         if sect in {0,1,6}:
             attrs = templates._section_attrs[sect]
-        elif sect in {3,4,5}:
+        elif sect in {3,4}:
             def _find_class_index(n):
-                _key = {3:'Grid', 4:'Product', 5:'Data'}
+                _key = {3:'Grid', 4:'Product'}
                 for i,c in enumerate(self.__class__.__mro__):
                     if _key[n] in c.__name__:
                         return i
@@ -926,12 +951,21 @@ class _Grib2Message:
             else:
                 attrs = templates._section_attrs[sect]+\
                         self.__class__.__mro__[_find_class_index(sect)]._attrs()
+        elif sect == 5 and self.packing is not None:
+            attrs = list(self.packing.attrs.keys())
         else:
             attrs = []
+
         if values:
-            return {k:getattr(self,k) for k in attrs}
-        else:
-            return attrs
+            if sect == 5:
+                if self.packing is None:
+                    attrs = {}
+                else:
+                    attrs = self.packing.attrs
+            else:
+                attrs = {k: getattr(self, k) for k in attrs}
+
+        return attrs
 
 
     def pack(self):
@@ -941,6 +975,9 @@ class _Grib2Message:
         It is the user's responsibility to populate the GRIB2 section
         information with appropriate metadata.
         """
+        if self.packing is None:
+            self.set_packing()
+
         # Create beginning of packed binary message with section 0 and 1 data.
         self._sections = []
         self._msg,self._pos = g2clib.grib2_create(self.indicatorSection[2:4],self.identificationSection)
@@ -985,27 +1022,27 @@ class _Grib2Message:
             fld = np.where(np.isnan(fld),0,fld)
         else:
             if np.isnan(fld).any():
-                if hasattr(self,'priMissingValue'):
-                    fld = np.where(np.isnan(fld),self.priMissingValue,fld)
+                if hasattr(self.packing,'priMissingValue'):
+                    fld = np.where(np.isnan(fld),self.packing.priMissingValue,fld)
             if hasattr(self,'_missvalmap'):
-                if hasattr(self,'priMissingValue'):
-                    fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
-                if hasattr(self,'secMissingValue'):
-                    fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
+                if hasattr(self.packing,'priMissingValue'):
+                    fld = np.where(self._missvalmap==1,self.packing.priMissingValue,fld)
+                if hasattr(self.packing,'secMissingValue'):
+                    fld = np.where(self._missvalmap==2,self.packing.secMissingValue,fld)
 
         # Add sections 4, 5, 6, and 7.
-        self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
-                                                    self.productDefinitionTemplate,
-                                                    self._coordlist,
-                                                    self.drtn,
-                                                    self.dataRepresentationTemplate,
-                                                    fld,
-                                                    bitmapflag,
-                                                    bmap)
-        self._sections.append(4)
-        self._sections.append(5)
-        self._sections.append(6)
-        self._sections.append(7)
+        self._msg,self._pos = g2clib.grib2_addfield(
+            self._msg,
+            self.pdtn,
+            self.productDefinitionTemplate,
+            self._coordlist,
+            self.drtn,
+            self.drt,
+            fld,
+            bitmapflag,
+            bmap,
+        )
+        self._sections.extend([4, 5, 6, 7])
 
         # Finalize GRIB2 message with section 8.
         self._msg, self._pos = g2clib.grib2_end(self._msg)
@@ -1013,6 +1050,71 @@ class _Grib2Message:
         self.section0[-1] = len(self._msg)
 
 
+    def set_packing(self, scheme: Union[int, str] = None, **kwargs):
+        """
+        Set the GRIB2 packing scheme.
+
+        The default packing scheme is 'complex-sd', complex packing with 2nd
+        order spatial differencing.
+
+        Parameters
+        ----------
+        scheme
+            Packing scheme to be used. This can either be an integer or string
+            using the following mapping:
+
+            | Packing Scheme    | Integer Value |
+            | :---:             | :---:         |
+            | 'simple'          | 0             |
+            | 'complex'         | 2             |
+            | 'complex-sd'      | 3             |
+            | 'ieee-float'      | 4             |
+            | 'jpeg'            | 40            |
+            | 'png'             | 41            |
+            | 'aec'             | 42            |
+            | 'spectral-simple' | 50            |
+        """
+        packing_attrs = {}
+        if scheme is None:
+            scheme = "complex-sd"
+            packing_attrs = {
+                'spatialDifferenceOrder': 2
+            }
+        if isinstance(scheme, str):
+            scheme = templates._MAP_PACKING_SCHEME_NAME_TO_NUM[scheme]
+
+        Drt = [templates.drt_class_by_drtn(scheme)]
+
+        @dataclass
+        class Grib2Packing(*Drt):
+            """"""
+            section5: NDArray = field(init=False, repr=False, default_factory=lambda: np.empty((), dtype=np.int64))
+            dataRepresentationTemplateNumber: int = field(init=False, repr=False, default=templates.DataRepresentationTemplateNumber())
+            dataRepresentationTemplate: list = field(init=False, repr=False, default=templates.DataRepresentationTemplate())
+
+            def __repr__(self):
+                return f"{self.__class__.__name__}(section5={self.section5})"
+
+            @property
+            def attrs(self):
+                idx = 0
+                for c in self.__class__.__mro__:
+                    if c.__name__[-1].isdigit():
+                        break
+                    idx += 1
+                return {a: getattr(self, a) for a in self.__class__.__mro__[idx]._attrs()}
+
+        self.packing = Grib2Packing()
+        if "section5" in kwargs.keys():
+            self.packing.section5 = kwargs["section5"]
+        else:
+            self.packing.section5 = np.zeros((Drt[0]._len+2), dtype=np.int64)
+            self.packing.section5[1] = scheme
+            self.packing.section5[0] = self.numberOfDataPoints
+            for k, v in packing_attrs.items():
+                setattr(self.packing, k, v)
+
+            
     @property
     def data(self) -> np.array:
         """Access the unpacked data values."""
@@ -1574,7 +1676,10 @@ def _data(
     """
     gds = msg.section3[0:5]
     gdt = msg.section3[5:]
-    drt = msg._orig_section5[2:]
+    if msg._orig_section5 is not None:
+        msg.packing.section5 = np.copy(msg._orig_section5)
+    drtn = msg.drtn
+    drt = msg.drt
     nx, ny = msg.nx, msg.ny
 
     # Set the fill value according to how we are handling missing values
@@ -1582,8 +1687,8 @@ def _data(
     if msg._auto_nans:
         fill_value = np.nan
     else:
-        if hasattr(msg,'typeOfMissingValueManagement'):
-            fill_value = msg.priMissingValue if hasattr(msg,'priMissingValue') else np.nan
+        if hasattr(msg.packing,'typeOfMissingValueManagement'):
+            fill_value = msg.packing.priMissingValue if hasattr(msg.packing,'priMissingValue') else np.nan
         else:
             fill_value = np.nan
 
@@ -1608,9 +1713,9 @@ def _data(
     assert secnum == 7
     filehandle.seek(filehandle.tell()-5)
     ipos = 0
-    npvals = msg.numberOfPackedValues
+    npvals = msg.packing.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1, ipos = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
+    fld1, ipos = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,drtn,drt,npvals,
                                 storageorder=storageorder)
 
     # Handle the missing values
@@ -1621,17 +1726,17 @@ def _data(
         np.put(fld,np.nonzero(bmap),fld1)
     else:
         # No bitmap, check missing values
-        if hasattr(msg,'typeOfMissingValueManagement'):
-            if msg.typeOfMissingValueManagement in {1,2}:
+        if hasattr(msg.packing,'typeOfMissingValueManagement'):
+            if msg.packing.typeOfMissingValueManagement in {1,2}:
                 msg._missvalmap = np.zeros(fld1.shape,dtype=np.int8)
-                if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
+                if hasattr(msg.packing,'priMissingValue') and msg.packing.priMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
-                    msg._missvalmap = np.where(fld1==msg.priMissingValue,1,msg._missvalmap)
+                    msg._missvalmap = np.where(fld1==msg.packing.priMissingValue,1,msg._missvalmap)
                     fld1 = np.where(msg._missvalmap==1,fill_value,fld1)
-            if msg.typeOfMissingValueManagement == 2:
-                if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
+            if msg.packing.typeOfMissingValueManagement == 2:
+                if hasattr(msg.packing,'secMissingValue') and msg.packing.secMissingValue is not None:
                     if msg._auto_nans: fill_value = np.nan
-                    msg._missvalmap = np.where(fld1==msg.secMissingValue,2,msg._missvalmap)
+                    msg._missvalmap = np.where(fld1==msg.packing.secMissingValue,2,msg._missvalmap)
                     fld1 = np.where(msg._missvalmap==2,fill_value,fld1)
         fld = fld1
 
@@ -1653,7 +1758,7 @@ def _data(
 
     # Default data type is np.float32. Convert to np.int32 according GRIB2
     # metadata attribute typeOfValues.
-    if msg.typeOfValues == 1:
+    if msg.packing.typeOfValues == 1:
         fld = fld.astype(np.int32)
 
     return fld
