@@ -1331,6 +1331,9 @@ def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, 
     xarray.DataTree
         A hierarchical DataTree representation of the GRIB2 data.
     """
+    if not HAS_DATATREE:
+        raise ImportError("xarray version does not support DataTree functionality.")
+
     if filters is None:
         filters = {}
 
@@ -1776,164 +1779,166 @@ def create_dataset_from_df(df, filename, verbose=False):
         return None
 
 
-@xr.register_datatree_accessor("grib2io")
-class Grib2ioDataTree:
-    """
-    DataTree accessor for GRIB2 files.
-
-    This accessor provides methods for working with GRIB2 data organized
-    in a hierarchical tree structure.
-    """
-
-    def __init__(self, datatree_obj):
-        self._obj = datatree_obj
-
-    def to_grib2(self, filename, mode: typing.Literal["x", "w", "a"] = "x"):
+# Only register the DataTree accessor if DataTree is supported
+if HAS_DATATREE:
+    @xr.register_datatree_accessor("grib2io")
+    class Grib2ioDataTree:
         """
-        Write all datasets in the DataTree to a GRIB2 file.
+        DataTree accessor for GRIB2 files.
 
-        Parameters
-        ----------
-        filename : str
-            Name of the GRIB2 file to write to.
-        mode : {"x", "w", "a"}, optional
-            Persistence mode, default is "x" (create, fail if exists)
+        This accessor provides methods for working with GRIB2 data organized
+        in a hierarchical tree structure.
         """
-        # Start with the specified mode
-        current_mode = mode
 
-        # Function to recursively process the tree
-        def process_tree(node):
-            nonlocal current_mode
+        def __init__(self, datatree_obj):
+            self._obj = datatree_obj
 
-            # If this is a Dataset node with data variables
-            if node.ds is not None and node.ds.data_vars:
-                # Write dataset to GRIB2 file
-                node.ds.grib2io.to_grib2(filename, mode=current_mode)
-                # Switch to append mode after first write
-                current_mode = "a"
+        def to_grib2(self, filename, mode: typing.Literal["x", "w", "a"] = "x"):
+            """
+            Write all datasets in the DataTree to a GRIB2 file.
 
-            # Process children
-            for child_name, child_node in node.children.items():
-                process_tree(child_node)
+            Parameters
+            ----------
+            filename : str
+                Name of the GRIB2 file to write to.
+            mode : {"x", "w", "a"}, optional
+                Persistence mode, default is "x" (create, fail if exists)
+            """
+            # Start with the specified mode
+            current_mode = mode
 
-        # Start processing from the root
-        process_tree(self._obj)
+            # Function to recursively process the tree
+            def process_tree(node):
+                nonlocal current_mode
 
-    def griddef(self):
-        """
-        Get the grid definition from the first dataset in the tree that has one.
+                # If this is a Dataset node with data variables
+                if node.ds is not None and node.ds.data_vars:
+                    # Write dataset to GRIB2 file
+                    node.ds.grib2io.to_grib2(filename, mode=current_mode)
+                    # Switch to append mode after first write
+                    current_mode = "a"
 
-        Returns
-        -------
-        grib2io.Grib2GridDef
-            Grid definition object
-        """
-        # Function to find first dataset with GRIB2IO_section3
-        def find_griddef(node):
-            if node.ds is not None and node.ds.data_vars:
-                for var_name in node.ds.data_vars:
-                    if 'GRIB2IO_section3' in node.ds[var_name].attrs:
-                        return Grib2GridDef.from_section3(node.ds[var_name].attrs['GRIB2IO_section3'])
+                # Process children
+                for child_name, child_node in node.children.items():
+                    process_tree(child_node)
 
-            # Check children
-            for child_name, child_node in node.children.items():
-                griddef = find_griddef(child_node)
-                if griddef is not None:
-                    return griddef
+            # Start processing from the root
+            process_tree(self._obj)
 
-            return None
+        def griddef(self):
+            """
+            Get the grid definition from the first dataset in the tree that has one.
 
-        return find_griddef(self._obj)
+            Returns
+            -------
+            grib2io.Grib2GridDef
+                Grid definition object
+            """
+            # Function to find first dataset with GRIB2IO_section3
+            def find_griddef(node):
+                if node.ds is not None and node.ds.data_vars:
+                    for var_name in node.ds.data_vars:
+                        if 'GRIB2IO_section3' in node.ds[var_name].attrs:
+                            return Grib2GridDef.from_section3(node.ds[var_name].attrs['GRIB2IO_section3'])
 
-    def interp(self, method, grid_def_out, method_options=None, num_threads=1):
-        """
-        Interpolate all datasets in the tree to a new grid.
+                # Check children
+                for child_name, child_node in node.children.items():
+                    griddef = find_griddef(child_node)
+                    if griddef is not None:
+                        return griddef
 
-        Parameters
-        ----------
-        method : str or int
-            Interpolation method to use
-        grid_def_out : grib2io.Grib2GridDef
-            Target grid definition
-        method_options : list, optional
-            Options for interpolation method
-        num_threads : int, optional
-            Number of threads to use for interpolation
+                return None
 
-        Returns
-        -------
-        xarray.DataTree
-            New DataTree with interpolated data
-        """
-        new_tree = xr.DataTree()
+            return find_griddef(self._obj)
 
-        # Function to recursively process the tree
-        def process_tree(node, new_parent):
-            # If this is a Dataset node with data variables
-            if node.ds is not None and node.ds.data_vars:
-                # Interpolate dataset
-                interp_ds = node.ds.grib2io.interp(method, grid_def_out,
-                                                  method_options=method_options,
-                                                  num_threads=num_threads)
+        def interp(self, method, grid_def_out, method_options=None, num_threads=1):
+            """
+            Interpolate all datasets in the tree to a new grid.
 
-                # Add to new tree at the same path
-                if node == self._obj:  # Root node
-                    new_parent.ds = interp_ds
-                else:
-                    new_parent.ds = interp_ds
+            Parameters
+            ----------
+            method : str or int
+                Interpolation method to use
+            grid_def_out : grib2io.Grib2GridDef
+                Target grid definition
+            method_options : list, optional
+                Options for interpolation method
+            num_threads : int, optional
+                Number of threads to use for interpolation
 
-            # Process children
-            for child_name, child_node in node.children.items():
-                # Create same child in new tree
-                new_child = xr.DataTree()
-                new_parent[child_name] = new_child
-                process_tree(child_node, new_child)
+            Returns
+            -------
+            xarray.DataTree
+                New DataTree with interpolated data
+            """
+            new_tree = xr.DataTree()
 
-        # Start processing from the root
-        process_tree(self._obj, new_tree)
+            # Function to recursively process the tree
+            def process_tree(node, new_parent):
+                # If this is a Dataset node with data variables
+                if node.ds is not None and node.ds.data_vars:
+                    # Interpolate dataset
+                    interp_ds = node.ds.grib2io.interp(method, grid_def_out,
+                                                      method_options=method_options,
+                                                      num_threads=num_threads)
 
-        return new_tree
+                    # Add to new tree at the same path
+                    if node == self._obj:  # Root node
+                        new_parent.ds = interp_ds
+                    else:
+                        new_parent.ds = interp_ds
 
-    def subset(self, lats, lons):
-        """
-        Subset all datasets in the tree to a region.
+                # Process children
+                for child_name, child_node in node.children.items():
+                    # Create same child in new tree
+                    new_child = xr.DataTree()
+                    new_parent[child_name] = new_child
+                    process_tree(child_node, new_child)
 
-        Parameters
-        ----------
-        lats : list or tuple
-            Latitude bounds [min_lat, max_lat]
-        lons : list or tuple
-            Longitude bounds [min_lon, max_lon]
+            # Start processing from the root
+            process_tree(self._obj, new_tree)
 
-        Returns
-        -------
-        xarray.DataTree
-            New DataTree with subset data
-        """
-        new_tree = xr.DataTree()
+            return new_tree
 
-        # Function to recursively process the tree
-        def process_tree(node, new_parent):
-            # If this is a Dataset node with data variables
-            if node.ds is not None and node.ds.data_vars:
-                # Subset dataset
-                subset_ds = node.ds.grib2io.subset(lats, lons)
+        def subset(self, lats, lons):
+            """
+            Subset all datasets in the tree to a region.
 
-                # Add to new tree at the same path
-                if node == self._obj:  # Root node
-                    new_parent.ds = subset_ds
-                else:
-                    new_parent.ds = subset_ds
+            Parameters
+            ----------
+            lats : list or tuple
+                Latitude bounds [min_lat, max_lat]
+            lons : list or tuple
+                Longitude bounds [min_lon, max_lon]
 
-            # Process children
-            for child_name, child_node in node.children.items():
-                # Create same child in new tree
-                new_child = xr.DataTree()
-                new_parent[child_name] = new_child
-                process_tree(child_node, new_child)
+            Returns
+            -------
+            xarray.DataTree
+                New DataTree with subset data
+            """
+            new_tree = xr.DataTree()
 
-        # Start processing from the root
-        process_tree(self._obj, new_tree)
+            # Function to recursively process the tree
+            def process_tree(node, new_parent):
+                # If this is a Dataset node with data variables
+                if node.ds is not None and node.ds.data_vars:
+                    # Subset dataset
+                    subset_ds = node.ds.grib2io.subset(lats, lons)
 
-        return new_tree
+                    # Add to new tree at the same path
+                    if node == self._obj:  # Root node
+                        new_parent.ds = subset_ds
+                    else:
+                        new_parent.ds = subset_ds
+
+                # Process children
+                for child_name, child_node in node.children.items():
+                    # Create same child in new tree
+                    new_child = xr.DataTree()
+                    new_parent[child_name] = new_child
+                    process_tree(child_node, new_child)
+
+            # Start processing from the root
+            process_tree(self._obj, new_tree)
+
+            return new_tree
