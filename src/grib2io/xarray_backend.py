@@ -83,6 +83,16 @@ LEVEL_NAME_MAPPING = {
     233: "high_cloud_top_level",
     223: "medium_cloud_top_level",
     213: "low_cloud_top_level"
+    214: "low_cloud_layer",
+    224: "medium_cloud_layer",
+    234: "high_cloud_layer",
+    215: "cloud_ceiling",
+    242: 'convective_cloud_bottom_level',
+    212: "low_cloud_bottom_level",
+    222: "medium_cloud_bottom_level",
+    232: "high_cloud_bottom_level",
+    243: "convective_cloud_top_level",
+
 }
 
 # Define the order of hierarchy levels for the DataTree
