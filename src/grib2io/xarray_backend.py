@@ -49,6 +49,9 @@ AVAILABLE_NON_GEO_DIMS = [
 # Map numeric level codes to human-readable names
 LEVEL_NAME_MAPPING = {
     1: "surface",
+    7: "tropopause",
+    6: "max_wind_level",
+    10: "entire_atmosphere",
     100: "isobaric_surface",
     101: "mean_sea_level",
     102: "height_above_msl",
@@ -63,7 +66,10 @@ LEVEL_NAME_MAPPING = {
     200: "entire_atmosphere",
     201: "entire_ocean",
     204: "highest_freezing_level",
-    220: "planetary_boundary_layer"
+    220: "planetary_boundary_layer",
+    233: "high_cloud_top_level",
+    223: "medium_cloud_top_level",
+    213: "low_cloud_top_level"
 }
 
 # Define the order of hierarchy levels for the DataTree
