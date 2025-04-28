@@ -3,4 +3,4 @@ dask
 numpy
 pyproj
 pytest
-xarray>=2023.04.0
+xarray

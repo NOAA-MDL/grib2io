@@ -1,5 +1,24 @@
 import pytest
 import xarray as xr
+import importlib.metadata
+
+# Check if xarray version supports DataTree
+HAS_DATATREE = False
+try:
+    # Try importing DataTree to check if it's available
+    xarray_version = importlib.metadata.version('xarray')
+    xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
+    min_version_parts = [2023, 4, 0]
+    HAS_DATATREE = xarray_parts >= min_version_parts
+    # Also verify DataTree class exists
+    if HAS_DATATREE and not hasattr(xr, 'DataTree'):
+        HAS_DATATREE = False
+except (ImportError, ValueError):
+    HAS_DATATREE = False
+
+# Skip all tests if DataTree is not available
+pytestmark = pytest.mark.skipif(not HAS_DATATREE,
+                               reason="xarray version does not support DataTree functionality")
 
 def test_datatree_basic_structure(request):
     """Test basic DataTree structure creation from a GRIB2 file."""

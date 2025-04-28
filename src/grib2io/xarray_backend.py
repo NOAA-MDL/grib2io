@@ -5,26 +5,27 @@ backward compatibility.
 """
 from copy import copy
 from dataclasses import dataclass, field, astuple
+import importlib.metadata
 import itertools
 import logging
 import typing
 from warnings import warn
 from collections import defaultdict
-import importlib.metadata
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-# Check if xarray version is at least 2023.04.0 which includes DataTree support
-xarray_version = importlib.metadata.version('xarray')
-xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
-min_version_parts = [2023, 4, 0]
-if xarray_parts < min_version_parts:
-    raise ImportError(
-        f"xarray version {xarray_version} is not supported. "
-        f"grib2io.xarray_backend requires xarray>=2023.04.0 for DataTree functionality."
-    )
+# Check if xarray version supports DataTree
+HAS_DATATREE = False
+try:
+    # Try importing DataTree to check if it's available
+    xarray_version = importlib.metadata.version('xarray')
+    xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
+    min_version_parts = [2023, 4, 0]
+    HAS_DATATREE = xarray_parts >= min_version_parts
+except (ImportError, ValueError):
+    HAS_DATATREE = False
 
 from xarray.backends import (
     BackendArray,
@@ -193,6 +194,9 @@ class GribBackendEntrypoint(BackendEntrypoint):
         xarray.DataTree
             A hierarchical DataTree representation of the GRIB2 data.
         """
+        if not HAS_DATATREE:
+            raise ImportError("xarray version does not support DataTree functionality.")
+
         if filters is None:
             filters = {}
 
