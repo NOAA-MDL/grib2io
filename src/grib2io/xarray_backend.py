@@ -9,6 +9,7 @@ import itertools
 import logging
 import typing
 from warnings import warn
+from collections import defaultdict
 
 import numpy as np
 import pandas as pd
@@ -44,6 +45,42 @@ AVAILABLE_NON_GEO_DIMS = [
     "scaledValueOfFirstSize",
     "scaledValueOfSecondSize"
 ]
+
+# Map numeric level codes to human-readable names
+LEVEL_NAME_MAPPING = {
+    1: "surface",
+    100: "isobaric_surface",
+    101: "mean_sea_level",
+    102: "height_above_msl",
+    103: "height_above_ground",
+    104: "sigma_level",
+    105: "hybrid_level",
+    106: "depth_below_land",
+    107: "isentropic_level",
+    108: "pressure_diff_from_ground",
+    109: "pot_vorticity_surface",
+    160: "depth_below_sea",
+    200: "entire_atmosphere",
+    201: "entire_ocean",
+    204: "highest_freezing_level",
+    220: "planetary_boundary_layer"
+}
+
+# Define the order of hierarchy levels for the DataTree
+TREE_HIERARCHY_LEVELS = [
+    "typeOfFirstFixedSurface",
+    "valueOfFirstFixedSurface",
+    "productDefinitionTemplateNumber",
+    "perturbationNumber",
+    "leadTime",
+    "duration",
+    "percentileValue",
+    "thresholdLowerLimit",
+    "thresholdUpperLimit"
+]
+
+# Levels included in data variables rather than tree structure
+VARIABLE_LEVELS = []
 
 
 class GribBackendEntrypoint(BackendEntrypoint):
@@ -110,6 +147,43 @@ class GribBackendEntrypoint(BackendEntrypoint):
         ds.attrs['engine'] = 'grib2io'
 
         return ds
+
+    def open_datatree(
+        self,
+        filename,
+        *,
+        drop_variables = None,
+        filters: typing.Mapping[str, typing.Any] = None,
+        stack_vertical: bool = False,
+    ):
+        """
+        Open a GRIB2 file as an xarray DataTree.
+
+        Parameters
+        ----------
+        filename : str
+            Path to the GRIB2 file.
+        drop_variables : list, optional
+            List of variables to exclude.
+        filters : dict, optional
+            Filter criteria for GRIB2 messages.
+        stack_vertical : bool, optional
+            If True, organize the tree with vertical layers stacked in a single dataset.
+
+        Returns
+        -------
+        xarray.DataTree
+            A hierarchical DataTree representation of the GRIB2 data.
+        """
+        if filters is None:
+            filters = {}
+
+        # Open the file without any filters first to get all messages
+        with grib2io.open(filename, _xarray_backend=True) as f:
+            file_index = pd.DataFrame(f._index)
+
+        # Build tree structure from GRIB messages with specified options
+        return build_datatree_from_grib(filename, file_index, filters, stack_vertical=stack_vertical)
 
 
 class GribBackendArray(BackendArray):
@@ -193,6 +267,23 @@ class PdIndex(Validator):
             value = pd.Index([value])
         setattr(obj, self.private_name, value)
 
+
+def _asarray_tuplesafe(values):
+    """
+    Convert values to a numpy array of at most 1-dimension and preserve tuples.
+
+    Adapted from pandas.core.common._asarray_tuplesafe
+    """
+    if isinstance(values, tuple):
+        result = np.empty(1, dtype=object)
+        result[0] = values
+    else:
+        result = np.asarray(values)
+        if result.ndim == 2:
+            result = np.empty(len(values), dtype=object)
+            result[:] = values
+
+    return result
 
 def array_safe_eq(a, b) -> bool:
     """Check if a and b are equal, even if they are numpy arrays."""
@@ -539,7 +630,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
             f"DataArray dimensions are not compatible with number of GRIB2 messages; DataArray has {dims_total} "
             f"and GRIB2 index has {len(index)}. Consider applying a filter for dimensions: {dims_to_filter}"
             )
- 
+
     data = OnDiskArray(filename, index, cube)
     lock = LOCK
     data = GribBackendArray(data, lock)
@@ -578,25 +669,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     return da
 
 
-def _asarray_tuplesafe(values):
-    """
-    Convert values to a numpy array of at most 1-dimension and preserve tuples.
-
-    Adapted from pandas.core.common._asarray_tuplesafe grabbed from xarray
-    because prefixed with _
-    """
-    if isinstance(values, tuple):
-        result = utils.to_0d_object_array(values)
-    else:
-        result = np.asarray(values)
-        if result.ndim == 2:
-            result = np.empty(len(values), dtype=object)
-            result[:] = values
-
-    return result
-
-
-def make_variables(index, f, non_geo_dims):
+def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
     """
     Create an individual dataframe index and cube for each variable.
 
@@ -608,6 +681,8 @@ def make_variables(index, f, non_geo_dims):
         ?
     non_geo_dims
         Dimensions not associated with the x,y grid
+    allow_uneven_dims
+        If True, allows uneven dimensions (used for DataTree creation)
 
     Returns
     -------
@@ -655,7 +730,7 @@ def make_variables(index, f, non_geo_dims):
         dims = [k for k in ordered_meta if k not in {'y','x'} and len(c[k]) > 1]
 
         for dim in dims:
-            if frame[dim].value_counts().nunique() > 1:
+            if frame[dim].value_counts().nunique() > 1 and not allow_uneven_dims:
                 raise ValueError(f'uneven number of grib msgs associated with dimension: {dim}\n unique values for {dim}: {frame[dim].unique()} ')
 
         if len(dims) >= 1: # dims may be empty if no extra dims on top of x,y
@@ -663,7 +738,7 @@ def make_variables(index, f, non_geo_dims):
             frame = frame.set_index(dims)
 
         if cube:
-            if cube != c:
+            if cube != c and not allow_uneven_dims:
                 raise ValueError(f'{cube},\n {c};\n cubes are not the same; filter to a single cube')
         else:
             cube = c
@@ -709,7 +784,7 @@ def interp_nd(a,*, method, grid_def_in, grid_def_out, method_options=None, num_t
     a = a.reshape(-1,a.shape[-2],a.shape[-1])
     a = grib2io.interpolate(a, method, grid_def_in, grid_def_out, method_options=method_options,
                             num_threads=num_threads)
-    a = a.reshape(front_shape + (a.shape[-2], a.shape[-1]))
+    a = a.reshape(front_shape + (a.shape[-2],a.shape[-1]))
     return a
 
 
@@ -1213,3 +1288,630 @@ class Grib2ioDataArray:
         )
 
         return da.where((mask_lon & mask_lat).compute(), drop=True)
+
+
+# Custom open_datatree function to open grib files as DataTree
+def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, engine="grib2io"):
+    """
+    Open a GRIB2 file as an xarray DataTree.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the GRIB2 file.
+    filters : dict, optional
+        Filter criteria for GRIB2 messages.
+    engine : str, optional
+        Engine to use for opening the file, defaults to "grib2io".
+
+    Returns
+    -------
+    xarray.DataTree
+        A hierarchical DataTree representation of the GRIB2 data.
+    """
+    if filters is None:
+        filters = {}
+
+    # Open the file without any filters first to get all messages
+    with grib2io.open(filename, _xarray_backend=True) as f:
+        file_index = pd.DataFrame(f._index)
+
+    # Create a DataTree root
+    tree = xr.DataTree()
+
+    # Build tree structure from GRIB messages
+    return build_datatree_from_grib(filename, file_index, filters)
+
+
+def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=False):
+    """
+    Build a DataTree from GRIB2 messages.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the GRIB2 file.
+    file_index : pandas.DataFrame
+        DataFrame of GRIB2 message index.
+    filters : dict, optional
+        Filter criteria for GRIB2 messages.
+    stack_vertical : bool, optional
+        If True, vertical levels will be stacked in a single dataset
+        instead of being organized in separate tree nodes.
+
+    Returns
+    -------
+    xarray.DataTree
+        A hierarchical DataTree representation of the GRIB2 data.
+    """
+    if filters is None:
+        filters = {}
+
+    # Apply any filters from user
+    for k, v in filters.items():
+        if k not in file_index.columns:
+            file_index = file_index.copy()
+            file_index[k] = file_index.msg.apply(lambda msg: getattr(msg, k, None))
+        file_index = filter_index(file_index, k, v)
+
+    # Make a copy to avoid the SettingWithCopyWarning
+    file_index = file_index.copy()
+
+    # Extract metadata needed for tree organization
+    # Use a safer approach to handle missing attributes
+    def safe_getattr(obj, name):
+        try:
+            return getattr(obj, name)
+        except (AttributeError, KeyError):
+            return None
+
+    for attr in TREE_HIERARCHY_LEVELS:
+        if (attr not in file_index.columns) and (attr != 'valueOfFirstFixedSurface'):
+            file_index[attr] = file_index.msg.apply(lambda msg: safe_getattr(msg, attr))
+
+    # Also extract shortName for variable naming
+    if 'shortName' not in file_index.columns:
+        file_index = file_index.assign(shortName=file_index.msg.apply(lambda msg: getattr(msg, 'shortName', None)))
+        file_index = file_index.assign(nx=file_index.msg.apply(lambda msg: getattr(msg, 'nx', None)))
+        file_index = file_index.assign(ny=file_index.msg.apply(lambda msg: getattr(msg, 'ny', None)))
+
+    # Create root DataTree
+    root = xr.DataTree()
+
+    # Adjust hierarchy levels if we're stacking vertical levels
+    hierarchy_levels = list(TREE_HIERARCHY_LEVELS)
+    if stack_vertical and "valueOfFirstFixedSurface" in hierarchy_levels:
+        hierarchy_levels.remove("valueOfFirstFixedSurface")
+
+    # First group by level type
+    level_groups = {}
+
+    # Create a dictionary to group data by level type
+    for level_type in file_index['typeOfFirstFixedSurface'].unique():
+        if pd.notna(level_type):  # Skip None/NaN values
+            level_name = LEVEL_NAME_MAPPING.get(level_type, f"level_{level_type}")
+            # Get all rows for this level type
+            level_data = file_index[file_index['typeOfFirstFixedSurface'] == level_type]
+            level_groups[level_type] = {'name': level_name, 'data': level_data}
+
+    # Process each level group
+    for level_type, group_info in level_groups.items():
+        level_name = group_info['name']
+        level_df = group_info['data']
+
+        # Create a branch for this level type
+        level_tree = xr.DataTree()
+
+        # Process this branch based on PDTN, perturbation number, etc.
+        process_level_branch(level_tree, level_df, filename)
+
+        # Add this branch to the main tree
+        root[level_name] = level_tree
+
+    return root
+
+def process_level_branch(level_tree, df, filename):
+    """
+    Process a level type branch of the data tree, organizing by PDTN and other attributes.
+
+    Parameters
+    ----------
+    level_tree : xarray.DataTree
+        The DataTree node for this level type
+    df : pandas.DataFrame
+        DataFrame of messages for this level type
+    filename : str
+        Path to the GRIB2 file
+    """
+    # Group by PDTN
+    pdtn_groups = {}
+
+    # Group data by PDTN first
+    for pdtn_value in df['productDefinitionTemplateNumber'].unique():
+        if pd.notna(pdtn_value):
+            pdtn_df = df[df['productDefinitionTemplateNumber'] == pdtn_value]
+            pdtn_groups[pdtn_value] = pdtn_df
+
+    # If there's only one PDTN value, skip creating PDTN branch level
+    if len(pdtn_groups) == 1:
+        pdtn, pdtn_df = next(iter(pdtn_groups.items()))
+
+        # Check if we need to further subdivide by perturbation number
+        has_perturbations = ('perturbationNumber' in pdtn_df.columns and
+                            len(pdtn_df['perturbationNumber'].dropna().unique()) > 1)
+
+        if has_perturbations:
+            # Process perturbations directly on the level tree
+            process_perturbation_groups(level_tree, pdtn_df, filename)
+        else:
+            # For single perturbation case, try to create dataset directly on level
+            try:
+                ds = create_dataset_from_df(pdtn_df, filename)
+                if ds is not None:
+                    # Set the dataset directly on the level tree
+                    level_tree.ds = ds
+            except Exception as e:
+                print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
+
+                # Try to separate by variable name as a fallback
+                try_process_by_variables(level_tree, pdtn_df, filename)
+    else:
+        # Multiple PDTN values, process each group with PDTN branch nodes
+        for pdtn, pdtn_df in pdtn_groups.items():
+            # Use a simple node name that's easy to use in code
+            pdtn_name = f"pdtn_{int(pdtn)}"
+
+            # Check if we need to further subdivide by perturbation number
+            has_perturbations = ('perturbationNumber' in pdtn_df.columns and
+                                len(pdtn_df['perturbationNumber'].dropna().unique()) > 1)
+
+            if has_perturbations:
+                # Create a branch for this PDTN
+                pdtn_tree = xr.DataTree()
+
+                # Process perturbation groups
+                process_perturbation_groups(pdtn_tree, pdtn_df, filename)
+
+                # Only add the PDTN branch if it has children
+                if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
+                    level_tree[pdtn_name] = pdtn_tree
+            else:
+                # For single perturbation case, try to group by variable if needed
+                try:
+                    ds = create_dataset_from_df(pdtn_df, filename)
+                    if ds is not None:
+                        level_tree[pdtn_name] = ds
+                except Exception as e:
+                    print(f"Error creating dataset for {pdtn_name}: {e}")
+
+                    # Create a subtree for this PDTN
+                    pdtn_tree = xr.DataTree()
+
+                    # Try to separate by variable name as a fallback
+                    if try_process_by_variables(pdtn_tree, pdtn_df, filename):
+                        level_tree[pdtn_name] = pdtn_tree
+
+def process_perturbation_groups(target_tree, pdtn_df, filename):
+    """
+    Process perturbation groups and add them to the target tree.
+
+    Parameters
+    ----------
+    target_tree : xarray.DataTree
+        The tree node to add perturbation groups to
+    pdtn_df : pandas.DataFrame
+        DataFrame of messages for a specific PDTN
+    filename : str
+        Path to the GRIB2 file
+
+    Returns
+    -------
+    bool
+        True if at least one perturbation was successfully processed
+    """
+    success = False
+    # Group by perturbation number
+    pert_groups = {}
+    for pert_value in pdtn_df['perturbationNumber'].unique():
+        if pd.notna(pert_value):
+            pert_df = pdtn_df[pdtn_df['perturbationNumber'] == pert_value]
+            pert_groups[pert_value] = pert_df
+
+    # Process each perturbation group
+    for pert_num, pert_df in pert_groups.items():
+        pert_name = f"pert_{int(pert_num)}"
+
+        # Try to create dataset for this perturbation group
+        try:
+            ds = create_dataset_from_df(pert_df, filename)
+            if ds is not None:
+                # Add dataset to the perturbation branch
+                target_tree[pert_name] = ds
+                success = True
+        except Exception as e:
+            # Log error but continue processing other groups
+            print(f"Error creating dataset for perturbation {pert_name}: {e}")
+
+    return success
+
+def try_process_by_variables(target_tree, df, filename):
+    """
+    Try to separate data by variable names and create datasets.
+
+    Parameters
+    ----------
+    target_tree : xarray.DataTree
+        The tree node to add variable datasets to
+    df : pandas.DataFrame
+        DataFrame of messages
+    filename : str
+        Path to the GRIB2 file
+
+    Returns
+    -------
+    bool
+        True if at least one variable was successfully processed
+    """
+    success = False
+
+    try:
+        for var_name in df['shortName'].unique():
+            if pd.notna(var_name):
+                var_df = df[df['shortName'] == var_name]
+                try:
+                    var_ds = create_dataset_from_df(var_df, filename)
+                    if var_ds is not None:
+                        target_tree[f"var_{var_name}"] = var_ds
+                        success = True
+                except Exception as var_e:
+                    print(f"Error creating dataset for variable {var_name}: {var_e}")
+    except Exception as nested_e:
+        print(f"Failed to process variables: {nested_e}")
+
+    return success
+
+def create_dataset_from_df(df, filename, verbose=False):
+    """
+    Create an xarray Dataset from a DataFrame of messages.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        DataFrame of GRIB messages
+    filename : str
+        Path to the GRIB2 file
+    verbose : bool, optional
+        If True, prints detailed debugging information
+
+    Returns
+    -------
+    xarray.Dataset or None
+        Dataset containing the data, or None if creation failed
+    """
+    try:
+        if verbose:
+            print(f"\n==== VERBOSE DEBUG INFO ====")
+            print(f"Creating dataset from DataFrame with {len(df)} messages")
+            print(f"DataFrame columns: {df.columns.tolist()}")
+
+            if 'shortName' in df.columns:
+                print(f"Variables in group: {df['shortName'].unique().tolist()}")
+
+            if 'valueOfFirstFixedSurface' in df.columns:
+                print(f"Vertical levels: {df['valueOfFirstFixedSurface'].unique().tolist()}")
+
+        # Process by variables
+        datasets = {}
+
+        # Process each variable separately, regardless of whether there are vertical levels
+        for var_name, var_df in df.groupby('shortName'):
+            if verbose:
+                print(f"\n  Processing variable: {var_name} with {len(var_df)} messages")
+
+            # Process vertical levels if present
+            if 'valueOfFirstFixedSurface' in var_df.columns and len(var_df['valueOfFirstFixedSurface'].unique()) > 1:
+                if verbose:
+                    print(f"  Variable {var_name} has multiple vertical levels")
+                # Process each level separately
+                level_das = []
+
+                for level, level_df in var_df.groupby('valueOfFirstFixedSurface'):
+                    if verbose:
+                        print(f"    Processing level {level} with {len(level_df)} messages")
+                    try:
+                        # Parse the index and get dimensions for this level
+                        file_index, non_geo_dims = parse_grib_index(level_df, {})
+                        # Remove valueOfFirstFixedSurface from dimensions since we're handling it separately
+                        non_geo_dims = [d for d in non_geo_dims if d.__name__ != "ValueOfFirstFixedSurfaceDim"]
+
+                        frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims, allow_uneven_dims=True)
+
+                        if frames is not None and len(frames) == 1:
+                            level_da = build_da_without_coords(frames[0], cube, filename)
+                            # Add this level to the list with its level value as coord
+                            level_da = level_da.assign_coords(valueOfFirstFixedSurface=level)
+                            level_das.append(level_da)
+                    except Exception as e:
+                        if verbose:
+                            print(f"    Error processing level {level} for {var_name}: {e}")
+
+                if level_das:
+                    # Combine all levels into a single DataArray along the valueOfFirstFixedSurface dimension
+                    if verbose:
+                        print(f"    Combining {len(level_das)} levels for {var_name}")
+                    try:
+                        combined_da = xr.concat(level_das, dim='valueOfFirstFixedSurface')
+                        # Create a simple dataset with just this variable
+                        var_ds = xr.Dataset({var_name: combined_da})
+                        # Assign the coords from the first level's cube
+                        var_ds = var_ds.assign_coords(cube.coords())
+                        # Add extra geo coords
+                        if extra_geo:
+                            var_ds = var_ds.assign_coords(extra_geo)
+                        # Add valid date coords if available
+                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+
+                        # Store this variable's dataset
+                        datasets[var_name] = var_ds
+                        if verbose:
+                            print(f"    Created dataset for {var_name} with levels")
+                    except Exception as e:
+                        if verbose:
+                            print(f"    Error combining levels for {var_name}: {e}")
+            else:
+                # Single level or no vertical levels
+                if verbose:
+                    print(f"  Variable {var_name} is a single level or has no vertical dimension")
+                try:
+                    # Parse the index and get dimensions
+                    file_index, non_geo_dims = parse_grib_index(var_df, {})
+                    frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims, allow_uneven_dims=True)
+
+                    if frames is not None and len(frames) == 1:
+                        # Create dataset with this variable
+                        var_ds = xr.Dataset()
+                        da = build_da_without_coords(frames[0], cube, filename)
+                        var_ds[da.name] = da
+
+                        # Assign coords
+                        var_ds = var_ds.assign_coords(cube.coords())
+                        if extra_geo:
+                            var_ds = var_ds.assign_coords(extra_geo)
+                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+
+                        # Store this variable's dataset
+                        datasets[var_name] = var_ds
+                        if verbose:
+                            print(f"  Created dataset for {var_name}")
+                    elif frames is not None and len(frames) > 1:
+                        if verbose:
+                            print(f"  Variable {var_name} has multiple frames, possibly different parameters")
+                        # Just use the first frame for now (simplified approach)
+                        var_ds = xr.Dataset()
+                        da = build_da_without_coords(frames[0], cube, filename)
+                        var_ds[da.name] = da
+
+                        # Assign coords
+                        var_ds = var_ds.assign_coords(cube.coords())
+                        if extra_geo:
+                            var_ds = var_ds.assign_coords(extra_geo)
+                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+
+                        datasets[var_name] = var_ds
+                        if verbose:
+                            print(f"  Created dataset with first frame for {var_name}")
+                except Exception as e:
+                    if verbose:
+                        print(f"  Error processing variable {var_name}: {e}")
+
+        # Attempt to merge all the variable datasets
+        if datasets:
+            try:
+                if verbose:
+                    print(f"\nMerging {len(datasets)} datasets...")
+                # Get the list of datasets to merge
+                ds_list = list(datasets.values())
+
+                # Try merging them all at once
+                try:
+                    combined_ds = xr.merge(ds_list)
+                    if verbose:
+                        print(f"Successfully merged all datasets into one.")
+                        print(f"Final dataset has variables: {list(combined_ds.data_vars)}")
+                        print(f"==== END VERBOSE DEBUG INFO ====\n")
+                    return combined_ds
+                except Exception as merge_error:
+                    if verbose:
+                        print(f"Error merging all datasets: {merge_error}")
+
+                    # If we can't merge all, return the first dataset
+                    first_ds = ds_list[0]
+                    if verbose:
+                        print(f"Returning first dataset with variables: {list(first_ds.data_vars)}")
+                        print(f"==== END VERBOSE DEBUG INFO ====\n")
+                    return first_ds
+            except Exception as e:
+                if verbose:
+                    print(f"Error in final merge process: {e}")
+                    print(f"==== END VERBOSE DEBUG INFO ====\n")
+                return None
+        else:
+            if verbose:
+                print(f"No datasets were created for any variables")
+                print(f"==== END VERBOSE DEBUG INFO ====\n")
+            return None
+
+    except Exception as e:
+        # If there's an error, log it and return None
+        if verbose:
+            print(f"Error creating dataset: {e}")
+            import traceback
+            traceback.print_exc()
+            print(f"==== END VERBOSE DEBUG INFO ====\n")
+        return None
+
+
+@xr.register_datatree_accessor("grib2io")
+class Grib2ioDataTree:
+    """
+    DataTree accessor for GRIB2 files.
+
+    This accessor provides methods for working with GRIB2 data organized
+    in a hierarchical tree structure.
+    """
+
+    def __init__(self, datatree_obj):
+        self._obj = datatree_obj
+
+    def to_grib2(self, filename, mode: typing.Literal["x", "w", "a"] = "x"):
+        """
+        Write all datasets in the DataTree to a GRIB2 file.
+
+        Parameters
+        ----------
+        filename : str
+            Name of the GRIB2 file to write to.
+        mode : {"x", "w", "a"}, optional
+            Persistence mode, default is "x" (create, fail if exists)
+        """
+        # Start with the specified mode
+        current_mode = mode
+
+        # Function to recursively process the tree
+        def process_tree(node):
+            nonlocal current_mode
+
+            # If this is a Dataset node with data variables
+            if node.ds is not None and node.ds.data_vars:
+                # Write dataset to GRIB2 file
+                node.ds.grib2io.to_grib2(filename, mode=current_mode)
+                # Switch to append mode after first write
+                current_mode = "a"
+
+            # Process children
+            for child_name, child_node in node.children.items():
+                process_tree(child_node)
+
+        # Start processing from the root
+        process_tree(self._obj)
+
+    def griddef(self):
+        """
+        Get the grid definition from the first dataset in the tree that has one.
+
+        Returns
+        -------
+        grib2io.Grib2GridDef
+            Grid definition object
+        """
+        # Function to find first dataset with GRIB2IO_section3
+        def find_griddef(node):
+            if node.ds is not None and node.ds.data_vars:
+                for var_name in node.ds.data_vars:
+                    if 'GRIB2IO_section3' in node.ds[var_name].attrs:
+                        return Grib2GridDef.from_section3(node.ds[var_name].attrs['GRIB2IO_section3'])
+
+            # Check children
+            for child_name, child_node in node.children.items():
+                griddef = find_griddef(child_node)
+                if griddef is not None:
+                    return griddef
+
+            return None
+
+        return find_griddef(self._obj)
+
+    def interp(self, method, grid_def_out, method_options=None, num_threads=1):
+        """
+        Interpolate all datasets in the tree to a new grid.
+
+        Parameters
+        ----------
+        method : str or int
+            Interpolation method to use
+        grid_def_out : grib2io.Grib2GridDef
+            Target grid definition
+        method_options : list, optional
+            Options for interpolation method
+        num_threads : int, optional
+            Number of threads to use for interpolation
+
+        Returns
+        -------
+        xarray.DataTree
+            New DataTree with interpolated data
+        """
+        new_tree = xr.DataTree()
+
+        # Function to recursively process the tree
+        def process_tree(node, new_parent):
+            # If this is a Dataset node with data variables
+            if node.ds is not None and node.ds.data_vars:
+                # Interpolate dataset
+                interp_ds = node.ds.grib2io.interp(method, grid_def_out,
+                                                  method_options=method_options,
+                                                  num_threads=num_threads)
+
+                # Add to new tree at the same path
+                if node == self._obj:  # Root node
+                    new_parent.ds = interp_ds
+                else:
+                    new_parent.ds = interp_ds
+
+            # Process children
+            for child_name, child_node in node.children.items():
+                # Create same child in new tree
+                new_child = xr.DataTree()
+                new_parent[child_name] = new_child
+                process_tree(child_node, new_child)
+
+        # Start processing from the root
+        process_tree(self._obj, new_tree)
+
+        return new_tree
+
+    def subset(self, lats, lons):
+        """
+        Subset all datasets in the tree to a region.
+
+        Parameters
+        ----------
+        lats : list or tuple
+            Latitude bounds [min_lat, max_lat]
+        lons : list or tuple
+            Longitude bounds [min_lon, max_lon]
+
+        Returns
+        -------
+        xarray.DataTree
+            New DataTree with subset data
+        """
+        new_tree = xr.DataTree()
+
+        # Function to recursively process the tree
+        def process_tree(node, new_parent):
+            # If this is a Dataset node with data variables
+            if node.ds is not None and node.ds.data_vars:
+                # Subset dataset
+                subset_ds = node.ds.grib2io.subset(lats, lons)
+
+                # Add to new tree at the same path
+                if node == self._obj:  # Root node
+                    new_parent.ds = subset_ds
+                else:
+                    new_parent.ds = subset_ds
+
+            # Process children
+            for child_name, child_node in node.children.items():
+                # Create same child in new tree
+                new_child = xr.DataTree()
+                new_parent[child_name] = new_child
+                process_tree(child_node, new_child)
+
+        # Start processing from the root
+        process_tree(self._obj, new_tree)
+
+        return new_tree
