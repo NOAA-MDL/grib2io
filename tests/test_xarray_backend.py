@@ -9,6 +9,7 @@ def test_named_filter(request):
     ds2 = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f012_subset', engine='grib2io', filters=filters)
     xr.testing.assert_equal(ds1, ds2)
 
+
 def test_multi_lead(request):
     data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'
     filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
