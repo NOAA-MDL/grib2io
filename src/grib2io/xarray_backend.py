@@ -22,7 +22,7 @@ try:
     # Try importing DataTree to check if it's available
     xarray_version = importlib.metadata.version('xarray')
     xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
-    min_version_parts = [2023, 4, 0]
+    min_version_parts = [2024, 10, 0]
     HAS_DATATREE = xarray_parts >= min_version_parts
 except (ImportError, ValueError):
     HAS_DATATREE = False
