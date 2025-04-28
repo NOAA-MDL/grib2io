@@ -82,7 +82,7 @@ LEVEL_NAME_MAPPING = {
     220: "planetary_boundary_layer",
     233: "high_cloud_top_level",
     223: "medium_cloud_top_level",
-    213: "low_cloud_top_level"
+    213: "low_cloud_top_level",
     214: "low_cloud_layer",
     224: "medium_cloud_layer",
     234: "high_cloud_layer",
