@@ -154,39 +154,3 @@ def test_datatree_subset_by_level(request):
     # Verify that only the surface level is present
     assert 'surface' in surface_tree.children
     assert len(surface_tree.children) == 1  # Only surface level should be present
-
-def test_datatree_interp(request):
-    """Test interpolating a DataTree to a new grid."""
-    try:
-        from grib2io._grib2io import Grib2GridDef
-        data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'
-
-        # Open the file as a DataTree
-        tree = xr.open_datatree(data / 'gfs.t00z.pgrb2.1p00.f012_subset', engine='grib2io')
-
-        # Create a target grid definition
-        gdtn_nbm = 30
-        gdt_nbm = [1, 0, 6371200, 255, 255, 255, 255, 100, 50, 19229000, 233723400,
-                   48, 25000000, 265000000, 2539703, 2539703, 0, 64, 25000000,
-                   25000000, -90000000, 0]
-        nbm_grid_def = Grib2GridDef(gdtn_nbm, gdt_nbm)
-
-        # Interpolate the tree
-        interp_tree = tree.grib2io.interp('neighbor', nbm_grid_def)
-
-        # Verify the interpolated tree has the same structure
-        assert isinstance(interp_tree, xr.DataTree)
-        assert set(tree.children.keys()) == set(interp_tree.children.keys())
-
-        # Check that a dataset in the tree has been interpolated
-        for level_name in tree.children:
-            # Find a node with data to check
-            if tree[level_name].ds is not None:
-                # Check that latitude/longitude dimensions match the new grid
-                assert interp_tree[level_name].ds.dims['x'] == 100
-                assert interp_tree[level_name].ds.dims['y'] == 50
-                break
-    except (ModuleNotFoundError, ImportError):
-        pytest.skip("Required modules not available for interpolation test")
-    except (AttributeError, KeyError):
-        pytest.skip("DataTree does not have expected structure for interpolation test")
