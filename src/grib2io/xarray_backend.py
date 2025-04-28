@@ -10,10 +10,22 @@ import logging
 import typing
 from warnings import warn
 from collections import defaultdict
+import importlib.metadata
 
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+# Check if xarray version is at least 2023.04.0 which includes DataTree support
+xarray_version = importlib.metadata.version('xarray')
+xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
+min_version_parts = [2023, 4, 0]
+if xarray_parts < min_version_parts:
+    raise ImportError(
+        f"xarray version {xarray_version} is not supported. "
+        f"grib2io.xarray_backend requires xarray>=2023.04.0 for DataTree functionality."
+    )
+
 from xarray.backends import (
     BackendArray,
     BackendEntrypoint,
