@@ -4,6 +4,7 @@ from setuptools import setup, Extension
 import numpy
 import os
 import platform
+import re
 import subprocess
 import sys
 import sysconfig
@@ -40,7 +41,7 @@ def get_grib2io_version():
     return ver
 
 
-def get_package_info(name, static=False, required=True, include_file=None):
+def get_package_info(name, incdir="include", static=False, required=True, include_file=None):
     """Get package information."""
     # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper()+'_DIR')
@@ -57,39 +58,46 @@ def get_package_info(name, static=False, required=True, include_file=None):
         if name in {'g2c', 'ip'}:
             libname = pkgname_to_libname[name][0]
             libpath = find_library(libname, dirs=[pkg_dir], static=static, required=required)
+            if libpath is None:
+                raise ValueError(f"Cannot find {libname}.")
             pkg_libdir = os.path.dirname(libpath)
-            incfile = find_include_file(include_file, root=pkg_dir)
+            incfile = find_include_file(include_file, incdir=incdir, root=pkg_dir)
             pkg_incdir = os.path.dirname(incfile)
     else:
         # No env vars set, now find everything.
         libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
         for l in libnames:
             libpath = find_library(l, static=static, required=required)
-            if libpath is not None: break
+            if libpath is not None:
+                break
         libname = l
         if libpath is None:
             pkg_libdir = None
             pkg_incdir = None
         else:
             pkg_libdir = os.path.dirname(libpath)
-            pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+            # Check if pkg_libdir is inside "lib*". This is common with Intel compilers.
+            if "lib" in os.path.dirname(pkg_libdir).split("/")[-1]:
+                pkg_libdir = os.path.dirname(libpath)
+            if os.path.exists(os.path.join(os.path.dirname(pkg_libdir),'include')):
+                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
             if include_file is not None:
-                incfile = find_include_file(include_file, root=os.path.dirname(pkg_libdir))
+                incfile = find_include_file(include_file, incdir=incdir, root=os.path.dirname(pkg_libdir))
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
     return libname, pkg_incdir, pkg_libdir
 
 
-def find_include_file(file, root=None):
+def find_include_file(file, incdir="include", root=None):
     """Find absolute path to include file."""
     incfile = None
     if root is None:
         return None
     for path, subdirs, files in os.walk(root):
-        for name in files:
-            if name == file:
-                incfile = os.path.join(path, name)
+        if os.path.basename(path) == incdir:
+            if file in files:
+                incfile = os.path.join(path, file)
                 break
     return incfile
 
@@ -114,12 +122,19 @@ def find_library(name, dirs=None, static=False, required=True):
     libext = _libext_by_platform[sys.platform]
     if static: libext = '.a'
     if dirs is None:
+        dirs = []
+        # No dirs. First check if in a conda env.
         if os.environ.get("CONDA_PREFIX"):
-            dirs = [os.environ["CONDA_PREFIX"]]
-        else:
-            dirs = ["/usr", "/usr/local", "/opt/local", "/opt/homebrew", "/opt", "/sw"]
-    if os.environ.get("LD_LIBRARY_PATH"):
-        dirs = dirs + os.environ.get("LD_LIBRARY_PATH").split(":")
+            dirs.append(os.environ["CONDA_PREFIX"])
+
+        # Next, look in various library path env vars.
+        if os.environ.get("LD_LIBRARY_PATH"):
+            dirs.extend(os.environ["LD_LIBRARY_PATH"].split(":"))
+        if sys.platform == "darwin" and os.environ.get("DYLD_LIBRARY_PATH"):
+            dirs.extend(os.environ["DYLD_LIBRARY_PATH"].split(":"))
+
+        # Finally, look in common system paths.
+        dirs.extend(["/usr", "/usr/local", "/opt/local", "/opt/homebrew", "/opt", "/sw"])
 
     out = []
     for d in dirs:
@@ -172,8 +187,28 @@ def run_otool_command(filename):
     return cmdout
 
 
+def check_ip_for_bla(ip_lib, static=False, openmp=False):
+    """Check for BLAS/LAPACK in NCEPLIBS-ip."""
+    # First, check for env var
+    bla_dir = ""
+    if os.environ.get('BLA_DIR'):
+        bla_dir = os.environ.get('BLA_DIR')
+    # Check Intel MKL. Need multiple libs.
+    if "mkl" in bla_dir:
+        libs = ['mkl_intel_lp64', 'mkl_core']
+        if openmp:
+            libs.append('mkl_intel_thread')
+        else:
+            libs.append('mkl_intel_sequential')
+    else:
+        libs = ['lapack']
+    bla_lib = find_library(libs[0], dirs=[bla_dir], static=False, required=True)
+    bla_libdir = os.path.dirname(bla_lib)
+    return libs, bla_libdir
+
+
 def check_ip_for_openmp(ip_lib, static=False):
-    """Check for OpenMP in NCEPLIBS-ip"""
+    """Check for OpenMP in NCEPLIBS-ip."""
     check = False
     is_apple_clang = False
     info = ''
@@ -187,7 +222,11 @@ def check_ip_for_openmp(ip_lib, static=False):
             is_apple_clang = 'clang' in os.environ['CC']
         except(KeyError):
             is_apple_clang = 'clang' in sysconfig.get_config_vars().get('CC')
-        
+
+    if ip_lib.endswith(".a"):
+        static = True
+    elif ip_lib.endswith(".so") or ip_lib.endswith(".dylib"):
+        static = False
     if static:
         if sys.platform in {'darwin','linux'}:
             info = run_nm_command(ip_lib)
@@ -295,9 +334,9 @@ extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static('ip')
-pkginfo = get_package_info('ip', static=ip_static, required=False, include_file="iplib.h")
+pkginfo = get_package_info('ip', incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
 if None in pkginfo:
-    warnings.warn(f"NCEPLIBS-ip not found. grib2io will build without interpolation.")
+    warnings.warn(f"NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")
     build_with_ip = False
 
 if build_with_ip:
@@ -311,13 +350,18 @@ if build_with_ip:
                               dirs=extmod_config['iplib']['libdirs'],
                               static=ip_static)
 
-    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=ip_static)
+    if ip_static:
+        extmod_config['iplib']['extra_objects'].append(ip_libname)
+        extmod_config['iplib']['libraries'] = []
+        extmod_config['iplib']['libdirs'] = []
+
+    # Check for OpenMP. For now, link dynamically
+    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=False) #ip_static)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
-                                   static=ip_static,
+                                   static=False, #ip_static,
                                    required=False,
                                    include_file="omp.h")
-
         if None not in pkginfo:
             extmod_config['iplib']['libraries'].append(pkginfo[0])
             extmod_config['iplib']['incdirs'].append(pkginfo[1])
@@ -325,26 +369,23 @@ if build_with_ip:
             extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
 
     if ip_static:
-        for l in extmod_config['iplib']['libraries']:
-            lname = find_library(l, dirs=extmod_config['iplib']['libdirs'], static=ip_static)
-            extmod_config['iplib']['extra_objects'].append(lname)
-
-        extmod_config['iplib']['libraries'] = []
-        extmod_config['iplib']['libdirs'] = []
-
         # Need Fortran runtime even when static.
         if ftn_libname is None:
             pass
         else:
             pkginfo = get_package_info(ftn_libname, static=ip_static, required=False)
             extmod_config['iplib']['libraries'].append(pkginfo[0])
-            extmod_config['iplib']['incdirs'].append(pkginfo[1])
             extmod_config['iplib']['libdirs'].append(pkginfo[2])
+
+        # Need to know if OpenMP support is needed for BLAS/LAPACK, specifically Intel.
+        stuff = check_ip_for_bla(ip_libname, static=ip_static, openmp=build_with_openmp)
+        extmod_config['iplib']['libraries'].extend(stuff[0]) # Multiple libs...
+        extmod_config['iplib']['libdirs'].append(stuff[1])
 
     extmod_config['iplib']['incdirs'].append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
-# Summary 
+# Summary
 # ----------------------------------------------------------------------------------------
 print(f'Build with NCEPLIBS-g2c static library: {g2c_static}')
 print(f'Build with NCEPLIBS-ip: {build_with_ip}')
@@ -356,6 +397,8 @@ for n, c in extmod_config.items():
         if k == 'extra_objects':
             all_extra_objects.extend(v)
         print(f'\t{k}: {v}')
+
+#exit(1)
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
