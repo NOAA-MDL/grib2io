@@ -9,6 +9,7 @@ dependencies:
   - ipython
   - dask
   - nceplibs-g2c
+  - xarray
   - pip:
     - numpy
     - cython
