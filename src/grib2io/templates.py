@@ -71,7 +71,7 @@ class Grib2Metadata:
     """
     __slots__ = ('value','table')
     def __init__(self, value, table=None):
-        self.value = value
+        self.value = int(value)
         self.table = table
     def __call__(self):
         return self.value
@@ -1100,22 +1100,25 @@ class LeadTime:
     """Forecast Lead Time. NOTE: This is a `datetime.timedelta` object."""
     _key = ValueOfForecastTime._key
     def __get__(self, obj, objtype=None):
-        return utils.get_leadtime(obj.section4[1], obj.section4[2:])
+        return utils.get_leadtime(obj.section4[1], obj.section4[2:]) + obj.duration
     def __set__(self, obj, value):
         if isinstance(value, np.timedelta64):
             # Allows setting from xarray
             value = datetime.timedelta(
                 seconds=int(value/np.timedelta64(1, 's')))
-        obj.section4[self._key[obj.pdtn]+2] = int(value.total_seconds()/3600)
+        # First update validDate if necessary.
         # IMPORTANT: Update validDate components when message is time interval
         if obj.pdtn in _timeinterval_pdtns:
-            vd = obj.refDate + value + obj.duration
+            vd = obj.refDate + value 
             obj.yearOfEndOfTimePeriod = vd.year
             obj.monthOfEndOfTimePeriod = vd.month
             obj.dayOfEndOfTimePeriod = vd.day
             obj.hourOfEndOfTimePeriod = vd.hour
             obj.minuteOfEndOfTimePeriod = vd.minute
             obj.secondOfEndOfTimePeriod = vd.second
+        # Update leadTime component in section4
+        value -= obj.duration
+        obj.section4[self._key[obj.pdtn]+2] = int(value.total_seconds()/3600)
 
 class FixedSfc1Info:
     """Information of the first fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
@@ -1457,22 +1460,24 @@ class Duration:
         if obj.pdtn in _continuous_pdtns:
             pass
         elif obj.pdtn in _timeinterval_pdtns:
+            lt_orig = obj.leadTime
             _key = TimeRangeOfStatisticalProcess._key
             if isinstance(value, np.timedelta64):
                 # Allows setting from xarray
                 value = datetime.timedelta(
                     seconds=int(value/np.timedelta64(1, 's')))
             obj.section4[_key[obj.pdtn]+2] = int(value.total_seconds()/3600)
+            obj.leadTime = lt_orig
             # IMPORTANT: Update validDate components when message is time interval
-            if obj.pdtn in _timeinterval_pdtns:
-                print(obj.refDate, value, obj.leadTime)
-                vd = obj.refDate + value + obj.leadTime
-                obj.yearOfEndOfTimePeriod = vd.year
-                obj.monthOfEndOfTimePeriod = vd.month
-                obj.dayOfEndOfTimePeriod = vd.day
-                obj.hourOfEndOfTimePeriod = vd.hour
-                obj.minuteOfEndOfTimePeriod = vd.minute
-                obj.secondOfEndOfTimePeriod = vd.second
+            #if obj.pdtn in _timeinterval_pdtns:
+            #    print(obj.refDate, value, obj.leadTime)
+            #    vd = obj.refDate + value + obj.leadTime
+            #    obj.yearOfEndOfTimePeriod = vd.year
+            #    obj.monthOfEndOfTimePeriod = vd.month
+            #    obj.dayOfEndOfTimePeriod = vd.day
+            #    obj.hourOfEndOfTimePeriod = vd.hour
+            #    obj.minuteOfEndOfTimePeriod = vd.minute
+            #    obj.secondOfEndOfTimePeriod = vd.second
 
 class ValidDate:
     """Valid Date of the forecast. NOTE: This is a `datetime.datetime` object."""
