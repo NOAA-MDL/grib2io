@@ -76,11 +76,14 @@ pip install .
 
 > [!NOTE]
 > ### Building with static libraries
-> Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).
+> **_It is recommended to not build with static libraries, but in certain NOAA production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`. 
 > 
 >```shell
 >export G2C_STATIC=True
 >export IP_STATIC=True
+>export G2C_DIR=<path to g2c> # Optional
+>export IP_DIR=<path to ip> # Optional
+>export BLA_DIR=<path to BLAS/LAPACK used for ip> # Needed if IP_STATIC=True
 >pip install .
 >```
 
