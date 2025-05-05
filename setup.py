@@ -78,11 +78,14 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
             pkg_libdir = os.path.dirname(libpath)
             # Check if pkg_libdir is inside "lib*". This is common with Intel compilers.
             if "lib" in os.path.dirname(pkg_libdir).split("/")[-1]:
-                pkg_libdir = os.path.dirname(libpath)
-            if os.path.exists(os.path.join(os.path.dirname(pkg_libdir),'include')):
-                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir),'include')
+                pkg_libdir_root = os.path.dirname(pkg_libdir)
+            else:
+                pkg_libdir_root = pkg_libdir
+
+            if os.path.exists(os.path.join(os.path.dirname(pkg_libdir_root),'include')):
+                pkg_incdir = os.path.join(os.path.dirname(pkg_libdir_root),'include')
             if include_file is not None:
-                incfile = find_include_file(include_file, incdir=incdir, root=os.path.dirname(pkg_libdir))
+                incfile = find_include_file(include_file, incdir=incdir, root=os.path.dirname(pkg_libdir_root))
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
@@ -356,10 +359,10 @@ if build_with_ip:
         extmod_config['iplib']['libdirs'] = []
 
     # Check for OpenMP. For now, link dynamically
-    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=False) #ip_static)
+    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=False)
     if build_with_openmp:
         pkginfo = get_package_info(openmp_libname,
-                                   static=False, #ip_static,
+                                   static=False,
                                    required=False,
                                    include_file="omp.h")
         if None not in pkginfo:
@@ -397,8 +400,6 @@ for n, c in extmod_config.items():
         if k == 'extra_objects':
             all_extra_objects.extend(v)
         print(f'\t{k}: {v}')
-
-#exit(1)
 
 # ----------------------------------------------------------------------------------------
 # Define extensions
