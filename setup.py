@@ -35,9 +35,20 @@ def check_lib_static(name):
 
 
 def get_grib2io_version():
-    """Get the grib2ion version string."""
-    with open("VERSION","rt") as f:
+    """Get the grib2io version string."""
+    with open("VERSION", "rt") as f:
         ver = f.readline().strip()
+    return ver
+
+
+def get_ip_version(iplibdir):
+    """Get the NCEPLIBS-ip version."""
+    cmake_file = iplibdir+"/cmake/ip/ip-config.cmake"
+    if os.path.exists(cmake_file):
+        with open(cmake_file, "rt") as f:
+            lines = f.read().splitlines()
+        ver_line = [l for l in lines if "found version" in l][0]
+        ver = re.sub(r"[^0-9.]", "", ver_line) or None
     return ver
 
 
@@ -343,6 +354,8 @@ if None in pkginfo:
     build_with_ip = False
 
 if build_with_ip:
+    # For now, get ip version from cmake files.
+    ip_ver = get_ip_version(pkginfo[2])
     extmod_config['iplib'] = dict(libraries=[pkginfo[0]],
                                   incdirs=[pkginfo[1]],
                                   libdirs=[pkginfo[2]],
@@ -391,7 +404,7 @@ if build_with_ip:
 # Summary
 # ----------------------------------------------------------------------------------------
 print(f'Build with NCEPLIBS-g2c static library: {g2c_static}')
-print(f'Build with NCEPLIBS-ip: {build_with_ip}')
+print(f'Build with NCEPLIBS-ip: {build_with_ip}, {ip_ver}')
 print(f'Build with NCEPLIBS-ip static library: {ip_static}')
 print(f'Needs OpenMP: {build_with_openmp}')
 for n, c in extmod_config.items():
@@ -438,6 +451,7 @@ cnt = \
 grib2io_version = '%(grib2io_version)s'
 g2c_static = %(g2c_static)s
 has_interpolation = %(has_interpolation)s
+ip_version = '%(ip_version)s'
 ip_static = %(ip_static)s
 has_openmp_support = %(has_openmp_support)s
 extra_objects = %(extra_objects)s
@@ -447,6 +461,7 @@ cfgdict = {}
 cfgdict['grib2io_version'] = VERSION
 cfgdict['g2c_static'] = g2c_static
 cfgdict['has_interpolation'] = build_with_ip
+cfgdict['ip_version'] = ip_ver
 cfgdict['ip_static'] = ip_static
 cfgdict['has_openmp_support'] = build_with_openmp
 cfgdict['extra_objects'] = all_extra_objects

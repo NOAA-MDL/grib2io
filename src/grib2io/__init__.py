@@ -12,6 +12,7 @@ try:
     has_interpolation = __config__.has_interpolation
     has_openmp_support = __config__.has_openmp_support
     g2c_static = __config__.g2c_static
+    ip_version = __config__.ip_version
     ip_static = __config__.ip_static
     extra_objects = __config__.extra_objects
 except(ImportError):
@@ -41,6 +42,7 @@ def show_config():
     print(f'\tAEC compression support: {has_aec_support}')
     print(f'')
     print(f'NCEPLIPS-ip support: {has_interpolation}')
+    print(f'\tVersion: {ip_version}')
     print(f'\tStatic library: {ip_static}')
     print(f'\tOpenMP support: {has_openmp_support}')
     print(f'')
