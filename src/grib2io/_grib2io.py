@@ -1666,12 +1666,17 @@ def set_auto_nans(value: bool):
         raise TypeError(f"Argument must be bool")
 
 
-def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
-                method_options=None, num_threads=1):
+def interpolate(a,
+    method: Union[int, str],
+    grid_def_in,
+    grid_def_out,
+    method_options=None,
+    num_threads=1,
+):
     """
     This is the module-level interpolation function.
 
-    This interfaces with the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    This interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
     through grib2io's internal iplib Cython extension module.
 
     Parameters
@@ -1686,7 +1691,8 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         or 3-dimensional (:, ny, nx) where the 1st dimension represents another
         spatial, temporal, or classification (i.e. ensemble members) dimension.
         The function will properly flatten the (ny,nx) dimensions into (nx * ny)
-        acceptable for input into the interpolation subroutines.
+        acceptable for input into the interpolation subroutines. If needed, these
+        data will be converted to `np.float32`.
     method
         Interpolate method to use. This can either be an integer or string using
         the following mapping:
@@ -1716,10 +1722,10 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
     Returns
     -------
     interpolate
-        Returns a `numpy.ndarray` when scalar interpolation is performed or a
-        `tuple` of `numpy.ndarray`s when vector interpolation is performed with
-        the assumptions that 0-index is the interpolated u and 1-index is the
-        interpolated v.
+        Returns a `numpy.ndarray` of dtype `np.float32` when scalar interpolation
+        is performed or a `tuple` of `numpy.ndarray`s when vector interpolation is
+        performed with the assumptions that 0-index is the interpolated u and
+        1-index is the interpolated v.
     """
 
     from . import iplib
@@ -1744,39 +1750,61 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         if method in {3,6}:
             method_options[0:2] = -1
 
-    km = 1
     mi = grid_def_in.npoints
     mo = grid_def_out.npoints
 
     # Adjust shape of input array(s)
-    a,newshp = _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out)
+    a, newshp = _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out)
 
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
+        km = a.shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
             li = np.where(np.isnan(a),0,1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
             li = np.zeros(a.shape,dtype=np.uint8)
-        no,rlat,rlon,ibo,lo,go,iret = iplib.interpolate_scalar(method, method_options,
-                                                 grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                 grid_def_out.gdtn, np.array(grid_def_out.gdt, dtype=np.int32),
-                                                 mi, mo, km, ibi, li, a)
+        no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            grid_def_out.gdtn,
+            np.array(grid_def_out.gdt, dtype=np.int32),
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a,
+        )
         out = np.where(lo==0,np.nan,go).reshape(newshp)
     elif isinstance(a,tuple):
         # Vector
+        km = a[0].shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
             li = np.where(np.isnan(a),0,1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
             li = np.zeros(a[0].shape,dtype=np.uint8)
-        no,rlat,rlon,crot,srot,ibo,lo,uo,vo,iret = iplib.interpolate_vector(method, method_options,
-                                                            grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                            grid_def_out.gdtn, np.array(grid_def_out.gdt, dtype=np.int32),
-                                                            mi, mo, km, ibi, li, a[0], a[1])
+        no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            grid_def_out.gdtn,
+            np.array(grid_def_out.gdt, dtype=np.int32),
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a[0],
+            a[1],
+        )
         uo = np.where(lo==0,np.nan,uo).reshape(newshp)
         vo = np.where(lo==0,np.nan,vo).reshape(newshp)
         out = (uo,vo)
@@ -1789,12 +1817,19 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
     return out
 
 
-def interpolate_to_stations(a, method, grid_def_in, lats, lons,
-                            method_options=None, num_threads=1):
+def interpolate_to_stations(
+    a,
+    method: Union[int, str],
+    grid_def_in,
+    lats,
+    lons,
+    method_options=None,
+    num_threads=1
+):
     """
     Module-level interpolation function for interpolation to stations.
 
-    Interfaces with the [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    Interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
     via grib2io's iplib Cython exntension module. It supports scalar and
     vector interpolation according to the type of object a.
 
@@ -1810,7 +1845,8 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
         or 3-dimensional (:, ny, nx) where the 1st dimension represents another
         spatial, temporal, or classification (i.e. ensemble members) dimension.
         The function will properly flatten the (ny,nx) dimensions into (nx * ny)
-        acceptable for input into the interpolation subroutines.
+        acceptable for input into the interpolation subroutines. If needed, these
+        data will be converted to `np.float32`.
     method
         Interpolate method to use. This can either be an integer or string using
         the following mapping:
@@ -1842,9 +1878,10 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     Returns
     -------
     interpolate_to_stations
-        Returns a `numpy.ndarray` when scalar interpolation is performed or a
-        `tuple` of `numpy.ndarray`s when vector interpolation is performed with
-        the assumptions that 0-index is the interpolated u and 1-index is the
+        Returns a `numpy.ndarray` of dtype `np.float32` when scalar
+        interpolation is performed or a `tuple` of `numpy.ndarray`s
+        when vector interpolation is performed with the assumptions
+        that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
     from . import iplib
@@ -1885,12 +1922,11 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     if nlats != nlons:
         raise ValueError('Station lats and lons must be same size.')
 
-    km = 1
     mi = grid_def_in.npoints
     mo = nlats
 
     # Adjust shape of input array(s)
-    a,newshp = _adjust_array_shape_for_interp_stations(a,grid_def_in,mo)
+    a, newshp = _adjust_array_shape_for_interp_stations(a, grid_def_in, mo)
 
     # Use gdtn = -1 for stations and an empty template array
     gdtn = -1
@@ -1899,25 +1935,49 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
+        km = a.shape[0]
         ibi = np.zeros((km), dtype=np.int32)
         li = np.zeros(a.shape,dtype=np.uint8)
-        no,rlat,rlon,ibo,lo,go,iret = iplib.interpolate_scalar(method, method_options,
-                                                 grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                 gdtn, gdt,
-                                                 mi, mo, km, ibi, li, a,
-                                                 lats=np.array(lats, dtype=np.float32),
-                                                 lons=np.array(lons, dtype=np.float32))
+        no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            gdtn,
+            gdt,
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a,
+            lats=np.array(lats, dtype=np.float32),
+            lons=np.array(lons, dtype=np.float32),
+        )
         out = go.reshape(newshp)
+    
     elif isinstance(a,tuple):
         # Vector
+        km = a[0].shape[0]
         ibi = np.zeros((km), dtype=np.int32)
         li = np.zeros(a[0].shape,dtype=np.uint8)
-        no,rlat,rlon,crot,srot,ibo,lo,uo,vo,iret = iplib.interpolate_vector(method, method_options,
-                                                            grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                            gdtn, gdt,
-                                                            mi, mo, km, ibi, li, a[0], a[1],
-                                                            lats=np.array(lats, dtype=np.float32),
-                                                            lons=np.array(lons, dtype=np.float32))
+        no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            gdtn,
+            gdt,
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a[0],
+            a[1],
+            lats=np.array(lats, dtype=np.float32),
+            lons=np.array(lons, dtype=np.float32),
+        )
         out = (uo.reshape(newshp),vo.reshape(newshp))
 
     try:
@@ -1969,7 +2029,7 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
     """
     Adjust shape of input data array for interpolation to grids.
 
-    Returned array will conform to the dimensionality used in the NCEPLIBS-ip
+    Returned array will conform to the dimensionality and type used in the NCEPLIBS-ip
     interpolation subroutine arguments for grids.
 
     Parameters
@@ -2001,6 +2061,11 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
         return (a0,a1),newshp
 
     if isinstance(a,np.ndarray):
+
+        # Change type if needed.
+        if a.dtype != np.float32:
+            a = a.astype(np.float32)
+
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
             newshp = (grid_def_out.ny,grid_def_out.nx)
             a = np.expand_dims(a.flatten(),axis=0)
@@ -2010,14 +2075,14 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
 
-    return a,newshp
+    return a, newshp
 
 
 def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
     """
     Adjust shape of input data array for interpolation to stations.
 
-    Returned array will conform to the dimensionality used in the NCEPLIBS-ip
+    Returned array will conform to the dimensionality and type used in the NCEPLIBS-ip
     interpolation subroutine arguments for grids.
 
     Parameters
@@ -2049,6 +2114,11 @@ def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
         return (a0,a1),newshp
 
     if isinstance(a,np.ndarray):
+
+        # Change type if needed.
+        if a.dtype != np.float32:
+            a = a.astype(np.float32)
+
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
             newshp = (nstations)
             a = np.expand_dims(a.flatten(),axis=0)
@@ -2058,4 +2128,4 @@ def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
 
-    return a,newshp
+    return a, newshp
