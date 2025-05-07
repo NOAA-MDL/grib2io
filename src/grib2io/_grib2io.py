@@ -1744,39 +1744,61 @@ def interpolate(a, method: Union[int, str], grid_def_in, grid_def_out,
         if method in {3,6}:
             method_options[0:2] = -1
 
-    km = 1
     mi = grid_def_in.npoints
     mo = grid_def_out.npoints
 
     # Adjust shape of input array(s)
-    a,newshp = _adjust_array_shape_for_interp(a,grid_def_in,grid_def_out)
+    a, newshp = _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out)
 
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
+        km = a.shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
             li = np.where(np.isnan(a),0,1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
             li = np.zeros(a.shape,dtype=np.uint8)
-        no,rlat,rlon,ibo,lo,go,iret = iplib.interpolate_scalar(method, method_options,
-                                                 grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                 grid_def_out.gdtn, np.array(grid_def_out.gdt, dtype=np.int32),
-                                                 mi, mo, km, ibi, li, a)
+        no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            grid_def_out.gdtn,
+            np.array(grid_def_out.gdt, dtype=np.int32),
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a,
+        )
         out = np.where(lo==0,np.nan,go).reshape(newshp)
     elif isinstance(a,tuple):
         # Vector
+        km = a[0].shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
             li = np.where(np.isnan(a),0,1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
             li = np.zeros(a[0].shape,dtype=np.uint8)
-        no,rlat,rlon,crot,srot,ibo,lo,uo,vo,iret = iplib.interpolate_vector(method, method_options,
-                                                            grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                            grid_def_out.gdtn, np.array(grid_def_out.gdt, dtype=np.int32),
-                                                            mi, mo, km, ibi, li, a[0], a[1])
+        no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            grid_def_out.gdtn,
+            np.array(grid_def_out.gdt, dtype=np.int32),
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a[0],
+            a[1],
+        )
         uo = np.where(lo==0,np.nan,uo).reshape(newshp)
         vo = np.where(lo==0,np.nan,vo).reshape(newshp)
         out = (uo,vo)
@@ -1885,7 +1907,6 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     if nlats != nlons:
         raise ValueError('Station lats and lons must be same size.')
 
-    km = 1
     mi = grid_def_in.npoints
     mo = nlats
 
@@ -1899,25 +1920,49 @@ def interpolate_to_stations(a, method, grid_def_in, lats, lons,
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
+        km = a.shape[0]
         ibi = np.zeros((km), dtype=np.int32)
         li = np.zeros(a.shape,dtype=np.uint8)
-        no,rlat,rlon,ibo,lo,go,iret = iplib.interpolate_scalar(method, method_options,
-                                                 grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                 gdtn, gdt,
-                                                 mi, mo, km, ibi, li, a,
-                                                 lats=np.array(lats, dtype=np.float32),
-                                                 lons=np.array(lons, dtype=np.float32))
+        no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            gdtn,
+            gdt,
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a,
+            lats=np.array(lats, dtype=np.float32),
+            lons=np.array(lons, dtype=np.float32),
+        )
         out = go.reshape(newshp)
+    
     elif isinstance(a,tuple):
         # Vector
+        km = a[0].shape[0]
         ibi = np.zeros((km), dtype=np.int32)
         li = np.zeros(a[0].shape,dtype=np.uint8)
-        no,rlat,rlon,crot,srot,ibo,lo,uo,vo,iret = iplib.interpolate_vector(method, method_options,
-                                                            grid_def_in.gdtn, np.array(grid_def_in.gdt, dtype=np.int32),
-                                                            gdtn, gdt,
-                                                            mi, mo, km, ibi, li, a[0], a[1],
-                                                            lats=np.array(lats, dtype=np.float32),
-                                                            lons=np.array(lons, dtype=np.float32))
+        no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
+            method,
+            method_options,
+            grid_def_in.gdtn,
+            np.array(grid_def_in.gdt, dtype=np.int32),
+            gdtn,
+            gdt,
+            mi,
+            mo,
+            km,
+            ibi,
+            li,
+            a[0],
+            a[1],
+            lats=np.array(lats, dtype=np.float32),
+            lons=np.array(lons, dtype=np.float32),
+        )
         out = (uo.reshape(newshp),vo.reshape(newshp))
 
     try:
