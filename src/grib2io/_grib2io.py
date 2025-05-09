@@ -1468,9 +1468,9 @@ class _Grib2Message:
         msg._coordlist = self._coordlist
         shape = (msg.ny,msg.nx)
         ndim = 2
-        if msg.typeOfValues == 0:
+        if msg.packing.typeOfValues == 0:
             dtype = 'float32'
-        elif msg.typeOfValues == 1:
+        elif msg.packing.typeOfValues == 1:
             dtype = 'int32'
         msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
                                 method_options=method_options,num_threads=num_threads).reshape(msg.ny,msg.nx)
