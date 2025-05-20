@@ -879,7 +879,7 @@ class _Grib2Message:
         """
         return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
                 f'{self.fullName} ({self.units}):{self.level}:'
-                f'{self.leadTime+self.duration}')
+                f'{self.leadTime}')
 
 
     def _generate_signature(self):
