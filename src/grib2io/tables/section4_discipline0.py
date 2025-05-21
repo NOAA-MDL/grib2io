@@ -268,7 +268,8 @@ table_4_2_0_1  = {
 '233':['Snow Liquid ratio','kg kg-1','SNOWLR'],
 '234':['Precipitation Duration','hour','PCPDUR'],
 '235':['Cloud Liquid Mixing Ratio','kg kg-1','CLLMR'],
-'236-240':['Reserved','unknown','unknown'],
+'236':['Hail Accumulation','m','HAILAC'],
+'237-240':['Reserved','unknown','unknown'],
 '241':['Total Snow','kg m-2','TSNOW'],
 '242':['Relative Humidity with Respect to Precipitable Water','%','RHPW'],
 '245':['Hourly Maximum of Column Vertical Integrated Graupel on Entire Atmosphere','kg m-2','MAXVIG'],
@@ -522,6 +523,7 @@ table_4_2_0_4  = {
 '203':['Near IR Diffuse Downward Solar Flux','W m-2','NDDSF'],
 '204':['Downward Total Radiation Flux','W m-2','DTRF'],
 '205':['Upward Total Radiation Flux','W m-2','UTRF'],
+'206':['Diffuse short-wave radiation flux, clear sky','W m-2','DFSWRFLXCS'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_0_5  = {
@@ -983,16 +985,22 @@ table_4_2_0_192  = {
 '14':['Covariance between temperature and temperature. Defined as [TT]-[T][T], where "[]" indicates the mean over the indicated time span.','K*K','COVTT'],
 '255':['Missing','unknown','unknown'],
 }
-
 # ----------------------------------------------------------------------------------------
 # Source: https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/NDFD_gribtab.dat
+#         and
+#         https://vlab.noaa.gov/web/mdl/ndfd-grib-all-sections#section-4-product-definition-section
+#
+# The dictionary names are in the following format:
+#     table_4_2_<discipline>_<parameterCategory>_ndfd	
 # ----------------------------------------------------------------------------------------
 table_4_2_0_0_ndfd = {
 '193':['Apparent Temperature','K','APPT'],
 }
+
 table_4_2_0_1_ndfd = {
 '192':['Weather Information','WxInfo','WX'],
 }
+
 table_4_2_0_19_ndfd = {
 '194':['Convective Hazard Outlook','categorical','CONVOUTLOOK'],
 '197':['Probability of Tornado','%','PTORNADO'],
@@ -1005,6 +1013,7 @@ table_4_2_0_19_ndfd = {
 '216':['Total Probability of Extreme Severe Thunderstorms','%','TOTALXTRMPROB'],
 '217':['Watch Warning Advisory','WxInfo','WWA'],
 }
+
 table_4_2_0_192_ndfd = {
 '192':['Critical Fire Weather','','FIREWX'],
 '194':['Dry Lightning','','DRYLIGHTNING'],

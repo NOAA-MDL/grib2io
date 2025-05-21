@@ -167,7 +167,7 @@ table_4_2_2_3  = {
 '201':['Average Surface Skin Temperature','K','AVSFT'],
 '202':['Effective Radiative Skin Temperature','K','RADT'],
 '203':['Field Capacity','Fraction','FLDCP'],
-'204':['Soil Moisture Availability In The Top Soil Layer','%','MSTAV'],
+'204':['Soil Moisture Availability In The Top Soil Layer','%','MSTAVTOP'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_2_4  = {
