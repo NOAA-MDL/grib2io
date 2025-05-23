@@ -9,5 +9,5 @@ include requirements.txt
 graft docs
 graft src/ext
 graft src/grib2io
-graft tests
+prune tests
 global-exclude *.py[cod] *.c *.so *.DS_Store
