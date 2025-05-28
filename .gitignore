@@ -10,3 +10,4 @@ src/ext/*.c
 src/grib2io/__config__.py
 make_grib2_tables/section*.py
 make_grib2_tables/originating_centers.py
+*.ipynb_checkpoints
