@@ -59,41 +59,8 @@ AVAILABLE_NON_GEO_DIMS = [
     "scaledValueOfSecondSize"
 ]
 
-# Map numeric level codes to human-readable names
-LEVEL_NAME_MAPPING = {
-    1: "surface",
-    7: "tropopause",
-    6: "max_wind_level",
-    10: "entire_atmosphere",
-    100: "isobaric_surface",
-    101: "mean_sea_level",
-    102: "height_above_msl",
-    103: "height_above_ground",
-    104: "sigma_level",
-    105: "hybrid_level",
-    106: "depth_below_land",
-    107: "isentropic_level",
-    108: "pressure_diff_from_ground",
-    109: "pot_vorticity_surface",
-    160: "depth_below_sea",
-    200: "entire_atmosphere",
-    201: "entire_ocean",
-    204: "highest_freezing_level",
-    220: "planetary_boundary_layer",
-    233: "high_cloud_top_level",
-    223: "medium_cloud_top_level",
-    213: "low_cloud_top_level",
-    214: "low_cloud_layer",
-    224: "medium_cloud_layer",
-    234: "high_cloud_layer",
-    215: "cloud_ceiling",
-    242: 'convective_cloud_bottom_level',
-    212: "low_cloud_bottom_level",
-    222: "medium_cloud_bottom_level",
-    232: "high_cloud_bottom_level",
-    243: "convective_cloud_top_level",
-
-}
+# Use custom table to map numeric level codes to human-readable names
+LEVEL_NAME_MAPPING = grib2io.tables.get_table('4.5.grib2io.level.name')
 
 # Define the order of hierarchy levels for the DataTree
 TREE_HIERARCHY_LEVELS = [
@@ -1424,7 +1391,9 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     # Create a dictionary to group data by level type
     for level_type in file_index['typeOfFirstFixedSurface'].unique():
         if pd.notna(level_type):  # Skip None/NaN values
-            level_name = LEVEL_NAME_MAPPING.get(level_type, f"level_{level_type}")
+            level_info = LEVEL_NAME_MAPPING.get(level_type, f"level_{level_type}")
+            level_name = level_info[0]
+            level_source = level_info[1]
             # Get all rows for this level type
             level_data = file_index[file_index['typeOfFirstFixedSurface'] == level_type]
             level_groups[level_type] = {'name': level_name, 'data': level_data}
