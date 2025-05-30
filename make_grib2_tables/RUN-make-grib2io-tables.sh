@@ -97,6 +97,8 @@ echo "\t - wgrib2 Level/Layer String Table"
 cat table_wgrib2_level_string.txt >> section4.py
 echo "\t - Aerosols Tables"
 cat table_aerosols.txt >> section4.py
+echo "\t - grib2io custom level names"
+cat table_grib2io_custom_level_names.txt >> section4.py
 
 # Discipline 0
 echo " -- Making section4_discipline0.py"
