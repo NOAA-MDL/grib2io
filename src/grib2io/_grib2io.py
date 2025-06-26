@@ -2024,6 +2024,12 @@ class Grib2GridDef:
         """Shape of the grid."""
         return (int(self.ny), int(self.nx))
 
+    def to_section3(self):
+        """Return a full GRIB2 section3 array."""
+        return np.array(
+            [0, self.npoints, 0, 0, self.gdtn] + list(self.gdt)
+        )
+
 
 def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
     """
