@@ -2007,17 +2007,17 @@ class Grib2GridDef:
     @property
     def nx(self):
         """Number of grid points in x-direction."""
-        return self.gdt[7]
+        return int(self.gdt[7])
 
     @property
     def ny(self):
         """Number of grid points in y-direction."""
-        return self.gdt[8]
+        return int(self.gdt[8])
 
     @property
     def npoints(self):
         """Total number of grid points."""
-        return self.gdt[7] * self.gdt[8]
+        return int(self.gdt[7] * self.gdt[8])
 
     @property
     def shape(self):
@@ -2028,7 +2028,7 @@ class Grib2GridDef:
         """Return a full GRIB2 section3 array."""
         return np.array(
             [0, self.npoints, 0, 0, self.gdtn] + list(self.gdt)
-        )
+        ).astype(np.int64)
 
 
 def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
