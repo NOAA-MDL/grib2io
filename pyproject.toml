@@ -19,7 +19,8 @@ keywords = [
   "grib2", "grib2-decoder", "grib2-encoder", "ncep",
 ]
 readme = "README.md"
-license-files = ["LICENSE"]
+license = {text = "MIT"}
+#FUTURE license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
@@ -33,6 +34,7 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
   "Topic :: Scientific/Engineering :: Atmospheric Science",
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Operating System :: POSIX",
