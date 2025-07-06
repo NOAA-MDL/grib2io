@@ -455,7 +455,6 @@ if build_with_ip:
                                    static=False,
                                    required=False,
                                    include_file="omp.h")
-        print("TEST HERE....", pkginfo)
         if None not in pkginfo:
             extmod_config['iplib']['libraries'].append(pkginfo[0])
             extmod_config['iplib']['incdirs'].append(pkginfo[1])
