@@ -25,13 +25,6 @@ pkgname_to_libname = {
 def find_openmp_include(compiler=None):
     """
     Return the include directory containing omp.h for the given compiler on Linux or macOS.
-
-    Args:
-        compiler: 'gcc', 'g++', 'clang', 'icc', 'icx', or path to executable.
-                  If None, will try environment variables or system default.
-
-    Returns:
-        Path to the directory containing omp.h, or None.
     """
 
     # Try to auto-detect the compiler if not given
@@ -46,7 +39,7 @@ def find_openmp_include(compiler=None):
         print(f"Compiler '{compiler}' not found in PATH.")
         return None
 
-    # 1. Get include search paths from compiler (works for gcc, clang, icc, icx)
+    # Get include search paths from compiler (works for gcc, clang, icc, icx)
     try:
         cmd = [compiler, '-E', '-x', 'c', '-', '-v']
         proc = subprocess.run(cmd, input=b'', capture_output=True, check=True)
@@ -67,13 +60,13 @@ def find_openmp_include(compiler=None):
         print(f"Warning: Could not extract include paths from compiler ({compiler}): {e}")
         includes = []
 
-    # 2. Try to find omp.h in these include dirs
+    # Try to find omp.h in these include dirs
     for inc in includes:
         omp_path = os.path.join(inc, 'omp.h')
         if os.path.exists(omp_path):
             return inc
 
-    # 3. Check common system and package manager locations (macOS/Homebrew/MacPorts/oneAPI)
+    # Check common system and package manager locations (macOS/Homebrew/MacPorts/oneAPI)
     search_paths = [
         '/usr/local/include',
         '/usr/include',
@@ -85,6 +78,7 @@ def find_openmp_include(compiler=None):
         '/opt/intel/include',                      # Classic Intel (Linux)
         '/usr/local/opt/libiomp/include',          # Homebrew iomp5
     ]
+
     # Also look for oneAPI install in user's home dir
     home = os.path.expanduser('~')
     search_paths += [
@@ -96,7 +90,7 @@ def find_openmp_include(compiler=None):
         if os.path.exists(omp_path):
             return inc
 
-    # 4. Try to use 'locate' if available (Linux only, as last resort)
+    # Try to use 'locate' if available (Linux only, as last resort)
     if sys.platform.startswith('linux'):
         try:
             proc = subprocess.run(['locate', 'omp.h'], capture_output=True, check=True, timeout=2)
@@ -109,6 +103,7 @@ def find_openmp_include(compiler=None):
 
     # Not found
     return None
+
 
 def check_lib_static(name):
     """Check whether or not to build with a static library."""
@@ -182,17 +177,21 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
 
 def find_include_file(file, incdir="include", root=None):
     """Find absolute path to include file."""
+    incfile = None
+
     if "omp.h" in file:
         incfile = find_openmp_include()
         return incfile
-    incfile = None
+
     if root is None:
         return None
+
     for path, subdirs, files in os.walk(root):
         if os.path.basename(path) == incdir:
             if file in files:
                 incfile = os.path.join(path, file)
                 break
+
     return incfile
 
 
