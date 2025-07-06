@@ -184,7 +184,7 @@ def find_include_file(file, incdir="include", root=None):
     """Find absolute path to include file."""
     if "omp.h" in file:
         incfile = find_openmp_include()
-        return include
+        return incfile
     incfile = None
     if root is None:
         return None
