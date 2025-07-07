@@ -64,7 +64,7 @@ def find_openmp_include(compiler=None):
     for inc in includes:
         omp_path = os.path.join(inc, 'omp.h')
         if os.path.exists(omp_path):
-            return inc
+            return omp_path
 
     # Check common system and package manager locations (macOS/Homebrew/MacPorts/oneAPI)
     search_paths = [
@@ -88,7 +88,7 @@ def find_openmp_include(compiler=None):
     for inc in search_paths:
         omp_path = os.path.join(inc, 'omp.h')
         if os.path.exists(omp_path):
-            return inc
+            return omp_path
 
     # Try to use 'locate' if available (Linux only, as last resort)
     if sys.platform.startswith('linux'):
@@ -97,7 +97,7 @@ def find_openmp_include(compiler=None):
             paths = proc.stdout.decode().splitlines()
             for path in paths:
                 if path.endswith('omp.h') and os.path.exists(path):
-                    return os.path.dirname(path)
+                    return path
         except Exception:
             pass
 
