@@ -269,7 +269,8 @@ table_4_2_0_1  = {
 '234':['Precipitation Duration','hour','PCPDUR'],
 '235':['Cloud Liquid Mixing Ratio','kg kg-1','CLLMR'],
 '236':['Hail Accumulation','m','HAILAC'],
-'237-240':['Reserved','unknown','unknown'],
+'237':['Total Column Integrated Precipitation (see Note 10)','kg m-2','TCOLP'],
+'238-240':['Reserved','unknown','unknown'],
 '241':['Total Snow','kg m-2','TSNOW'],
 '242':['Relative Humidity with Respect to Precipitable Water','%','RHPW'],
 '245':['Hourly Maximum of Column Vertical Integrated Graupel on Entire Atmosphere','kg m-2','MAXVIG'],
@@ -711,6 +712,7 @@ table_4_2_0_15  = {
 '16':['Hybrid Scan Reflectivity Height','m','HSRHT'],
 '17-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
+'192':['Vertically-Integrated Liquid Water','kg m-2','RADARVIL'],
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_0_16  = {

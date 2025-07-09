@@ -379,7 +379,9 @@ def test_ds_to_netcdf(tmp_path, request):
 
     ds1.to_netcdf(target_file)
 
-    ds2 = xr.open_dataset(target_file, engine="netcdf4")
+    ds2 = xr.open_dataset(target_file, engine="netcdf4", decode_times=False)
+    del ds2.leadTime.attrs['dtype']
+    ds2 = xr.decode_cf(ds2)
 
     lists = []
     for index, values in ds2.indexes.items():

@@ -5,6 +5,7 @@ import numpy
 import os
 import platform
 import re
+import shutil
 import subprocess
 import sys
 import sysconfig
@@ -20,6 +21,88 @@ pkgname_to_libname = {
     'openjpeg': ['openjp2'],
     'png': ['png'],
     'z': ['z'],}
+
+def find_openmp_include(compiler=None):
+    """
+    Return the include directory containing omp.h for the given compiler on Linux or macOS.
+    """
+
+    # Try to auto-detect the compiler if not given
+    if compiler is None:
+        compiler = os.environ.get('CC', None)
+    if compiler is None:
+        # Default to gcc on Linux, clang on macOS
+        compiler = 'clang' if sys.platform == 'darwin' else 'gcc'
+
+    compiler_path = shutil.which(compiler)
+    if compiler_path is None:
+        print(f"Compiler '{compiler}' not found in PATH.")
+        return None
+
+    # Get include search paths from compiler (works for gcc, clang, icc, icx)
+    try:
+        cmd = [compiler, '-E', '-x', 'c', '-', '-v']
+        proc = subprocess.run(cmd, input=b'', capture_output=True, check=True)
+        output = proc.stderr.decode('utf-8', errors='ignore')
+        includes = []
+        in_block = False
+        for line in output.splitlines():
+            if '#include <...> search starts here:' in line:
+                in_block = True
+                continue
+            if in_block:
+                if 'End of search list.' in line:
+                    break
+                path = line.strip()
+                if path and os.path.isdir(path):
+                    includes.append(path)
+    except Exception as e:
+        print(f"Warning: Could not extract include paths from compiler ({compiler}): {e}")
+        includes = []
+
+    # Try to find omp.h in these include dirs
+    for inc in includes:
+        omp_path = os.path.join(inc, 'omp.h')
+        if os.path.exists(omp_path):
+            return omp_path
+
+    # Check common system and package manager locations (macOS/Homebrew/MacPorts/oneAPI)
+    search_paths = [
+        '/usr/local/include',
+        '/usr/include',
+        '/opt/local/include',                      # MacPorts (macOS)
+        '/opt/homebrew/include',                   # Apple Silicon Homebrew
+        '/usr/local/opt/libomp/include',           # Intel Mac Homebrew
+        '/opt/homebrew/opt/libomp/include',        # Apple Silicon Homebrew
+        '/opt/intel/oneapi/include',               # Intel oneAPI (Linux)
+        '/opt/intel/include',                      # Classic Intel (Linux)
+        '/usr/local/opt/libiomp/include',          # Homebrew iomp5
+    ]
+
+    # Also look for oneAPI install in user's home dir
+    home = os.path.expanduser('~')
+    search_paths += [
+        os.path.join(home, 'intel/oneapi/compiler/latest/include'),
+    ]
+
+    for inc in search_paths:
+        omp_path = os.path.join(inc, 'omp.h')
+        if os.path.exists(omp_path):
+            return omp_path
+
+    # Try to use 'locate' if available (Linux only, as last resort)
+    if sys.platform.startswith('linux'):
+        try:
+            proc = subprocess.run(['locate', 'omp.h'], capture_output=True, check=True, timeout=2)
+            paths = proc.stdout.decode().splitlines()
+            for path in paths:
+                if path.endswith('omp.h') and os.path.exists(path):
+                    return path
+        except Exception:
+            pass
+
+    # Not found
+    return None
 
 
 def check_lib_static(name):
@@ -95,13 +178,20 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
 def find_include_file(file, incdir="include", root=None):
     """Find absolute path to include file."""
     incfile = None
+
+    if "omp.h" in file:
+        incfile = find_openmp_include()
+        return incfile
+
     if root is None:
         return None
+
     for path, subdirs, files in os.walk(root):
         if os.path.basename(path) == incdir:
             if file in files:
                 incfile = os.path.join(path, file)
                 break
+
     return incfile
 
 

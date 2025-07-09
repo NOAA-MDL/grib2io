@@ -20,6 +20,7 @@ keywords = [
 ]
 readme = "README.md"
 license = {text = "MIT"}
+#FUTURE license-files = ["LICENSE"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",

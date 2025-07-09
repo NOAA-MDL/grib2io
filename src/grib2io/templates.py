@@ -651,50 +651,50 @@ class ProjParameters:
         projparams['a'] = 1.0
         projparams['b'] = 1.0
         if obj.earthRadius is not None:
-            projparams['a'] = obj.earthRadius
-            projparams['b'] = obj.earthRadius
+            projparams['a'] = float(obj.earthRadius)
+            projparams['b'] = float(obj.earthRadius)
         else:
-            if obj.earthMajorAxis is not None: projparams['a'] = obj.earthMajorAxis
-            if obj.earthMajorAxis is not None: projparams['b'] = obj.earthMinorAxis
+            if obj.earthMajorAxis is not None: projparams['a'] = float(obj.earthMajorAxis)
+            if obj.earthMajorAxis is not None: projparams['b'] = float(obj.earthMinorAxis)
         if obj.gdtn == 0:
             projparams['proj'] = 'longlat'
         elif obj.gdtn == 1:
             projparams['o_proj'] = 'longlat'
             projparams['proj'] = 'ob_tran'
-            projparams['o_lat_p'] = -1.0*obj.latitudeSouthernPole
-            projparams['o_lon_p'] = obj.anglePoleRotation
-            projparams['lon_0'] = obj.longitudeSouthernPole
+            projparams['o_lat_p'] = float(-1.0*obj.latitudeSouthernPole)
+            projparams['o_lon_p'] = float(obj.anglePoleRotation)
+            projparams['lon_0'] = float(obj.longitudeSouthernPole)
         elif obj.gdtn == 10:
             projparams['proj'] = 'merc'
-            projparams['lat_ts'] = obj.latitudeTrueScale
-            projparams['lon_0'] = 0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint)
+            projparams['lat_ts'] = float(obj.latitudeTrueScale)
+            projparams['lon_0'] = float(0.5*(obj.longitudeFirstGridpoint+obj.longitudeLastGridpoint))
         elif obj.gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
             elif obj.projectionCenterFlag == 1:
                 lat0 = -90.0
             projparams['proj'] = 'stere'
-            projparams['lat_ts'] = obj.latitudeTrueScale
+            projparams['lat_ts'] = float(obj.latitudeTrueScale)
             projparams['lat_0'] = lat0
-            projparams['lon_0'] = obj.gridOrientation
+            projparams['lon_0'] = float(obj.gridOrientation)
         elif obj.gdtn == 30:
             projparams['proj'] = 'lcc'
-            projparams['lat_1'] = obj.standardLatitude1
-            projparams['lat_2'] = obj.standardLatitude2
-            projparams['lat_0'] = obj.latitudeTrueScale
-            projparams['lon_0'] = obj.gridOrientation
+            projparams['lat_1'] = float(obj.standardLatitude1)
+            projparams['lat_2'] = float(obj.standardLatitude2)
+            projparams['lat_0'] = float(obj.latitudeTrueScale)
+            projparams['lon_0'] = float(obj.gridOrientation)
         elif obj.gdtn == 31:
             projparams['proj'] = 'aea'
-            projparams['lat_1'] = obj.standardLatitude1
-            projparams['lat_2'] = obj.standardLatitude2
-            projparams['lat_0'] = obj.latitudeTrueScale
-            projparams['lon_0'] = obj.gridOrientation
+            projparams['lat_1'] = float(obj.standardLatitude1)
+            projparams['lat_2'] = float(obj.standardLatitude2)
+            projparams['lat_0'] = float(obj.latitudeTrueScale)
+            projparams['lon_0'] = float(obj.gridOrientation)
         elif obj.gdtn == 40:
             projparams['proj'] = 'eqc'
         elif obj.gdtn == 32769:
             projparams['proj'] = 'aeqd'
-            projparams['lon_0'] = obj.longitudeCenterGridpoint
-            projparams['lat_0'] = obj.latitudeCenterGridpoint
+            projparams['lon_0'] = float(obj.longitudeCenterGridpoint)
+            projparams['lat_0'] = float(obj.latitudeCenterGridpoint)
         return projparams
     def __set__(self, obj, value):
         raise RuntimeError
