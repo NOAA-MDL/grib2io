@@ -1732,10 +1732,12 @@ def interpolate(a,
 
     prev_num_threads = 1
     try:
-        prev_num_threads = iplib.get_openmp_threads()
-        iplib.set_openmp_threads(num_threads)
+        prev_num_threads = iplib.openmp_get_num_threads()
+        iplib.openmp_set_num_threads(num_threads)
     except(AttributeError):
         pass
+
+    print(f"grib2io.interpolate thread report: OpenMP num threads = {iplib.openmp_get_num_threads()}")
 
     if isinstance(method,int) and method not in _interp_schemes.values():
         raise ValueError('Invalid interpolation method.')
@@ -1810,7 +1812,7 @@ def interpolate(a,
         out = (uo,vo)
 
     try:
-        iplib.set_openmp_threads(prev_num_threads)
+        iplib.openmp_set_num_threads(prev_num_threads)
     except(AttributeError):
         pass
 
@@ -1888,8 +1890,8 @@ def interpolate_to_stations(
 
     prev_num_threads = 1
     try:
-        prev_num_threads = iplib.get_openmp_threads()
-        iplib.set_openmp_threads(num_threads)
+        prev_num_threads = iplib.openmp_get_num_threads()
+        iplib.openmp_set_num_threads(num_threads)
     except(AttributeError):
         pass
 
@@ -1981,7 +1983,7 @@ def interpolate_to_stations(
         out = (uo.reshape(newshp),vo.reshape(newshp))
 
     try:
-        iplib.set_openmp_threads(prev_num_threads)
+        iplib.openmp_set_num_threads(prev_num_threads)
     except(AttributeError):
         pass
 

@@ -47,12 +47,12 @@ Optionally (but recommended), grib2io supports spatial interpolation via its int
 ## Required External Libraries
 
 ### NCEPLIBS-g2c
-The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required for grib2io.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the Anaconda ecosystem, then you can install via `conda install -c conda-forge nceplibs-g2c`.
+The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required for grib2io.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the *conda ecosystems, then you can install via `conda install -c conda-forge nceplibs-g2c`.
 
 ## Optional External Libraries
 
 ### NCEPLIBS-ip (v5.1.0 or newer)
-The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the Anaconda ecosystem, then you can install via `conda install -c conda-forge nceplibs-ip`.
+The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the *conda ecosystems, then you can install via `conda install -c conda-forge nceplibs-ip`.
 
 ## Install
 
@@ -76,7 +76,7 @@ pip install .
 
 > [!NOTE]
 > ### Building with static libraries
-> **_It is recommended to not build with static libraries, but in certain NOAA production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`. 
+> **_It is recommended to not build with static libraries, but in NOAA HPC production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`. 
 > 
 >```shell
 >export G2C_STATIC=True

@@ -6,9 +6,13 @@ Cython code to provide python interfaces to functions in the NCEPLIBS-ip library
 IMPORTANT: Make changes to this file, not the C code that Cython generates.
 """
 
-from cython.parallel import prange
+import cython
+from cython.parallel import parallel, prange
+from cython.cimports.openmp import omp_get_max_threads, omp_get_num_threads, omp_set_num_threads
+
 from libc.stdint cimport uint8_t, int32_t
 from libc.stdlib cimport malloc, free
+
 import numpy as np
 cimport numpy as cnp
 
@@ -31,13 +35,6 @@ cdef extern from "iplib.h":
     void use_ncep_post_arakawa()
     void unuse_ncep_post_arakawa()
 
-#ifdef IPLIB_WITH_OPENMP
-cdef extern from "omp.h":
-    int omp_get_max_threads()
-    void omp_set_num_threads(int)
-    int omp_get_num_threads()
-#endif
-    
 
 def interpolate_scalar(int ip,
                    cnp.ndarray[cnp.int32_t, ndim=1] ipopt,
@@ -290,41 +287,32 @@ def openmp_get_max_threads():
     """
     Returns the maximum number of OpenMP threads available.
     """
-    return omp_get_max_threads()
+    cdef int num_threads = 1
+    with cython.nogil:
+        for _ in prange(1):
+            num_threads = omp_get_max_threads()
+    return num_threads
 
-def openmp_set_num_threads(int num):
+
+def openmp_get_num_threads():
+    """
+    Returns the number of threads in a parallel region.
+    """
+    cdef int num_threads = 1
+    with cython.nogil:
+        for _ in prange(1):
+            num_threads = omp_get_num_threads()
+    return num_threads
+
+
+def openmp_set_num_threads(int n):
     """
     Sets the number of OpenMP threads to be used.
 
     Parameters
     ----------
     num
-        Number of OpenMP threads to set. 
+        Number of OpenMP threads to set.
     """
-    omp_set_num_threads(num)
-
-def openmp_get_num_threads():
-    """
-    Returns the number of threads in a parallel region.
-    """
-    cdef int num_threads = 1  # Default to 1 (if not in parallel region)
-    
-    # Parallel block with temporary memory to store thread count
-    cdef int *num_threads_ptr = <int*>malloc(sizeof(int))
-    if num_threads_ptr == NULL:
-        raise MemoryError("Failed to allocate memory for thread count.")
-    
-    num_threads_ptr[0] = 0  # Initialize
-
-    cdef int i
-    with nogil:
-        for i in prange(1):  # Start parallel region
-            # Acquire GIL before calling omp_get_num_threads
-            with gil:
-                num_threads_ptr[0] = omp_get_num_threads()
-
-    num_threads = num_threads_ptr[0]
-    free(num_threads_ptr)  # Clean up
-
-    return num_threads
+    omp_set_num_threads(n)
 #endif

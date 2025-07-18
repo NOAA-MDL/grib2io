@@ -22,86 +22,30 @@ pkgname_to_libname = {
     'png': ['png'],
     'z': ['z'],}
 
-def find_openmp_include(compiler=None):
-    """
-    Return the include directory containing omp.h for the given compiler on Linux or macOS.
-    """
 
-    # Try to auto-detect the compiler if not given
-    if compiler is None:
-        compiler = os.environ.get('CC', None)
-    if compiler is None:
-        # Default to gcc on Linux, clang on macOS
-        compiler = 'clang' if sys.platform == 'darwin' else 'gcc'
-
-    compiler_path = shutil.which(compiler)
-    if compiler_path is None:
-        print(f"Compiler '{compiler}' not found in PATH.")
-        return None
-
-    # Get include search paths from compiler (works for gcc, clang, icc, icx)
+def _is_apple_clang(compiler):
+    """Returns True if compiler is Apple Clang, not real GCC."""
     try:
-        cmd = [compiler, '-E', '-x', 'c', '-', '-v']
-        proc = subprocess.run(cmd, input=b'', capture_output=True, check=True)
-        output = proc.stderr.decode('utf-8', errors='ignore')
-        includes = []
-        in_block = False
-        for line in output.splitlines():
-            if '#include <...> search starts here:' in line:
-                in_block = True
-                continue
-            if in_block:
-                if 'End of search list.' in line:
-                    break
-                path = line.strip()
-                if path and os.path.isdir(path):
-                    includes.append(path)
-    except Exception as e:
-        print(f"Warning: Could not extract include paths from compiler ({compiler}): {e}")
-        includes = []
+        proc = subprocess.run(
+            [compiler, '--version'],
+            capture_output=True, check=True
+        )
+        output = proc.stdout.decode(errors='ignore') + proc.stderr.decode(errors='ignore')
+        if 'Apple LLVM' in output or 'Apple clang' in output:
+            return True
+        if 'clang' in output and 'Free Software Foundation' not in output:
+            return True
+        return False
+    except Exception:
+        return False
 
-    # Try to find omp.h in these include dirs
-    for inc in includes:
-        omp_path = os.path.join(inc, 'omp.h')
-        if os.path.exists(omp_path):
-            return omp_path
 
-    # Check common system and package manager locations (macOS/Homebrew/MacPorts/oneAPI)
-    search_paths = [
-        '/usr/local/include',
-        '/usr/include',
-        '/opt/local/include',                      # MacPorts (macOS)
-        '/opt/homebrew/include',                   # Apple Silicon Homebrew
-        '/usr/local/opt/libomp/include',           # Intel Mac Homebrew
-        '/opt/homebrew/opt/libomp/include',        # Apple Silicon Homebrew
-        '/opt/intel/oneapi/include',               # Intel oneAPI (Linux)
-        '/opt/intel/include',                      # Classic Intel (Linux)
-        '/usr/local/opt/libiomp/include',          # Homebrew iomp5
-    ]
-
-    # Also look for oneAPI install in user's home dir
-    home = os.path.expanduser('~')
-    search_paths += [
-        os.path.join(home, 'intel/oneapi/compiler/latest/include'),
-    ]
-
-    for inc in search_paths:
-        omp_path = os.path.join(inc, 'omp.h')
-        if os.path.exists(omp_path):
-            return omp_path
-
-    # Try to use 'locate' if available (Linux only, as last resort)
-    if sys.platform.startswith('linux'):
-        try:
-            proc = subprocess.run(['locate', 'omp.h'], capture_output=True, check=True, timeout=2)
-            paths = proc.stdout.decode().splitlines()
-            for path in paths:
-                if path.endswith('omp.h') and os.path.exists(path):
-                    return path
-        except Exception:
-            pass
-
-    # Not found
+def _find_homebrew_gcc():
+    """Return the highest versioned gcc-x in PATH, e.g. 'gcc-13'."""
+    for version in reversed(range(10, 16)):  # Try gcc-15..gcc-10 (update as needed)
+        exe = shutil.which(f"gcc-{version}")
+        if exe:
+            return f"gcc-{version}"
     return None
 
 
@@ -124,7 +68,14 @@ def get_grib2io_version():
     return ver
 
 
-def get_package_info(name, incdir="include", static=False, required=True, include_file=None):
+def get_package_info(
+    name,
+    incdir="include",
+    static=False,
+    required=True,
+    include_file=None,
+    compiler=None
+):
     """Get package information."""
     # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper()+'_DIR')
@@ -168,20 +119,26 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
             if os.path.exists(os.path.join(os.path.dirname(pkg_libdir_root),'include')):
                 pkg_incdir = os.path.join(os.path.dirname(pkg_libdir_root),'include')
             if include_file is not None:
-                incfile = find_include_file(include_file, incdir=incdir, root=os.path.dirname(pkg_libdir_root))
+                incfile = find_include_file(
+                    include_file,
+                    incdir=incdir,
+                    root=os.path.dirname(pkg_libdir_root),
+                    compiler=compiler
+                )
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
     return libname, pkg_incdir, pkg_libdir
 
 
-def find_include_file(file, incdir="include", root=None):
+def find_include_file(
+    file,
+    incdir="include",
+    root=None,
+    compiler=None,
+):
     """Find absolute path to include file."""
     incfile = None
-
-    if "omp.h" in file:
-        incfile = find_openmp_include()
-        return incfile
 
     if root is None:
         return None
@@ -195,7 +152,11 @@ def find_include_file(file, incdir="include", root=None):
     return incfile
 
 
-def find_library(name, dirs=None, static=False, required=True):
+def find_library(name,
+    dirs=None,
+    static=False,
+    required=True
+):
     """Find absolute path to library file."""
     _libext_by_platform = {"linux": ".so", "darwin": ".dylib"}
     out = []
@@ -428,41 +389,69 @@ extmod_config['g2clib']['incdirs'].append(numpy.get_include())
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static('ip')
 pkginfo = get_package_info('ip', incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
+
 if None in pkginfo:
     warnings.warn(f"NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")
     build_with_ip = False
 
 if build_with_ip:
-    extmod_config['iplib'] = dict(libraries=[pkginfo[0]],
-                                  incdirs=[pkginfo[1]],
-                                  libdirs=[pkginfo[2]],
-                                  extra_objects=[],
-                                  define_macros=[])
 
-    ip_libname = find_library(pkgname_to_libname['ip'][0],
-                              dirs=extmod_config['iplib']['libdirs'],
-                              static=ip_static)
+    ip_from_homebrew = False
 
+    # Add ip package info to the configuration dictionary.
+    extmod_config['iplib'] = dict(
+        libraries=[pkginfo[0]],
+        incdirs=[pkginfo[1]],
+        libdirs=[pkginfo[2]],
+        extra_objects=[],
+        define_macros=[]
+    )
+
+    # Find the full path to the ip library.
+    ip_libname = find_library(
+        pkgname_to_libname['ip'][0],
+        dirs=extmod_config['iplib']['libdirs'],
+        static=ip_static
+    )
+
+    # Check if on macOS, then check if ip is from Homebrew.
+    if sys.platform == 'darwin':
+        ip_root = os.path.dirname(os.path.dirname(ip_libname))
+        if os.path.exists(os.path.join(ip_root, 'INSTALL_RECEIPT.json')):
+            ip_from_homebrew = True
+
+    # Agument the config dict if linking statically to ip.
     if ip_static:
         extmod_config['iplib']['extra_objects'].append(ip_libname)
         extmod_config['iplib']['libraries'] = []
         extmod_config['iplib']['libdirs'] = []
 
-    # Check for OpenMP. For now, link dynamically
+    # At this point, we know where to find ip and how we are linking. Now check
+    # if ip was built with OpenMP support.
     build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=False)
-    if build_with_openmp:
-        pkginfo = get_package_info(openmp_libname,
-                                   static=False,
-                                   required=False,
-                                   include_file="omp.h")
-        if None not in pkginfo:
-            extmod_config['iplib']['libraries'].append(pkginfo[0])
-            extmod_config['iplib']['incdirs'].append(pkginfo[1])
-            extmod_config['iplib']['libdirs'].append(pkginfo[2])
-            extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
 
+    if build_with_openmp:
+
+        # If on macOS and ip is from Homebrew, then check the C compiler to be
+        # used.  It must be C compiler matching the Fortran. Basically, you cannot
+        # build the iplib extension module with Apple clang.
+        if sys.platform == 'darwin' and ip_from_homebrew:
+            ccomp = os.environ.get('CC', sysconfig.get_config_vars()['CC'])
+            if _is_apple_clang(ccomp):
+                ccomp = _find_homebrew_gcc()
+                if ccomp is None:
+                    raise RuntimeError(f"NCEPLIBS-ip is from Homebrew. Must build iplib extension module with Homebrew GCC.")
+                else:
+                    print(f"NCEPLIBS-ip is from Homebrew. grib2io will use compiler from Homebrew: {ccomp}")
+                    os.environ['CC'] = ccomp
+        
+        # Note that both GNU and Intel support this flag.
+        extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
+        extmod_config['iplib']['extra_compile_args'] = ['-fopenmp']
+        extmod_config['iplib']['extra_link_args'] = ['-fopenmp']
+
+    # Further modifications if linking statically to ip.
     if ip_static:
-        # Need Fortran runtime even when static.
         if ftn_libname is None:
             pass
         else:
@@ -475,6 +464,7 @@ if build_with_ip:
         extmod_config['iplib']['libraries'].extend(stuff[0]) # Multiple libs...
         extmod_config['iplib']['libdirs'].append(stuff[1])
 
+    # Finally, add the numpy include.
     extmod_config['iplib']['incdirs'].append(numpy.get_include())
 
 # ----------------------------------------------------------------------------------------
@@ -492,7 +482,7 @@ for n, c in extmod_config.items():
         print(f'\t{k}: {v}')
 
 # ----------------------------------------------------------------------------------------
-# Define extensions
+# Create extension objects.
 # ----------------------------------------------------------------------------------------
 g2clibext = Extension('grib2io.g2clib',
                       [g2clib_pyx],
@@ -508,6 +498,9 @@ redtoregext = Extension('grib2io.redtoreg',
                         include_dirs = [numpy.get_include()])
 extension_modules.append(redtoregext)
 
+# ----------------------------------------------------------------------------------------
+# Create extension object for iplib.
+# ----------------------------------------------------------------------------------------
 if build_with_ip:
     iplibext = Extension('grib2io.iplib',
                          [iplib_pyx],
@@ -516,6 +509,8 @@ if build_with_ip:
                          libraries = extmod_config['iplib']['libraries'],
                          runtime_library_dirs = extmod_config['iplib']['libdirs'],
                          extra_objects = extmod_config['iplib']['extra_objects'],
+                         extra_compile_args = extmod_config['iplib']['extra_compile_args'],
+                         extra_link_args = extmod_config['iplib']['extra_link_args'],
                          define_macros = extmod_config['iplib']['define_macros'])
     extension_modules.append(iplibext)
 
