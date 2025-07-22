@@ -58,6 +58,7 @@ from . import tables
 from . import templates
 from . import utils
 from io import BytesIO
+import gzip
 
 DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
@@ -142,6 +143,10 @@ class open():
         mode = mode + "b"
 
         if isinstance(filename,bytes):
+            if filename[:2] == b'\x1f\x8b':
+                filename = gzip.decompress(filename)
+            if filename[:4]+filename[-4:] != b'GRIB7777':
+                raise ValueError("Invalid GRIB bytes")
             self._filehandle = BytesIO(filename)
             self.name = 'in-mem-file'
             self.size = len(filename)
@@ -157,7 +162,6 @@ class open():
                     self._filehandle.close()
                     if kwargs["_xarray_backend"]:
                         raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
-                    import gzip
                     self._filehandle = gzip.open(filename, mode=mode)
                 else:
                     self._filehandle = builtins.open(filename, mode=mode)
