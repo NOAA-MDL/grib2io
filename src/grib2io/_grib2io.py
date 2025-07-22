@@ -57,6 +57,7 @@ from . import g2clib
 from . import tables
 from . import templates
 from . import utils
+from io import BytesIO
 
 DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
@@ -112,7 +113,7 @@ class open():
                  '_pos', 'closed', 'current_message', 'messages', 'mode',
                  'name', 'size')
 
-    def __init__(self, filename: str, mode: Literal["r", "w", "x"] = "r", **kwargs):
+    def __init__(self, filename, mode: Literal["r", "w", "x"] = "r", **kwargs):
         """
         Initialize GRIB2 File object instance.
 
@@ -120,6 +121,8 @@ class open():
         ----------
         filename
             File name containing GRIB2 messages.
+            OR
+            bytes
         mode: default="r"
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
@@ -138,33 +141,41 @@ class open():
             mode += "+"
         mode = mode + "b"
 
+        if isinstance(filename,bytes):
+            self._filehandle = BytesIO(filename)
+            self.name = 'in-mem-file'
+            self.size = len(filename)
+            self._fileid = hashlib.sha1((self.name+str(self.size)).encode('ASCII')).hexdigest()
+
         # Some GRIB2 files are gzipped, so check for that here, but
         # raise error when using xarray backend.
-        if 'r' in mode:
-            self._filehandle = builtins.open(filename, mode=mode)
-            # Gzip files contain a 2-byte header b'\x1f\x8b'.
-            if self._filehandle.read(2) == b'\x1f\x8b':
-                self._filehandle.close()
-                if kwargs["_xarray_backend"]:
-                    raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
-                import gzip
-                self._filehandle = gzip.open(filename, mode=mode)
+        else:
+            if 'r' in mode:
+                self._filehandle = builtins.open(filename, mode=mode)
+                # Gzip files contain a 2-byte header b'\x1f\x8b'.
+                if self._filehandle.read(2) == b'\x1f\x8b':
+                    self._filehandle.close()
+                    if kwargs["_xarray_backend"]:
+                        raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
+                    import gzip
+                    self._filehandle = gzip.open(filename, mode=mode)
+                else:
+                    self._filehandle = builtins.open(filename, mode=mode)
             else:
                 self._filehandle = builtins.open(filename, mode=mode)
-        else:
-            self._filehandle = builtins.open(filename, mode=mode)
+                self.name = os.path.abspath(filename)
+            self.name = os.path.abspath(filename)
+            fstat = os.stat(self.name)
+            self.size = fstat.st_size
+            self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
+                                     str(self.size)).encode('ASCII')).hexdigest()
 
-        self.name = os.path.abspath(filename)
-        fstat = os.stat(self.name)
         self._hasindex = False
         self._index = {}
         self.mode = mode
         self.messages = 0
         self.current_message = 0
-        self.size = fstat.st_size
         self.closed = self._filehandle.closed
-        self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
-                                     str(self.size)).encode('ASCII')).hexdigest()
         if 'r' in self.mode:
             self._build_index()
         # FIX: Cannot perform reads on mode='a'
