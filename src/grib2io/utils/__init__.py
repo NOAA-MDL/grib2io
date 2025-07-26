@@ -6,7 +6,7 @@ of GRIB2 Messages.
 import datetime
 import struct
 from decimal import Decimal, localcontext
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -18,7 +18,7 @@ from .. import templates
 def decimal_to_scaled_int(
     value: Union[float, str, int],
     scale_factor: Optional[int] = None,
-) -> tuple[int, int]:
+) -> Tuple[int, int]:
     """
     Convert a float-like value to a scaled integer using the minimal decimal scaling factor.
 
