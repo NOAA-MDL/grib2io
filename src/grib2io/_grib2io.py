@@ -37,11 +37,14 @@ The following Jupyter Notebooks are available as tutorials:
 """
 
 from dataclasses import dataclass, field
+from io import BytesIO
+from pathlib import Path
 from typing import Literal, Optional, Union
 import builtins
 import collections
 import copy
 import datetime
+import gzip
 import hashlib
 import os
 import re
@@ -64,10 +67,17 @@ DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 TYPE_OF_VALUES_DTYPE = ('float32','int32')
 
-_interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                   'budget':3, 'spectral':4, 'neighbor-budget':6}
+_interp_schemes = {
+    'bilinear': 0,
+    'bicubic': 1,
+    'neighbor': 2,
+    'budget':3,
+    'spectral':4,
+    'neighbor-budget':6
+}
 
 _AUTO_NANS = True
+_GZIP_HEADER = b"\x1f\x8b"
 
 _latlon_datastore = dict()
 _msg_class_store = dict()
@@ -112,7 +122,12 @@ class open():
                  '_pos', 'closed', 'current_message', 'messages', 'mode',
                  'name', 'size')
 
-    def __init__(self, filename: str, mode: Literal["r", "w", "x"] = "r", **kwargs):
+    def __init__(
+        self,
+        filename: Union[bytes, str, Path],
+        mode: Literal["r", "w", "x"] = "r",
+        **kwargs,
+        ):
         """
         Initialize GRIB2 File object instance.
 
@@ -120,6 +135,8 @@ class open():
         ----------
         filename
             File name containing GRIB2 messages.
+            OR
+            bytes
         mode: default="r"
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
@@ -138,33 +155,44 @@ class open():
             mode += "+"
         mode = mode + "b"
 
+        if isinstance(filename, bytes):
+            if filename[:2] == _GZIP_HEADER:
+                filename = gzip.decompress(filename)
+            if filename[:4]+filename[-4:] != b'GRIB7777':
+                raise ValueError("Invalid GRIB bytes")
+            self._filehandle = BytesIO(filename)
+            self.name = "<in-memory-file>"
+            self.size = len(filename)
+            self._fileid = hashlib.sha1((self.name+str(self.size)).encode('ASCII')).hexdigest()
+
         # Some GRIB2 files are gzipped, so check for that here, but
         # raise error when using xarray backend.
-        if 'r' in mode:
-            self._filehandle = builtins.open(filename, mode=mode)
-            # Gzip files contain a 2-byte header b'\x1f\x8b'.
-            if self._filehandle.read(2) == b'\x1f\x8b':
-                self._filehandle.close()
-                if kwargs["_xarray_backend"]:
-                    raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
-                import gzip
-                self._filehandle = gzip.open(filename, mode=mode)
+        else:
+            if 'r' in mode:
+                self._filehandle = builtins.open(filename, mode=mode)
+                # Gzip files contain a 2-byte header b'\x1f\x8b'.
+                if self._filehandle.read(2) == _GZIP_HEADER:
+                    self._filehandle.close()
+                    if kwargs["_xarray_backend"]:
+                        raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
+                    self._filehandle = gzip.open(filename, mode=mode)
+                else:
+                    self._filehandle = builtins.open(filename, mode=mode)
             else:
                 self._filehandle = builtins.open(filename, mode=mode)
-        else:
-            self._filehandle = builtins.open(filename, mode=mode)
+                self.name = os.path.abspath(filename)
+            self.name = os.path.abspath(filename)
+            fstat = os.stat(self.name)
+            self.size = fstat.st_size
+            self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
+                                     str(self.size)).encode('ASCII')).hexdigest()
 
-        self.name = os.path.abspath(filename)
-        fstat = os.stat(self.name)
         self._hasindex = False
         self._index = {}
         self.mode = mode
         self.messages = 0
         self.current_message = 0
-        self.size = fstat.st_size
         self.closed = self._filehandle.closed
-        self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
-                                     str(self.size)).encode('ASCII')).hexdigest()
         if 'r' in self.mode:
             self._build_index()
         # FIX: Cannot perform reads on mode='a'
