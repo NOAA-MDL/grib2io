@@ -1,5 +1,6 @@
 """GRIB2 section templates classes and metadata descriptor classes."""
 from dataclasses import dataclass, field
+from decimal import Decimal
 from collections import defaultdict
 from typing import Union
 import copy
@@ -205,7 +206,7 @@ class Day:
         rd[2] = value
         # Test validity of datetime values
         _ = datetime.datetime(*rd)
-        #obj.section1[7] = value
+        obj.section1[7] = value
 
 class Hour:
     """Hour of reference time"""
@@ -352,7 +353,7 @@ class EarthParams:
 class DxSign:
     """Sign of Grid Length in X-Direction"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,203,205,32768,32769} and \
+        if obj.section3[4] in {0, 1, 203, 205, 32768, 32769} and \
         obj.section3[17] > obj.section3[20]:
             return -1.0
         return 1.0
@@ -362,7 +363,7 @@ class DxSign:
 class DySign:
     """Sign of Grid Length in Y-Direction"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,203,205,32768,32769} and \
+        if obj.section3[4] in {0, 1, 203, 205, 32768, 32769} and \
         obj.section3[16] > obj.section3[19]:
             return -1.0
         return 1.0
@@ -372,7 +373,7 @@ class DySign:
 class LLScaleFactor:
     """Scale Factor for Lats/Lons"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
+        if obj.section3[4] in {0, 1, 40, 41, 203, 205, 32768, 32769}:
             llscalefactor = float(obj.section3[14])
             if llscalefactor == 0:
                 return 1
@@ -384,7 +385,7 @@ class LLScaleFactor:
 class LLDivisor:
     """Divisor Value for scaling Lats/Lons"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
+        if obj.section3[4] in {0, 1, 40, 41, 203, 205, 32768, 32769}:
             lldivisor = float(obj.section3[15])
             if lldivisor <= 0:
                 return 1.e6
@@ -396,7 +397,7 @@ class LLDivisor:
 class XYDivisor:
     """Divisor Value for scaling grid lengths"""
     def __get__(self, obj, objtype=None):
-        if obj.section3[4] in {0,1,40,41,203,205,32768,32769}:
+        if obj.section3[4] in {0, 1, 40, 41, 203, 205, 32768, 32769}:
             return obj._lldivisor
         return 1.e3
     def __set__(self, obj, value):
@@ -729,6 +730,7 @@ class GridDefinitionTemplate1:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -747,6 +749,7 @@ class GridDefinitionTemplate10:
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -764,6 +767,7 @@ class GridDefinitionTemplate20:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     projectionCenterFlag: list = field(init=False, repr=False, default=ProjectionCenterFlag())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -785,6 +789,7 @@ class GridDefinitionTemplate30:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     projParameters: dict = field(init=False, repr=False, default=ProjParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -805,6 +810,7 @@ class GridDefinitionTemplate31:
     standardLatitude2: float = field(init=False, repr=False, default=StandardLatitude2())
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -821,6 +827,7 @@ class GridDefinitionTemplate40:
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     numberOfParallels: int = field(init=False, repr=False, default=NumberOfParallels())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -840,6 +847,7 @@ class GridDefinitionTemplate41:
     latitudeSouthernPole: float = field(init=False, repr=False, default=LatitudeSouthernPole())
     longitudeSouthernPole: float = field(init=False, repr=False, default=LongitudeSouthernPole())
     anglePoleRotation: float = field(init=False, repr=False, default=AnglePoleRotation())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -850,6 +858,7 @@ class GridDefinitionTemplate50:
     _len = 5
     _num = 50
     spectralFunctionParameters: list = field(init=False, repr=False, default=SpectralFunctionParameters())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -865,6 +874,7 @@ class GridDefinitionTemplate32768:
     longitudeCenterGridpoint: float = field(init=False, repr=False, default=LongitudeCenterGridpoint())
     gridlengthXDirection: float = field(init=False, repr=False, default=GridlengthXDirection())
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -882,6 +892,7 @@ class GridDefinitionTemplate32769:
     gridlengthYDirection: float = field(init=False, repr=False, default=GridlengthYDirection())
     latitudeLastGridpoint: float = field(init=False, repr=False, default=LatitudeLastGridpoint())
     longitudeLastGridpoint: float = field(init=False, repr=False, default=LongitudeLastGridpoint())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -1039,7 +1050,6 @@ class ShortName:
 class TypeOfGeneratingProcess:
     """[Type of Generating Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-3.shtml)"""
     _key = defaultdict(lambda: 2, {48:13})
-    #_key = {0:2, 1:2, 2:2, 5:2, 6:2, 8:2, 9:2, 10:2, 11:2, 12:2, 15:2, 48:13}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.3')
     def __set__(self, obj, value):
@@ -1048,7 +1058,6 @@ class TypeOfGeneratingProcess:
 class BackgroundGeneratingProcessIdentifier:
     """Background Generating Process Identifier"""
     _key = defaultdict(lambda: 3, {48:14})
-    #_key = {0:3, 1:3, 2:3, 5:3, 6:3, 8:3, 9:3, 10:3, 11:3, 12:3, 15:3, 48:14}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1057,7 +1066,6 @@ class BackgroundGeneratingProcessIdentifier:
 class GeneratingProcess:
     """[Generating Process](https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablea.html)"""
     _key = defaultdict(lambda: 4, {48:15})
-    #_key = {0:4, 1:4, 2:4, 5:4, 6:4, 8:4, 9:4, 10:4, 11:4, 12:4, 15:4, 48:15}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='generating_process')
     def __set__(self, obj, value):
@@ -1082,7 +1090,6 @@ class MinutesAfterDataCutoff:
 class UnitOfForecastTime:
     """[Units of Forecast Time](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-4.shtml)"""
     _key = defaultdict(lambda: 7, {48:18})
-    #_key = {0:7, 1:7, 2:7, 5:7, 6:7, 8:7, 9:7, 10:7, 11:7, 12:7, 15:7, 48:18}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.4')
     def __set__(self, obj, value):
@@ -1123,7 +1130,6 @@ class LeadTime:
 class FixedSfc1Info:
     """Information of the first fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 9, {48:20})
-    #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
         if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
@@ -1134,7 +1140,6 @@ class FixedSfc1Info:
 class FixedSfc2Info:
     """Information of the second fixed surface via [table 4.5](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 12, {48:23})
-    #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
         if obj.section4[self._key[obj.pdtn]+2] == 255:
             return [None, None]
@@ -1145,7 +1150,6 @@ class FixedSfc2Info:
 class TypeOfFirstFixedSurface:
     """[Type of First Fixed Surface](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 9, {48:20})
-    #_key = {0:9, 1:9, 2:9, 5:9, 6:9, 8:9, 9:9, 10:9, 11:9, 12:9, 15:9, 48:20}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
@@ -1154,7 +1158,6 @@ class TypeOfFirstFixedSurface:
 class ScaleFactorOfFirstFixedSurface:
     """Scale Factor of First Fixed Surface"""
     _key = defaultdict(lambda: 10, {48:21})
-    #_key = {0:10, 1:10, 2:10, 5:10, 6:10, 8:10, 9:10, 10:10, 11:10, 12:10, 15:10, 48:21}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1163,7 +1166,6 @@ class ScaleFactorOfFirstFixedSurface:
 class ScaledValueOfFirstFixedSurface:
     """Scaled Value Of First Fixed Surface"""
     _key = defaultdict(lambda: 11, {48:22})
-    #_key = {0:11, 1:11, 2:11, 5:11, 6:11, 8:11, 9:11, 10:11, 11:11, 12:11, 15:11, 48:22}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1181,16 +1183,15 @@ class ValueOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfFirstFixedSurface")
         scaled_value = getattr(obj, "scaledValueOfFirstFixedSurface")
-        return scaled_value / (10.**scale_factor)
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
-        scale = _calculate_scale_factor(value)
-        setattr(obj, "scaleFactorOfFirstFixedSurface", scale)
-        setattr(obj, "scaledValueOfFirstFixedSurface", value * 10**scale)
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfFirstFixedSurface", scale_factor)
+        setattr(obj, "scaledValueOfFirstFixedSurface", scaled_value)
 
 class TypeOfSecondFixedSurface:
     """[Type of Second Fixed Surface](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-5.shtml)"""
     _key = defaultdict(lambda: 12, {48:23})
-    #_key = {0:12, 1:12, 2:12, 5:12, 6:12, 8:12, 9:12, 10:12, 11:12, 12:12, 15:12, 48:23}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.5')
     def __set__(self, obj, value):
@@ -1199,7 +1200,6 @@ class TypeOfSecondFixedSurface:
 class ScaleFactorOfSecondFixedSurface:
     """Scale Factor of Second Fixed Surface"""
     _key = defaultdict(lambda: 13, {48:24})
-    #_key = {0:13, 1:13, 2:13, 5:13, 6:13, 8:13, 9:13, 10:13, 11:13, 12:13, 15:13, 48:24}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1208,7 +1208,6 @@ class ScaleFactorOfSecondFixedSurface:
 class ScaledValueOfSecondFixedSurface:
     """Scaled Value Of Second Fixed Surface"""
     _key = defaultdict(lambda: 14, {48:25})
-    #_key = {0:14, 1:14, 2:14, 5:14, 6:14, 8:14, 9:14, 10:14, 11:14, 12:14, 15:14, 48:25}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1226,11 +1225,11 @@ class ValueOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfSecondFixedSurface")
         scaled_value = getattr(obj, "scaledValueOfSecondFixedSurface")
-        return scaled_value / (10.**scale_factor)
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
-        scale = _calculate_scale_factor(value)
-        setattr(obj, "scaleFactorOfSecondFixedSurface", scale)
-        setattr(obj, "scaledValueOfSecondFixedSurface", value * 10**scale)
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfSecondFixedSurface", scale_factor)
+        setattr(obj, "scaledValueOfSecondFixedSurface", scaled_value)
 
 class Level:
     """Level (same as provided by [wgrib2](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Level.c))"""
@@ -1356,11 +1355,11 @@ class ThresholdLowerLimit:
         scaled_value = getattr(obj, "scaledValueOfThresholdLowerLimit")
         if scale_factor == -127 and scaled_value == 255:
             return 0.0
-        return scaled_value / (10.**scale_factor)
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
-        scale = _calculate_scale_factor(value)
-        setattr(obj, "scaleFactorOfThresholdLowerLimit", scale)
-        setattr(obj, "scaledValueOfThresholdLowerLimit", value * 10**scale)
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfThresholdLowerLimit", scale_factor)
+        setattr(obj, "scaledValueOfThresholdLowerLimit", scaled_value)
 
 class ThresholdUpperLimit:
     """Threshold Upper Limit"""
@@ -1369,11 +1368,11 @@ class ThresholdUpperLimit:
         scaled_value = getattr(obj, "scaledValueOfThresholdUpperLimit")
         if scale_factor == -127 and scaled_value == 255:
             return 0.0
-        return scaled_value / (10.**scale_factor)
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
-        scale = _calculate_scale_factor(value)
-        setattr(obj, "scaleFactorOfThresholdUpperLimit", scale)
-        setattr(obj, "scaledValueOfThresholdUpperLimit", value * 10**scale)
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfThresholdUpperLimit", scale_factor)
+        setattr(obj, "scaledValueOfThresholdUpperLimit", scaled_value)
 
 class Threshold:
     """Threshold string (same as [wgrib2](https://github.com/NOAA-EMC/NCEPLIBS-wgrib2/blob/develop/wgrib2/Prob.c))"""
@@ -1753,6 +1752,17 @@ class ScaledValueOfCentralWaveNumber:
     def __set__(self, obj, value):
         pass
 
+class CetralWaveNumber:
+    """Central WaveNumber of band NB"""
+    def __get__(self, obj, objtype=None):
+        scale_factor = getattr(obj, "scaleFactorOfCentralWaveNumber")
+        scaled_value = getattr(obj, "scaledValueOfCentralWaveNumber")
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+    def __set__(self, obj, value):
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfCentralWaveNumber", scale_factor)
+        setattr(obj, "scaledValueOfCentralWaveNumber", scaled_value)
+
 class TypeOfAerosol:
     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
     _key = {46:2, 48:2}
@@ -1785,6 +1795,17 @@ class ScaledValueOfFirstSize:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
+class FirstSizeOfAerosol:
+    """First size of Aerosol"""
+    def __get__(self, obj, objtype=None):
+        scale_factor = getattr(obj, "scaleFactorOfFirstSize")
+        scaled_value = getattr(obj, "scaledValueOfFirstSize")
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+    def __set__(self, obj, value):
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfFirstSize", scale_factor)
+        setattr(obj, "scaledValueOfFirstSize", scaled_value)
+
 class ScaleFactorOfSecondSize:
     """Scale Factor of Second Size"""
     _key = {46:6, 48:6}
@@ -1800,6 +1821,17 @@ class ScaledValueOfSecondSize:
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
+
+class SecondSizeOfAerosol:
+    """Second size of Aerosol"""
+    def __get__(self, obj, objtype=None):
+        scale_factor = getattr(obj, "scaleFactorOfSecondSize")
+        scaled_value = getattr(obj, "scaledValueOfSecondSize")
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+    def __set__(self, obj, value):
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfSecondSize", scale_factor)
+        setattr(obj, "scaledValueOfSecondSize", scaled_value)
 
 class TypeOfIntervalForAerosolWavelength:
     """[Type of Interval for Aerosol Wavelength](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-91.shtml)"""
@@ -1825,6 +1857,17 @@ class ScaledValueOfFirstWavelength:
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
 
+class FirstWavelength:
+    """First Wavelength"""
+    def __get__(self, obj, objtype=None):
+        scale_factor = getattr(obj, "scaleFactorOfFirstWavelength")
+        scaled_value = getattr(obj, "scaledValueOfFirstWavelength")
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+    def __set__(self, obj, value):
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfFirstWavelength", scale_factor)
+        setattr(obj, "scaledValueOfFirstWavelength", scaled_value)
+
 class ScaleFactorOfSecondWavelength:
     """Scale Factor of Second Wavelength"""
     _key = {48:11}
@@ -1840,6 +1883,17 @@ class ScaledValueOfSecondWavelength:
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
         obj.section4[self._key[obj.pdtn]+2] = value
+
+class SecondWavelength:
+    """Second Wavelength"""
+    def __get__(self, obj, objtype=None):
+        scale_factor = getattr(obj, "scaleFactorOfSecondWavelength")
+        scaled_value = getattr(obj, "scaledValueOfSecondWavelength")
+        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+    def __set__(self, obj, value):
+        scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
+        setattr(obj, "scaleFactorOfSecondWavelength", scale_factor)
+        setattr(obj, "scaledValueOfSecondWavelength", scaled_value)
 
 class SourceSinkIndicator:
     """[Source/Sink Indicator](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-238.shtml)"""
@@ -1913,6 +1967,7 @@ class ProductDefinitionTemplateBase:
     minutesAfterDataCutoff: int = field(init=False,repr=False,default=MinutesAfterDataCutoff())
     unitOfForecastTime: Grib2Metadata = field(init=False,repr=False,default=UnitOfForecastTime())
     valueOfForecastTime: int = field(init=False,repr=False,default=ValueOfForecastTime())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1932,6 +1987,7 @@ class ProductDefinitionTemplateSurface:
     valueOfFirstFixedSurface: int = field(init=False,repr=False,default=ValueOfFirstFixedSurface())
     unitOfSecondFixedSurface: str = field(init=False,repr=False,default=UnitOfSecondFixedSurface())
     valueOfSecondFixedSurface: int = field(init=False,repr=False,default=ValueOfSecondFixedSurface())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1941,6 +1997,7 @@ class ProductDefinitionTemplate0(ProductDefinitionTemplateBase,ProductDefinition
     """[Product Definition Template 0](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-0.shtml)"""
     _len = 15
     _num = 0
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1953,6 +2010,7 @@ class ProductDefinitionTemplate1(ProductDefinitionTemplateBase,ProductDefinition
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1964,6 +2022,7 @@ class ProductDefinitionTemplate2(ProductDefinitionTemplateBase,ProductDefinition
     _num = 2
     typeOfDerivedForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfDerivedForecast())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1983,6 +2042,7 @@ class ProductDefinitionTemplate5(ProductDefinitionTemplateBase,ProductDefinition
     thresholdLowerLimit: float = field(init=False, repr=False, default=ThresholdLowerLimit())
     thresholdUpperLimit: float = field(init=False, repr=False, default=ThresholdUpperLimit())
     threshold: str = field(init=False, repr=False, default=Threshold())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -1993,6 +2053,7 @@ class ProductDefinitionTemplate6(ProductDefinitionTemplateBase,ProductDefinition
     _len = 16
     _num = 6
     percentileValue: int = field(init=False, repr=False, default=PercentileValue())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2016,6 +2077,7 @@ class ProductDefinitionTemplate8(ProductDefinitionTemplateBase,ProductDefinition
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2049,6 +2111,7 @@ class ProductDefinitionTemplate9(ProductDefinitionTemplateBase,ProductDefinition
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2073,6 +2136,7 @@ class ProductDefinitionTemplate10(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2099,6 +2163,7 @@ class ProductDefinitionTemplate11(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2124,6 +2189,7 @@ class ProductDefinitionTemplate12(ProductDefinitionTemplateBase,ProductDefinitio
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2141,6 +2207,7 @@ class ProductDefinitionTemplate13(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2158,6 +2225,7 @@ class ProductDefinitionTemplate14(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2170,6 +2238,7 @@ class ProductDefinitionTemplate15(ProductDefinitionTemplateBase,ProductDefinitio
     statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2205,6 +2274,7 @@ class ProductDefinitionTemplate31:
     instrumentType: list = field(init=False,repr=False,default=InstrumentType())
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2220,6 +2290,7 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
     instrumentType: list = field(init=False,repr=False,default=InstrumentType())
     scaleFactorOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaleFactorOfCentralWaveNumber())
     scaledValueOfCentralWaveNumber: list = field(init=False,repr=False,default=ScaledValueOfCentralWaveNumber())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
@@ -2301,25 +2372,6 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
 #     numberOfTimeRange: int = field(init=False,repr=False,default=NumberOfTimeRange())
 #     numberOfMissingInStatisticalProcess: int = field(init=False,repr=False,default=NumberOfMissingInStatisticalProcess())@dataclass(init=False)
 
-@dataclass(init=False)
-class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitionTemplateSurface):
-    """[Product Definition Template 48](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-48.shtml)"""
-    _len = 26
-    _num = 48
-    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
-    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
-    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
-    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
-    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
-    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
-    typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
-    scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
-    scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
-    scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
-    scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
-    @classmethod
-    def _attrs(cls):
-        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
 
 @dataclass(init=False)
 class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2332,8 +2384,11 @@ class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
+
     # Time interval parameters
     yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
     monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
@@ -2343,6 +2398,7 @@ class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefiniti
     secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
     numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
     numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+
     # Statistical processing parameters
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
@@ -2351,10 +2407,10 @@ class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
-
 
 
 @dataclass(init=False)
@@ -2368,8 +2424,10 @@ class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2385,6 +2443,7 @@ class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefiniti
     secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
     numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
     numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+
     # Statistical processing parameters
     typeOfStatisticalProcessing: Grib2Metadata = field(init=False, repr=False, default=TypeOfStatisticalProcessing())
     numberOfDataPointsForSpatialProcessing: int = field(init=False, repr=False, default=NumberOfDataPointsForSpatialProcessing())
@@ -2393,9 +2452,40 @@ class ProductDefinitionTemplate47(ProductDefinitionTemplateBase, ProductDefiniti
     timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
     @classmethod
     def _attrs(cls):
         return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate48(ProductDefinitionTemplateBase,ProductDefinitionTemplateSurface):
+    """[Product Definition Template 48](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-48.shtml)"""
+    _len = 26
+    _num = 48
+    # Aerosol parameters
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
+
+    # Wavelength parameters
+    typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
+    scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
+    scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
+    scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
+    scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
 
 @dataclass(init=False)
 class ProductDefinitionTemplate49(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2408,15 +2498,19 @@ class ProductDefinitionTemplate49(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2435,15 +2529,19 @@ class ProductDefinitionTemplate80(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
 @dataclass(init=False)
 class ProductDefinitionTemplate81(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
@@ -2457,15 +2555,19 @@ class ProductDefinitionTemplate81(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2484,15 +2586,19 @@ class ProductDefinitionTemplate82(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
    # Time interval parameters
     yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
@@ -2526,15 +2632,19 @@ class ProductDefinitionTemplate83(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2563,15 +2673,19 @@ class ProductDefinitionTemplate84(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2608,15 +2722,19 @@ class ProductDefinitionTemplate85(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
     scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
     scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
     scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
     scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
 
     # Wavelength parameters
     typeOfIntervalForAerosolWavelength: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolWavelength())
     scaleFactorOfFirstWavelength: int = field(init=False, repr=False, default=ScaleFactorOfFirstWavelength())
     scaledValueOfFirstWavelength: int = field(init=False, repr=False, default=ScaledValueOfFirstWavelength())
+    firstWavelength: float = field(init=False, repr=False, default=FirstWavelength())
     scaleFactorOfSecondWavelength: int = field(init=False, repr=False, default=ScaleFactorOfSecondWavelength())
     scaledValueOfSecondWavelength: int = field(init=False, repr=False, default=ScaledValueOfSecondWavelength())
+    secondWavelength: float = field(init=False, repr=False, default=SecondWavelength())
 
     # Ensemble parameters
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
@@ -2888,6 +3006,7 @@ class DataRepresentationTemplate0:
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2913,6 +3032,7 @@ class DataRepresentationTemplate2:
     groupLengthIncrement: int = field(init=False, repr=False, default=GroupLengthIncrement())
     lengthOfLastGroup: int = field(init=False, repr=False, default=LengthOfLastGroup())
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2940,6 +3060,7 @@ class DataRepresentationTemplate3:
     nBitsScaledGroupLength: int = field(init=False, repr=False, default=NBitsScaledGroupLength())
     spatialDifferenceOrder: Grib2Metadata = field(init=False, repr=False, default=SpatialDifferenceOrder())
     nBytesSpatialDifference: int = field(init=False, repr=False, default=NBytesSpatialDifference())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2951,6 +3072,7 @@ class DataRepresentationTemplate4:
     _num = 4
     _packingScheme = 'ieee-float'
     precision: Grib2Metadata = field(init=False, repr=False, default=Precision())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2967,6 +3089,7 @@ class DataRepresentationTemplate40:
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     typeOfCompression: Grib2Metadata = field(init=False, repr=False, default=TypeOfCompression())
     targetCompressionRatio: int = field(init=False, repr=False, default=TargetCompressionRatio())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2981,6 +3104,7 @@ class DataRepresentationTemplate41:
     binScaleFactor: int = field(init=False, repr=False, default=BinScaleFactor())
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -2998,6 +3122,7 @@ class DataRepresentationTemplate42:
     compressionOptionsMask: int = field(init=False, repr=False, default=CompressionOptionsMask())
     blockSize: int = field(init=False, repr=False, default=BlockSize())
     refSampleInterval: int = field(init=False, repr=False, default=RefSampleInterval())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())
@@ -3013,6 +3138,7 @@ class DataRepresentationTemplate50:
     decScaleFactor: int = field(init=False, repr=False, default=DecScaleFactor())
     nBitsPacking: int = field(init=False, repr=False, default=NBitsPacking())
     realOfCoefficient: float = field(init=False, repr=False, default=RealOfCoefficient())
+
     @classmethod
     def _attrs(cls):
         return list(cls.__dataclass_fields__.keys())

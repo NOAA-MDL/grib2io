@@ -40,6 +40,7 @@ Optionally (but recommended), grib2io supports spatial interpolation via its int
 * [Python](https://python.org) 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
 * [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
 * setuptools 34.0+
+* Cython 3.0+
 * NumPy 1.22+
 * pyproj 1.9.6+
 * C compiler: GNU, Intel, and Apple Clang have been tested.
