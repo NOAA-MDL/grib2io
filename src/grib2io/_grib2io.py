@@ -37,11 +37,14 @@ The following Jupyter Notebooks are available as tutorials:
 """
 
 from dataclasses import dataclass, field
+from io import BytesIO
+from pathlib import Path
 from typing import Literal, Optional, Union
 import builtins
 import collections
 import copy
 import datetime
+import gzip
 import hashlib
 import os
 import re
@@ -57,8 +60,6 @@ from . import g2clib
 from . import tables
 from . import templates
 from . import utils
-from io import BytesIO
-import gzip
 
 DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e+36
@@ -66,10 +67,17 @@ DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 TYPE_OF_VALUES_DTYPE = ('float32','int32')
 
-_interp_schemes = {'bilinear':0, 'bicubic':1, 'neighbor':2,
-                   'budget':3, 'spectral':4, 'neighbor-budget':6}
+_interp_schemes = {
+    'bilinear': 0,
+    'bicubic': 1,
+    'neighbor': 2,
+    'budget':3,
+    'spectral':4,
+    'neighbor-budget':6
+}
 
 _AUTO_NANS = True
+_GZIP_HEADER = b"\x1f\x8b"
 
 _latlon_datastore = dict()
 _msg_class_store = dict()
@@ -114,7 +122,12 @@ class open():
                  '_pos', 'closed', 'current_message', 'messages', 'mode',
                  'name', 'size')
 
-    def __init__(self, filename, mode: Literal["r", "w", "x"] = "r", **kwargs):
+    def __init__(
+        self,
+        filename: Union[bytes, str, Path],
+        mode: Literal["r", "w", "x"] = "r",
+        **kwargs,
+        ):
         """
         Initialize GRIB2 File object instance.
 
@@ -142,13 +155,13 @@ class open():
             mode += "+"
         mode = mode + "b"
 
-        if isinstance(filename,bytes):
-            if filename[:2] == b'\x1f\x8b':
+        if isinstance(filename, bytes):
+            if filename[:2] == _GZIP_HEADER:
                 filename = gzip.decompress(filename)
             if filename[:4]+filename[-4:] != b'GRIB7777':
                 raise ValueError("Invalid GRIB bytes")
             self._filehandle = BytesIO(filename)
-            self.name = 'in-mem-file'
+            self.name = "<in-memory-file>"
             self.size = len(filename)
             self._fileid = hashlib.sha1((self.name+str(self.size)).encode('ASCII')).hexdigest()
 
@@ -158,7 +171,7 @@ class open():
             if 'r' in mode:
                 self._filehandle = builtins.open(filename, mode=mode)
                 # Gzip files contain a 2-byte header b'\x1f\x8b'.
-                if self._filehandle.read(2) == b'\x1f\x8b':
+                if self._filehandle.read(2) == _GZIP_HEADER:
                     self._filehandle.close()
                     if kwargs["_xarray_backend"]:
                         raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
