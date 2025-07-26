@@ -5,13 +5,62 @@ of GRIB2 Messages.
 
 import datetime
 import struct
-from typing import Union, Type, Dict, List
+from decimal import Decimal, localcontext
+from typing import Dict, List, Optional, Type, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
 
 from .. import tables
 from .. import templates
+
+
+def decimal_to_scaled_int(
+    value: Union[float, str, int],
+    scale_factor: Optional[int] = None,
+) -> tuple[int, int]:
+    """
+    Convert a float-like value to a scaled integer using the minimal decimal scaling factor.
+
+    The input value is internally converted to a `Decimal` to ensure precise scaling.
+
+    Parameters
+    ----------
+    value : float, str, or int
+        The numeric value to scale.
+    scaled_value : int
+        The integer result of scaling the original value by `10**scale_factor`.
+
+    Returns
+    -------
+    scale_factor : int
+        The smallest power of 10 such that `value * 10**scale_factor` is an exact integer.
+    scaled_value : int
+        The integer result of scaling the original value by `10**scale_factor`.
+    """
+    dec_value = Decimal(str(value))  # Preserve exact decimal representation
+
+    with localcontext() as ctx:
+        ctx.prec = 28
+
+        if scale_factor is not None:
+            scaled = dec_value * (10 ** scale_factor)
+            if scaled != scaled.to_integral_value():
+                raise ValueError(
+                    f"Value {value} cannot be exactly scaled by 10^{scale_factor}"
+                )
+            return scale_factor, int(scaled)
+        else:
+            scale_factor = 0
+            while dec_value != dec_value.to_integral_value():
+                dec_value *= 10
+                scale_factor += 1
+                if scale_factor > 20:
+                    raise ValueError(
+                        f"Could not find exact scale factor for value {value} within bounds."
+                    )
+            return scale_factor, int(dec_value)
+
 
 def int2bin(i: int, nbits: int=8, output: Union[Type[str], Type[List]]=str):
     """
