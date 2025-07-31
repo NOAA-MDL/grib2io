@@ -1363,7 +1363,12 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     # Use a safer approach to handle missing attributes
     def safe_getattr(obj, name):
         try:
-            return getattr(obj, name)
+            attr = getattr(obj, name)
+            # Need to test if the attribute is Grib2Metadata. If so,
+            # then get the value attribute.
+            if isinstance(attr, grib2io.templates.Grib2Metadata):
+                attr = attr.value
+            return attr
         except (AttributeError, KeyError):
             return None
 

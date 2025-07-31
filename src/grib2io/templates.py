@@ -71,39 +71,54 @@ class Grib2Metadata:
         Plain language description of numeric metadata.
     """
     __slots__ = ('value','table')
+
     def __init__(self, value, table=None):
         self.value = int(value)
         self.table = table
+
     def __call__(self):
         return self.value
+
     def __hash__(self):
         # AS- added hash() to self.value as pandas was raising error about some
         # non integer returns from hash method
         return hash(self.value)
+
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
+
     def __str__(self):
         return f'{self.value} - {self.definition}'
+
     def __eq__(self,other):
         return self.value == other or self.definition[0] == other
+
     def __gt__(self,other):
         return self.value > other
+
     def __ge__(self,other):
         return self.value >= other
+
     def __lt__(self,other):
         return self.value < other
+
     def __le__(self,other):
         return self.value <= other
+
     def __contains__(self,other):
         return other in self.definition
+
     def __hash__(self):
         return hash(self.value)
+
     def __index__(self):
         return int(self.value)
+
     @property
     def definition(self):
         """Provide the definition of the numeric metadata."""
         return tables.get_value_from_table(self.value,self.table)
+
     def show_table(self):
         """Provide the table related to this metadata."""
         return tables.get_table(self.table)
