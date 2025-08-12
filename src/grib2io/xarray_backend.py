@@ -140,6 +140,9 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
         # assign coords from the cube; the cube prevents datarrays with
         # different shapes
+        print(f"TEST: In open_dataset(), before assign coords....")
+        print(f"TEST: {ds = }")
+        print(f"TEST: {cube.coords(df=var_df) = }")
         ds = ds.assign_coords(cube.coords(df=var_df))
         # assign extra geo coords
         ds = ds.assign_coords(extra_geo)
@@ -737,6 +740,10 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
             "It's possible extra messages exist along a non-accounted for dimension based on PDTN\n"
             "It might be possible to get around this by applying a filter on the non-accounted for dimension"
             )
+    print(f"TEST: RIGHT BEFORE DATA ARRAY CREATION....")
+    print(f"\n{dim_names = }")
+    print(f"\n{data.shape = }")
+    print(f"\n\n")
     da = xr.DataArray(data, dims=dim_names)
 
     print(f"TEST: {da = }")
@@ -813,7 +820,7 @@ def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
             return dc_eq(self, other)
 
     #ordered_meta = [n for n in list(DimCube.__dataclass_fields__.keys()) if n != '_coords']
-    #print(f"TEST: {ordered_meta = }")
+    #print(f"TEST: IN make_variables(), just AFTER class DimCube definition, {ordered_meta = }")
     cube = None
     ordered_frames = list()
     for key in index.index.unique():
@@ -832,6 +839,7 @@ def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
             dname = list(obj.__dataclass_fields__.keys())[-1]
             ordered_meta.append(dname)
             ordered_coords[dname] = crds
+        ordered_meta.reverse()
         print(f"TEST: {ordered_meta = }")
         print(f"TEST: {ordered_coords = }")
         #TEST
