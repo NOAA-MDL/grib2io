@@ -11,6 +11,7 @@ import logging
 import typing
 from warnings import warn
 from collections import defaultdict
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -580,7 +581,7 @@ def parse_grib_index(
         index = index.assign(refDate=index.msg.apply(lambda msg: msg.refDate))
     @dataclass(init=False)
     class RefDateDim:
-        _coords: tuple[str, ...] = field(default=tuple(['refDate']), init=False)
+        _coords: Tuple[str, ...] = field(default=tuple(['refDate']), init=False)
         refDate: pd.Index = PdIndex()
     non_geo_dims.append(RefDateDim)
 
@@ -590,7 +591,7 @@ def parse_grib_index(
         index = index.assign(leadTime=index.msg.apply(lambda msg: msg.leadTime))
     @dataclass(init=False)
     class LeadTimeDim:
-        _coords: tuple[str, ...] = field(default=tuple(['leadTime']), init=False)
+        _coords: Tuple[str, ...] = field(default=tuple(['leadTime']), init=False)
         leadTime: pd.Index = PdIndex()
     non_geo_dims.append(LeadTimeDim)
 
@@ -598,7 +599,7 @@ def parse_grib_index(
         index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
     @dataclass(init=False)
     class ValueOfFirstFixedSurfaceDim:
-        _coords: tuple[str, ...] = field(default=tuple(['valueOfFirstFixedSurface']), init=False)
+        _coords: Tuple[str, ...] = field(default=tuple(['valueOfFirstFixedSurface']), init=False)
         valueOfFirstFixedSurface: pd.Index = PdIndex()
     non_geo_dims.append(ValueOfFirstFixedSurfaceDim)
 
@@ -638,7 +639,7 @@ def parse_grib_index(
 
         @dataclass(init=False)
         class ThresholdDim:
-            _coords: tuple[str, ...] = field(default=tuple(['thresholdLowerLimit', 'thresholdUpperLimit']), init=False)
+            _coords: Tuple[str, ...] = field(default=tuple(['thresholdLowerLimit', 'thresholdUpperLimit']), init=False)
             threshold: pd.Index = PdIndex()
         non_geo_dims.append(ThresholdDim)
         
@@ -651,7 +652,7 @@ def parse_grib_index(
 
         @dataclass(init=False)
         class PercentileValueDim:
-            _coords: tuple[str, ...] = field(default=tuple(['percentileValue']), init=False)
+            _coords: Tuple[str, ...] = field(default=tuple(['percentileValue']), init=False)
             percentileValue: pd.Index = PdIndex()
         non_geo_dims.append(PercentileValueDim)
 
@@ -661,7 +662,7 @@ def parse_grib_index(
 
         @dataclass(init=False)
         class DurationDim:
-            _coords: tuple[str, ...] = field(default=tuple(['duration']), init=False)
+            _coords: Tuple[str, ...] = field(default=tuple(['duration']), init=False)
             duration: pd.Index = PdIndex()
         non_geo_dims.append(DurationDim)
 
@@ -670,7 +671,7 @@ def parse_grib_index(
             index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
         @dataclass(init=False)
         class PerturbationNumberDim:
-            _coords: tuple[str, ...] = field(default=tuple(['perturbationNumber']), init=False)
+            _coords: Tuple[str, ...] = field(default=tuple(['perturbationNumber']), init=False)
             perturbationNumber: pd.Index = PdIndex()
         non_geo_dims.append(PerturbationNumberDim)
 
