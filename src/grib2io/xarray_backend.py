@@ -660,19 +660,19 @@ def parse_grib_index(
             index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
 
         @dataclass(init=False)
-        class Duration:
+        class DurationDim:
             _coords: tuple[str, ...] = field(default=tuple(['duration']), init=False)
             duration: pd.Index = PdIndex()
-        non_geo_dims.append(Duration)
+        non_geo_dims.append(DurationDim)
 
     if pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
         if 'perturbationNumber' not in index.columns:
             index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
         @dataclass(init=False)
-        class perturbationNumber:
+        class PerturbationNumberDim:
             _coords: tuple[str, ...] = field(default=tuple(['perturbationNumber']), init=False)
             perturbationNumber: pd.Index = PdIndex()
-        non_geo_dims.append(perturbationNumber)
+        non_geo_dims.append(PerturbationNumberDim)
 
     return index, non_geo_dims
 
@@ -810,6 +810,7 @@ def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
         return None,None,None
 
     # define the DimCube
+    print(f"TEST: IN make_variables(), {non_geo_dims = }")
     dims = copy(non_geo_dims)
     dims.append(Cube)
     dims.reverse()
