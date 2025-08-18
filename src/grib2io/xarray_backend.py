@@ -545,9 +545,9 @@ def parse_grib_index(
     index = index.assign(shortName=index.msg.apply(lambda msg: msg.shortName))
     index = index.assign(nx=index.msg.apply(lambda msg: msg.nx))
     index = index.assign(ny=index.msg.apply(lambda msg: msg.ny))
-    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.typeOfGeneratingProcess))
-    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber))
-    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface))
+    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.typeOfGeneratingProcess.value))
+    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber.value))
+    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface.value))
     index = index.astype({'ny':'int','nx':'int'})
     # apply common filters(to all definition templates) to reduce dataset to
     # single cube
@@ -1629,6 +1629,9 @@ def process_level_branch(level_tree, df, filename):
                                 len(pdtn_df['typeOfProbability'].dropna().unique()) > 1)
             #TEST
 
+            print(f"TEST: LOOK HERE...{pdtn_name = }, {has_perturbations = }, {has_probabilities = }")
+            print(f"\n\n\n{pdtn_df}\n\n\n")
+
             if has_perturbations:
                 # Create a branch for this PDTN
                 pdtn_tree = xr.DataTree()
@@ -1650,22 +1653,29 @@ def process_level_branch(level_tree, df, filename):
                 if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
                     level_tree[pdtn_name] = pdtn_tree
             else:
+                # Create a subtree for this PDTN
+                pdtn_tree = xr.DataTree()
+
+                # Try to separate by variable name as a fallback
+                if try_process_by_variables(pdtn_tree, pdtn_df, filename):
+                    level_tree[pdtn_name] = pdtn_tree
+
                 # For single perturbation case, try to group by variable if needed
-                try:
-                    ds = create_dataset_from_df(pdtn_df, filename)
-                    print(f"TEST: Looping over pdtn_groups...")
-                    print(f"TEST: {ds = }")
-                    if ds is not None:
-                        level_tree[pdtn_name] = ds
-                except Exception as e:
-                    print(f"Error creating dataset for {pdtn_name}: {e}")
+                #try:
+                #    print(f"\nTEST...INSIDE try....")
+                #    ds = create_dataset_from_df(pdtn_df, filename, verbose=True)
+                #    print(f"\nTEST: AFTER create_dataset_from_df, {ds = }")
+                #    if ds is not None:
+                #        level_tree[pdtn_name] = ds
+                #except Exception as e:
+                #    print(f"Error creating dataset for {pdtn_name}: {e}")
 
-                    # Create a subtree for this PDTN
-                    pdtn_tree = xr.DataTree()
+                #    # Create a subtree for this PDTN
+                #    pdtn_tree = xr.DataTree()
 
-                    # Try to separate by variable name as a fallback
-                    if try_process_by_variables(pdtn_tree, pdtn_df, filename):
-                        level_tree[pdtn_name] = pdtn_tree
+                #    # Try to separate by variable name as a fallback
+                #    if try_process_by_variables(pdtn_tree, pdtn_df, filename):
+                #        level_tree[pdtn_name] = pdtn_tree
 
             #TEST
             print(f"TEST: {pdtn_name = }")
@@ -1816,7 +1826,7 @@ def create_dataset_from_df(df, filename, verbose=False):
         # Process each variable separately, regardless of whether there are vertical levels
         for var_name, var_df in df.groupby('shortName'):
             if verbose:
-                print(f"\n  Processing variable: {var_name} with {len(var_df)} messages")
+                print(f"\n  Processing variable: {var_name} with {len(var_df)} messages, with pdtn(s) = {var_df['productDefinitionTemplateNumber'].unique()}")
 
             # Process vertical levels if present
             if 'valueOfFirstFixedSurface' in var_df.columns and len(var_df['valueOfFirstFixedSurface'].unique()) > 1:
