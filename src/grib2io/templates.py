@@ -1198,7 +1198,10 @@ class ValueOfFirstFixedSurface:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfFirstFixedSurface")
         scaled_value = getattr(obj, "scaledValueOfFirstFixedSurface")
-        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+        if scale_factor < 0:
+            return 0.0
+        else:
+            return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
         scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
         setattr(obj, "scaleFactorOfFirstFixedSurface", scale_factor)
@@ -1240,7 +1243,10 @@ class ValueOfSecondFixedSurface:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfSecondFixedSurface")
         scaled_value = getattr(obj, "scaledValueOfSecondFixedSurface")
-        return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
+        if scale_factor < 0:
+            return 0.0
+        else:
+            return float(Decimal(int(scaled_value)) / (10 ** scale_factor))
     def __set__(self, obj, value):
         scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
         setattr(obj, "scaleFactorOfSecondFixedSurface", scale_factor)
