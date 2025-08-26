@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 LOCK = SerializableLock()
 
-AVAILABLE_NON_GEO_DIMS = [
+AVAILABLE_NON_GEO_COORDS = [
     "duration",
     "leadTime",
     "percentileValue",
@@ -52,12 +52,23 @@ AVAILABLE_NON_GEO_DIMS = [
     "thresholdLowerLimit",
     "thresholdUpperLimit",
     "valueOfFirstFixedSurface",
+    "valueOfSecondFixedSurface",
     "aerosolType",
     "scaledValueOfFirstWavelength",
     "scaledValueOfSecondWavelength",
     "scaledValueOfCentralWaveNumber",
     "scaledValueOfFirstSize",
     "scaledValueOfSecondSize"
+]
+
+AVAILABLE_NON_GEO_DIMS = [
+    "duration",
+    "leadTime",
+    "percentileValue",
+    "perturbationNumber",
+    "refDate",
+    "threshold",
+    "level",
 ]
 
 # Use custom table to map numeric level codes to human-readable names
@@ -120,15 +131,11 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # (scalar coord when not dim due to squeeze) parse_grib_index applies
         # filters to index and expands metadata based on product definition
         # template number
-        file_index, non_geo_dims = parse_grib_index(file_index, filters)
+        file_index, dim_coords, attrs = parse_grib_index(file_index, filters)
 
         # Divide up records by variable
-        print(f"TEST: IN open_dataset(), BEFORE calling make_variables()...")
-        frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims)
-        print(f"TEST: IN open_dataset(), AFTER calling make_variables()...")
-        print(f"TEST: {frames = }")
-        print(f"TEST: {cube = }")
-        print(f"TEST: {extra_geo = }")
+        frames, cube, extra_geo = make_variables(file_index, filename, dim_coords)  # have this return var_attrs
+
         # return empty dataset if no data
         if frames is None:
             return xr.Dataset()
@@ -136,23 +143,16 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # create dataframe and add datarrays without any coords
         ds = xr.Dataset()
         for var_df in frames:
-            da = build_da_without_coords(var_df, cube, filename)
+            da = build_da_without_coords(var_df, cube, filename, attrs)
             ds[da.name] = da
 
-        # assign coords from the cube; the cube prevents datarrays with
-        # different shapes
-        print(f"TEST: In open_dataset(), before assign coords....")
-        print(f"TEST: {ds = }")
-        print(f"TEST: {cube.coords(df=var_df) = }")
-        ds = ds.assign_coords(cube.coords(df=var_df))
-        # assign extra geo coords
-        ds = ds.assign_coords(extra_geo)
-        # assign valid date coords
-        ds = ds.assign_coords(dict(validDate=ds.coords['refDate']+ds.coords['leadTime']))
-        # assign attributes
-        ds.attrs['engine'] = 'grib2io'
+        # add coords and dataset meta
+        ds = assign_xr_meta(ds, frames, cube, dim_coords, extra_geo)
+
 
         return ds
+
+
 
     def open_datatree(
         self,
@@ -321,74 +321,58 @@ def dc_eq(dc1, dc2) -> bool:
     return all(array_safe_eq(a1, a2) for a1, a2 in zip(t1, t2))
 
 
-@dataclass(init=False)
-class Cube:
-    y: pd.Index = PdIndex()
-    x: pd.Index = PdIndex()
+#@dataclass(init=False)
+#class Cube:
+#    y: pd.Index = PdIndex()
+#    x: pd.Index = PdIndex()
+#
+#    def __setitem__(self, key, value):
+#        #super().__setitem__(key, value)
+#        setattr(self, key, value)
+#
+#    def __getitem__(self, key):
+#        return getattr(self, key)
+#
+#    def __eq__(self, other):
+#        return dc_eq(self, other)
+#
+#    def __contains__(self, item):
+#        return item in self.__dataclass_fields__.keys()
+#
+#    def coords(self) -> typing.Dict[str, xr.Variable]:
+#        keys = list(self.__dataclass_fields__.keys())
+#        keys.remove('x')
+#        keys.remove('y')
+#        coords = dict()
+#        for k in keys:
+#            if k is not None:
+#                if len(self[k]) > 1:
+#                    coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(grib_name=k))
+#                elif len(self[k]) == 1:
+#                    coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(grib_name=k))
+#        return coords
 
-    def __setitem__(self, key, value):
-        #super().__setitem__(key, value)
-        setattr(self, key, value)
+def coords_from_cube(cube) -> typing.Dict[str, xr.Variable]:
+    keys = list(cube.keys())
+    keys.remove('x')
+    keys.remove('y')
+    coords = dict()
+    for k in keys:
+        if k is not None:
+            if len(cube[k]) > 1:
+                coords[k] = xr.Variable(dims=k, data=cube[k], attrs=dict(grib_name=k))
+            elif len(cube[k]) == 1:
+                coords[k] = xr.Variable(dims=tuple(), data=cube[k][0], attrs=dict(grib_name=k))
+    return coords
 
-    def __getitem__(self, key):
-        return getattr(self, key)
 
-    def __eq__(self, other):
-        return dc_eq(self, other)
-
-    def __contains__(self, item):
-        return item in self.__dataclass_fields__.keys()
-
-    def coords(self, df=None) -> typing.Dict[str, xr.Variable]:
-        """Return a dictionary of coordinate names and DataArrays"""
-        # Ignore "_coords"
-        keys = [k for k in list(self.__dataclass_fields__.keys())]
-        print(f"TEST: In class Cube.coords(), {keys = }")
-        keys = [k for k in list(self.__dataclass_fields__.keys()) if k != "_coords"]
-        print(f"TEST: In class Cube.coords(), {keys = }")
-        keys.remove('x')
-        keys.remove('y')
-        coords = dict()
-        #for k in keys:
-        #    print(f"TEST: k in keys, {k = }")
-        #    print(f"TEST: {type(self[k]) = }")
-        #    if k is not None:
-        #        if len(self[k]) > 1:
-        #            coords[k] = xr.Variable(dims=k, data=self[k], attrs=dict(grib_name=k))
-        #        elif len(self[k]) == 1:
-        #            coords[k] = xr.Variable(dims=tuple(), data=np.array(self[k]).squeeze(), attrs=dict(grib_name=k))
-        dim_coord_mapping = dict()
-        for obj in self.__class__.__mro__:
-            if not obj.__name__.endswith("Dim"): continue
-            obj_name = obj.__name__
-            crds = obj.__dataclass_fields__["_coords"].default
-            dname = list(obj.__dataclass_fields__.keys())[-1]
-            dim_coord_mapping[dname] = crds
-        print(f"TEST: {dim_coord_mapping = }")
-        for dim_name, dim_coords in dim_coord_mapping.items():
-            dim_len = len(self[dim_name])
-            print(f"TEST: In Cube.coords(): {dim_name = }, {dim_coords = }, {dim_len = }")
-            for crd in dim_coords:
-                if crd == dim_name:
-                    data = self[dim_name]
-                else:
-                    if df is None:
-                        data = pd.Index(np.arange(dim_len))
-                    else:
-                        data = df[crd]
-                print(f"\tTEST: {crd = }, {type(data) = }, {data = }")
-                if dim_len > 1:
-                    coords[crd] = xr.Variable(dims=dim_name, data=data, attrs=dict(grib_name=crd))
-                elif dim_len == 1:
-                    coords[crd] = xr.Variable(dims=tuple(), data=np.array(data).squeeze(), attrs=dict(grib_name=crd))
-        return coords
 
 
 @dataclass
 class OnDiskArray:
     file_name: str
     index: pd.DataFrame = field(repr=False)
-    cube: Cube = field(repr=False)
+    cube: dict = field(repr=False)
     shape: typing.Tuple[int, ...] = field(init=False)
     ndim: int = field(init=False)
     geo_ndim: int = field(init=False)
@@ -526,8 +510,10 @@ def parse_grib_index(
     -------
     index
         Modified Pandas DataFrame with added GRIB2 metadata columns.
-    non_geo_dims
+    dim_coords
         List of GRIB2 attributes that will be used for coordinates and/or dimensions.
+    attrs
+        Dict of metadata attributes (non-coordinates, non-geo)
     """
 
     # make a copy of filters, remove filters as they are applied
@@ -541,67 +527,62 @@ def parse_grib_index(
         # allowed to filter to nothing to make empty dataset
         index = filter_index(index, k, v)
 
+    if len(index) == 0:
+        return index, list()
+
+    dim_coords = dict() # key=name of dim, value=list of coord names
+    attrs = dict()
+
     # expand index
     index = index.assign(shortName=index.msg.apply(lambda msg: msg.shortName))
     index = index.assign(nx=index.msg.apply(lambda msg: msg.nx))
     index = index.assign(ny=index.msg.apply(lambda msg: msg.ny))
-    index = index.assign(typeOfGeneratingProcess=index.msg.apply(lambda msg: msg.typeOfGeneratingProcess.value))
-    index = index.assign(productDefinitionTemplateNumber=index.msg.apply(lambda msg: msg.productDefinitionTemplateNumber.value))
-    index = index.assign(typeOfFirstFixedSurface=index.msg.apply(lambda msg: msg.typeOfFirstFixedSurface.value))
     index = index.astype({'ny':'int','nx':'int'})
+
     # apply common filters(to all definition templates) to reduce dataset to
     # single cube
-
     # ensure only one of each of the below exists after filters applied
+    required_uniques = [
+        "productDefinitionTemplateNumber",
+        "typeOfGeneratingProcess",
+        "typeOfFirstFixedSurface",
+        "typeOfSecondFixedSurface",
+               ]
+
+    for var in required_uniques:
+        index = index.assign(**{var: index.msg.apply(lambda msg: getattr(msg, var))})
+
+        unique = index[var].unique()
+        if len(index[var].unique()) > 1:
+            raise ValueError(f'filter to a single {var}; found: {[str(i) for i in unique]}')
+        value = unique.item()
+        if type(value) == grib2io.templates.Grib2Metadata:
+            value = value.definition
+        attrs[var] = value
+
     unique_pdtn = index.productDefinitionTemplateNumber.unique()
-    if len(index.productDefinitionTemplateNumber.unique()) > 1:
-        raise ValueError(f'filter to a single productDefinitionTemplateNumber; found: {[str(i) for i in unique_pdtn]}')
-    if len(index) == 0:
-        return index, list()
     pdtn = unique_pdtn[0]
 
-    unique = index.typeOfGeneratingProcess.unique()
-    if len(index.typeOfGeneratingProcess.unique()) > 1:
-        raise ValueError(f'filter to a single typeOfGeneratingProcess; found: {[str(i) for i in unique]}')
-
-    unique = index.typeOfFirstFixedSurface.unique()
-    if len(index.typeOfFirstFixedSurface.unique()) > 1:
-        raise ValueError(f'filter to a single typeOfFirstFixedSurface; found: {[str(i) for i in unique]}')
 
     # determine which non geo dimensions can be created from data by this point
-    # the index is filtered down to a single typeOfFirstFixedSurface and
-    # productDefinitionTemplateNumber
-    non_geo_dims = list()
+    # the index is filtered down to a single type for all required_uniques
 
-    #TODO Eventually re-work this section making 'non_geo_dims'
+              # Dim Name     # matching dim_name for using this data as index coordinate
+    dim_coords["refDate"] = ["refDate"]
+#   dim_coords["refDate"] = ["refDate", "hour"] # non dim name matching items in list are used as non-index coordinates
 
-    # refDate always added for now (could add only based on
-    # typOfGeneratingProcess)
-    if 'refDate' not in index.columns:
-        index = index.assign(refDate=index.msg.apply(lambda msg: msg.refDate))
-    @dataclass(init=False)
-    class RefDateDim:
-        _coords: Tuple[str, ...] = field(default=tuple(['refDate']), init=False)
-        refDate: pd.Index = PdIndex()
-    non_geo_dims.append(RefDateDim)
+    dim_coords["leadTime"] = ["leadTime"]
 
-    # leadTime always added for now (could add only based on
-    # typOfGeneratingProcess)
-    if 'leadTime' not in index.columns:
-        index = index.assign(leadTime=index.msg.apply(lambda msg: msg.leadTime))
-    @dataclass(init=False)
-    class LeadTimeDim:
-        _coords: Tuple[str, ...] = field(default=tuple(['leadTime']), init=False)
-        leadTime: pd.Index = PdIndex()
-    non_geo_dims.append(LeadTimeDim)
 
     if 'valueOfFirstFixedSurface' not in index.columns:
         index = index.assign(valueOfFirstFixedSurface=index.msg.apply(lambda msg: msg.valueOfFirstFixedSurface))
-    @dataclass(init=False)
-    class ValueOfFirstFixedSurfaceDim:
-        _coords: Tuple[str, ...] = field(default=tuple(['valueOfFirstFixedSurface']), init=False)
-        valueOfFirstFixedSurface: pd.Index = PdIndex()
-    non_geo_dims.append(ValueOfFirstFixedSurfaceDim)
+    if 'valueOfsecondFixedSurface' not in index.columns:
+        index = index.assign(valueOfSecondFixedSurface=index.msg.apply(lambda msg: msg.valueOfSecondFixedSurface))
+
+    # dim name api change, user could run ds = ds.swap_dims(fixedSurface="valueOfFirstFixedSurface")
+    index = index.assign(level = list(zip(index['valueOfFirstFixedSurface'], index['valueOfSecondFixedSurface'])))
+#   index = index.assign(level=index.msg.apply(lambda msg: msg.level))
+    dim_coords["level"] = ["valueOfFirstFixedSurface", "valueOfSecondFixedSurface"] # lack of "level" indeicates don't create extra index coordinate "level"
 
     # logic for parsing possible dims from specific product definition section
 
@@ -610,75 +591,53 @@ def parse_grib_index(
         # Probability forecasts at a horizontal level or in a horizontal layer
         # in a continuous or non-continuous time interval.  (see Template
         # 4.9)
-        AVAILABLE_THRESHOLD = {
-            0: {'has_lower': True, 'has_upper': False},
-            1: {'has_lower': False, 'has_upper': True},
-            2: {'has_lower': True, 'has_upper': True},
-            3: {'has_lower': True, 'has_upper': False},
-            4: {'has_lower': False, 'has_upper': True},
-            5: {'has_lower': True, 'has_upper': False},
-        }
+#       AVAILABLE_THRESHOLD = {
+#           0: {'has_lower': True, 'has_upper': False},
+#           1: {'has_lower': False, 'has_upper': True},
+#           2: {'has_lower': True, 'has_upper': True},
+#           3: {'has_lower': True, 'has_upper': False},
+#           4: {'has_lower': False, 'has_upper': True},
+#           5: {'has_lower': True, 'has_upper': False},
+#       }
 
         index = index.assign(typeOfProbability = index.msg.apply(lambda msg: msg.typeOfProbability.value))
-        index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
-        index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
+        uniq_types_of_prob = index.typeOfProbability.unique()
+        if len(uniq_types_of_prob) > 1:
+            raise ValueError(f"filter to a single typeOfProbability: {uniq_types_of_prob}")
+        if 'thresholdLowerLimit' not in index.columns:
+            index = index.assign(thresholdLowerLimit = index.msg.apply(lambda msg: msg.thresholdLowerLimit))
+        if 'thresholdUpperLimit' not in index.columns:
+            index = index.assign(thresholdUpperLimit = index.msg.apply(lambda msg: msg.thresholdUpperLimit))
+        if 'threshold' not in index.columns:
+            # using composite of lower and upper, but could use threshold string from grib2io as long as that is unique and based on lower and upper
+            index = index.assign(threshold = list(zip(index['thresholdLowerLimit'], index['thresholdUpperLimit'])))
+#           index = index.assign(threshold = index.msg.apply(lambda msg: msg.threshold))
 
-        nlower = index['thresholdLowerLimit'].nunique()
-        nupper = index['thresholdUpperLimit'].nunique()
+        dim_coords["threshold"] = ["thresholdLowerLimit", "thresholdUpperLimit"] # ommiting threshold results in no index being assigned for this possible dim
 
-        #if nlower > 1:
-        #    @dataclass(init=False)
-        #    class ThresholdLowerLimitDim:
-        #        thresholdLowerLimit: pd.Index = PdIndex()
-        #    non_geo_dims.append(ThresholdLowerLimitDim)
-        #if nupper > 1:
-        #    @dataclass(init=False)
-        #    class ThresholdUpperLimitDim:
-        #        thresholdUpperLimit: pd.Index = PdIndex()
-        #    non_geo_dims.append(ThresholdUpperLimitDim)
+        attrs["typeOfProbability"] = uniq_types_of_prob.item()
 
-        @dataclass(init=False)
-        class ThresholdDim:
-            _coords: Tuple[str, ...] = field(default=tuple(['thresholdLowerLimit', 'thresholdUpperLimit']), init=False)
-            threshold: pd.Index = PdIndex()
-        non_geo_dims.append(ThresholdDim)
-        
-
-    if pdtn in {6,10}:
+    elif pdtn in {6,10}:
         # Percentile forecasts at a horizontal level or in a horizontal layer
         # in a continuous or non-continuous time interval.  (see Template
         # 4.10)
-        index = index.assign(percentileValue = index.msg.apply(lambda msg: msg.percentileValue))
+        dim_coords["percentileValue"] = ["percentileValue"]
 
-        @dataclass(init=False)
-        class PercentileValueDim:
-            _coords: Tuple[str, ...] = field(default=tuple(['percentileValue']), init=False)
-            percentileValue: pd.Index = PdIndex()
-        non_geo_dims.append(PercentileValueDim)
+    elif pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
+        dim_coords["duration"] = ["duration"]
 
-    if pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
-        if 'duration' not in index.columns:
-            index = index.assign(duration=index.msg.apply(lambda msg: msg.duration))
+    elif pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
+        dim_coords["perturbationNumber"] = ["perturbationNumber"]
 
-        @dataclass(init=False)
-        class DurationDim:
-            _coords: Tuple[str, ...] = field(default=tuple(['duration']), init=False)
-            duration: pd.Index = PdIndex()
-        non_geo_dims.append(DurationDim)
+    for k, v in dim_coords.items():
+        for meta in v:
+            if meta not in index.columns:
+                index = index.assign(**{meta: index.msg.apply(lambda msg: getattr(msg, meta))})
 
-    if pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
-        if 'perturbationNumber' not in index.columns:
-            index = index.assign(perturbationNumber = index.msg.apply(lambda msg: msg.perturbationNumber))
-        @dataclass(init=False)
-        class PerturbationNumberDim:
-            _coords: Tuple[str, ...] = field(default=tuple(['perturbationNumber']), init=False)
-            perturbationNumber: pd.Index = PdIndex()
-        non_geo_dims.append(PerturbationNumberDim)
-
-    return index, non_geo_dims
+    return index, dim_coords, attrs
 
 
-def build_da_without_coords(index, cube, filename) -> xr.DataArray:
+def build_da_without_coords(index, cube, filename, attrs) -> xr.DataArray:
     """
     Build a DataArray without coordinates from a cube of grib2 messages.
 
@@ -697,29 +656,20 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
         DataArray without coordinates
     """
 
-    print(f"TEST: In build_da_without_coords(), {cube = }")
-    dim_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is not None and len(cube[k]) > 1]
-    dim_names = [i for i in dim_names if i != "_coords"]
-    constant_meta_names = [k for k in cube.__dataclass_fields__.keys() if cube[k] is None]
+    dim_names = [k for k in cube.keys() if cube[k] is not None and len(cube[k]) > 1]
+    constant_meta_names = [k for k in cube.keys() if cube[k] is None]
     dims = {k: len(cube[k]) for k in dim_names}
-    dims.pop("_coords", None)
-    print(f"TEST: {constant_meta_names = }")
-    print(f"TEST: {dims = }")
-    print(f"TEST: {dim_names = }")
 
+    # guard against bad datarrays being formed
     dims_total = 1
     dims_to_filter = []
     for dim_name, dim_len, in dims.items():
-        print(f"TEST: {dim_name = }")
-        print(f"TEST: {dim_len = }")
-        if dim_name not in {'x','y','station','_coords'}:
+        if dim_name not in {'x','y','station'}:
             dims_total *= dim_len
             dims_to_filter.append(dim_name)
 
     # Check number of GRIB2 message indexed compared to non-X/Y
     # dimensions.
-    print(f"TEST: {dims_total = }")
-    print(f"TEST: {len(index) = }")
     if dims_total != len(index):
         raise ValueError(
             f"DataArray dimensions are not compatible with number of GRIB2 messages; DataArray has {dims_total} "
@@ -730,9 +680,6 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
     lock = LOCK
     data = GribBackendArray(data, lock)
     data = indexing.LazilyIndexedArray(data)
-    print(f"TEST: {len(dim_names)}")
-    print(f"TEST: {data.shape}")
-    print(f"TEST: {len(data.shape)}")
     if len(dim_names) != len(data.shape):
         raise ValueError(
             "different number of dimensions on data "
@@ -741,13 +688,7 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
             "It's possible extra messages exist along a non-accounted for dimension based on PDTN\n"
             "It might be possible to get around this by applying a filter on the non-accounted for dimension"
             )
-    print(f"TEST: RIGHT BEFORE DATA ARRAY CREATION....")
-    print(f"\n{dim_names = }")
-    print(f"\n{data.shape = }")
-    print(f"\n\n")
     da = xr.DataArray(data, dims=dim_names)
-
-    print(f"TEST: {da = }")
 
     da.encoding['original_shape'] = data.shape
 
@@ -770,12 +711,42 @@ def build_da_without_coords(index, cube, filename) -> xr.DataArray:
         if meta_name in index.columns:
             da.attrs[meta_name] = index[meta_name].iloc[0]
 
-    print(f"TEST.....")
-    print(f"ABOUT TO LEAVE build_da_without_coords()....")
-    print(f"{da = }")
-    print(f"{da.coords = }")
-    print(f"TEST.....")
+    da.attrs.update(attrs)
+
     return da
+
+def assign_xr_meta(ds, frames, cube, non_geo_dims, extra_geo):
+
+    # assign coords from the cube; the cube prevents datarrays with
+    # different shapes
+    ds = ds.assign_coords(coords_from_cube(cube))
+    # assign extra index associated coords
+    for dim_name, coord_names in non_geo_dims.items():
+        retain_index_coord = False
+        for name in coord_names:
+            if name == dim_name:
+                retain_index_coord = True
+            else:
+                df = frames[0] # can use first variable as they all have same shape and index metadata
+                if ds[dim_name].size == 1:
+                    # for assigning scalar coords
+                    coord_data = [df[name].unique().item()]
+                    ds = ds.assign_coords({name: coord_data}).squeeze()
+                else:
+                    # "ValueError: can only convert an array of size 1 to a Python scalar" indicates the coord is not compatible with the index
+                    coord_data = [df[df.index.get_level_values(f'{dim_name}_ix') == val][name].unique().item() for val in range(ds[dim_name].size)]
+                    coord = pd.Index(coord_data, name=dim_name)
+                    ds = ds.assign_coords({name: coord})
+        if not retain_index_coord:
+            ds = ds.drop_vars(dim_name)
+    # assign extra geo coords
+    ds = ds.assign_coords(extra_geo)
+    # assign valid date coords
+    ds = ds.assign_coords(dict(validDate=ds.coords['refDate']+ds.coords['leadTime']))
+    # assign attributes
+    ds.attrs['engine'] = 'grib2io'
+
+    return ds
 
 
 def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
@@ -811,64 +782,26 @@ def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
         return None,None,None
 
     # define the DimCube
-    print(f"TEST: IN make_variables(), {non_geo_dims = }")
     dims = copy(non_geo_dims)
-    dims.append(Cube)
-    dims.reverse()
 
-    @dataclass(init=False)
-    class DimCube(*dims):
-        def __eq__(self, other):
-            return dc_eq(self, other)
-
-    #ordered_meta = [n for n in list(DimCube.__dataclass_fields__.keys()) if n != '_coords']
-    #print(f"TEST: IN make_variables(), just AFTER class DimCube definition, {ordered_meta = }")
+    ordered_meta = list(non_geo_dims.keys())
     cube = None
     ordered_frames = list()
     for key in index.index.unique():
         frame = index.loc[[key]]
         frame = frame.reset_index()
         # frame is a dataframe with all records for one variable
-        c = DimCube()
-    
-        #TEST
-        ordered_meta = list()
-        ordered_coords = dict()
-        for obj in c.__class__.__mro__:
-            if not obj.__name__.endswith("Dim"): continue
-            obj_name = obj.__name__
-            crds = obj.__dataclass_fields__["_coords"].default
-            dname = list(obj.__dataclass_fields__.keys())[-1]
-            ordered_meta.append(dname)
-            ordered_coords[dname] = crds
-        ordered_meta.reverse()
-        print(f"TEST: {ordered_meta = }")
-        print(f"TEST: {ordered_coords = }")
-        #TEST
-
+        c = dict()
         #for colname in frame.columns:
-        #for colname in ordered_meta[:-2]:
-        print(f"TEST: {frame = }")
         for colname in ordered_meta:
-            #TODO... START AND CHANGE colname...
-            #TEST
-            try:
-                uniques = pd.Index(frame[colname]).unique()
-            except(KeyError):
-                frame[colname] = range(len(frame))
-                uniques = pd.Index(np.arange(len(frame))).unique()
-            #TEST
-            print(f"TEST: {colname = }; {uniques = }")
+            uniques = pd.Index(frame[colname]).unique()
             if len(uniques) > 1:
                 c[colname] = uniques.sort_values()
             else:
                 c[colname] = [uniques[0]]
 
-        print(f"TEST: {c.coords() = }")
+        dims = [k for k in ordered_meta if len(c[k]) > 1]
 
-        dims = [k for k in ordered_meta if k not in {'y','x'} and len(c[k]) > 1]
-
-        print(f"TEST: {dims = }")
         for dim in dims:
             if frame[dim].value_counts().nunique() > 1 and not allow_uneven_dims:
                 raise ValueError(f'uneven number of grib msgs associated with dimension: {dim}\n unique values for {dim}: {frame[dim].unique()} ')
@@ -895,13 +828,13 @@ def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
 
     # no variables
     if cube is None:
-        cube = DimCube()
+        cube = dict()
 
     # check geography of data and assign to cube
     if len(index.ny.unique()) > 1 or len(index.nx.unique()) > 1:
         raise ValueError('multiple grids not accommodated')
-    cube.y = range(int(index.ny.iloc[0]))
-    cube.x = range(int(index.nx.iloc[0]))
+    cube["y"] = range(int(index.ny.iloc[0]))
+    cube["x"] = range(int(index.nx.iloc[0]))
 
     extra_geo = None
     msg = index.msg.iloc[0]
@@ -1222,7 +1155,7 @@ class Grib2ioDataArray:
 
 
         coords_keys = sorted(da.coords.keys())
-        coords_keys = [k for k in coords_keys if k in AVAILABLE_NON_GEO_DIMS]
+        coords_keys = [k for k in coords_keys if k in AVAILABLE_NON_GEO_COORDS]
 
         # If there are dimension coordinates, the DataArray is a hypercube of
         # grib2 messages.
@@ -1245,26 +1178,36 @@ class Grib2ioDataArray:
         #         {"valueOfFirstFixedSurface": 950},
         #     ],
         # ]
-        dim_coords = []
-        for index in [i for i in coords_keys if i in da.dims]:
+
+        # assign loc indexes to dimensions without indexes for uniform selection by name
+        loc_indexes = list()
+        for dim in da.dims:
+            if dim not in da.indexes:
+                da = da.assign_coords({dim: range(da[dim].size)})
+                loc_indexes.append(dim)
+                
+        indexes = []
+        for index in [i for i in AVAILABLE_NON_GEO_DIMS if i in da.dims]:
             values = da.coords[index].values
             if len(values) != len(set(values)):
                 raise ValueError(
                     f"Dimension coordinate '{index}' has duplicate values, but to_grib2 requires unique values to find each GRIB2 message in the DataArray."
                 )
             listeach = [{index: value} for value in sorted(values)]
-            dim_coords.append(listeach)
+            indexes.append(listeach)
 
         # If `dim_coords` is [], then the DataArray is a single grib2 message and
         # itertools.product(*dim_coords) will run once with `selectors = ()`.
-        for selectors in itertools.product(*dim_coords):
+        for selectors in itertools.product(*indexes):
             # Need to find the correct data in the DataArray based on the
             # dimension coordinates.
+            print(indexes)
             filters = {k: v for d in selectors for k, v in d.items()}
 
             # If `filters` is {}, then the DataArray is a single grib2 message
             # and da.sel(indexers={}) returns the DataArray.
             selected = da.sel(indexers=filters)
+            print(selected)
 
             newmsg = Grib2Message(
                 selected.attrs["GRIB2IO_section0"],
@@ -1279,11 +1222,13 @@ class Grib2ioDataArray:
             # For dimension coordinates, set the grib2 message metadata to the
             # dimension coordinate value.
             for index, value in filters.items():
-                setattr(newmsg, index, value)
+                if index not in loc_indexes:
+                    setattr(newmsg, index, value)
 
             # For non-dimension coordinates, set the grib2 message metadata to
             # the DataArray coordinate value.
             for index in [i for i in coords_keys if i not in da.dims]:
+                print(index)
                 setattr(newmsg, index, selected.coords[index].values)
 
             # Set section 5 attributes to the da.encoding dictionary.
@@ -1347,7 +1292,7 @@ class Grib2ioDataArray:
         coords_keys = [
             k
             for k in da.coords.keys()
-            if k in AVAILABLE_NON_GEO_DIMS
+            if k in AVAILABLE_NON_GEO_COORDS
         ]
 
         for grib2_name, value in kwargs.items():
@@ -1629,8 +1574,8 @@ def process_level_branch(level_tree, df, filename):
                                 len(pdtn_df['typeOfProbability'].dropna().unique()) > 1)
             #TEST
 
-            print(f"TEST: LOOK HERE...{pdtn_name = }, {has_perturbations = }, {has_probabilities = }")
-            print(f"\n\n\n{pdtn_df}\n\n\n")
+           #print(f"TEST: LOOK HERE...{pdtn_name = }, {has_perturbations = }, {has_probabilities = }")
+           #print(f"\n\n\n{pdtn_df}\n\n\n")
 
             if has_perturbations:
                 # Create a branch for this PDTN
@@ -1678,7 +1623,7 @@ def process_level_branch(level_tree, df, filename):
                 #        level_tree[pdtn_name] = pdtn_tree
 
             #TEST
-            print(f"TEST: {pdtn_name = }")
+           #print(f"TEST: {pdtn_name = }")
             #TEST
 
 
@@ -1790,7 +1735,7 @@ def try_process_by_variables(target_tree, df, filename):
 
     return success
 
-def create_dataset_from_df(df, filename, verbose=False):
+def create_dataset_from_df(df, filename, verbose=True):
     """
     Create an xarray Dataset from a DataFrame of messages.
 
@@ -1825,6 +1770,7 @@ def create_dataset_from_df(df, filename, verbose=False):
 
         # Process each variable separately, regardless of whether there are vertical levels
         for var_name, var_df in df.groupby('shortName'):
+            print(var_name)
             if verbose:
                 print(f"\n  Processing variable: {var_name} with {len(var_df)} messages, with pdtn(s) = {var_df['productDefinitionTemplateNumber'].unique()}")
 
@@ -1840,14 +1786,14 @@ def create_dataset_from_df(df, filename, verbose=False):
                         print(f"    Processing level {level} with {len(level_df)} messages")
                     try:
                         # Parse the index and get dimensions for this level
-                        file_index, non_geo_dims = parse_grib_index(level_df, {})
+                        file_index, non_geo_dims, attrs = parse_grib_index(level_df, {})
                         # Remove valueOfFirstFixedSurface from dimensions since we're handling it separately
                         non_geo_dims = [d for d in non_geo_dims if d.__name__ != "ValueOfFirstFixedSurfaceDim"]
 
                         frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims, allow_uneven_dims=True)
 
                         if frames is not None and len(frames) == 1:
-                            level_da = build_da_without_coords(frames[0], cube, filename)
+                            level_da = build_da_without_coords(frames[0], cube, filename, attrs)
                             # Add this level to the list with its level value as coord
                             level_da = level_da.assign_coords(valueOfFirstFixedSurface=level)
                             level_das.append(level_da)
@@ -1864,13 +1810,15 @@ def create_dataset_from_df(df, filename, verbose=False):
                         # Create a simple dataset with just this variable
                         var_ds = xr.Dataset({var_name: combined_da})
                         # Assign the coords from the first level's cube
-                        var_ds = var_ds.assign_coords(cube.coords(df=var_df))
-                        # Add extra geo coords
-                        if extra_geo:
-                            var_ds = var_ds.assign_coords(extra_geo)
-                        # Add valid date coords if available
-                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
-                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+                        var_ds = assign_xr_meta(var_ds, frames, cube, non_geo_dims, extra_geo)
+                       # TODO: is the below code all now in assign_xr_meta? was there instances where refDate and leadTime were not coords?
+                       #var_ds = var_ds.assign_coords(coords_from_cube(cube))
+                       ## Add extra geo coords
+                       #if extra_geo:
+                       #    var_ds = var_ds.assign_coords(extra_geo)
+                       ## Add valid date coords if available
+                       #if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                       #    var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
 
                         # Store this variable's dataset
                         datasets[var_name] = var_ds
@@ -1885,21 +1833,23 @@ def create_dataset_from_df(df, filename, verbose=False):
                     print(f"  Variable {var_name} is a single level or has no vertical dimension")
                 try:
                     # Parse the index and get dimensions
-                    file_index, non_geo_dims = parse_grib_index(var_df, {})
+                    file_index, non_geo_dims, attrs = parse_grib_index(var_df, {})
                     frames, cube, extra_geo = make_variables(file_index, filename, non_geo_dims, allow_uneven_dims=True)
 
                     if frames is not None and len(frames) == 1:
                         # Create dataset with this variable
                         var_ds = xr.Dataset()
-                        da = build_da_without_coords(frames[0], cube, filename)
+                        da = build_da_without_coords(frames[0], cube, filename, attrs)
                         var_ds[da.name] = da
 
                         # Assign coords
-                        var_ds = var_ds.assign_coords(cube.coords(df=var_df))
-                        if extra_geo:
-                            var_ds = var_ds.assign_coords(extra_geo)
-                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
-                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+                        var_ds = assign_xr_meta(var_ds, frames, cube, non_geo_dims, extra_geo)
+                       # TODO: is the below code all now in assign_xr_meta? was there instances where refDate and leadTime were not coords?
+                       #var_ds = var_ds.assign_coords(coords_from_cube(cube))
+                       #if extra_geo:
+                       #    var_ds = var_ds.assign_coords(extra_geo)
+                       #if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                       #    var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
 
                         # Store this variable's dataset
                         datasets[var_name] = var_ds
@@ -1910,15 +1860,17 @@ def create_dataset_from_df(df, filename, verbose=False):
                             print(f"  Variable {var_name} has multiple frames, possibly different parameters")
                         # Just use the first frame for now (simplified approach)
                         var_ds = xr.Dataset()
-                        da = build_da_without_coords(frames[0], cube, filename)
+                        da = build_da_without_coords(frames[0], cube, filename, attrs)
                         var_ds[da.name] = da
 
                         # Assign coords
-                        var_ds = var_ds.assign_coords(cube.coords(df=var_df))
-                        if extra_geo:
-                            var_ds = var_ds.assign_coords(extra_geo)
-                        if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
-                            var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
+                        var_ds = assign_xr_meta(var_ds, frames, cube, non_geo_dims, extra_geo)
+                       # TODO: is the below code all now in assign_xr_meta? was there instances where refDate and leadTime were not coords?
+                       #var_ds = var_ds.assign_coords(coords_from_cube(cube))
+                       #if extra_geo:
+                       #    var_ds = var_ds.assign_coords(extra_geo)
+                       #if 'refDate' in var_ds.coords and 'leadTime' in var_ds.coords:
+                       #    var_ds = var_ds.assign_coords(dict(validDate=var_ds.coords['refDate']+var_ds.coords['leadTime']))
 
                         datasets[var_name] = var_ds
                         if verbose:
