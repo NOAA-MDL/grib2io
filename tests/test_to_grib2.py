@@ -126,6 +126,9 @@ def test_ds_write_levels(tmp_path, request):
 
     ds2 = xr.open_dataset(target_file, engine="grib2io")
 
+    ds1 = ds1.swap_dims(level="valueOfFirstFixedSurface")
+    ds2 = ds2.swap_dims(level="valueOfFirstFixedSurface")
+
     for value in ds1.indexes["valueOfFirstFixedSurface"]:
         da1 = ds1["TMP"].sel(indexers={"valueOfFirstFixedSurface": value})
         da2 = ds2["TMP"].sel(indexers={"valueOfFirstFixedSurface": value})
