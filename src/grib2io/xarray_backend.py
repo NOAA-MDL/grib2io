@@ -617,16 +617,18 @@ def parse_grib_index(
 
         attrs["typeOfProbability"] = uniq_types_of_prob.item()
 
-    elif pdtn in {6,10}:
+
+    if pdtn in {6,10}:
+
         # Percentile forecasts at a horizontal level or in a horizontal layer
         # in a continuous or non-continuous time interval.  (see Template
         # 4.10)
         dim_coords["percentileValue"] = ["percentileValue"]
 
-    elif pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
+    if pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
         dim_coords["duration"] = ["duration"]
 
-    elif pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
+    if pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
         dim_coords["perturbationNumber"] = ["perturbationNumber"]
 
     for k, v in dim_coords.items():
@@ -1185,7 +1187,7 @@ class Grib2ioDataArray:
             if dim not in da.indexes:
                 da = da.assign_coords({dim: range(da[dim].size)})
                 loc_indexes.append(dim)
-                
+
         indexes = []
         for index in [i for i in AVAILABLE_NON_GEO_DIMS if i in da.dims]:
             values = da.coords[index].values
