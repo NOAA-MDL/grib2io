@@ -617,7 +617,9 @@ def parse_grib_index(
 
         attrs["typeOfProbability"] = uniq_types_of_prob.item()
 
+
     if pdtn in {6,10}:
+
         # Percentile forecasts at a horizontal level or in a horizontal layer
         # in a continuous or non-continuous time interval.  (see Template
         # 4.10)
@@ -1201,11 +1203,13 @@ class Grib2ioDataArray:
         for selectors in itertools.product(*indexes):
             # Need to find the correct data in the DataArray based on the
             # dimension coordinates.
+            print(indexes)
             filters = {k: v for d in selectors for k, v in d.items()}
 
             # If `filters` is {}, then the DataArray is a single grib2 message
             # and da.sel(indexers={}) returns the DataArray.
             selected = da.sel(indexers=filters)
+            print(selected)
 
             newmsg = Grib2Message(
                 selected.attrs["GRIB2IO_section0"],
@@ -1226,6 +1230,7 @@ class Grib2ioDataArray:
             # For non-dimension coordinates, set the grib2 message metadata to
             # the DataArray coordinate value.
             for index in [i for i in coords_keys if i not in da.dims]:
+                print(index)
                 setattr(newmsg, index, selected.coords[index].values)
 
             # Set section 5 attributes to the da.encoding dictionary.
