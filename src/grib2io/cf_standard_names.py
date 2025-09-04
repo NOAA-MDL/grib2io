@@ -1,6 +1,8 @@
 import pandas as pd
 
 # Data extracted from the markdown tables
+# taken from CF conventions standard names table
+# https://cfconventions.org/Data/cf-standard-names/current/build/cf-standard-name-table.html
 data = [
     {'NCEP GRIB Variable': 'ABSV', 'NCEP Description': 'Absolute Vorticity', 'CF Standard Name': 'atmosphere_absolute_vorticity', 'CF Cell Method': None},
     {'NCEP GRIB Variable': 'DEN', 'NCEP Description': 'Density', 'CF Standard Name': 'air_density', 'CF Cell Method': None},
