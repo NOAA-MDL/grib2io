@@ -161,7 +161,7 @@ def parse_data_model(ds, data_model):
                         ds = ds.swap_dims({'threshold': 'threshold_upper_limit'})
 
             # If the dataset has valueOfFirstFixedSurface as a coordinate
-            if 'valueOfFirstFixedSurface' in ds.coords:
+            elif coord == 'valueOfFirstFixedSurface':
                 # Get the valueOfFirstFixedSurface coordinate
                 da = ds.valueOfFirstFixedSurface
 
@@ -187,16 +187,11 @@ def parse_data_model(ds, data_model):
                     if 'level' in ds.dims:
                         ds = ds.swap_dims({"level": key})
 
-                    # remove attr from each variable
-                    for var in ds.data_vars:
-                        del ds[var].attrs['valueOfFirstFixedSurface']
-                        del ds[var].attrs['typeOfFirstFixedSurface']
-
                 # Remove the original coordinates
                 del ds['valueOfFirstFixedSurface']
 
             # If the dataset has valueOfSecondFixedSurface as a coordinate
-            if 'valueOfSecondFixedSurface' in ds.coords:
+            elif coord == 'valueOfSecondFixedSurface':
                 # Get the valueOfSecondFixedSurface coordinate
                 da = ds.valueOfSecondFixedSurface
 
@@ -221,11 +216,6 @@ def parse_data_model(ds, data_model):
 
                     # Assign the coordinate with the new key name
                     ds = ds.assign_coords({key: da})
-
-                    # remove attr from each variable
-                    for var in ds.data_vars:
-                        del ds[var].attrs['valueOfSecondFixedSurface']
-                        del ds[var].attrs['typeOfSecondFixedSurface']
 
                 # Remove the original coordinates
                 del ds['valueOfSecondFixedSurface']
@@ -755,7 +745,8 @@ def parse_grib_index(
         value = unique.item()
         if type(value) == grib2io.templates.Grib2Metadata:
             value = value.definition
-        attrs[meta] = str(value)
+        # attrs[meta] = str(value)
+        attrs[meta] = value
         return index, attrs
 
     for meta in required_uniques:
