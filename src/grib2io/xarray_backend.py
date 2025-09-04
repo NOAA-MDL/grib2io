@@ -22,6 +22,7 @@ from warnings import warn
 
 from .cf_standard_names import cf_standard_names, grib_derived_to_cf_methods
 from grib2io.tables.vertical_coordinate_surfaces import vertical_coordinate_surfaces
+from . import tables
 
 import numpy as np
 import pandas as pd
@@ -96,6 +97,13 @@ VARIABLE_LEVELS = []
 
 
 def parse_data_model(ds, data_model):
+    def _decode_ptype(values):
+        results = []
+        for val in values:
+            results.append(tables.get_value_from_table(str(int(val)), '4.201'))
+
+        return np.array(results)
+
     # convert coordinates and attributes to CF if requested
     if data_model == 'nws-viz':
         # define regex to convert to snake case
@@ -120,6 +128,9 @@ def parse_data_model(ds, data_model):
                 ds['threshold_lower_limit'].attrs['long_name'] = 'Threshold Lower Limit'
                 ds['threshold_lower_limit'].attrs['units'] = ds[list(ds.data_vars.keys())[0]].attrs['units']
 
+                if 'PTYPE' in ds.data_vars:
+                    ds['threshold_lower_limit'] = xr.apply_ufunc(_decode_ptype, ds['threshold_lower_limit'])
+
                 # check if thresholdLowerLimit should be a dimension coordinate
                 if 'threshold' in ds.dims:
                     var_key = list(ds.data_vars.keys())[0]
@@ -136,6 +147,9 @@ def parse_data_model(ds, data_model):
                 ds = ds.rename({'thresholdUpperLimit': 'threshold_upper_limit'})
                 ds['threshold_upper_limit'].attrs['long_name'] = 'Threshold Upper Limit'
                 ds['threshold_upper_limit'].attrs['units'] = ds[list(ds.data_vars.keys())[0]].attrs['units']
+
+                if 'PTYPE' in ds.data_vars:
+                    ds['threshold_upper_limit'] = xr.apply_ufunc(_decode_ptype, ds['threshold_upper_limit'])
 
                 if 'threshold' in ds.dims:
                     var_key = list(ds.data_vars.keys())[0]
@@ -224,7 +238,6 @@ def parse_data_model(ds, data_model):
             if len(standard_name) < 1:
                 # add standard name unknown (not in definitions table)
                 da.attrs['standard_name'] = 'unknown'
-                warn('Unknown standard name for variable ' + da.name)
             else:
                 # add standard name
                 da.attrs['standard_name'] = standard_name[0]
@@ -269,8 +282,12 @@ def parse_data_model(ds, data_model):
                 if attr == 'units' and ds[new_var_name].attrs[attr] == '%':
                     ds[new_var_name].attrs[attr] = 'percent'
 
-                # change attr name in attrs
-                ds[new_var_name].attrs[new_attr_name] = ds[new_var_name].attrs.pop(attr)
+                if new_var_name == 'ptype' and 'threshold' in new_attr_name:
+                    value = ds[new_var_name].attrs.pop(attr)
+                    ds[new_var_name].attrs[attr] = _decode_ptype(value)
+                else:
+                    # change attr name in attrs
+                    ds[new_var_name].attrs[new_attr_name] = ds[new_var_name].attrs.pop(attr)
 
 
         # change dataset attrs to snake case
@@ -794,12 +811,10 @@ def parse_grib_index(
             index = index.assign(threshold=list(zip(index['thresholdLowerLimit'], index['thresholdUpperLimit'])))
 #           index = index.assign(threshold = index.msg.apply(lambda msg: msg.threshold))
 
-        print(index.thresholdLowerLimit)
-
         # ommiting threshold results in no index being assigned for this possible dim
         dim_coords["threshold"] = ["thresholdLowerLimit", "thresholdUpperLimit"]
 
-    if pdtn in {6,10}:
+    if pdtn in {6, 10}:
 
         # Percentile forecasts at a horizontal level or in a horizontal layer
         # in a continuous or non-continuous time interval.  (see Template
@@ -807,10 +822,10 @@ def parse_grib_index(
         dim_coords["percentileValue"] = ["percentileValue"]
         coord_attrs["percentileValue"] = dict(long_name='percentile', units='percent')
 
-    if pdtn in {8,9,10,11,12,13,14,42,43,45,46,47,61,62,63,67,68,72,73,78,79,82,83,84,85,87,91}:
+    if pdtn in {8, 9, 10, 11, 12, 13, 14, 42, 43, 45, 46, 47, 61, 62, 63, 67, 68, 72, 73, 78, 79, 82, 83, 84, 85, 87, 91}:
         dim_coords["duration"] = ["duration"]
 
-    if pdtn in {1,11,33,34,41,43,45,47,49,54,56,58,59,63,68,77,79,81,83,84,85,92}:
+    if pdtn in {1, 11, 33, 34, 41, 43, 45, 47, 49, 54, 56, 58, 59, 63, 68, 77, 79, 81, 83, 84, 85, 92}:
         dim_coords["perturbationNumber"] = ["perturbationNumber"]
 
     if pdtn in {2,3,4,12,13,14}:

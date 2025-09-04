@@ -1377,10 +1377,7 @@ class ThresholdLowerLimit:
         if scale_factor == -127 and scaled_value == 255:
             return 0.0
         value = float(Decimal(int(scaled_value)) / (10 ** scale_factor))
-        if getattr(obj, "shortName") == 'PTYPE':
-            return tables.get_value_from_table(str(int(value)), '4.201')
-        else:
-            return value
+        return value
     def __set__(self, obj, value):
         scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
         setattr(obj, "scaleFactorOfThresholdLowerLimit", scale_factor)
@@ -1394,10 +1391,7 @@ class ThresholdUpperLimit:
         if scale_factor == -127 and scaled_value == 255:
             return 0.0
         value = float(Decimal(int(scaled_value)) / (10 ** scale_factor))
-        if getattr(obj, "shortName") == 'PTYPE':
-            return tables.get_value_from_table(str(int(value)), '4.201')
-        else:
-            return value
+        return value
     def __set__(self, obj, value):
         scale_factor, scaled_value = utils.decimal_to_scaled_int(value)
         setattr(obj, "scaleFactorOfThresholdUpperLimit", scale_factor)
