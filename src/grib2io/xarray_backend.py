@@ -98,11 +98,24 @@ VARIABLE_LEVELS = []
 
 def parse_data_model(ds, data_model):
     def _decode_ptype(values):
+        """
+        Decode precipitation type values into human-readable strings.
+
+        Args:
+            values: Array of numeric precipitation type codes
+
+        Returns:
+            numpy.ndarray: Array of decoded precipitation type strings
+
+        Uses GRIB2 Table 4.201 to map numeric codes to precipitation type descriptions.
+        """
         results = []
         for val in values:
-            results.append(tables.get_value_from_table(str(int(val)), '4.201'))
+            # Convert each numeric code to string and look up in Table 4.201
+            results.append(str(tables.get_value_from_table(str(int(val)), '4.201')))
 
-        return np.array(results)
+        # Return array of strings using numpy's string data type
+        return np.array(results, dtype=np.dtypes.StringDType)
 
     # convert coordinates and attributes to CF if requested
     if data_model == 'nws-viz':
@@ -745,7 +758,12 @@ def parse_grib_index(
         value = unique.item()
         if type(value) == grib2io.templates.Grib2Metadata:
             value = value.definition
-        # attrs[meta] = str(value)
+
+        # None is returned if no value found,
+        # check and change to string None
+        if value is None:
+            value = 'None'
+
         attrs[meta] = value
         return index, attrs
 
