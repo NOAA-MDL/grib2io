@@ -24,7 +24,8 @@ print(f"_ncep_grib2_table_version = \'{version_num}\'\n")
 # ----------------------------------------------------------------------------------------
 # Originating Center
 # ----------------------------------------------------------------------------------------
-url = r'https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html'
+#url = r'https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html'
+url = r'https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablea.html'
 
 tables = pd.read_html(url)
 
@@ -34,8 +35,11 @@ name = 'table_originating_centers'
 
 print(name," = {")
 for idx,row in df.iterrows():
-    value = row['VALUE'].lstrip('0')
-    center = row['CENTER'].replace('\'','')
+    if "-" in str(row['VALUE']):
+        value = str(row['VALUE'])
+    else:
+        value = str(row['VALUE']).lstrip('0')
+    center = str(row['MODEL']).replace('\'','')
     line = "'%s':'%s'," % (value,center)
     line = line.replace('nan','unknown')
     line = line.replace('  ',' ')
