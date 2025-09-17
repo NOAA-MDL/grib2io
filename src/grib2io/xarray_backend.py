@@ -232,6 +232,10 @@ def parse_data_model(ds, data_model):
 
                 # Remove the original coordinates
                 del ds['valueOfSecondFixedSurface']
+            else:
+                # change coord name to snake case
+                new_coord_name = pattern.sub('_', coord).lower()
+                ds = ds.rename({coord: new_coord_name})
 
         # convert all attributes and variable names to snake case
         for var in ds.data_vars:
