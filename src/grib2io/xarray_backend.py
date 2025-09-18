@@ -128,7 +128,7 @@ def parse_data_model(ds, data_model):
                 ds = ds.rename({'refDate': 'forecast_reference_time'})
 
             elif coord == 'leadTime':
-                ds = ds.rename({'leadTime': 'leadtime'})
+                ds = ds.rename({'leadTime': 'lead_time'})
 
             elif coord == 'validDate':
                 ds = ds.rename({'validDate': 'time'})
