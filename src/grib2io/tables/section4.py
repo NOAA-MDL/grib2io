@@ -480,7 +480,7 @@ table_4_8 = {
 table_4_9 = {
 '0':'Probability of event below lower limit',
 '1':'Probability of event above upper limit',
-'2':'Probability of event between upper and lower limits (the range includes lower limit but no the upper limit)',
+'2':'Probability of event between upper and lower limits (the range includes lower limit but not the upper limit)',
 '3':'Probability of event above lower limit',
 '4':'Probability of event below upper limit',
 '5':'Probability of event equal to lower limit',

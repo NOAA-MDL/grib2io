@@ -1,0 +1,31 @@
+# Lookup table to define surface types that should be parsed as vertical coordinates
+vertical_coordinate_surfaces = [
+    'Ground or Water Surface',
+    'Isothermal Level',
+    'Specified radius from the centre of the Sun',
+    'Isobaric Surface',
+    'Mean Sea Level',
+    'Specific Altitude Above Mean Sea Level',
+    'Specified Height Level Above Ground',
+    'Sigma Level',
+    'Hybrid Level',
+    'Depth Below Land Surface',
+    'Isentropic (theta) Level',
+    'Level at Specified Pressure Difference from Ground to Level',
+    'Potential Vorticity Surface',
+    'Eta Level',
+    'Logarithmic Hybrid Level',
+    'Sigma height level',
+    'Hybrid Height Level',
+    'Hybrid Pressure Level',
+    'Soil level',
+    'Sea-ice level',
+    'Depth Below Sea Level',
+    'Depth Below Water Surface',
+    'Ocean Model Level',
+    'Ocean level defined by water density (sigma-theta) difference from near-surface to level',
+    'Ocean level defined by water potential temperature difference from near-surface to level',
+    'Ocean level defined by vertical eddy diffusivity difference from near-surface to level',
+    'Ocean level defined by water density (rho) difference from near-surface to level'
+]
+
