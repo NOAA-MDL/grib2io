@@ -44,7 +44,7 @@ table_5_3 = {
 '0':'Reserved',
 '1':'Direction Degrees True',
 '2':'Frequency (s-1)',
-'3':'Radial Number (2pi/lamda) (m-1)',
+'3':'Radial Number (2π/λ) (m-1)',
 '4-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
