@@ -20,8 +20,6 @@ import logging
 import typing
 from warnings import warn
 
-from .cf_standard_names import cf_standard_names, grib_derived_to_cf_methods
-from grib2io.tables.vertical_coordinate_surfaces import vertical_coordinate_surfaces
 from . import tables
 
 import numpy as np
@@ -65,6 +63,7 @@ AVAILABLE_NON_GEO_COORDS = [
     "scaledValueOfSecondSize"
 ]
 
+
 AVAILABLE_NON_GEO_DIMS = [
     "duration",
     "leadTime",
@@ -75,8 +74,42 @@ AVAILABLE_NON_GEO_DIMS = [
     "level",
 ]
 
+
+# Lookup table to define surface types that should be parsed as vertical coordinates
+VERTICAL_COORDINATE_SURFACES = [
+    'Ground or Water Surface',
+    'Isothermal Level',
+    'Specified radius from the centre of the Sun',
+    'Isobaric Surface',
+    'Mean Sea Level',
+    'Specific Altitude Above Mean Sea Level',
+    'Specified Height Level Above Ground',
+    'Sigma Level',
+    'Hybrid Level',
+    'Depth Below Land Surface',
+    'Isentropic (theta) Level',
+    'Level at Specified Pressure Difference from Ground to Level',
+    'Potential Vorticity Surface',
+    'Eta Level',
+    'Logarithmic Hybrid Level',
+    'Sigma height level',
+    'Hybrid Height Level',
+    'Hybrid Pressure Level',
+    'Soil level',
+    'Sea-ice level',
+    'Depth Below Sea Level',
+    'Depth Below Water Surface',
+    'Ocean Model Level',
+    'Ocean level defined by water density (sigma-theta) difference from near-surface to level',
+    'Ocean level defined by water potential temperature difference from near-surface to level',
+    'Ocean level defined by vertical eddy diffusivity difference from near-surface to level',
+    'Ocean level defined by water density (rho) difference from near-surface to level'
+]
+
+
 # Use custom table to map numeric level codes to human-readable names
 LEVEL_NAME_MAPPING = grib2io.tables.get_table('4.5.grib2io.level.name')
+
 
 # Define the order of hierarchy levels for the DataTree
 TREE_HIERARCHY_LEVELS = [
@@ -97,6 +130,7 @@ VARIABLE_LEVELS = []
 
 
 def parse_data_model(ds, data_model):
+
     def _decode_ptype(values):
         """
         Decode precipitation type values into human-readable strings.
@@ -119,6 +153,7 @@ def parse_data_model(ds, data_model):
 
     # convert coordinates and attributes to CF if requested
     if data_model == 'nws-viz':
+
         # define regex to convert to snake case
         pattern = re.compile(r'(?<!^)(?=[A-Z])')
 
@@ -182,7 +217,7 @@ def parse_data_model(ds, data_model):
                 var_key = list(ds.data_vars.keys())[0]
                 definition, units = ds[var_key].attrs['typeOfFirstFixedSurface']
 
-                if definition in vertical_coordinate_surfaces:
+                if definition in VERTICAL_COORDINATE_SURFACES:
                     # Convert definition to lowercase and replace spaces with underscores
                     key = definition.lower().replace(' ', '_')
 
@@ -212,7 +247,7 @@ def parse_data_model(ds, data_model):
                 var_key = list(ds.data_vars.keys())[0]
                 definition, units = ds[var_key].attrs['typeOfSecondFixedSurface']
 
-                if definition in vertical_coordinate_surfaces:
+                if definition in VERTICAL_COORDINATE_SURFACES:
                     # Convert definition to lowercase and replace spaces with underscores
                     key = definition.lower().replace(' ', '_')
 
@@ -240,14 +275,9 @@ def parse_data_model(ds, data_model):
         # convert all attributes and variable names to snake case
         for var in ds.data_vars:
             da = ds[var]
-            record = cf_standard_names.loc[cf_standard_names['NCEP GRIB Variable'] == da.name]
-            standard_name = record['CF Standard Name'].to_numpy()
-            if len(standard_name) < 1:
-                # add standard name unknown (not in definitions table)
-                da.attrs['standard_name'] = 'unknown'
-            else:
-                # add standard name
-                da.attrs['standard_name'] = standard_name[0]
+            record = tables.get_table('shortname_to_cf').get(da.name)
+            da.attrs['standard_name'] = 'unknown' if record is None else record['cf_standard_name']
+            da.attrs['cell_methods'] = 'unknown' if record is None else record['cf_cell_methods']
 
             ds[var] = da
 
@@ -341,7 +371,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         filters
             Filter GRIB2 messages to single hypercube. Dict keys can be any
             GRIB2 metadata attribute name.
-        data_model: Parse GRIB metadata following a defined data model comvention.
+        data_model
+            Parse GRIB metadata following a defined data model comvention.
 
         Returns
         -------
