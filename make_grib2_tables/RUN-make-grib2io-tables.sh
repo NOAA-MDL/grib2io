@@ -38,8 +38,6 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section3.py
 done
-sed 's/Unstructublack/Unstructured/g' section3.py > junk
-mv -v junk section3.py
 
 # Store the Earth params table here.  This is custom to grib2io.
 echo "\t - Earth params table"
@@ -211,3 +209,12 @@ cat table_ndfd_additionals.txt >> ndfd_additionals.py
 # ----------------------------------------------------------------------------------------
 echo " -- Making cf.py"
 cat table_cf.txt >> cf.py
+
+# ----------------------------------------------------------------------------------------
+# Move created tables to area in package src
+# ----------------------------------------------------------------------------------------
+DEST=$(dirname $PWD)/src/grib2io/tables
+mv -v originating_centers.py $DEST/.
+mv -v section*.py $DEST/.
+mv -v ndfd_additionals.py $DEST/.
+mv -v cf.py $DEST/.

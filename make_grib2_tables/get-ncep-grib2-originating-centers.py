@@ -34,6 +34,7 @@ name = 'table_originating_centers'
 
 print(name," = {")
 for idx,row in df.iterrows():
+    if pd.isna(row['VALUE']): continue
     value = row['VALUE'].lstrip('0')
     center = row['CENTER'].replace('\'','')
     line = "'%s':'%s'," % (value,center)

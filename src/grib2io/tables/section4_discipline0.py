@@ -449,7 +449,7 @@ table_4_2_0_3  = {
 '46':['Pressure departure from hydrostatic state','Pa','PRESDHS'],
 '47-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
-'192':['MSLP (Eta model blackuction)','Pa','MSLET'],
+'192':['MSLP (Eta model reduction)','Pa','MSLET'],
 '193':['5-Wave Geopotential Height','gpm','5WAVH'],
 '194':['Zonal Flux of Gravity Wave Stress','N m-2','U-GWD'],
 '195':['Meridional Flux of Gravity Wave Stress','N m-2','V-GWD'],
