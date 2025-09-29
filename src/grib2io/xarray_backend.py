@@ -35,7 +35,7 @@ from xarray.core import indexing
 from xarray.backends.locks import SerializableLock
 
 import grib2io
-from grib2io import Grib2Message, Grib2GridDef
+from grib2io import Grib2Message, Grib2GridDef, msgs_from_index
 from grib2io._grib2io import _data
 
 logger = logging.getLogger(__name__)
@@ -113,6 +113,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         """
         with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
+            file_index = file_index.assign(msg=msgs_from_index(f._index))
 
         # parse grib2io _index to dataframe and acquire non-geo possible dims
         # (scalar coord when not dim due to squeeze) parse_grib_index applies
@@ -180,6 +181,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # Open the file without any filters first to get all messages
         with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
+            file_index = file_index.assign(msg=msgs_from_index(f._index))
 
         # Build tree structure from GRIB messages with specified options
         return build_datatree_from_grib(filename, file_index, filters, stack_vertical=stack_vertical)
@@ -1317,6 +1319,7 @@ def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, 
     # Open the file without any filters first to get all messages
     with grib2io.open(filename, _xarray_backend=True) as f:
         file_index = pd.DataFrame(f._index)
+        file_index = file_index.assign(msg=msgs_from_index(f._index))
 
     # Create a DataTree root
     tree = xr.DataTree()
