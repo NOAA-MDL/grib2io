@@ -207,7 +207,10 @@ class open():
                         self._index = build_index(self._filehandle)
                 else:
                     self._index = build_index(self._filehandle)
-                    serialize_index(self._index, indexfile)
+                    try:
+                        serialize_index(self._index, indexfile)
+                    except Exception as e:
+                        print(f"index was not serialized for future use: {e}")
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
 
