@@ -129,6 +129,8 @@ class open():
         filename: Union[bytes, str, Path],
         mode: Literal["r", "w", "x"] = "r",
         *,
+        save_index = True,
+        use_index = True,
         _xarray_backend = False,
         **kwargs,
         ):
@@ -196,7 +198,7 @@ class open():
             if 'r' in self.mode:
 
                 indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
-                if os.path.exists(indexfile):
+                if use_index and os.path.exists(indexfile):
                     try:
                         with builtins.open(indexfile, 'rb') as file:
                             index = pickle.load(file)
@@ -207,10 +209,11 @@ class open():
                         self._index = build_index(self._filehandle)
                 else:
                     self._index = build_index(self._filehandle)
-                    try:
-                        serialize_index(self._index, indexfile)
-                    except Exception as e:
-                        print(f"index was not serialized for future use: {e}")
+                    if save_index:
+                        try:
+                            serialize_index(self._index, indexfile)
+                        except Exception as e:
+                            print(f"index was not serialized for future use: {e}")
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
 
