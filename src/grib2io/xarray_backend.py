@@ -1833,7 +1833,7 @@ def process_level_branch(level_tree, df, filename):
                 dss = create_datasets_from_df(pdtn_df, filename, verbose=True)
                 if dss is not None:
                     dt = xr.DataTree()
-                    ds_dict = {f"ds_{i}": ds for i, ds in enumerate(dss)}
+                    ds_dict = {f"var_{ds.data_vars[0]}": ds for i, ds in enumerate(dss)}
                     for k, v in ds_dict.items():
                         dt[k] = v
                     level_tree[pdtn_name] = dt
@@ -1940,7 +1940,7 @@ def process_probability_groups(target_tree, pdtn_df, filename):
                 print(f"TEST: MANY...")
                 for ds in dss:
                     print(f"TEST ===== prob{ds.data_vars[0]}")
-                    dt[f"prob{ds.data_vars[0]}"] = ds
+                    dt[f"var_{ds.data_vars[0]}"] = ds
                 print(f"TEST: {dt = }")
             target_tree[prob_name] = dt
         except Exception as e:
@@ -1980,17 +1980,36 @@ def process_perturbation_groups(target_tree, pdtn_df, filename):
     for pert_num, pert_df in pert_groups.items():
         pert_name = f"pert_{int(pert_num)}"
 
+        ## Try to create dataset for this perturbation group
+        #try:
+        #    dss = create_datasets_from_df(pert_df, filename)
+        #    if dss is not None:
+        #        if len(dss) == 1:
+        #            target_tree.ds = dss[0]
+        #        else:
+        #            dss_dict = {f"ds_{i}": ds for i, ds in enumerate(dss)}
+        #            atree = xr.DataTree(dss_dict)
+        #            target_tree[prob_name] = atree
+        #        success = True
+        #except Exception as e:
+        #    # Log error but continue processing other groups
+        #    print(f"Error creating dataset for perturbation {pert_name}: {e}")
+
         # Try to create dataset for this perturbation group
         try:
             dss = create_datasets_from_df(pert_df, filename)
-            if dss is not None:
-                if len(dss) == 1:
-                    target_tree.ds = dss[0]
-                else:
-                    dss_dict = {f"ds_{i}": ds for i, ds in enumerate(dss)}
-                    atree = xr.DataTree(dss_dict)
-                    target_tree[prob_name] = atree
-                success = True
+            dt = xr.DataTree()
+            if len(dss) == 1:
+                print(f"TEST: ONE...")
+                dt.ds = dss[0]
+                target_tree[pert_name] = dt
+            elif len(dss) > 1:
+                print(f"TEST: MANY...")
+                for ds in dss:
+                    print(f"TEST ===== pert{ds.data_vars[0]}")
+                    dt[f"pert{ds.data_vars[0]}"] = ds
+                print(f"TEST: {dt = }")
+            target_tree[pert_name] = dt
         except Exception as e:
             # Log error but continue processing other groups
             print(f"Error creating dataset for perturbation {pert_name}: {e}")
