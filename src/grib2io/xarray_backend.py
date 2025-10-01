@@ -1810,11 +1810,12 @@ def process_level_branch(level_tree, df, filename):
     if len(pdtn_groups) == 1:
         pdtn, pdtn_df = next(iter(pdtn_groups.items()))
 
+        pdtn_name = f"pdtn_{int(pdtn)}"
+
         # Check if we need to further subdivide by perturbation number
         has_perturbations = ('perturbationNumber' in pdtn_df.columns and
                              len(pdtn_df['perturbationNumber'].dropna().unique()) > 1)
 
-        # TEST
         # Check if we need to further subdivide by probabilities unique for each variable.
         has_probabilities = ('typeOfProbability' in pdtn_df.columns and
                              len(pdtn_df['typeOfProbability'].dropna().unique()) > 1)
@@ -1824,14 +1825,18 @@ def process_level_branch(level_tree, df, filename):
             process_perturbation_groups(level_tree, pdtn_df, filename)
         elif has_probabilities:
             # Process probability groups
-            process_probability_groups(pdtn_tree, pdtn_df, filename)
+            print(f"TEST: In process_level_branch(), {len(pdtn_groups) = }, before call to process_probability_groups()")
+            process_probability_groups(level_tree, pdtn_df, filename)
         else:
             # For single perturbation case, try to create dataset directly on level
             try:
-                ds = create_dataset_from_df(pdtn_df, filename)
-                if ds is not None:
-                    # Set the dataset directly on the level tree
-                    level_tree.ds = ds
+                dss = create_datasets_from_df(pdtn_df, filename, verbose=True)
+                if dss is not None:
+                    dt = xr.DataTree()
+                    ds_dict = {f"ds_{i}": ds for i, ds in enumerate(dss)}
+                    for k, v in ds_dict.items():
+                        dt[k] = v
+                    level_tree[pdtn_name] = dt
             except Exception as e:
                 print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
 
@@ -1847,14 +1852,9 @@ def process_level_branch(level_tree, df, filename):
             has_perturbations = ('perturbationNumber' in pdtn_df.columns and
                                  len(pdtn_df['perturbationNumber'].dropna().unique()) > 1)
 
-            # TEST
             # Check if we need to further subdivide by probabilities unique for each variable.
             has_probabilities = ('typeOfProbability' in pdtn_df.columns and
                                  len(pdtn_df['typeOfProbability'].dropna().unique()) > 1)
-            # TEST
-
-           # print(f"TEST: LOOK HERE...{pdtn_name = }, {has_perturbations = }, {has_probabilities = }")
-           # print(f"\n\n\n{pdtn_df}\n\n\n")
 
             if has_perturbations:
                 # Create a branch for this PDTN
@@ -1871,9 +1871,11 @@ def process_level_branch(level_tree, df, filename):
                 pdtn_tree = xr.DataTree()
 
                 # Process probability groups
+                print(f"TEST: In process_level_branch(), {len(pdtn_groups) = }, before call to process_probability_groups()")
                 process_probability_groups(pdtn_tree, pdtn_df, filename)
 
                 # Only add the PDTN branch if it has children
+                print(f"TEST: {len(pdtn_tree.children) = }, {pdtn_tree.ds = }")
                 if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
                     level_tree[pdtn_name] = pdtn_tree
             else:
@@ -1883,11 +1885,13 @@ def process_level_branch(level_tree, df, filename):
                 # Try to separate by variable name as a fallback
                 if try_process_by_variables(pdtn_tree, pdtn_df, filename):
                     level_tree[pdtn_name] = pdtn_tree
+                else:
+                    print(f"TEST: try_process_by_variables returned False")
 
                 # For single perturbation case, try to group by variable if needed
                 # try:
                 #    print(f"\nTEST...INSIDE try....")
-                #    ds = create_dataset_from_df(pdtn_df, filename, verbose=True)
+                #    ds = create_datasets_from_df(pdtn_df, filename, verbose=True)
                 #    print(f"\nTEST: AFTER create_dataset_from_df, {ds = }")
                 #    if ds is not None:
                 #        level_tree[pdtn_name] = ds
@@ -1918,16 +1922,27 @@ def process_probability_groups(target_tree, pdtn_df, filename):
             prob_groups[prob_value] = prob_df
 
     # Process each probability group
+    prob_dict = {}
     for prob_num, prob_df in prob_groups.items():
         prob_name = f"prob_{int(prob_num)}"
 
+        print(f"TEST: {target_tree.name = }; {prob_name = }")
+
         # Try to create dataset for this probability group
         try:
-            ds = create_dataset_from_df(prob_df, filename)
-            if ds is not None:
-                # Add dataset to the probability branch
-                target_tree[prob_name] = ds
-                success = True
+            dss = create_datasets_from_df(prob_df, filename)
+            dt = xr.DataTree()
+            if len(dss) == 1:
+                print(f"TEST: ONE...")
+                dt.ds = dss[0]
+                target_tree[prob_name] = dt
+            elif len(dss) > 1:
+                print(f"TEST: MANY...")
+                for ds in dss:
+                    print(f"TEST ===== prob{ds.data_vars[0]}")
+                    dt[f"prob{ds.data_vars[0]}"] = ds
+                print(f"TEST: {dt = }")
+            target_tree[prob_name] = dt
         except Exception as e:
             # Log error but continue processing other groups
             print(f"Error creating dataset for type of probability {prob_name}: {e}")
@@ -1967,10 +1982,14 @@ def process_perturbation_groups(target_tree, pdtn_df, filename):
 
         # Try to create dataset for this perturbation group
         try:
-            ds = create_dataset_from_df(pert_df, filename)
-            if ds is not None:
-                # Add dataset to the perturbation branch
-                target_tree[pert_name] = ds
+            dss = create_datasets_from_df(pert_df, filename)
+            if dss is not None:
+                if len(dss) == 1:
+                    target_tree.ds = dss[0]
+                else:
+                    dss_dict = {f"ds_{i}": ds for i, ds in enumerate(dss)}
+                    atree = xr.DataTree(dss_dict)
+                    target_tree[prob_name] = atree
                 success = True
         except Exception as e:
             # Log error but continue processing other groups
@@ -2004,9 +2023,10 @@ def try_process_by_variables(target_tree, df, filename):
             if pd.notna(var_name):
                 var_df = df[df['shortName'] == var_name]
                 try:
-                    var_ds = create_dataset_from_df(var_df, filename)
+                    var_ds = create_datasets_from_df(var_df, filename)
+                    print(f"TEST: In try_process_by_variables(), {len(var_ds) = }")
                     if var_ds is not None:
-                        target_tree[f"var_{var_name}"] = var_ds
+                        target_tree[f"var_{var_name}"] = var_ds[0]
                         success = True
                 except Exception as var_e:
                     print(f"Error creating dataset for variable {var_name}: {var_e}")
@@ -2016,9 +2036,13 @@ def try_process_by_variables(target_tree, df, filename):
     return success
 
 
-def create_dataset_from_df(df, filename, verbose=True):
+def create_datasets_from_df(
+    df,
+    filename,
+    verbose=False
+) -> typing.Optional[typing.List[xr.Dataset]]:
     """
-    Create an xarray Dataset from a DataFrame of messages.
+    Create a list of xarray Datasets from a DataFrame of messages.
 
     Parameters
     ----------
@@ -2031,8 +2055,8 @@ def create_dataset_from_df(df, filename, verbose=True):
 
     Returns
     -------
-    xarray.Dataset or None
-        Dataset containing the data, or None if creation failed
+    dss
+        List of Datasets, or None if creation failed
     """
     try:
         if verbose:
@@ -2051,7 +2075,6 @@ def create_dataset_from_df(df, filename, verbose=True):
 
         # Process each variable separately, regardless of whether there are vertical levels
         for var_name, var_df in df.groupby('shortName'):
-            print(var_name)
             if verbose:
                 print(
                     f"\n  Processing variable: {var_name} with {len(var_df)} messages, with pdtn(s) = {var_df['productDefinitionTemplateNumber'].unique()}")
@@ -2177,17 +2200,11 @@ def create_dataset_from_df(df, filename, verbose=True):
                         print(f"Successfully merged all datasets into one.")
                         print(f"Final dataset has variables: {list(combined_ds.data_vars)}")
                         print(f"==== END VERBOSE DEBUG INFO ====\n")
-                    return combined_ds
+                    return [combined_ds]
                 except Exception as merge_error:
                     if verbose:
                         print(f"Error merging all datasets: {merge_error}")
-
-                    # If we can't merge all, return the first dataset
-                    first_ds = ds_list[0]
-                    if verbose:
-                        print(f"Returning first dataset with variables: {list(first_ds.data_vars)}")
-                        print(f"==== END VERBOSE DEBUG INFO ====\n")
-                    return first_ds
+                    return ds_list
             except Exception as e:
                 if verbose:
                     print(f"Error in final merge process: {e}")
