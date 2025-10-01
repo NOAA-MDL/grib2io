@@ -23,7 +23,7 @@ def test_section1_attrs(request):
     np.testing.assert_array_equal(expected_section1, msg.section1)
     assert msg.identificationSection is msg.section1
     assert msg.originatingCenter.value == 7
-    assert msg.originatingCenter.definition == 'US National Weather Service - NCEP (WMC)'
+    assert msg.originatingCenter.definition == 'US National Weather Service - NCEP'
     assert msg.originatingSubCenter.value == 0
     assert msg.originatingSubCenter.definition is None
     assert msg.localTableInfo.value == 1
