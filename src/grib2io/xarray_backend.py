@@ -1479,13 +1479,11 @@ class Grib2ioDataArray:
         for selectors in itertools.product(*indexes):
             # Need to find the correct data in the DataArray based on the
             # dimension coordinates.
-            print(indexes)
             filters = {k: v for d in selectors for k, v in d.items()}
 
             # If `filters` is {}, then the DataArray is a single grib2 message
             # and da.sel(indexers={}) returns the DataArray.
             selected = da.sel(indexers=filters)
-            print(selected)
 
             newmsg = Grib2Message(
                 selected.attrs["GRIB2IO_section0"],
@@ -1506,7 +1504,6 @@ class Grib2ioDataArray:
             # For non-dimension coordinates, set the grib2 message metadata to
             # the DataArray coordinate value.
             for index in [i for i in coords_keys if i not in da.dims]:
-                print(index)
                 setattr(newmsg, index, selected.coords[index].values)
 
             # Set section 5 attributes to the da.encoding dictionary.
@@ -1825,12 +1822,11 @@ def process_level_branch(level_tree, df, filename):
             process_perturbation_groups(level_tree, pdtn_df, filename)
         elif has_probabilities:
             # Process probability groups
-            print(f"TEST: In process_level_branch(), {len(pdtn_groups) = }, before call to process_probability_groups()")
             process_probability_groups(level_tree, pdtn_df, filename)
         else:
-            # For single perturbation case, try to create dataset directly on level
+            # Try to create dataset directly on level
             try:
-                dss = create_datasets_from_df(pdtn_df, filename, verbose=True)
+                dss = create_datasets_from_df(pdtn_df, filename)
                 if dss is not None:
                     dt = xr.DataTree()
                     ds_dict = {f"var_{ds.data_vars[0]}": ds for i, ds in enumerate(dss)}
@@ -1871,11 +1867,9 @@ def process_level_branch(level_tree, df, filename):
                 pdtn_tree = xr.DataTree()
 
                 # Process probability groups
-                print(f"TEST: In process_level_branch(), {len(pdtn_groups) = }, before call to process_probability_groups()")
                 process_probability_groups(pdtn_tree, pdtn_df, filename)
 
                 # Only add the PDTN branch if it has children
-                print(f"TEST: {len(pdtn_tree.children) = }, {pdtn_tree.ds = }")
                 if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
                     level_tree[pdtn_name] = pdtn_tree
             else:
@@ -1885,9 +1879,8 @@ def process_level_branch(level_tree, df, filename):
                 # Try to separate by variable name as a fallback
                 if try_process_by_variables(pdtn_tree, pdtn_df, filename):
                     level_tree[pdtn_name] = pdtn_tree
-                else:
-                    print(f"TEST: try_process_by_variables returned False")
-
+                #else:
+                #
                 # For single perturbation case, try to group by variable if needed
                 # try:
                 #    print(f"\nTEST...INSIDE try....")
@@ -1904,10 +1897,6 @@ def process_level_branch(level_tree, df, filename):
                 #    # Try to separate by variable name as a fallback
                 #    if try_process_by_variables(pdtn_tree, pdtn_df, filename):
                 #        level_tree[pdtn_name] = pdtn_tree
-
-            # TEST
-           # print(f"TEST: {pdtn_name = }")
-            # TEST
 
 
 def process_probability_groups(target_tree, pdtn_df, filename):
@@ -1926,22 +1915,16 @@ def process_probability_groups(target_tree, pdtn_df, filename):
     for prob_num, prob_df in prob_groups.items():
         prob_name = f"prob_{int(prob_num)}"
 
-        print(f"TEST: {target_tree.name = }; {prob_name = }")
-
         # Try to create dataset for this probability group
         try:
             dss = create_datasets_from_df(prob_df, filename)
             dt = xr.DataTree()
             if len(dss) == 1:
-                print(f"TEST: ONE...")
                 dt.ds = dss[0]
                 target_tree[prob_name] = dt
             elif len(dss) > 1:
-                print(f"TEST: MANY...")
                 for ds in dss:
-                    print(f"TEST ===== prob{ds.data_vars[0]}")
                     dt[f"var_{ds.data_vars[0]}"] = ds
-                print(f"TEST: {dt = }")
             target_tree[prob_name] = dt
         except Exception as e:
             # Log error but continue processing other groups
@@ -2000,15 +1983,11 @@ def process_perturbation_groups(target_tree, pdtn_df, filename):
             dss = create_datasets_from_df(pert_df, filename)
             dt = xr.DataTree()
             if len(dss) == 1:
-                print(f"TEST: ONE...")
                 dt.ds = dss[0]
                 target_tree[pert_name] = dt
             elif len(dss) > 1:
-                print(f"TEST: MANY...")
                 for ds in dss:
-                    print(f"TEST ===== pert{ds.data_vars[0]}")
                     dt[f"pert{ds.data_vars[0]}"] = ds
-                print(f"TEST: {dt = }")
             target_tree[pert_name] = dt
         except Exception as e:
             # Log error but continue processing other groups
@@ -2043,7 +2022,6 @@ def try_process_by_variables(target_tree, df, filename):
                 var_df = df[df['shortName'] == var_name]
                 try:
                     var_ds = create_datasets_from_df(var_df, filename)
-                    print(f"TEST: In try_process_by_variables(), {len(var_ds) = }")
                     if var_ds is not None:
                         target_tree[f"var_{var_name}"] = var_ds[0]
                         success = True
