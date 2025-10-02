@@ -1829,9 +1829,12 @@ def process_level_branch(level_tree, df, filename):
                 dss = create_datasets_from_df(pdtn_df, filename)
                 if dss is not None:
                     dt = xr.DataTree()
-                    ds_dict = {f"var_{ds.data_vars[0]}": ds for i, ds in enumerate(dss)}
-                    for k, v in ds_dict.items():
-                        dt[k] = v
+                    if len(dss) == 1:
+                        dt.ds = dss[0]
+                    else:
+                        for ds in dss:
+                            varname = list(ds.data_vars)[0]
+                            dt[f"var_{varname}"] = ds
                     level_tree[pdtn_name] = dt
             except Exception as e:
                 print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
