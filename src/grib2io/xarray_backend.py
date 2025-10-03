@@ -1879,27 +1879,23 @@ def process_level_branch(level_tree, df, filename):
                 # Create a subtree for this PDTN
                 pdtn_tree = xr.DataTree()
 
-                # Try to separate by variable name as a fallback
-                if try_process_by_variables(pdtn_tree, pdtn_df, filename):
+                # Try to create dataset directly on level
+                try:
+                    dss = create_datasets_from_df(pdtn_df, filename)
+                    if dss is not None:
+                        if len(dss) == 1:
+                            pdtn_tree.ds = dss[0]
+                        else:
+                            for ds in dss:
+                                varname = list(ds.data_vars)[0]
+                                pdtn_tree[f"var_{varname}"] = ds
+                        level_tree[pdtn_name] = pdtn_tree
+                except Exception as e:
+                    print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
+
+                    # Try to separate by variable name as a fallback
+                    try_process_by_variables(pdtn_tree, pdtn_df, filename)
                     level_tree[pdtn_name] = pdtn_tree
-                #else:
-                #
-                # For single perturbation case, try to group by variable if needed
-                # try:
-                #    print(f"\nTEST...INSIDE try....")
-                #    ds = create_datasets_from_df(pdtn_df, filename, verbose=True)
-                #    print(f"\nTEST: AFTER create_dataset_from_df, {ds = }")
-                #    if ds is not None:
-                #        level_tree[pdtn_name] = ds
-                # except Exception as e:
-                #    print(f"Error creating dataset for {pdtn_name}: {e}")
-
-                #    # Create a subtree for this PDTN
-                #    pdtn_tree = xr.DataTree()
-
-                #    # Try to separate by variable name as a fallback
-                #    if try_process_by_variables(pdtn_tree, pdtn_df, filename):
-                #        level_tree[pdtn_name] = pdtn_tree
 
 
 def process_probability_groups(target_tree, pdtn_df, filename):
