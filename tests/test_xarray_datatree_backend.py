@@ -52,26 +52,24 @@ def test_datatree_level_structure(request):
     # Open the file as a DataTree
     tree = xr.open_datatree(data / 'gfs.t00z.pgrb2.1p00.f012_subset', engine='grib2io')
 
-    # Check the isobaric_surface branch (should have multiple levels)
+    # Check the isobaric_surface branch, should have a single branch and no direct Dataset
     if 'isobaric_surface' in tree.children:
         isobaric_node = tree['isobaric_surface']
 
-        # Check if it has data variables
-        if not is_dataset_empty(isobaric_node.ds):
-            # If it has direct data, at least one data variable should be present
-            assert len(isobaric_node.ds.data_vars) > 0
+        # Direct ds should be empty
+        assert is_dataset_empty(isobaric_node.ds)
 
-            # Check if the valueOfFirstFixedSurface dimension is present
-            if 'valueOfFirstFixedSurface' in isobaric_node.ds.dims:
-                # Verify it has multiple values
-                assert len(isobaric_node.ds.valueOfFirstFixedSurface) > 1
+        # Should be just 1 child branch
+        assert len(isobaric_node.children) == 1
 
-        # Or it might have children by PDTN
-        elif len(isobaric_node.children) > 0:
-            # If it has children, check the first child
-            first_child = next(iter(isobaric_node.children.values()))
-            assert not is_dataset_empty(first_child.ds)
-            assert len(first_child.ds.data_vars) > 0
+        # Get the first child
+        first_child = next(iter(isobaric_node.children.values()))
+
+        # Check the name
+        assert first_child.name == "pdtn_0"
+
+        # Should have branches 
+        assert len(first_child.children) > 0
 
 def test_datatree_single_pdtn_optimization(request):
     """Test that PDTN nodes are skipped when there's only one PDTN value."""

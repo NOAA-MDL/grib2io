@@ -380,8 +380,11 @@ def test_ds_to_netcdf(tmp_path, request):
         filters=filters,
     )
 
-    ds1.to_netcdf(target_file)
+    ds1.to_netcdf(target_file, engine="netcdf4")
 
+
+    # TODO: A future Xarray release will acknowledge the "dtype" NetCDF variable
+    # attribute.
     ds2 = xr.open_dataset(target_file, engine="netcdf4", decode_times=False)
     del ds2.leadTime.attrs['dtype']
     ds2 = xr.decode_cf(ds2)
