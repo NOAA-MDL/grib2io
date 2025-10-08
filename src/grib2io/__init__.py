@@ -4,7 +4,7 @@ from ._grib2io import _Grib2Message
 
 __all__ = ['open', 'show_config', 'interpolate', 'interpolate_to_stations',
            'tables', 'templates', 'utils',
-           'Grib2Message', '_Grib2Message', 'Grib2GridDef']
+           'Grib2Message', '_Grib2Message', 'Grib2GridDef', 'msgs_from_index']
 
 try:
     from . import __config__
