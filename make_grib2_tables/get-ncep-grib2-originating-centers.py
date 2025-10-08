@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+from io import StringIO
 from urllib.request import urlopen
 import pandas as pd
+import requests
 
 # ----------------------------------------------------------------------------------------
 # Get NCEP GRIB2 tables version
@@ -26,7 +28,10 @@ print(f"_ncep_grib2_table_version = \'{version_num}\'\n")
 # ----------------------------------------------------------------------------------------
 url = r'https://www.nco.ncep.noaa.gov/pmb/docs/on388/table0.html'
 
-tables = pd.read_html(url)
+req = requests.get(url, timeout=30)
+req.encoding = req.encoding or req.apparent_encoding
+html_text = req.text
+tables = pd.read_html(StringIO(html_text), flavor="lxml")
 
 df = tables[0]
 
@@ -34,6 +39,7 @@ name = 'table_originating_centers'
 
 print(name," = {")
 for idx,row in df.iterrows():
+    if pd.isna(row['VALUE']): continue
     value = row['VALUE'].lstrip('0')
     center = row['CENTER'].replace('\'','')
     line = "'%s':'%s'," % (value,center)

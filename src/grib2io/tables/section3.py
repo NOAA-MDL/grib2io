@@ -1,6 +1,6 @@
 table_3_0 = {
 '0':'Specified in Code Table 3.1',
-'1':'Predetermined Grid Definition - Defined by Originating Center',
+'1':'Predetermined Grid Definition',
 '2-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'A grid definition does not apply to this product.',
