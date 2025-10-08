@@ -193,7 +193,7 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
             },  # kwargs
             Exception,  # expected_type
             ValueError,  # expected
-            "day is out of range for month",
+            r"^day is out of range for month|^day 29 must be in range 1\.\.28 for month 2 in year 2021",
             id="non_leap_year_error",
         ),
         pytest.param(
@@ -205,7 +205,7 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
             },  # kwargs
             Exception,  # expected_type
             ValueError,  # expected
-            "hour must be in 0..23",
+            r"^hour must be in 0\.\.23(?:, not \d+)?$",
             id="25_hour_error",
         ),
     ],
@@ -218,9 +218,8 @@ def test_update_attrs(kwargs, expected_type, expected, error_message):
             pytest.fail("No warning raised")
 
     elif issubclass(expected_type, Exception):
-        with pytest.raises(expected) as exc_info:
+        with pytest.raises(expected, match=error_message) as exc_info:
             result = TESTGRIB["TMP"].grib2io.update_attrs(**kwargs).attrs
-        assert error_message == str(exc_info.value)
 
     elif isinstance(expected_type, type):
         tst = TESTGRIB["TMP"].grib2io.update_attrs(**kwargs).attrs
