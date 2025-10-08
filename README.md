@@ -8,6 +8,7 @@
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/release/python-3110/)
 [![Python 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
 [![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+[![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg)](https://www.python.org/downloads/release/python-3140/)
 
 ![Build Linux](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_linux.yml/badge.svg)
 ![Build macOS](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_macos.yml/badge.svg)
@@ -37,7 +38,7 @@ Optionally (but recommended), grib2io supports spatial interpolation via its int
 * [User Guide Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
 
 ## Required Software
-* [Python](https://python.org) 3.8, 3.9, 3.10, 3.11, 3.12, 3.13
+* [Python](https://python.org) 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14
 * [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
 * setuptools 34.0+
 * Cython 3.0+

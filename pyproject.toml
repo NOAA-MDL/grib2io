@@ -13,7 +13,7 @@ authors = [
   {name = "Eric Engle", email = "eric.engle@noaa.gov"},
   {name = "Adam Schnapp", email = "adam.schnapp@noaa.gov"},
 ]
-requires-python = ">=3.8,<3.14"
+requires-python = ">=3.8,<=3.14"
 keywords = [
   "weather", "data-science", "numpy", "meteorology", "weather-data", "atmospheric-science",
   "grib2", "grib2-decoder", "grib2-encoder", "ncep",
@@ -33,6 +33,7 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Intended Audience :: Science/Research",
   "License :: OSI Approved :: MIT License",
   "Topic :: Scientific/Engineering :: Atmospheric Science",

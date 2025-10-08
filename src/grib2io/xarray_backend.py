@@ -13,12 +13,13 @@ from xarray.backends import (
     BackendEntrypoint,
 )
 from copy import copy
+from collections import defaultdict
 from dataclasses import dataclass, field, astuple
 import importlib.metadata
 import itertools
 import logging
 import typing
-from warnings import warn
+import warnings
 
 from . import tables
 
@@ -450,7 +451,17 @@ class GribBackendEntrypoint(BackendEntrypoint):
             file_index = pd.DataFrame(f._index)
 
         # Build tree structure from GRIB messages with specified options
-        return build_datatree_from_grib(filename, file_index, filters, stack_vertical=stack_vertical)
+        tree = build_datatree_from_grib(filename, file_index, filters, stack_vertical=stack_vertical)
+
+        # Put warning here so it is the last message from likely other Xarray warnings.
+        warnings.warn(
+            "grib2io’s xarray backend DataTree support is experimental. "
+            "The DataTree structure or attributes may change in future releases.",
+        UserWarning,
+        stacklevel=2,
+        )
+
+        return tree
 
 
 class GribBackendArray(BackendArray):
@@ -886,6 +897,42 @@ def parse_grib_index(
                 index = index.assign(**{meta: index.msg.apply(lambda msg: getattr(msg, meta))})
 
     return index, dim_coords, attrs, coord_attrs
+
+
+# Custom open_datatree function to open grib files as DataTree
+def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, engine="grib2io"):
+    """
+    Open a GRIB2 file as an xarray DataTree.
+
+    Parameters
+    ----------
+    filename : str
+        Path to the GRIB2 file.
+    filters : dict, optional
+        Filter criteria for GRIB2 messages.
+    engine : str, optional
+        Engine to use for opening the file, defaults to "grib2io".
+
+    Returns
+    -------
+    xarray.DataTree
+        A hierarchical DataTree representation of the GRIB2 data.
+    """
+    if not HAS_DATATREE:
+        raise ImportError("xarray version does not support DataTree functionality.")
+
+    if filters is None:
+        filters = {}
+
+    # Open the file without any filters first to get all messages
+    with grib2io.open(filename, _xarray_backend=True) as f:
+        file_index = pd.DataFrame(f._index)
+
+    # Create a DataTree root
+    tree = xr.DataTree()
+
+    # Build tree structure from GRIB messages
+    return build_datatree_from_grib(filename, file_index, filters)
 
 
 def build_da_without_coords(index, cube, filename, attrs) -> xr.DataArray:
@@ -1584,14 +1631,14 @@ class Grib2ioDataArray:
                     "The dataRepresentationTemplateNumber attribute cannot be updated."
                 )
             if grib2_name in coords_keys:
-                warn(
+                warnings.warn(
                     f"Skipping attribute '{grib2_name}' because it is a coordinate. Use da.assign_coords() to change coordinate values."
                 )
                 continue
             if hasattr(newmsg, grib2_name):
                 setattr(newmsg, grib2_name, value)
             else:
-                warn(
+                warnings.warn(
                     f"Skipping attribute '{grib2_name}' because it is not a valid GRIB2 attribute for this message and cannot be updated."
                 )
                 continue
@@ -1648,42 +1695,6 @@ class Grib2ioDataArray:
         )
 
         return da.where((mask_lon & mask_lat).compute(), drop=True)
-
-
-# Custom open_datatree function to open grib files as DataTree
-def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, engine="grib2io"):
-    """
-    Open a GRIB2 file as an xarray DataTree.
-
-    Parameters
-    ----------
-    filename : str
-        Path to the GRIB2 file.
-    filters : dict, optional
-        Filter criteria for GRIB2 messages.
-    engine : str, optional
-        Engine to use for opening the file, defaults to "grib2io".
-
-    Returns
-    -------
-    xarray.DataTree
-        A hierarchical DataTree representation of the GRIB2 data.
-    """
-    if not HAS_DATATREE:
-        raise ImportError("xarray version does not support DataTree functionality.")
-
-    if filters is None:
-        filters = {}
-
-    # Open the file without any filters first to get all messages
-    with grib2io.open(filename, _xarray_backend=True) as f:
-        file_index = pd.DataFrame(f._index)
-
-    # Create a DataTree root
-    tree = xr.DataTree()
-
-    # Build tree structure from GRIB messages
-    return build_datatree_from_grib(filename, file_index, filters)
 
 
 def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=False):
