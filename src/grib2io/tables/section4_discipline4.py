@@ -63,7 +63,7 @@ table_4_2_4_4  = {
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_4_5  = {
-'0':['Amplitude','rad','AMPL'],
+'0':['Amplitude','dB','AMPL'],
 '1':['Phase','rad','PHASE'],
 '2':['Frequency','Hz','FREQ'],
 '3':['Wavelength','m','WAVELGTH'],
@@ -84,10 +84,10 @@ table_4_2_4_6  = {
 '255':['Missing','unknown','unknown'],
 }
 table_4_2_4_7  = {
-'0':['Limb Intensity','J m-2 s-1','LMBINT'],
-'1':['Disk Intensity','J m-2 s-1','DSKINT'],
-'2':['Disk Intensity Day','J m-2 s-1','DSKDAY'],
-'3':['Disk Intensity Night','J m-2 s-1','DSKNGT'],
+'0':['Limb Intensity','J m-2 s-1 LMBINT','unknown'],
+'1':['Disk Intensity','J m-2 s-1 DSKINT','unknown'],
+'2':['Disk Intensity Day','J m-2 s-1 DSKDAY','unknown'],
+'3':['Disk Intensity Night','J m-2 s-1 DSKNGT','unknown'],
 '4-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],
@@ -101,7 +101,7 @@ table_4_2_4_8  = {
 '5':['White Light Coronagraph Radiance','W sr-1 m-2','WHTCOR'],
 '6':['Heliospheric Radiance','W sr-1 m-2','HELCOR'],
 '7':['Thematic Mask','Numeric','MASK'],
-'8':['Solar Induced Chlorophyll Fluorscence','W sr-1 m-2','SICFL'],
+'8':['Solar Induced Chlorophyll Fluorescence','W m-2 sr-1 m-1','SICFL'],
 '9-191':['Reserved','unknown','unknown'],
 '192-254':['Reserved for Local Use','unknown','unknown'],
 '255':['Missing','unknown','unknown'],

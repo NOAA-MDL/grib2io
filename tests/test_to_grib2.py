@@ -126,6 +126,9 @@ def test_ds_write_levels(tmp_path, request):
 
     ds2 = xr.open_dataset(target_file, engine="grib2io")
 
+    ds1 = ds1.swap_dims(level="valueOfFirstFixedSurface")
+    ds2 = ds2.swap_dims(level="valueOfFirstFixedSurface")
+
     for value in ds1.indexes["valueOfFirstFixedSurface"]:
         da1 = ds1["TMP"].sel(indexers={"valueOfFirstFixedSurface": value})
         da2 = ds2["TMP"].sel(indexers={"valueOfFirstFixedSurface": value})
@@ -377,8 +380,11 @@ def test_ds_to_netcdf(tmp_path, request):
         filters=filters,
     )
 
-    ds1.to_netcdf(target_file)
+    ds1.to_netcdf(target_file, engine="netcdf4")
 
+
+    # TODO: A future Xarray release will acknowledge the "dtype" NetCDF variable
+    # attribute.
     ds2 = xr.open_dataset(target_file, engine="netcdf4", decode_times=False)
     del ds2.leadTime.attrs['dtype']
     ds2 = xr.decode_cf(ds2)

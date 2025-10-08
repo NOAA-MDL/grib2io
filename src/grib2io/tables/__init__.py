@@ -14,6 +14,7 @@ from .section5 import *
 from .section6 import *
 from .originating_centers import *
 from .ndfd_additionals import *
+from .cf import *
 
 _varinfo_tables_datastore = {}
 
