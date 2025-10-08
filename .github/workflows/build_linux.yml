@@ -11,7 +11,7 @@ jobs:
       CC: ${{ matrix.ccompiler }}
     strategy:
       matrix:
-        python-version: ["3.8","3.9","3.10","3.11","3.12","3.13"]
+        python-version: ["3.8","3.9","3.10","3.11","3.12","3.13","3.14"]
         ccompiler: ["gcc-14"]
         staticlib: ["False"]
    
