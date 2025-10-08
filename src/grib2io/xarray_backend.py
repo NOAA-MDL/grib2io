@@ -4,7 +4,7 @@ xarray engine 'grib2io' API is experimental and is subject to change without
 backward compatibility.
 """
 from grib2io._grib2io import _data
-from grib2io import Grib2Message, Grib2GridDef
+from grib2io import Grib2Message, Grib2GridDef, msgs_from_index
 import grib2io
 from xarray.backends.locks import SerializableLock
 from xarray.core import indexing
