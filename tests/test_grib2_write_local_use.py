@@ -19,7 +19,7 @@ def test_grib2_write_local_use(tmp_path, request):
         newmsg.pack()
         grib2out.write(newmsg)
 
-    grib2out.close
+    grib2out.close()
 
     g = grib2io.open(target_file)
     msg = g[0]
