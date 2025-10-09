@@ -4,7 +4,7 @@ xarray engine 'grib2io' API is experimental and is subject to change without
 backward compatibility.
 """
 from grib2io._grib2io import _data
-from grib2io import Grib2Message, Grib2GridDef
+from grib2io import Grib2Message, Grib2GridDef, msgs_from_index
 import grib2io
 from xarray.backends.locks import SerializableLock
 from xarray.core import indexing
@@ -382,6 +382,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         """
         with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
+            file_index = file_index.assign(msg=msgs_from_index(f._index))
 
         # parse grib2io _index to dataframe and acquire non-geo possible dims
         # (scalar coord when not dim due to squeeze) parse_grib_index applies
@@ -449,6 +450,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # Open the file without any filters first to get all messages
         with grib2io.open(filename, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
+            file_index = file_index.assign(msg=msgs_from_index(f._index))
 
         # Build tree structure from GRIB messages with specified options
         tree = build_datatree_from_grib(filename, file_index, filters, stack_vertical=stack_vertical)
