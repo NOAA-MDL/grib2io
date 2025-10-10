@@ -4,15 +4,6 @@
 #
 # pip install pdoc
 # ---------------------------------------------------------------------------------------- 
-
-# Build in place
-python setup.py build_ext --inplace
-
-# Build docs
-PYTHONPATH=$PWD/src pdoc --docformat numpy -o docs grib2io 
-
-# Clean up
-find src/grib2io -name "*.so" -delete
-find src/grib2io -name "*.pyd" -delete
-find src/grib2io -name "*.pyc" -delete
-find src/grib2io -name "__pycache__" -type d -exec rm -r {} +
+export PYTHONPATH=src
+export VERSION=$(cat ./VERSION)
+python -m pdoc -d numpy --footer-text "grib2io v${VERSION}" -o docs grib2io grib2io.xarray_backend

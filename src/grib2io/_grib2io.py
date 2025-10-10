@@ -27,6 +27,13 @@ to these Fortran subroutines via their C-interface.  If NCEPLIBS-ip was built wi
 OpenMP support, `iplib` will provide functions for getting and setting the number of
 OpenMP threads.
 
+Xarray Backend
+==============
+grib2io provides a [Xarray backend engine](./grib2io/xarray_backend.html) so that many GRIB2 messages can be represented
+as N-dimensional DataArray objects and collected along common coordinates as Datasets or
+DataTrees. The Xarray backend engine API is experimental and is subject to change without
+backward compatibility.
+
 Tutorials
 =========
 The following Jupyter Notebooks are available as tutorials:
@@ -88,6 +95,9 @@ class open():
     """
     GRIB2 File Object.
 
+    This class can accommodate a physical file with one or more GRIB2
+    messages or a bytes object containing a GRIB2 messages.
+
     A physical file can contain one or more GRIB2 messages.  When instantiated,
     class `grib2io.open`, the file named `filename` is opened for reading (`mode
     = 'r'`) and is automatically indexed.  The indexing procedure reads some of
@@ -113,8 +123,12 @@ class open():
         File IO mode of opening the file.
     name : str
         Full path name of the GRIB2 file.
+    save_index : bool
+        Whether to save a pickle-based index file for the GRIB2 file. Default is `True`.
     size : int
         Size of the file in units of bytes.
+    use_index
+        Whether to use an existing pickle-based index file for the GRIB2 file. Default is `True`.
     variables : tuple
         Tuple containing a unique list of variable short names (i.e. GRIB2
         abbreviation names).
@@ -122,7 +136,7 @@ class open():
 
     __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index',
                  '_pos', 'closed', 'current_message', 'messages', 'mode',
-                 'name', 'size', '_msgs')
+                 'name', 'size', 'save_index', 'use_index', '_msgs')
 
     def __init__(
         self,
@@ -140,12 +154,14 @@ class open():
         Parameters
         ----------
         filename
-            File name containing GRIB2 messages.
-            OR
-            bytes
-        mode: default="r"
+            File path containing GRIB2 messages OR bytes.
+        mode
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
+        save_index
+            Whether to save a pickle-based index file for the GRIB2 file. Default is True.
+        use_index
+            Whether to use an existing pickle-based index file for the GRIB2 file. Default is True.
         """
 
         # All write modes are read/write.
@@ -155,6 +171,8 @@ class open():
         mode = mode + "b"
 
         self.mode = mode
+        self.save_index = save_index
+        self.use_index = use_index
 
         if isinstance(filename, bytes):
             if 'r' not in self.mode:
@@ -198,7 +216,7 @@ class open():
             if 'r' in self.mode:
 
                 indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
-                if use_index and os.path.exists(indexfile):
+                if self.use_index and os.path.exists(indexfile):
                     try:
                         with builtins.open(indexfile, 'rb') as file:
                             index = pickle.load(file)
@@ -209,7 +227,7 @@ class open():
                         self._index = build_index(self._filehandle)
                 else:
                     self._index = build_index(self._filehandle)
-                    if save_index:
+                    if self.save_index:
                         try:
                             serialize_index(self._index, indexfile)
                         except Exception as e:

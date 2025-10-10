@@ -1,7 +1,19 @@
 """
-grib2io xarray backend is a backend entrypoint for decoding grib2 files with
-xarray engine 'grib2io' API is experimental and is subject to change without
-backward compatibility.
+grib2io Backend Engine for Xarray
+=================================
+grib2io provides a Xarray backend entrypoint for decoding many GRIB2 messages
+from a single file or many files and represented as Xarray DataArray objects and
+collected along common coordinates as Datasets and DataTrees.
+
+.. warning::
+
+   The ``grib2io.xarray_backend`` engine API is **experimental**.
+   Its interface and behavior may change in future releases,
+   which could affect backward compatibility.
+
+   Users are encouraged to treat this backend as subject to change
+   and to pin their ``grib2io`` version if depending on its current
+   implementation details.
 """
 from grib2io._grib2io import _data
 from grib2io import Grib2Message, Grib2GridDef, msgs_from_index
