@@ -43,20 +43,19 @@ from pyproj import CRS
 import datetime
 
 # Check if xarray version supports DataTree
-HAS_DATATREE = False
+_HAS_DATATREE = False
 try:
     # Try importing DataTree to check if it's available
     xarray_version = importlib.metadata.version('xarray')
     xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split('.')]
     min_version_parts = [2024, 10, 0]
-    HAS_DATATREE = xarray_parts >= min_version_parts
+    _HAS_DATATREE = xarray_parts >= min_version_parts
 except (ImportError, ValueError):
-    HAS_DATATREE = False
+    _HAS_DATATREE = False
 
+_logger = logging.getLogger(__name__)
 
-logger = logging.getLogger(__name__)
-
-LOCK = SerializableLock()
+_LOCK = SerializableLock()
 
 AVAILABLE_NON_GEO_COORDS = [
     "duration",
@@ -76,7 +75,6 @@ AVAILABLE_NON_GEO_COORDS = [
     "scaledValueOfSecondSize"
 ]
 
-
 AVAILABLE_NON_GEO_DIMS = [
     "duration",
     "leadTime",
@@ -86,7 +84,6 @@ AVAILABLE_NON_GEO_DIMS = [
     "threshold",
     "level",
 ]
-
 
 # Lookup table to define surface types that should be parsed as vertical coordinates
 VERTICAL_COORDINATE_SURFACES = [
@@ -119,10 +116,8 @@ VERTICAL_COORDINATE_SURFACES = [
     'Ocean level defined by water density (rho) difference from near-surface to level'
 ]
 
-
 # Use custom table to map numeric level codes to human-readable names
 LEVEL_NAME_MAPPING = grib2io.tables.get_table('4.5.grib2io.level.name')
-
 
 # Define the order of hierarchy levels for the DataTree
 TREE_HIERARCHY_LEVELS = [
@@ -141,8 +136,83 @@ TREE_HIERARCHY_LEVELS = [
 # Levels included in data variables rather than tree structure
 VARIABLE_LEVELS = []
 
-
 def parse_data_model(ds, data_model):
+    """
+    Normalize a GRIB2-derived Dataset to a target data model (currently ``"nws-viz"``).
+
+    When ``data_model == "nws-viz"``, this function converts coordinate and
+    variable names to snake_case, derives CF-like metadata, promotes select
+    GRIB-derived quantities to coordinates, optionally swaps dimensions, and
+    standardizes units/attributes. If ``data_model`` is anything else, the
+    input dataset is returned unchanged.
+
+    Parameters
+    ----------
+    ds : xarray.Dataset
+        GRIB2-derived dataset whose variables and attributes follow the
+        conventions emitted by ``grib2io``. Expected to contain GRIB-related
+        attributes such as ``typeOfFirstFixedSurface``,
+        ``typeOfSecondFixedSurface``, and (for probabilistic variables)
+        ``typeOfProbability``.
+    data_model : str
+        Target data model name. Only the value ``"nws-viz"`` triggers
+        transformations.
+
+    Returns
+    -------
+    xarray.Dataset
+        A new dataset with:
+        * Selected coordinates renamed:
+          ``refDate -> forecast_reference_time``,
+          ``leadTime -> lead_time``,
+          ``validDate -> time``,
+          ``percentileValue -> percentile``,
+          ``thresholdLowerLimit -> threshold_lower_limit``,
+          ``thresholdUpperLimit -> threshold_upper_limit``.
+        * Vertical coordinates derived from
+          ``valueOfFirstFixedSurface`` / ``valueOfSecondFixedSurface`` and their
+          corresponding ``typeOf*FixedSurface`` definitions. New coordinate
+          names are generated from the surface definition (lowercased, spaces
+          to underscores, punctuation removed). If the name already exists, a
+          ``"_2"`` suffix is appended.
+        * Possible dimension swaps:
+          ``level -> <derived_vertical_coord>`` when present; and for
+          probabilistic variables, ``threshold -> threshold_lower_limit`` or
+          ``threshold -> threshold_upper_limit`` when
+          ``typeOfProbability`` indicates the appropriate semantics.
+        * Variable names lowercased; dataset- and variable-level attributes
+          converted to snake_case (except GRIB section attributes which are
+          normalized to ``grib...``).
+        * CF-adjacent metadata populated: ``standard_name`` and
+          ``cell_methods`` are set via the shortname→CF lookup table.
+        * Percent units normalized from ``"%"`` to ``"percent"`` on coordinates.
+        * For precipitation type (``PTYPE``) thresholds, numeric codes are
+          decoded to strings (GRIB2 Table 4.201) in relevant attrs/coords.
+
+    Notes
+    -----
+    - Precipitation type decoding uses GRIB2 Table 4.201 via
+      ``tables.get_value_from_table(code, "4.201")`` and returns a NumPy
+      array with ``np.dtypes.StringDType``.
+    - CF-related lookups are performed using
+      ``tables.get_table("shortname_to_cf")``.
+    - Vertical coordinate surface names are validated against
+      ``VERTICAL_COORDINATE_SURFACES`` before promotion to coordinates.
+
+    Warnings
+    --------
+    This function assumes the presence of certain GRIB-derived attributes on the
+    first data variable (e.g., ``typeOfFirstFixedSurface``,
+    ``typeOfSecondFixedSurface``, and possibly ``typeOfProbability``).
+    If these are absent or malformed, errors (e.g., ``KeyError``) may occur.
+
+    Examples
+    --------
+    >>> ds2 = parse_data_model(ds, "nws-viz")
+    >>> list(ds2.coords)
+    ['forecast_reference_time', 'lead_time', 'time', 'percentile', ...]
+    """
+
 
     def _decode_ptype(values):
         """
@@ -453,7 +523,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         xarray.DataTree
             A hierarchical DataTree representation of the GRIB2 data.
         """
-        if not HAS_DATATREE:
+        if not _HAS_DATATREE:
             raise ImportError("xarray version does not support DataTree functionality.")
 
         if filters is None:
@@ -932,7 +1002,7 @@ def open_datatree(filename, *, filters: typing.Mapping[str, typing.Any] = None, 
     xarray.DataTree
         A hierarchical DataTree representation of the GRIB2 data.
     """
-    if not HAS_DATATREE:
+    if not _HAS_DATATREE:
         raise ImportError("xarray version does not support DataTree functionality.")
 
     if filters is None:
@@ -991,7 +1061,7 @@ def build_da_without_coords(index, cube, filename, attrs) -> xr.DataArray:
         )
 
     data = OnDiskArray(filename, index, cube)
-    lock = LOCK
+    lock = _LOCK
     data = GribBackendArray(data, lock)
     data = indexing.LazilyIndexedArray(data)
     if len(dim_names) != len(data.shape):
@@ -1254,15 +1324,11 @@ class Grib2ioDataSet:
         mode: {"x", "w", "a"}, optional, default="x"
             Persistence mode
 
-            +------+-----------------------------------+
             | mode | Description                       |
-            +======+===================================+
-            | x    | create (fail if exists)           |
-            +------+-----------------------------------+
-            | w    | create (overwrite if exists)      |
-            +------+-----------------------------------+
-            | a    | append (create if does not exist) |
-            +------+-----------------------------------+
+            | :---:| :---:                             |
+            | 'x'  | create (fail if exists)           |
+            | 'w'  | create (overwrite if exists)      |
+            | 'a'  | append (create if does not exist) |
 
         """
         ds = self._obj
@@ -2248,7 +2314,7 @@ def create_datasets_from_df(
 
 
 # Only register the DataTree accessor if DataTree is supported
-if HAS_DATATREE:
+if _HAS_DATATREE:
     @xr.register_datatree_accessor("grib2io")
     class Grib2ioDataTree:
         """
