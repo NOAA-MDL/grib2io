@@ -5,6 +5,7 @@ from typing import Optional, Union, List
 from numpy.typing import ArrayLike
 import itertools
 import importlib
+import numpy as np
 
 from .section0 import *
 from .section1 import *

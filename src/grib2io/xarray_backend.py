@@ -57,6 +57,21 @@ _logger = logging.getLogger(__name__)
 
 _LOCK = SerializableLock()
 
+_LEVEL_NAME_MAPPING = grib2io.tables.get_table('4.5.grib2io.level.name')
+
+_TREE_HIERARCHY_LEVELS = [
+    "typeOfFirstFixedSurface",
+    "valueOfFirstFixedSurface",
+    "productDefinitionTemplateNumber",
+    "perturbationNumber",
+    "leadTime",
+    "duration",
+    "percentileValue",
+    "typeOfProbability",
+    "thresholdLowerLimit",
+    "thresholdUpperLimit"
+]
+
 AVAILABLE_NON_GEO_COORDS = [
     "duration",
     "leadTime",
@@ -74,6 +89,7 @@ AVAILABLE_NON_GEO_COORDS = [
     "scaledValueOfFirstSize",
     "scaledValueOfSecondSize"
 ]
+"""Available non-geographic coordinate names."""
 
 AVAILABLE_NON_GEO_DIMS = [
     "duration",
@@ -84,57 +100,42 @@ AVAILABLE_NON_GEO_DIMS = [
     "threshold",
     "level",
 ]
+"""Available non-geographic dimension names."""
 
 # Lookup table to define surface types that should be parsed as vertical coordinates
 VERTICAL_COORDINATE_SURFACES = [
-    'Ground or Water Surface',
-    'Isothermal Level',
-    'Specified radius from the centre of the Sun',
-    'Isobaric Surface',
-    'Mean Sea Level',
-    'Specific Altitude Above Mean Sea Level',
-    'Specified Height Level Above Ground',
-    'Sigma Level',
-    'Hybrid Level',
-    'Depth Below Land Surface',
-    'Isentropic (theta) Level',
-    'Level at Specified Pressure Difference from Ground to Level',
-    'Potential Vorticity Surface',
-    'Eta Level',
-    'Logarithmic Hybrid Level',
-    'Sigma height level',
-    'Hybrid Height Level',
-    'Hybrid Pressure Level',
-    'Soil level',
-    'Sea-ice level',
-    'Depth Below Sea Level',
-    'Depth Below Water Surface',
-    'Ocean Model Level',
-    'Ocean level defined by water density (sigma-theta) difference from near-surface to level',
-    'Ocean level defined by water potential temperature difference from near-surface to level',
-    'Ocean level defined by vertical eddy diffusivity difference from near-surface to level',
-    'Ocean level defined by water density (rho) difference from near-surface to level'
+    "Ground or Water Surface",
+    "Isothermal Level",
+    "Specified radius from the centre of the Sun",
+    "Isobaric Surface",
+    "Mean Sea Level",
+    "Specific Altitude Above Mean Sea Level",
+    "Specified Height Level Above Ground",
+    "Sigma Level",
+    "Hybrid Level",
+    "Depth Below Land Surface",
+    "Isentropic (theta) Level",
+    "Level at Specified Pressure Difference from Ground to Level",
+    "Potential Vorticity Surface",
+    "Eta Level",
+    "Logarithmic Hybrid Level",
+    "Sigma height level",
+    "Hybrid Height Level",
+    "Hybrid Pressure Level",
+    "Soil level",
+    "Sea-ice level",
+    "Depth Below Sea Level",
+    "Depth Below Water Surface",
+    "Ocean Model Level",
+    "Ocean level defined by water density (sigma-theta) difference from near-surface to level",
+    "Ocean level defined by water potential temperature difference from near-surface to level",
+    "Ocean level defined by vertical eddy diffusivity difference from near-surface to level",
+    "Ocean level defined by water density (rho) difference from near-surface to level"
 ]
-
-# Use custom table to map numeric level codes to human-readable names
-LEVEL_NAME_MAPPING = grib2io.tables.get_table('4.5.grib2io.level.name')
-
-# Define the order of hierarchy levels for the DataTree
-TREE_HIERARCHY_LEVELS = [
-    "typeOfFirstFixedSurface",
-    "valueOfFirstFixedSurface",
-    "productDefinitionTemplateNumber",
-    "perturbationNumber",
-    "leadTime",
-    "duration",
-    "percentileValue",
-    "typeOfProbability",
-    "thresholdLowerLimit",
-    "thresholdUpperLimit"
-]
-
-# Levels included in data variables rather than tree structure
-VARIABLE_LEVELS = []
+"""
+Lookup table to define surface types that should be parsed as vertical coordinates
+when `data_model="nws-viz"`.
+"""
 
 def parse_data_model(ds, data_model):
     """
@@ -213,18 +214,23 @@ def parse_data_model(ds, data_model):
     ['forecast_reference_time', 'lead_time', 'time', 'percentile', ...]
     """
 
-
     def _decode_ptype(values):
         """
         Decode precipitation type values into human-readable strings.
 
-        Args:
-            values: Array of numeric precipitation type codes
-
-        Returns:
-            numpy.ndarray: Array of decoded precipitation type strings
-
         Uses GRIB2 Table 4.201 to map numeric codes to precipitation type descriptions.
+
+        Parameters
+        ----------
+        values : array_like
+            Array of numeric precipitation type codes (e.g., integers or floats).
+            Each value corresponds to a GRIB2 Table 4.201 precipitation type code.
+
+        Returns
+        -------
+        numpy.ndarray
+            Array of decoded precipitation type strings with
+            NumPy’s flexible string data type (`np.dtypes.StringDType`).
         """
         results = []
         for val in values:
@@ -1824,7 +1830,7 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
         except (AttributeError, KeyError):
             return None
 
-    for attr in TREE_HIERARCHY_LEVELS:
+    for attr in _TREE_HIERARCHY_LEVELS:
         if (attr not in file_index.columns) and (attr != 'valueOfFirstFixedSurface'):
             file_index[attr] = file_index.msg.apply(lambda msg: safe_getattr(msg, attr))
 
@@ -1838,7 +1844,7 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     root = xr.DataTree()
 
     # Adjust hierarchy levels if we're stacking vertical levels
-    hierarchy_levels = list(TREE_HIERARCHY_LEVELS)
+    hierarchy_levels = list(_TREE_HIERARCHY_LEVELS) # This makes a copy
     if stack_vertical and "valueOfFirstFixedSurface" in hierarchy_levels:
         hierarchy_levels.remove("valueOfFirstFixedSurface")
 
@@ -1848,7 +1854,7 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     # Create a dictionary to group data by level type
     for level_type in file_index['typeOfFirstFixedSurface'].unique():
         if pd.notna(level_type):  # Skip None/NaN values
-            level_info = LEVEL_NAME_MAPPING.get(level_type, f"level_{level_type}")
+            level_info = _LEVEL_NAME_MAPPING.get(level_type, f"level_{level_type}")
             level_name = level_info[0]
             level_source = level_info[1]
             # Get all rows for this level type
