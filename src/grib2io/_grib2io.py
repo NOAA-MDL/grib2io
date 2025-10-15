@@ -1145,17 +1145,41 @@ class _Grib2Message:
 
 
     @data.setter
-    def data(self, data):
-        if not isinstance(data, np.ndarray):
-            raise ValueError('Grib2Message data only supports numpy arrays')
-        self._data = data
+    def data(self, arr):
+        """
+        Set the internal data array, enforcing shape (ny, nx) and dtype float32.
+
+        Parameters
+        ----------
+        arr : array_like
+            A 2D array whose shape must match ``(self.ny, self.nx)``.
+            It will be converted to ``float32`` and C-contiguous if needed.
+
+        Raises
+        ------
+        ValueError
+            If the shape of `value` does not match the expected dimensions.
+        """
+        if not isinstance(arr, np.ndarray):
+            raise ValueError(f"Grib2Message data only supports numpy arrays")
+        if arr.shape != (self.ny, self.nx):
+            raise ValueError(
+                f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
+                f"got {arr.shape}"
+            )
+        # Ensure contiguous memory layout (important for C interoperability)
+        if not arr.flags["C_CONTIGUOUS"]:
+            arr = np.ascontiguousarray(arr, dtype=np.float32)
+        self._data = arr
 
 
     def flush_data(self):
         """
         Flush the unpacked data values from the Grib2Message object.
 
-        Note: If the Grib2Message object was constructed from "scratch" (i.e.
+        Notes
+        -----
+        If the Grib2Message object was constructed from "scratch" (i.e.
         not read from file), this method will remove the data array from
         the object and it cannot be recovered.
         """
