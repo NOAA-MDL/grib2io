@@ -1149,6 +1149,12 @@ class _Grib2Message:
         """
         Set the internal data array, enforcing shape (ny, nx) and dtype float32.
 
+        If the Grid Definition Section (section 3) of Grib2Message object is
+        not fully formed (i.e. nx, ny = 0, 0), then the shape of the data array
+        will be used to set nx and ny of the Grib2Message object. It will be the
+        responsibility of the user to populate the rest of the Grid Definition
+        Section attributes.
+
         Parameters
         ----------
         arr : array_like
@@ -1158,15 +1164,19 @@ class _Grib2Message:
         Raises
         ------
         ValueError
-            If the shape of `value` does not match the expected dimensions.
+            If the shape of `arr` does not match the expected dimensions.
         """
         if not isinstance(arr, np.ndarray):
             raise ValueError(f"Grib2Message data only supports numpy arrays")
-        if arr.shape != (self.ny, self.nx):
-            raise ValueError(
-                f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
-                f"got {arr.shape}"
-            )
+        if self.nx == 0 and self.ny == 0:
+            self.ny = arr.shape[0]
+            self.nx = arr.shape[1]
+        else:
+            if arr.shape != (self.ny, self.nx):
+                raise ValueError(
+                    f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
+                    f"got {arr.shape}"
+                )
         # Ensure contiguous memory layout (important for C interoperability)
         if not arr.flags["C_CONTIGUOUS"]:
             arr = np.ascontiguousarray(arr, dtype=np.float32)
