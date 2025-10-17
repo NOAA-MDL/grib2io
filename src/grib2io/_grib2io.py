@@ -1171,12 +1171,11 @@ class _Grib2Message:
         if self.nx == 0 and self.ny == 0:
             self.ny = arr.shape[0]
             self.nx = arr.shape[1]
-        else:
-            if arr.shape != (self.ny, self.nx):
-                raise ValueError(
-                    f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
-                    f"got {arr.shape}"
-                )
+        if arr.shape != (self.ny, self.nx):
+            raise ValueError(
+                f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
+                f"got {arr.shape}"
+            )
         # Ensure contiguous memory layout (important for C interoperability)
         if not arr.flags["C_CONTIGUOUS"]:
             arr = np.ascontiguousarray(arr, dtype=np.float32)
