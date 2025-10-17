@@ -1145,17 +1145,50 @@ class _Grib2Message:
 
 
     @data.setter
-    def data(self, data):
-        if not isinstance(data, np.ndarray):
-            raise ValueError('Grib2Message data only supports numpy arrays')
-        self._data = data
+    def data(self, arr):
+        """
+        Set the internal data array, enforcing shape (ny, nx) and dtype float32.
+
+        If the Grid Definition Section (section 3) of Grib2Message object is
+        not fully formed (i.e. nx, ny = 0, 0), then the shape of the data array
+        will be used to set nx and ny of the Grib2Message object. It will be the
+        responsibility of the user to populate the rest of the Grid Definition
+        Section attributes.
+
+        Parameters
+        ----------
+        arr : array_like
+            A 2D array whose shape must match ``(self.ny, self.nx)``.
+            It will be converted to ``float32`` and C-contiguous if needed.
+
+        Raises
+        ------
+        ValueError
+            If the shape of `arr` does not match the expected dimensions.
+        """
+        if not isinstance(arr, np.ndarray):
+            raise ValueError(f"Grib2Message data only supports numpy arrays")
+        if self.nx == 0 and self.ny == 0:
+            self.ny = arr.shape[0]
+            self.nx = arr.shape[1]
+        if arr.shape != (self.ny, self.nx):
+            raise ValueError(
+                f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
+                f"got {arr.shape}"
+            )
+        # Ensure contiguous memory layout (important for C interoperability)
+        if not arr.flags["C_CONTIGUOUS"]:
+            arr = np.ascontiguousarray(arr, dtype=np.float32)
+        self._data = arr
 
 
     def flush_data(self):
         """
         Flush the unpacked data values from the Grib2Message object.
 
-        Note: If the Grib2Message object was constructed from "scratch" (i.e.
+        Notes
+        -----
+        If the Grib2Message object was constructed from "scratch" (i.e.
         not read from file), this method will remove the data array from
         the object and it cannot be recovered.
         """

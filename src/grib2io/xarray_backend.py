@@ -1767,7 +1767,8 @@ class Grib2ioDataArray:
             da.attrs["GRIB2IO_section4"],
             da.attrs["GRIB2IO_section5"],
         )
-        newmsg.data = np.copy(da.values)
+
+        newmsg.data = np.zeros((newmsg.ny, newmsg.nx), dtype=np.float32)
 
         newmsg = newmsg.subset(lats, lons)
 
@@ -1779,6 +1780,8 @@ class Grib2ioDataArray:
         mask_lon = (da.longitude >= newmsg.longitudeFirstGridpoint) & (
             da.longitude <= newmsg.longitudeLastGridpoint
         )
+
+        del newmsg
 
         return da.where((mask_lon & mask_lat).compute(), drop=True)
 
