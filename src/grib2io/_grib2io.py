@@ -90,6 +90,8 @@ _GZIP_HEADER = b"\x1f\x8b"
 _latlon_datastore = dict()
 _msg_class_store = dict()
 
+# This is for Python 3.8 and 3.9 compatibility
+_PathOrStr = Union[str, os.PathLike]
 
 class open():
     """
@@ -706,7 +708,7 @@ def build_index(filehandle):
     return index
 
 
-def serialize_index(index: dict, file_name: str | os.PathLike[str]):
+def serialize_index(index: dict, file_name: _PathOrStr):
     """
     Serialize a dictionary to a file atomically.
 
