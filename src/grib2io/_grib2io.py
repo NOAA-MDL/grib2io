@@ -462,7 +462,78 @@ class open():
 
 
 def build_index(filehandle):
+    """
+    Parse a GRIB2 file and build an index of all message sections.
 
+    This function sequentially scans through a GRIB2 file, locating each
+    message by searching for the ``GRIB`` header signature, and unpacks
+    sections 0–7 into structured arrays and metadata entries. The result is an
+    index dictionary that records offsets, sizes, and section contents for all
+    GRIB2 messages (and any submessages, if present). This index can later be
+    used to reconstruct messages efficiently or to support lazy on-disk access
+    to data fields.
+
+    Parameters
+    ----------
+    filehandle : file-like object
+        An open binary file handle positioned at the beginning of a GRIB2 file.
+        Must support the standard file interface (``seek()``, ``tell()``,
+        ``read()``).
+
+    Returns
+    -------
+    index : dict
+        Dictionary containing lists of parsed section data and metadata for
+        each GRIB2 message. The dictionary has the following keys:
+
+        - ``section0`` : list of ndarray
+          Section 0 (Indicator Section) fields.
+        - ``section1`` : list of ndarray
+          Section 1 (Identification Section) fields.
+        - ``section2`` : list of bytes
+          Section 2 (Local Use Section) raw content.
+        - ``section3`` : list of ndarray
+          Section 3 (Grid Definition Section) fields.
+        - ``section4`` : list of ndarray
+          Section 4 (Product Definition Section) fields.
+        - ``section5`` : list of ndarray
+          Section 5 (Data Representation Section) fields.
+        - ``bmapflag`` : list of int
+          Bitmap indicator flags from Section 6.
+        - ``offset`` : list of int
+          Byte offsets of each message from the start of the file.
+        - ``sectionOffset`` : list of dict
+          Per-section file offsets for each message.
+        - ``sectionSize`` : list of dict
+          Per-section byte sizes for each message.
+        - ``msgSize`` : list of int
+          Total byte length of each GRIB2 message.
+        - ``msgNumber`` : list of int
+          Sequential message numbers.
+        - ``isSubmessage`` : list of bool
+          Flags indicating whether each record is a GRIB2 submessage.
+
+    Notes
+    -----
+    - Non-GRIB headers (e.g., HTTP headers in NAVGEM files) are skipped by
+      scanning ahead up to 2048 bytes to locate the next ``GRIB`` signature.
+    - Only GRIB edition 2 messages are processed; GRIB1 messages trigger a
+      warning and are ignored.
+    - Each message is parsed section by section using low-level GRIB2 unpacking
+      routines from ``g2clib``.
+    - The function terminates when no further messages are found or when a
+      struct unpacking error occurs, after which the file position is reset to
+      its initial offset.
+    - Designed for use with downstream routines such as
+      :func:`msgs_from_index` and :func:`serialize_index`.
+
+    Raises
+    ------
+    ValueError
+        If a GRIB2 section number or structure is invalid.
+    struct.error
+        If binary unpacking fails due to truncated or malformed data.
+    """
     # Initialize index dictionary
     index = dict()
     index['section0'] = []
@@ -634,9 +705,34 @@ def build_index(filehandle):
 
     return index
 
-def serialize_index(index, file_name):
-    path = Path(file_name)
 
+def serialize_index(index: dict, file_name: str | os.PathLike[str]):
+    """
+    Serialize a dictionary to a file atomically.
+
+    This function safely serializes a Python dictionary to disk using the
+    `pickle` module. It first writes the object to a temporary file—prefixed
+    with a dot and suffixed with the current process ID—to avoid partial writes
+    or data corruption, and then renames the temporary file to the final
+    destination atomically.
+
+    Parameters
+    ----------
+    index : dict
+        Dictionary object to serialize and write to disk.
+    file_name : str or path-like
+        Path to the output file where the serialized dictionary will be stored.
+
+    Notes
+    -----
+    - The function performs an atomic write by writing to a temporary file in
+      the same directory, named `.{basename}_{pid}`.
+    - If the destination file already exists, the temporary file is deleted and
+      the existing file is preserved.
+    - If the destination file does not exist, the temporary file is renamed to
+      the target filename atomically (on most POSIX filesystems).
+    """
+    path = Path(file_name)
     directory = path.parent
     basename = path.name
     dotted_basename_withpid = f".{basename}_{os.getpid()}"
@@ -649,12 +745,44 @@ def serialize_index(index, file_name):
         os.remove(temp_path)
 
 
-def msgs_from_index(index, filehandle=None):
+def msgs_from_index(index: dict, filehandle=None):
     """
-    return list of Grib2Messages from index
-    msgs can get the data so long as an open filehandle is provided
-    """
+    Construct a list of Grib2Message objects from an index dictionary.
 
+    This function reconstructs a sequence of `Grib2Message` instances using
+    metadata sections stored in an index dictionary. If an open file handle is
+    provided, each message is linked to its on-disk binary data through a
+    `Grib2MessageOnDiskArray`, allowing deferred reading of the actual data
+    values from the GRIB2 file.
+
+    Parameters
+    ----------
+    index : dict
+        Dictionary containing parsed GRIB2 index information, including
+        section data arrays such as ``section0`` through ``section5``,
+        ``sectionOffset``, ``offset``, and ``bmapflag``.
+    filehandle : file-like object, optional
+        An open binary file handle to the GRIB2 file corresponding to the index.
+        If provided, the returned messages can access on-disk data arrays via
+        memory offsets. If not provided, only metadata will be available.
+
+    Returns
+    -------
+    list of Grib2Message
+        List of reconstructed `Grib2Message` objects built from the provided
+        index. Each message contains metadata, and if `filehandle` is given,
+        also references to on-disk data through a `Grib2MessageOnDiskArray`.
+
+    Notes
+    -----
+    - Each message is constructed by zipping the corresponding section entries
+      (sections 0–5 and bitmap flags).
+    - When a file handle is supplied, each message’s `_ondiskarray` attribute is
+      initialized to allow direct access to GRIB2 data values without loading
+      them fully into memory.
+    - The `_msgnum` attribute of each message is assigned sequentially to
+      preserve message order.
+    """
     zipped = zip(
         index["section0"],
         index["section1"],
@@ -668,16 +796,19 @@ def msgs_from_index(index, filehandle=None):
 
     if filehandle is not None:
         for n, (msg, offset, secpos) in enumerate(zip(msgs, index["offset"], index["sectionOffset"])):
-            msg._ondiskarray = Grib2MessageOnDiskArray(shape=(msg.ny,msg.nx),
-                                                       ndim=2,
-                                                       dtype=TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
-                                                       filehandle=filehandle,
-                                                       msg=msg,
-                                                       offset=offset,
-                                                       bitmap_offset=secpos[6],
-                                                       data_offset=secpos[7])
+            msg._ondiskarray = Grib2MessageOnDiskArray(
+                shape=(msg.ny, msg.nx),
+                ndim=2,
+                dtype=TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
+                filehandle=filehandle,
+                msg=msg,
+                offset=offset,
+                bitmap_offset=secpos[6],
+                data_offset=secpos[7]
+            )
             msg._msgnum = n
     return msgs
+
 
 class Grib2Message:
     """
