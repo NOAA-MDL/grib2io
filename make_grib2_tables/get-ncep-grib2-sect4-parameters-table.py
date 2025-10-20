@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pandas as pd
+import re
 import sys
 
 # ----------------------------------------------------------------------------------------
@@ -35,10 +36,12 @@ for idx,row in df.iterrows():
     parmnum = row['Number']
     parmname = str(row['Parameter']).replace('*','').replace('- Parameter deprecated','').strip()
     parmname = parmname.replace("\'",'')
-    units = row['Units'] if row['Units'] != 'nan' else 'unknown'
-    abbrev = row['Abbrev'] if row['Abbrev'] != 'nan' else 'unknown'
+    units = row['Units']
+    units = re.sub(r"\bnan\b", "unknown", units)
+    abbrev = row['Abbrev']
+    abbrev = re.sub(r"\bnan\b", "unknown", abbrev)
     line = "'%s':['%s','%s','%s']," % (parmnum,parmname,units,abbrev)
-    line = line.replace('nan','unknown')
+    line = re.sub(r"\bnan\b", "unknown", line)
     line = line.replace('  ',' ')
     print(line)
 print("}")

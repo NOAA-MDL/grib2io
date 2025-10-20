@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import pandas as pd
+import re
 import sys
 
 # ----------------------------------------------------------------------------------------
@@ -70,7 +71,7 @@ for idx,row in df.iterrows():
         line = "'%s':['%s','%s']," % (value,center,chemform)
     else:
         line = "'%s':'%s'," % (value,center)
-    line = line.replace('nan','unknown')
+    line = re.sub(r"\bnan\b", "unknown", line)
     line = line.replace('  ',' ')
     print(line)
 

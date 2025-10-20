@@ -5,19 +5,11 @@ table_4_2_4_0  = {
 '3':['Ion Temperature','K','IONTMP'],
 '4':['Parallel Temperature','K','PRATMP'],
 '5':['Perpendicular Temperature','K','PRPTMP'],
-'6-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_1  = {
 '0':['Velocity Magnitude (Speed)','m s-1','SPEED'],
 '1':['1st Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL1'],
 '2':['2nd Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL2'],
 '3':['3rd Vector Component of Velocity (Coordinate system dependent)','m s-1','VEL3'],
-'4-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_2  = {
 '0':['Particle Number Density','m-3','PLSMDEN'],
 '1':['Electron Density','m-3','ELCDEN'],
@@ -32,11 +24,7 @@ table_4_2_4_2  = {
 '10':['Maximal Usable Frequency (MUF)','Hz','MAXUFZ'],
 '11':['Peak Height (hm)','m','PEAKH'],
 '12':['Peak Density','m-3','PEAKDEN'],
-'13':['Equivalent Slab Thickness (tau)','km','EQSLABT'],
-'14-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
+'13':['Equivalent Slab Thickness (τ)','km','EQSLABT'],
 table_4_2_4_3  = {
 '0':['Magnetic Field Magnitude','T','BTOT'],
 '1':['1st Vector Component of Magnetic Field','T','BVEC1'],
@@ -46,10 +34,6 @@ table_4_2_4_3  = {
 '5':['1st Vector Component of Electric Field','V m-1','EVEC1'],
 '6':['2nd Vector Component of Electric Field','V m-1','EVEC2'],
 '7':['3rd Vector Component of Electric Field','V m-1','EVEC3'],
-'8-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_4  = {
 '0':['Proton Flux (Differential)','(m2 s sr eV)-1','DIFPFLUX'],
 '1':['Proton Flux (Integral)','(m2 s sr)-1','INTPFLUX'],
@@ -58,19 +42,11 @@ table_4_2_4_4  = {
 '4':['Heavy Ion Flux (Differential)','(m2 s sr eV / nuc)-1','DIFIFLUX'],
 '5':['Heavy Ion Flux (iIntegral)','(m2 s sr)-1','INTIFLUX'],
 '6':['Cosmic Ray Neutron Flux','h-1','NTRNFLUX'],
-'7-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_5  = {
 '0':['Amplitude','dB','AMPL'],
 '1':['Phase','rad','PHASE'],
 '2':['Frequency','Hz','FREQ'],
 '3':['Wavelength','m','WAVELGTH'],
-'4-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_6  = {
 '0':['Integrated Solar Irradiance','W m-2','TSI'],
 '1':['Solar X-ray Flux (XRS Long)','W m-2','XLONG'],
@@ -79,19 +55,7 @@ table_4_2_4_6  = {
 '4':['Solar Spectral Irradiance','W m-2 nm-1','SPECIRR'],
 '5':['F10.7','W m-2 Hz-1','F107'],
 '6':['Solar Radio Emissions','W m-2 Hz-1','SOLRF'],
-'7-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_7  = {
-'0':['Limb Intensity','J m-2 s-1 LMBINT','unknown'],
-'1':['Disk Intensity','J m-2 s-1 DSKINT','unknown'],
-'2':['Disk Intensity Day','J m-2 s-1 DSKDAY','unknown'],
-'3':['Disk Intensity Night','J m-2 s-1 DSKNGT','unknown'],
-'4-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_8  = {
 '0':['X-Ray Radiance','W sr-1 m-2','XRAYRAD'],
 '1':['EUV Radiance','W sr-1 m-2','EUVRAD'],
@@ -102,15 +66,7 @@ table_4_2_4_8  = {
 '6':['Heliospheric Radiance','W sr-1 m-2','HELCOR'],
 '7':['Thematic Mask','Numeric','MASK'],
 '8':['Solar Induced Chlorophyll Fluorescence','W m-2 sr-1 m-1','SICFL'],
-'9-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_4_9  = {
 '0':['Pedersen Conductivity','S m-1','SIGPED'],
 '1':['Hall Conductivity','S m-1','SIGHAL'],
 '2':['Parallel Conductivity','S m-1','SIGPAR'],
-'3-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}

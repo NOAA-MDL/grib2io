@@ -12,10 +12,6 @@ table_4_2_20_0  = {
 '10':['UV Biologically Effective Dose, Clear-Sky','W m-2','UVBEDCS'],
 '11':['Excess Heat Factor','K2','EHF'],
 '12':['Excess Cold Factor','K2','ECF'],
-'13-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_20_1  = {
 '0':['Malaria Cases','Fraction','MALACASE'],
 '1':['Malaria Circumsporozoite Protein Rate','Fraction','MACPRATE'],
@@ -27,13 +23,5 @@ table_4_2_20_1  = {
 '7':['Anopheles Vector to Host Ratio','Fraction','AVHRATIO'],
 '8':['Anopheles Vector Number','Number m-2','AVECTNUM'],
 '9':['Fraction of Malarial Vector Reproductive Habitat','Fraction','FMALVRH'],
-'10-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}
 table_4_2_20_2  = {
 '0':['Population Density','Person m-2','POPDEN'],
-'1-191':['Reserved','unknown','unknown'],
-'192-254':['Reserved for Local Use','unknown','unknown'],
-'255':['Missing','unknown','unknown'],
-}

@@ -3,6 +3,7 @@
 from io import StringIO
 from urllib.request import urlopen
 import pandas as pd
+import re
 import requests
 
 # ----------------------------------------------------------------------------------------
@@ -43,7 +44,7 @@ for idx,row in df.iterrows():
     value = row['VALUE'].lstrip('0')
     center = row['CENTER'].replace('\'','')
     line = "'%s':'%s'," % (value,center)
-    line = line.replace('nan','unknown')
+    line = re.sub(r"\bnan\b", "unknown", line)
     line = line.replace('  ',' ')
     print(line)
 print("}")
@@ -65,7 +66,7 @@ for idx,row in df.iterrows():
     value = row['VALUE']
     center = row['CENTER'].replace('\'','')
     line = "'%s':'%s'," % (value,center)
-    line = line.replace('nan','unknown')
+    line = re.sub(r"\bnan\b", "unknown", line)
     line = line.replace('  ',' ')
     print(line)
 print("}")
@@ -94,7 +95,7 @@ for idx,row in df.iterrows():
         value = value.lstrip('0')
     center = row['MODEL'].replace('\'','')
     line = "'%s':'%s'," % (value,center)
-    line = line.replace('nan','unknown')
+    line = re.sub(r"\bnan\b", "unknown", line)
     line = line.replace('  ',' ')
     print(line)
 print("}")
