@@ -36,9 +36,9 @@ for idx,row in df.iterrows():
     parmnum = row['Number']
     parmname = str(row['Parameter']).replace('*','').replace('- Parameter deprecated','').strip()
     parmname = parmname.replace("\'",'')
-    units = row['Units']
+    units = str(row['Units'])
     units = re.sub(r"\bnan\b", "unknown", units)
-    abbrev = row['Abbrev']
+    abbrev = str(row['Abbrev'])
     abbrev = re.sub(r"\bnan\b", "unknown", abbrev)
     line = "'%s':['%s','%s','%s']," % (parmnum,parmname,units,abbrev)
     line = re.sub(r"\bnan\b", "unknown", line)

@@ -67,8 +67,9 @@ for idx,row in df.iterrows():
         units = row['Units']
         line = "'%s':['%s','%s']," % (value,center,units)
     elif tblin == '4.233' or tblin == '4.230':
+        # Use double quotes here.
         chemform = row['Chemical Formula']
-        line = "'%s':['%s','%s']," % (value,center,chemform)
+        line = "\"%s\":[\"%s\",\"%s\"]," % (value,center,chemform)
     else:
         line = "'%s':'%s'," % (value,center)
     line = re.sub(r"\bnan\b", "unknown", line)
