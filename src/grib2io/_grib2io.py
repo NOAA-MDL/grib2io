@@ -162,8 +162,13 @@ class open():
             opens the file for overwriting and "x" for writing to a new file.
         save_index
             Whether to save a pickle-based index file for the GRIB2 file. Default is True.
+
+            .. versionadded:: 2.6.0
+
         use_index
             Whether to use an existing pickle-based index file for the GRIB2 file. Default is True.
+
+            .. versionadded:: 2.6.0
         """
 
         # All write modes are read/write.
@@ -987,6 +992,33 @@ class _Grib2Message:
     dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
     typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
 
+    def __copy__(self):
+        """Shallow copy"""
+        new = Grib2Message(
+            self.section0,
+            self.section1,
+            self.section2,
+            self.section3,
+            self.section4,
+            drtn=self.drtn,
+        )
+        return new
+
+    def __deepcopy__(self, memo):
+        """Deep copy"""
+        new = Grib2Message(
+            np.copy(self.section0),
+            np.copy(self.section1),
+            copy.deepcopy(self.section2),
+            np.copy(self.section3),
+            np.copy(self.section4),
+            np.copy(self.section5),
+        )
+        memo[id(self)] = new
+        new.data = np.copy(self.data)
+        new.bitmap = None if self.bitmap is None else np.copy(self.bitmap)
+        return new
+
     def __post_init__(self):
         """Set some attributes after init."""
         self._auto_nans = _AUTO_NANS
@@ -1186,6 +1218,30 @@ class _Grib2Message:
             return {k:getattr(self,k) for k in attrs}
         else:
             return attrs
+
+
+    def copy(self, deep: bool = True):
+        """Returns a copy of this Grib2Message.
+
+        When `deep=True`, a copy is made of each of the GRIB2 section arrays and
+        the data are unpacked from the source object and copied into the new
+        object. Otherwise, a shallow copy of each array is performed and no data
+        are copied.
+
+        Parameters
+        ----------
+        deep : bool, default: True
+            Whether each GRIB2 section array and data are copied onto
+            the new object. Default is True.
+
+        Returns
+        -------
+        object : Grib2Message
+            New Grib2Message object.
+
+            .. versionadded:: 2.6.0
+        """
+        return copy.deepcopy(self) if deep else copy.copy(self)
 
 
     def pack(self):
