@@ -13,12 +13,31 @@ metadata is translated into more descriptive, plain language metadata by providi
 a mapping of the integer coded metadata to the appropriate GRIB2 code tables. The
 NCEP GRIB2 code tables are a part of the grib2io package.
 
+Index File
+==========
+As of v2.6.0, grib2io provides the capability to create (and read) an index file for a GRIB2 file.
+The index file contents are specific to Python and grib2io in that pickle is used to dump the index
+dictionary to file.  Using index files can dramatically improve performance in situations where
+the same file will be read multiple times.  The index file name is the original GRIB2 file name
+with a hash string appended, followed by the file extension, .grib2ioidx.  The hash string is the
+SHA-1 of the GRIB2 file name and the file size.  For example, GRIB2 file,
+
+`gfs.t00z.pgrb2.1p00`
+
+when opened, grib2io will generate an index file with the following name,
+
+`gfs.t00z.pgrb2.1p00.f024_0422a93bfd6d095bd0a942ba5e9fe42e76050123.grib2ioidx`
+
+By default, grib2io will generate an index file or use an existing one.  The generation and usage
+of a grib2io index file can be turned off by providing kwargs `use_index=False` and/or
+`save_index=False` in `grib2io.open()`.
+
 Interpolation
 =============
 As of grib2io v2.4.0, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
-Fortran library is now a part of the grib2io package.  The separate component package, grib2io-interp,
-has been deprecated.  grib2io-interp provided interpolation via F2PY interface to
-NCEPLIBS-ip, which has become difficult since the
+Fortran library is now a part of the grib2io package.  Previously, interpolation was handled
+by a separate component package, grib2io-interp, which is now deprecated.  grib2io-interp provided
+interpolation via a F2PY-generated interface to NCEPLIBS-ip, which has become difficult since the
 [removal of distutils](https://peps.python.org/pep-0632/) from Python 3.12+.
 
 NCEPLIBS-ip interpolation Fortran subroutines contain the `BIND(C)` attribute which
@@ -164,7 +183,6 @@ class open():
             Whether to save a pickle-based index file for the GRIB2 file. Default is True.
 
             .. versionadded:: 2.6.0
-
         use_index
             Whether to use an existing pickle-based index file for the GRIB2 file. Default is True.
 
@@ -528,11 +546,6 @@ def build_index(filehandle):
       warning and are ignored.
     - Each message is parsed section by section using low-level GRIB2 unpacking
       routines from ``g2clib``.
-    - The function terminates when no further messages are found or when a
-      struct unpacking error occurs, after which the file position is reset to
-      its initial offset.
-    - Designed for use with downstream routines such as
-      :func:`msgs_from_index` and :func:`serialize_index`.
 
     Raises
     ------
