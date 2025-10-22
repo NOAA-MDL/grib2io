@@ -34,7 +34,7 @@ of a grib2io index file can be turned off by providing kwargs `use_index=False` 
 
 Interpolation
 =============
-As of grib2io v2.4.0, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+As of v2.4.0, spatial interpolation via [NCEPLIPS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip)
 Fortran library is now a part of the grib2io package.  Previously, interpolation was handled
 by a separate component package, grib2io-interp, which is now deprecated.  grib2io-interp provided
 interpolation via a F2PY-generated interface to NCEPLIBS-ip, which has become difficult since the
