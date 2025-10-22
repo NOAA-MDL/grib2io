@@ -22,7 +22,7 @@ the same file will be read multiple times.  The index file name is the original 
 with a hash string appended, followed by the file extension, .grib2ioidx.  The hash string is the
 SHA-1 of the GRIB2 file name and the file size.  For example, GRIB2 file,
 
-`gfs.t00z.pgrb2.1p00`
+`gfs.t00z.pgrb2.1p00.f024`
 
 when opened, grib2io will generate an index file with the following name,
 
