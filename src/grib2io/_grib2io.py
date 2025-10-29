@@ -136,6 +136,8 @@ class open():
         `True` is file handle is close; `False` otherwise.
     current_message : int
         Current position of the file in units of GRIB2 Messages. (read only)
+    indexfile : str
+        Index file for the GRIB2 file.
     levels : tuple
         Tuple containing a unique list of wgrib2-formatted level/layer strings.
     messages : int
@@ -155,9 +157,9 @@ class open():
         abbreviation names).
     """
 
-    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index',
-                 '_pos', 'closed', 'current_message', 'messages', 'mode',
-                 'name', 'size', 'save_index', 'use_index', '_msgs')
+    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_msgs', '_pos',
+                 'closed', 'current_message', 'indexfile', 'messages', 'mode',
+                 'name', 'size', 'save_index', 'use_index',)
 
     def __init__(
         self,
@@ -196,6 +198,8 @@ class open():
         mode = mode + "b"
 
         self.mode = mode
+        self._hasindex = False
+        self.indexfile = None
         self.save_index = save_index
         self.use_index = use_index
 
@@ -240,21 +244,22 @@ class open():
 
             if 'r' in self.mode:
 
-                indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
-                if self.use_index and os.path.exists(indexfile):
+                self.indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
+                if self.use_index and os.path.exists(self.indexfile):
                     try:
-                        with builtins.open(indexfile, 'rb') as file:
+                        with builtins.open(self.indexfile, 'rb') as file:
                             index = pickle.load(file)
                         self._index = index
                     except Exception as e:
-                        print(f"found indexfile: {indexfile}, but unable to load it: {e}")
+                        print(f"found indexfile: {self.indexfile}, but unable to load it: {e}")
                         print(f"re-forming index from grib2file, but not writing indexfile")
                         self._index = build_index(self._filehandle)
+                    self._hasindex = True
                 else:
                     self._index = build_index(self._filehandle)
                     if self.save_index:
                         try:
-                            serialize_index(self._index, indexfile)
+                            serialize_index(self._index, self.indexfile)
                         except Exception as e:
                             print(f"index was not serialized for future use: {e}")
 
