@@ -1157,9 +1157,12 @@ def assign_xr_meta(ds, frames, cube, non_geo_dims, extra_geo, coord_attrs):
         ds[coord].attrs.update(attrs)
 
     # assign valid date coords
-    ds = ds.assign_coords(dict(validDate=ds.coords['refDate']+ds.coords['leadTime']))
-    ds.validDate.attrs['standard_name'] = 'time'
-    ds.validDate.attrs['long_name'] = 'time'
+    try:
+        ds = ds.assign_coords(dict(validDate=ds.coords['refDate']+ds.coords['leadTime']))
+        ds.validDate.attrs['standard_name'] = 'time'
+        ds.validDate.attrs['long_name'] = 'time'
+    except Exception as e:
+        warnings.warn(f'could not parse validTime: {e}')
 
     # assign attributes
     ds.attrs['engine'] = 'grib2io'
