@@ -251,8 +251,8 @@ class open():
                             index = pickle.load(file)
                         self._index = index
                     except Exception as e:
-                        print(f"found indexfile: {self.indexfile}, but unable to load it: {e}")
-                        print(f"re-forming index from grib2file, but not writing indexfile")
+                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n" 
+                                      f"re-forming index from grib2file, but not writing indexfile")
                         self._index = build_index(self._filehandle)
                     self._hasindex = True
                 else:
@@ -261,7 +261,7 @@ class open():
                         try:
                             serialize_index(self._index, self.indexfile)
                         except Exception as e:
-                            print(f"index was not serialized for future use: {e}")
+                            warnings.warn(f"index was not serialized for future use: {e}")
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
 
