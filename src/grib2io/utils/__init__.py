@@ -11,6 +11,7 @@ from typing import Dict, List, Optional, Tuple, Type, Union
 import numpy as np
 from numpy.typing import ArrayLike
 
+from .. import iplib
 from .. import tables
 from .. import templates
 
@@ -290,3 +291,49 @@ def get_wgrib2_prob_string(
     else:
         probstr = ''
     return probstr
+
+
+def latlon_to_ij(
+    gdtn,
+    gdt,
+    lats,
+    lons,
+    missing_value = np.nan,
+):
+    """
+    Convert latitude/longitude coordinates to grid (i, j) indices using the
+    GRIB2 Grid Definition Section (GDS).
+
+    This function calls the grib2io iplib Cython extension module function,
+    `grib2io.iplib.latlon_to_ij`.
+
+    Parameters
+    ----------
+    gdtn : int
+        GRIB2 grid definition template number.
+    gdt : ndarray of int32
+        GRIB2 grid definition template values.
+    lats : ndarray of float32
+        Array of latitude coordinates in degrees.
+    lons : ndarray of float32
+        Array of longitude coordinates in degrees.
+    missing_value : float, optional
+        Missing value to represent when latitude/longitude coordinate is
+        outside the grid domain.
+
+    Returns
+    -------
+    xpts : ndarray of float32
+        Grid x-coordinates (i-indices) corresponding to the input
+        latitude/longitude points.
+    ypts : ndarray of float32
+        Grid y-coordinates (j-indices) corresponding to the input
+        latitude/longitude points.
+    """
+    return iplib.latlon_to_ij(
+        gdtn.astype(np.int32),
+        gdt.astype(np.int32),
+        lats,
+        lons,
+        missing_value,
+    )

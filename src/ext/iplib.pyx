@@ -326,7 +326,7 @@ def latlon_to_ij(
     cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
     cnp.ndarray[cnp.float32_t, ndim=1] lats,
     cnp.ndarray[cnp.float32_t, ndim=1] lons,
-    float missing_value = -9999.0,
+    float missing_value = np.nan,
 ):
     """
     Convert latitude/longitude coordinates to grid (i, j) indices using the
@@ -417,7 +417,7 @@ def latlon_to_ij(
         ylat_ptr,
         area_ptr,
     )
-    if nret != npts:
+    if nret == -1:
         msg = f"Error converting lat/lons to grid i/j, error code = {nret}"
         raise RuntimeError(msg)
 
