@@ -23,12 +23,15 @@ cdef extern from "<stdbool.h>":
 
 
 cdef extern from "iplib.h":
-    void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
-                        int *igdtnumo, int *igdtmplo, int *igdtleno, 
-                        int *mi, int *mo, int *km, int *ibi, bool *li, float *gi, 
+    void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, float fill,
+                float *xpts, float *ypts, float *rlon, float *rlat, int *nret, float *crot,
+                float *srot, float *xlon, float *xlat, float *ylon, float *ylat, float *area)
+    void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
+                        int *igdtnumo, int *igdtmplo, int *igdtleno,
+                        int *mi, int *mo, int *km, int *ibi, bool *li, float *gi,
                         int *no, float *rlat, float *rlon, int *ibo, bool *lo, float *go, int *iret)
-    void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
-                        int *igdtnumo, int *igdtmplo, int *igdtleno, 
+    void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
+                        int *igdtnumo, int *igdtmplo, int *igdtleno,
                         int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
                         int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
                         float *uo, float *vo, int *iret)
@@ -70,7 +73,7 @@ def interpolate_scalar(int ip,
     igdtmpli
         Grid definition template array input grid.
     igdtnumo
-        Grid definition template number for the output grid. Note: igdtnumo<0 
+        Grid definition template number for the output grid. Note: igdtnumo<0
         means interpolate to random station points.
     igdtmplo
         Grid definition template array for the output grid.
@@ -136,7 +139,7 @@ def interpolate_scalar(int ip,
 
     # Call the Fortran scalar field interpolation subroutine.
     ipolates_grib2(&ip, <int *>&ipopt[0], &igdtnumi, <int *>&igdtmpli[0], &igdtleni,
-                   &igdtnumo, <int *>&igdtmplo[0], &igdtleno, 
+                   &igdtnumo, <int *>&igdtmplo[0], &igdtleno,
                    &mi, &mo, &km, <int *>&ibi[0], <bool*>&li[0,0], &gi[0,0],
                    &no, rlat_ptr, rlon_ptr, <int *>ibo_ptr, <bool*>lo_ptr, go_ptr, &iret)
 
@@ -316,3 +319,106 @@ def openmp_set_num_threads(int n):
     """
     omp_set_num_threads(n)
 #endif
+
+
+def latlon_to_ij(
+    int igdtnumi,
+    cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
+    cnp.ndarray[cnp.float32_t, ndim=1] lats,
+    cnp.ndarray[cnp.float32_t, ndim=1] lons,
+    float missing_value = -9999.0,
+):
+    """
+    Convert latitude/longitude coordinates to grid (i, j) indices using the
+    GRIB2 Grid Definition Section (GDS) and the NCEPLIBS-ip `gdswzd` subroutine.
+
+    Parameters
+    ----------
+    igdtnumi : int
+        GRIB2 grid definition template number.
+    igdtmpli : ndarray of int32
+        GRIB2 grid definition template values.
+    lats : ndarray of float32
+        Array of latitude coordinates in degrees.
+    lons : ndarray of float32
+        Array of longitude coordinates in degrees.
+    missing_value : float, optional
+        Missing value to represent when latitude/longitude coordinate is
+        outside the grid domain.
+
+    Returns
+    -------
+    xpts : ndarray of float32
+        Grid x-coordinates (i-indices) corresponding to the input
+        latitude/longitude points.
+    ypts : ndarray of float32
+        Grid y-coordinates (j-indices) corresponding to the input
+        latitude/longitude points.
+
+    Notes
+    -----
+    This function wraps the NCEPLIBS-ip `gdswzd` routine (accessed via a Fortran
+    BIND(C) interface) to perform the forward transformation from geodetic
+    coordinates (lat/lon) to grid-relative indices (i/j). The transformation
+    adheres to the GRIB2 GDS template conventions used in NCEP operational
+    models and post-processing systems.
+
+    The caller must supply a consistent pair of grid definition inputs:
+    `igdtnumi` (GDS template number) and `igdtmpli` (its template values).
+    Incorrect or mismatched GDS inputs will result in invalid coordinate
+    transformations.
+    """
+    # Define some scalars.
+    cdef int igdtleni = igdtmpli.shape[0]
+    cdef int iopt = -1 # This signals gdswzd to convert lats/lons to grid i/j.
+    cdef int npts = lats.shape[0]
+    cdef int nret = 0
+
+    # Define and allocate arrays to pass to gdswzd().
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] xpts = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] ypts = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] crot = np.ones(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] srot = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] xlon = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] xlat = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] ylon = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] ylat = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float32_t, ndim=1] area = np.zeros(npts, dtype=np.float32)
+
+    # Use memoryviews for direct C access to array data.
+    cdef float *xpts_ptr = &xpts[0]
+    cdef float *ypts_ptr = &ypts[0]
+    cdef float *crot_ptr = &crot[0]
+    cdef float *srot_ptr = &srot[0]
+    cdef float *xlon_ptr = &xlon[0]
+    cdef float *xlat_ptr = &xlat[0]
+    cdef float *ylon_ptr = &ylon[0]
+    cdef float *ylat_ptr = &ylat[0]
+    cdef float *area_ptr = &area[0]
+
+    # Call NCEPLIBS-ip, gdswzd().
+    gdswzd(
+        igdtnumi,
+        <int *>&igdtmpli[0],
+        igdtleni,
+        iopt,
+        npts,
+        missing_value,
+        xpts_ptr,
+        ypts_ptr,
+        &lons[0],
+        &lats[0],
+        &nret,
+        crot_ptr,
+        srot_ptr,
+        xlon_ptr,
+        xlat_ptr,
+        ylon_ptr,
+        ylat_ptr,
+        area_ptr,
+    )
+    if nret != npts:
+        msg = f"Error converting lat/lons to grid i/j, error code = {nret}"
+        raise RuntimeError(msg)
+
+    return xpts, ypts
