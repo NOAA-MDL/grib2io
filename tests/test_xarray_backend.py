@@ -9,6 +9,18 @@ def test_named_filter(request):
     ds2 = xr.open_dataset(data / 'gfs.t00z.pgrb2.1p00.f012_subset', engine='grib2io', filters=filters)
     xr.testing.assert_equal(ds1, ds2)
 
+def test_save_index(request: pytest.FixtureRequest):
+    data = request.config.rootpath / 'tests' / 'input_data' / 'gfs_20221107'
+    fname = 'gfs.t00z.pgrb2.1p00.f012_subset'
+    idx_glob_str = f'{fname}.*.grib2ioidx'
+
+    for file in data.glob(idx_glob_str):
+        file.unlink()
+
+    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
+    ds = xr.open_dataset(data / fname, engine='grib2io', filters=filters, save_index=False)
+
+    assert len(list(data.glob(idx_glob_str))) == 0
 
 def test_multi_lead(request):
     data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'

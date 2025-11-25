@@ -177,3 +177,15 @@ def test_datatree_subset_by_level(request):
     # Verify that only the surface level is present
     assert 'surface' in surface_tree.children
     assert len(surface_tree.children) == 1  # Only surface level should be present
+
+def test_datatree_save_index(request: pytest.FixtureRequest):
+    data = request.config.rootpath / 'tests' / 'input_data' / 'gfs_20221107'
+    fname = 'gfs.t00z.pgrb2.1p00.f012_subset'
+    idx_glob_str = f'{fname}.*.grib2ioidx'
+
+    for file in data.glob(idx_glob_str):
+        file.unlink()
+
+    ds = xr.open_datatree(data / fname, engine='grib2io', save_index=False)
+    
+    assert len(list(data.glob(idx_glob_str))) == 0
