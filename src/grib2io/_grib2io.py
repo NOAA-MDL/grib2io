@@ -2253,6 +2253,14 @@ def interpolate_to_stations(
     """
     from . import iplib
 
+    # Define function to apply mask when stations are outside grid domain
+    def _reshape_and_mask_post_interp(a, shape, mask):
+        a = a.reshape(shape)
+        if a.shape[-1] != mask.shape[0]:
+            raise ValueError(f"Station mask length does not match interpolated data.")
+        a[..., mask] = np.nan
+        return a
+
     prev_num_threads = 1
     try:
         prev_num_threads = iplib.openmp_get_num_threads()
@@ -2299,6 +2307,15 @@ def interpolate_to_stations(
     gdtn = -1
     gdt = np.zeros((200),dtype=np.int32)
 
+    # Before we interpolate, get the grid coordinates for stations.
+    xloc, yloc = utils.latlon_to_ij(
+        grid_def_in.gdtn,
+        grid_def_in.gdt,
+        np.array(lats, dtype=np.float32),
+        np.array(lons, dtype=np.float32),
+    )
+    mask = np.where(np.logical_and(np.isnan(lats), np.isnan(lons)), True, False)
+
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
         # Scalar
@@ -2321,7 +2338,7 @@ def interpolate_to_stations(
             lats=np.array(lats, dtype=np.float32),
             lons=np.array(lons, dtype=np.float32),
         )
-        out = go.reshape(newshp)
+        out = _reshape_and_mask_post_interp(go, newshp, mask)
 
     elif isinstance(a,tuple):
         # Vector
@@ -2345,7 +2362,10 @@ def interpolate_to_stations(
             lats=np.array(lats, dtype=np.float32),
             lons=np.array(lons, dtype=np.float32),
         )
-        out = (uo.reshape(newshp),vo.reshape(newshp))
+        out = (
+            _reshape_and_mask_post_interp(uo, newshp, mask),
+            _reshape_and_mask_post_interp(vo, newshp, mask)
+        )
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)
@@ -2440,10 +2460,10 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = (grid_def_out.ny,grid_def_out.nx)
+            newshp = tuple([grid_def_out.ny,grid_def_out.nx])
             a = np.expand_dims(a.flatten(),axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = (a.shape[0],grid_def_out.ny,grid_def_out.nx)
+            newshp = tuple([a.shape[0],grid_def_out.ny,grid_def_out.nx])
             a = a.reshape(*a.shape[:-2],-1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
@@ -2493,10 +2513,10 @@ def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = (nstations)
+            newshp = tuple([nstations])
             a = np.expand_dims(a.flatten(),axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = (a.shape[0],nstations)
+            newshp = tuple([a.shape[0],nstations])
             a = a.reshape(*a.shape[:-2],-1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
