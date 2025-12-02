@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, float fill,
+            float *xpts, float *ypts, float *rlon, float *rlat, int *nret, float *crot,
+            float *srot, float *xlon, float *xlat, float *ylon, float *ylat, float *area);
+
 void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
                     int *igdtnumo, int *igdtmplo, int *igdtleno, 
                     int *mi, int *mo, int *km, int *ibi, bool *li, float *gi, 
