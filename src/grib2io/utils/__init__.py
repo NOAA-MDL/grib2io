@@ -313,10 +313,10 @@ def latlon_to_ij(
         GRIB2 grid definition template number.
     gdt : ndarray of int32
         GRIB2 grid definition template values.
-    lats : ndarray of float32
-        Array of latitude coordinates in degrees.
-    lons : ndarray of float32
-        Array of longitude coordinates in degrees.
+    lats : numpy.ndarray or list
+        Latitude coordinates in degrees.
+    lons : numpy.ndarray or list
+        Longitude coordinates in degrees.
     missing_value : float, optional
         Missing value to represent when latitude/longitude coordinate is
         outside the grid domain.
@@ -330,10 +330,25 @@ def latlon_to_ij(
         Grid y-coordinates (j-indices) corresponding to the input
         latitude/longitude points.
     """
+    # Check lats and lons
+    if isinstance(lats,list):
+        nlats = len(lats)
+    elif isinstance(lats,np.ndarray) and len(lats.shape) == 1:
+        nlats = lats.shape[0]
+    else:
+        raise ValueError("Latitudes must be a list or 1-D NumPy array.")
+    if isinstance(lons,list):
+        nlons = len(lons)
+    elif isinstance(lons,np.ndarray) and len(lons.shape) == 1:
+        nlons = lons.shape[0]
+    else:
+        raise ValueError("Longitudes must be a list or 1-D NumPy array.")
+    if nlats != nlons:
+        raise ValueError("Latitudes and longitudes same length.")
     return iplib.latlon_to_ij(
         gdtn.astype(np.int32),
         gdt.astype(np.int32),
-        lats,
-        lons,
+        np.array(lats, dtype=np.float32),
+        np.array(lons, dtype=np.float32),
         missing_value,
     )

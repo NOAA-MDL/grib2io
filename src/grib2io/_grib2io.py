@@ -2304,8 +2304,8 @@ def interpolate_to_stations(
     a, newshp = _adjust_array_shape_for_interp_stations(a, grid_def_in, mo)
 
     # Use gdtn = -1 for stations and an empty template array
-    gdtn = -1
-    gdt = np.zeros((200),dtype=np.int32)
+    gdtn_out = -1
+    gdt_out = np.zeros((200),dtype=np.int32)
 
     # Before we interpolate, get the grid coordinates for stations.
     xloc, yloc = utils.latlon_to_ij(
@@ -2314,7 +2314,9 @@ def interpolate_to_stations(
         np.array(lats, dtype=np.float32),
         np.array(lons, dtype=np.float32),
     )
-    mask = np.where(np.logical_and(np.isnan(lats), np.isnan(lons)), True, False)
+    xloc_mask = np.where(np.isnan(xloc), True, False)
+    yloc_mask = np.where(np.isnan(yloc), True, False)
+    mask = xloc_mask & yloc_mask
 
     # Call interpolation subroutines according to type of a.
     if isinstance(a,np.ndarray):
@@ -2327,8 +2329,8 @@ def interpolate_to_stations(
             method_options,
             grid_def_in.gdtn,
             np.array(grid_def_in.gdt, dtype=np.int32),
-            gdtn,
-            gdt,
+            gdtn_out,
+            gdt_out,
             mi,
             mo,
             km,
@@ -2350,8 +2352,8 @@ def interpolate_to_stations(
             method_options,
             grid_def_in.gdtn,
             np.array(grid_def_in.gdt, dtype=np.int32),
-            gdtn,
-            gdt,
+            gdtn_out,
+            gdt_out,
             mi,
             mo,
             km,

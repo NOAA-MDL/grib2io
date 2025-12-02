@@ -16,7 +16,7 @@ XLOC_EXPECTED = np.array([
     952.95715,
     322.15088,
     np.nan],
-    dtype=np.float32
+    dtype=np.float32,
 )
 
 YLOC_EXPECTED = np.array([
@@ -27,7 +27,18 @@ YLOC_EXPECTED = np.array([
     774.5322,
     759.9668,
     np.nan],
-    dtype=np.float32
+    dtype=np.float32,
+)
+
+INTERP_DATA_EXPECTED = np.array([
+    294.86902,
+    291.91238,
+    298.9,
+    292.80173,
+    296.71338,
+    295.3439,
+    np.nan],
+    dtype=np.float32,
 )
 
 def test_station_grid_coords(request):
@@ -40,6 +51,18 @@ def test_station_grid_coords(request):
             np.array(lats, dtype=np.float32),
             np.array(lons, dtype=np.float32),
         )
+    np.testing.assert_allclose(xloc, XLOC_EXPECTED, rtol=10e-4)
+    np.testing.assert_allclose(yloc, YLOC_EXPECTED, rtol=10e-4)
 
-    np.testing.assert_allclose(xloc, XLOC_EXPECTED, rtol=10e-4) 
-    np.testing.assert_allclose(yloc, YLOC_EXPECTED, rtol=10e-4) 
+def test_interp_to_stations_outside_conus_grid(request):
+    data = request.config.rootdir / 'tests' / 'input_data'
+    with grib2io.open(data / 'blend.t00z.core.f001.tmp.co.grib2') as f:
+        msg = f[0]
+        xdata = grib2io.interpolate_to_stations(
+            msg.data,
+            'bilinear',
+            msg.griddef,
+            lats,
+            lons,
+        )
+    np.testing.assert_allclose(xdata, INTERP_DATA_EXPECTED, rtol=10e-4)
