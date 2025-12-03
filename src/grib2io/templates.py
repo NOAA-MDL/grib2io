@@ -1374,7 +1374,7 @@ class ThresholdLowerLimit:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfThresholdLowerLimit")
         scaled_value = getattr(obj, "scaledValueOfThresholdLowerLimit")
-        if scale_factor == -127 and scaled_value == 255:
+        if scale_factor in {-2147483647,-127} or scaled_value in {-2147483647,255}:
             return 0.0
         value = float(Decimal(int(scaled_value)) / (10 ** scale_factor))
         return value
@@ -1388,7 +1388,7 @@ class ThresholdUpperLimit:
     def __get__(self, obj, objtype=None):
         scale_factor = getattr(obj, "scaleFactorOfThresholdUpperLimit")
         scaled_value = getattr(obj, "scaledValueOfThresholdUpperLimit")
-        if scale_factor == -127 and scaled_value == 255:
+        if scale_factor in {-2147483647,-127} or scaled_value in {-2147483647,255}:
             return 0.0
         value = float(Decimal(int(scaled_value)) / (10 ** scale_factor))
         return value
