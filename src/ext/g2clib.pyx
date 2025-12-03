@@ -82,14 +82,18 @@ _has_aec = G2_AEC_ENABLED
 cdef _toarray(void *items, object a):
     """
     Function to fill a Numpy array with data from GRIB2 unpacking.
+    'items' must point to a buffer allocated with malloc/calloc/realloc
+    compatible with free().
     """
     cdef char *abuf
     cdef Py_ssize_t buflen
     cdef Py_buffer view
     cdef Py_ssize_t itemsize
 
-    # Get pointer to data buffer.
+    # Get pointer to data buffer on the NumPy array.
     if PyObject_GetBuffer(a, &view, PyBUF_WRITABLE) == -1:
+        # We never entered the try/finally, so we must free items here.
+        free(items)
         raise ValueError("Object does not support writable buffer protocol")
 
     try:
@@ -101,8 +105,8 @@ cdef _toarray(void *items, object a):
 
         # Ensure the sizes match before copying
         if buflen != len(a) * itemsize:
-            PyBuffer_Release(&view)
-            free(items)
+            # No manual free() or PyBuffer_Release() here;
+            # the finally block will handle both.
             raise RuntimeError("Buffer size mismatch")
 
         # Use memcpy to copy data efficiently
@@ -111,6 +115,7 @@ cdef _toarray(void *items, object a):
         return a
 
     finally:
+        # Always free the temporary C buffer and release the Python buffer view
         free(items)
         PyBuffer_Release(&view)
 
