@@ -250,7 +250,11 @@ table_4_0 = {
 '149':'Verification scores for individual ensemble forecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval (see Template 4.149)',
 '150':'Verification scores for derived forecast based on all ensemble members at a horizontal level or in a horizontal layer at a point in time (see Template 4.150)',
 '151':'Verification scores for derived forecasts based on all ensemble members at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval (see Template 4.151)',
-'152-253':'Reserved',
+'152':'Individual large ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time for atmospheric chemical constituents (see Template 4.152)',
+'153':'Individual large ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval for atmospheric chemical constituents (see Template 4.153)',
+'154':'Individual large ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer at a point in time (see Template 4.154)',
+'155':'Individual large ensemble reforecast, control and perturbed, at a horizontal level or in a horizontal layer in a continuous or non-continuous time interval (see Template 4.155)',
+'156-253':'Reserved',
 '254':'CCITT IA5 character string (see Template 4.254)',
 '255-999':'Reserved',
 '1000':'Cross-section of analysis and forecast at a point in time. (see Template 4.1000)',
@@ -1939,6 +1943,47 @@ table_4_251 = {
 '2':'Arithmetic Sequence',
 '3-191':'Reserved',
 '192-254':'Reserved for Local Use',
+'255':'Missing',
+}
+
+table_4_333 = {
+'0':'Reserved',
+'1':'DERMA (Danish Emergency Response Model of the Atmosphere)',
+'2':'E-EMEP (Emergency EMEP model)',
+'3':'FLEXPART (Particle dispersion model)',
+'4':'MLDP (ModÃ¨le lagrangien de dispersion de particules)',
+'5':'MATCH (Multi-scale Atmospheric Transport Model',
+'6':'SILAM (System for Integrated modeLling of Atmospheric composition)',
+'7':'SNAP (Severe Nuclear Accident Program)',
+'8':'WRF-Chem (Weather Research and Forecasting Chemical model)',
+'9':'Trajectoire (Trajectory model)',
+'10-254':'Reserved',
+'255':'Missing',
+}
+
+table_4_335 = {
+'0':'Reserved',
+'1':'ARGOS (Accident Reporting and Guiding Operational System)',
+'2':'JRODOS (Java version of Real time Online Decision SuppOrt System)',
+'3':'Assimilated (scenario retrieved from measurements)',
+'4':'Center (scenario by originating center)',
+'5-254':'Reserved',
+'255':'Missing',
+}
+
+table_4_336 = {
+'0':'Reserved',
+'1':'AROME (Meso scale NWP, Meteo-France)',
+'2':'ARPEGE (Global scale NWP, Meteo-France)',
+'3':'GFS (Global forecast system, NCEP)',
+'4':'HARMONIE (HIRLAM-ALADIN Research on Mesoscale Operational NWP)',
+'5':'HIRLAM (HIgh resolution Limited Area Model)',
+'6':'IFS (Integrated Forecast System)',
+'7':'GEM GDPS (Canadian Global Deterministic Prediction System)',
+'8':'GEM RDPS (Canadian Regional Deterministic Prediction System)',
+'9':'GEM HRDPS (Canadian High Resolution Deterministic Prediction System)',
+'10':'WRF (Weather Research and Forecasting)',
+'11-254':'Reserved',
 '255':'Missing',
 }
 

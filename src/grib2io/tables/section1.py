@@ -53,7 +53,8 @@ table_1_2 = {
 '3':'Observation Time',
 '4':'Local Time',
 '5':'Simulation Start',
-'6-191':'Reserved',
+'6':'Start of Data Assimilation',
+'7-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
@@ -75,7 +76,9 @@ table_1_3 = {
 '13':'Destination Earth test',
 '14':'Lead Centre for Global Climate Reanalyses (LC-GCR)',
 '15':'Lead Centre for Global Climate Reanalyses (LC-GCR) test',
-'16-191':'Reserved',
+'16':'Machine Learning Model Intercomparison Project (MLMIP)',
+'17':'Machine Learning Model Intercomparison Project (MLMIP) test',
+'18-191':'Reserved',
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
