@@ -447,6 +447,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         filename,
         *,
         drop_variables=None,
+        save_index=True,
         filters: typing.Mapping[str, typing.Any] = dict(),
         data_model=None
     ):
@@ -468,7 +469,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         open_dataset
             Xarray dataset of grib2 messages.
         """
-        with grib2io.open(filename, _xarray_backend=True) as f:
+        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=msgs_from_index(f._index))
 
@@ -507,6 +508,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         filename,
         *,
         drop_variables=None,
+        save_index=True,
         filters: typing.Mapping[str, typing.Any] = None,
         stack_vertical: bool = False,
     ):
@@ -536,7 +538,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
             filters = {}
 
         # Open the file without any filters first to get all messages
-        with grib2io.open(filename, _xarray_backend=True) as f:
+        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=msgs_from_index(f._index))
 
