@@ -162,9 +162,11 @@ def get_varinfo_from_table(
         try:
             vartbl = _varinfo_tables_datastore[tbl][str(parmnum)]
         except(KeyError):
-            vartbl = ['Unknown','Unknown','Unknown']
+            pass
         if vartbl is not None:
             break
+    if vartbl is None:
+        vartbl = ['Unknown','Unknown','Unknown']
     return vartbl
 
 
