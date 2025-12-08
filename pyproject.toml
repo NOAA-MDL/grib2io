@@ -45,7 +45,7 @@ classifiers = [
 dependencies = [
   "numpy",
   "pyproj",
-] 
+]
 dynamic = ["version"]
 
 [project.optional-dependencies]
@@ -56,7 +56,7 @@ grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
 
 [project.urls]
 Documentation = "https://noaa-mdl.github.io/grib2io"
-Respository = "https://github.com/NOAA-MDL/grib2io"
+Repository = "https://github.com/NOAA-MDL/grib2io"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
