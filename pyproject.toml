@@ -13,7 +13,7 @@ authors = [
   {name = "Eric Engle", email = "eric.engle@noaa.gov"},
   {name = "Adam Schnapp", email = "adam.schnapp@noaa.gov"},
 ]
-requires-python = ">=3.8,<=3.14"
+requires-python = ">=3.8,<3.15"
 keywords = [
   "weather", "data-science", "numpy", "meteorology", "weather-data", "atmospheric-science",
   "grib2", "grib2-decoder", "grib2-encoder", "ncep",
