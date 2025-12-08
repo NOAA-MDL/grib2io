@@ -858,7 +858,7 @@ def parse_grib_index(
         index = filter_index(index, k, v)
 
     if len(index) == 0:
-        return index, list()
+        return index, list(), dict(), dict()
 
     dim_coords = dict()  # key=name of dim, value=list of coord names
     attrs = dict()
