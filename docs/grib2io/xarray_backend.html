@@ -257,7 +257,7 @@
     </ul>
 
 
-            <footer>grib2io v2.6.0</footer>
+            <footer>grib2io v2.7.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -1154,7 +1154,7 @@ implementation details.</p>
 </span><span id="L-858"><a href="#L-858"><span class="linenos"> 858</span></a>        <span class="n">index</span> <span class="o">=</span> <span class="n">filter_index</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 </span><span id="L-859"><a href="#L-859"><span class="linenos"> 859</span></a>
 </span><span id="L-860"><a href="#L-860"><span class="linenos"> 860</span></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="L-861"><a href="#L-861"><span class="linenos"> 861</span></a>        <span class="k">return</span> <span class="n">index</span><span class="p">,</span> <span class="nb">list</span><span class="p">()</span>
+</span><span id="L-861"><a href="#L-861"><span class="linenos"> 861</span></a>        <span class="k">return</span> <span class="n">index</span><span class="p">,</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">()</span>
 </span><span id="L-862"><a href="#L-862"><span class="linenos"> 862</span></a>
 </span><span id="L-863"><a href="#L-863"><span class="linenos"> 863</span></a>    <span class="n">dim_coords</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># key=name of dim, value=list of coord names</span>
 </span><span id="L-864"><a href="#L-864"><span class="linenos"> 864</span></a>    <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
@@ -4187,7 +4187,7 @@ interpretations would yield the same result.</p>
 </span><span id="parse_grib_index-859"><a href="#parse_grib_index-859"><span class="linenos">859</span></a>        <span class="n">index</span> <span class="o">=</span> <span class="n">filter_index</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
 </span><span id="parse_grib_index-860"><a href="#parse_grib_index-860"><span class="linenos">860</span></a>
 </span><span id="parse_grib_index-861"><a href="#parse_grib_index-861"><span class="linenos">861</span></a>    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-</span><span id="parse_grib_index-862"><a href="#parse_grib_index-862"><span class="linenos">862</span></a>        <span class="k">return</span> <span class="n">index</span><span class="p">,</span> <span class="nb">list</span><span class="p">()</span>
+</span><span id="parse_grib_index-862"><a href="#parse_grib_index-862"><span class="linenos">862</span></a>        <span class="k">return</span> <span class="n">index</span><span class="p">,</span> <span class="nb">list</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">(),</span> <span class="nb">dict</span><span class="p">()</span>
 </span><span id="parse_grib_index-863"><a href="#parse_grib_index-863"><span class="linenos">863</span></a>
 </span><span id="parse_grib_index-864"><a href="#parse_grib_index-864"><span class="linenos">864</span></a>    <span class="n">dim_coords</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>  <span class="c1"># key=name of dim, value=list of coord names</span>
 </span><span id="parse_grib_index-865"><a href="#parse_grib_index-865"><span class="linenos">865</span></a>    <span class="n">attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
