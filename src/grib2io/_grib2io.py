@@ -65,7 +65,7 @@ The following Jupyter Notebooks are available as tutorials:
 from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, IO
 import builtins
 import collections
 import copy
@@ -163,7 +163,7 @@ class open():
 
     def __init__(
         self,
-        filename: Union[bytes, str, Path],
+        filename: Union[bytes, str, Path, IO],
         mode: Literal["r", "w", "x"] = "r",
         *,
         save_index = True,
@@ -177,7 +177,7 @@ class open():
         Parameters
         ----------
         filename
-            File path containing GRIB2 messages OR bytes.
+            File path containing GRIB2 messages OR bytes OR file-like object.
         mode
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
@@ -219,6 +219,23 @@ class open():
             self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
             self.messages = len(self._msgs)
 
+        elif hasattr(filename, 'read') and hasattr(filename, 'seek') and hasattr(filename, 'tell'):
+            # Handle file-like objects (including S3File, etc.)
+            self.current_message = 0
+            self._filehandle = filename
+            self.name = getattr(filename, 'name', '<file-like-object>')
+            # For file-like objects, we can't get file stats, so create a unique ID
+            self._fileid = hashlib.sha1((self.name+str(id(filename))).encode('ASCII')).hexdigest()
+            # Disable index file usage for file-like objects since we can't save/load them
+            self.use_index = False
+            self.save_index = False
+
+            if 'r' in self.mode:
+                # Build index from the file-like object
+                self._index = build_index(self._filehandle)
+                self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
+                self.messages = len(self._msgs)
+
         else:
             self.current_message = 0
             if 'r' in mode:
@@ -251,7 +268,7 @@ class open():
                             index = pickle.load(file)
                         self._index = index
                     except Exception as e:
-                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n" 
+                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
                                       f"re-forming index from grib2file, but not writing indexfile")
                         self._index = build_index(self._filehandle)
                     self._hasindex = True
