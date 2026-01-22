@@ -32,7 +32,7 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
     # 1. Eager check (NumPy)
     eager_data = np.array([1, 2])
     decoded_eager = _decode_ptype(eager_data)
-    assert decoded_eager.dtype == np.dtypes.StringDType
+    assert decoded_eager.dtype == np.dtypes.StringDType or isinstance(decoded_eager.dtype, np.dtypes.StringDType)
     assert decoded_eager[1] == "VeryLongString"
     assert decoded_eager[0] == "Short"
 
@@ -50,7 +50,7 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
     )
 
     assert decoded_lazy.chunks is not None
-    assert decoded_lazy.dtype == np.dtypes.StringDType
+    assert decoded_lazy.dtype == np.dtypes.StringDType or isinstance(decoded_lazy.dtype, np.dtypes.StringDType)
 
     # Verify result identity
     assert (decoded_lazy.compute().values == decoded_eager).all()
@@ -59,6 +59,7 @@ def test_scientific_provenance_initialization():
     """
     Verify that scientific provenance (history) is initialized during data load.
     """
+    import pandas as pd
     # We mock the entire open_dataset process to check if history is added
     from grib2io.xarray_backend import GribBackendEntrypoint
 
@@ -81,7 +82,6 @@ def test_scientific_provenance_initialization():
         mock_ds = xr.Dataset({"TMP": mock_da})
         mock_assign.return_value = mock_ds
 
-        import pandas as pd
         ds = engine.open_dataset("dummy.grib2")
 
         assert "history" in ds.attrs
