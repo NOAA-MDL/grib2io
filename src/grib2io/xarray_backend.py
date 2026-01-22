@@ -1545,15 +1545,17 @@ class Grib2ioDataSet:
             f"Datasets do not have a .attrs attribute; use .grib2io.update_attrs({kwargs}) on a DataArray instead."
         )
 
-    def subset(self, lats, lons) -> xr.Dataset:
+    def subset(
+        self, lats: typing.Sequence[float], lons: typing.Sequence[float]
+    ) -> xr.Dataset:
         """
         Subset the DataSet to a region defined by latitudes and longitudes.
 
         Parameters
         ----------
-        lats : array_like
+        lats : sequence of float
             Latitude bounds of the region [min_lat, max_lat] or (lat1, lat2).
-        lons : array_like
+        lons : sequence of float
             Longitude bounds of the region [min_lon, max_lon] or (lon1, lon2).
 
         Returns
@@ -1982,15 +1984,17 @@ class Grib2ioDataArray:
 
         return da
 
-    def subset(self, lats, lons) -> xr.DataArray:
+    def subset(
+        self, lats: typing.Sequence[float], lons: typing.Sequence[float]
+    ) -> xr.DataArray:
         """
         Subset the DataArray to a region defined by latitudes and longitudes.
 
         Parameters
         ----------
-        lats : array_like
+        lats : sequence of float
             Latitude bounds of the region [min_lat, max_lat] or (lat1, lat2).
-        lons : array_like
+        lons : sequence of float
             Longitude bounds of the region [min_lon, max_lon] or (lon1, lon2).
 
         Returns
@@ -2024,7 +2028,14 @@ class Grib2ioDataArray:
 
         del newmsg
 
-        new_da = da.where(mask_lon & mask_lat, drop=True)
+        mask = mask_lon & mask_lat
+        if mask.chunks is not None:
+            # Xarray's .where(drop=True) requires a computed mask to determine
+            # the resulting shape. We compute the mask here to allow structural
+            # subsetting while keeping the data lazy.
+            mask = mask.compute()
+
+        new_da = da.where(mask, drop=True)
 
         # Update history for provenance
         history = new_da.attrs.get("history", "")

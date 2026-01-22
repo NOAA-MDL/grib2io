@@ -22,8 +22,14 @@ _varinfo_tables_datastore = {}
 # Note 209 is MRMS
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20, 209]
 
-AEROSOL_PDTNS = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
-AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
+AEROSOL_PDTNS = [
+    46,
+    48,
+]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
+AEROSOL_PARAMS = list(
+    itertools.chain(range(0, 19), range(50, 82), range(100, 113), range(192, 197))
+)
+
 
 def _load_varinfo_tables(modname: str):
     """
@@ -36,11 +42,13 @@ def _load_varinfo_tables(modname: str):
         Module name to extract variable info tables from.
     """
     module = importlib.import_module(modname, package=__name__)
-    names = getattr(module, '__all__', [name for name in dir(module) if name.startswith('table_')])
+    names = getattr(
+        module, "__all__", [name for name in dir(module) if name.startswith("table_")]
+    )
     _varinfo_tables_datastore.update({name: getattr(module, name) for name in names})
 
 
-def get_table(table: str, expand: bool=False) -> dict:
+def get_table(table: str, expand: bool = False) -> dict:
     """
     Return GRIB2 code table as a dictionary.
 
@@ -59,24 +67,28 @@ def get_table(table: str, expand: bool=False) -> dict:
     get_table
         GRIB2 code table as a dictionary.
     """
-    if len(table) == 3 and table == '4.1':
-        raise Exception('GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.')
-    if len(table) == 3 and table.startswith('4.2'):
-        raise Exception('Use function get_varinfo_from_table() for GRIB2 Code Table 4.2')
+    if len(table) == 3 and table == "4.1":
+        raise Exception(
+            "GRIB2 Code Table 4.1 requires a 3rd value representing the discipline."
+        )
+    if len(table) == 3 and table.startswith("4.2"):
+        raise Exception(
+            "Use function get_varinfo_from_table() for GRIB2 Code Table 4.2"
+        )
     try:
-        tbl = globals()['table_'+table.replace('.','_')]
+        tbl = globals()["table_" + table.replace(".", "_")]
         if expand:
             _tbl = {}
-            for k,v in tbl.items():
-                if '-' in k:
-                    irng = [int(i) for i in k.split('-')]
-                    for i in range(irng[0],irng[1]+1):
+            for k, v in tbl.items():
+                if "-" in k:
+                    irng = [int(i) for i in k.split("-")]
+                    for i in range(irng[0], irng[1] + 1):
                         _tbl[str(i)] = v
                 else:
                     _tbl[k] = v
             tbl = _tbl
         return tbl
-    except(KeyError):
+    except KeyError:
         return {}
 
 
@@ -103,13 +115,13 @@ def get_value_from_table(
         Table value or `None` if not found.
     """
     try:
-        tbl = get_table(table,expand=expand)
+        tbl = get_table(table, expand=expand)
         value = str(value)
         return tbl[value]
-    except(KeyError):
+    except KeyError:
         for k in tbl.keys():
-            if '-' in k:
-                bounds = k.split('-')
+            if "-" in k:
+                bounds = k.split("-")
                 if value >= bounds[0] and value <= bounds[1]:
                     return tbl[k]
         return None
@@ -149,24 +161,24 @@ def get_varinfo_from_table(
         Abbreviated name of the GRIB2 variable. "Unknown" if variable is not
         found.
     """
-    template = f'table_4_2_{discipline}_{parmcat}'
+    template = f"table_4_2_{discipline}_{parmcat}"
     tbls = []
     if isNDFD:
-        tbls.append(template+'_ndfd')
+        tbls.append(template + "_ndfd")
     tbls.append(template)
     for tbl in tbls:
         vartbl = None
-        modname = f'.section4_discipline{discipline}'
+        modname = f".section4_discipline{discipline}"
         if tbl not in _varinfo_tables_datastore.keys():
             _load_varinfo_tables(modname)
         try:
             vartbl = _varinfo_tables_datastore[tbl][str(parmnum)]
-        except(KeyError):
+        except KeyError:
             pass
         if vartbl is not None:
             break
     if vartbl is None:
-        vartbl = ['Unknown','Unknown','Unknown']
+        vartbl = ["Unknown", "Unknown", "Unknown"]
     return vartbl
 
 
@@ -208,7 +220,7 @@ def get_shortnames(
     if parmcat is None:
         parmcat = list()
         for d in discipline:
-            parmcat += list(get_table(f'4.1.{d}').keys())
+            parmcat += list(get_table(f"4.1.{d}").keys())
     else:
         parmcat = [parmcat]
     if parmnum is None:
@@ -216,16 +228,15 @@ def get_shortnames(
     else:
         parmnum = [parmnum]
     for d in discipline:
-
         for pc in parmcat:
             for pn in parmnum:
-                shortnames.append(get_varinfo_from_table(d,pc,pn,isNDFD)[2])
+                shortnames.append(get_varinfo_from_table(d, pc, pn, isNDFD)[2])
 
     shortnames = sorted(set(shortnames))
     try:
-        shortnames.remove('unknown')
-        shortnames.remove('Unknown')
-    except(ValueError):
+        shortnames.remove("unknown")
+        shortnames.remove("Unknown")
+    except ValueError:
         pass
     return shortnames
 
@@ -251,13 +262,20 @@ def get_metadata_from_shortname(shortname: str):
     """
     metadata = []
     for d in GRIB2_DISCIPLINES:
-        parmcat = list(get_table(f'4.1.{d}').keys())
+        parmcat = list(get_table(f"4.1.{d}").keys())
         for pc in parmcat:
             for pn in range(256):
-                varinfo = get_varinfo_from_table(d,pc,pn,False)
+                varinfo = get_varinfo_from_table(d, pc, pn, False)
                 if shortname == varinfo[2]:
-                    metadata.append(dict(discipline=d,parameterCategory=pc,parameterNumber=pn,
-                                         fullName=varinfo[0],units=varinfo[1]))
+                    metadata.append(
+                        dict(
+                            discipline=d,
+                            parameterCategory=pc,
+                            parameterNumber=pn,
+                            fullName=varinfo[0],
+                            units=varinfo[1],
+                        )
+                    )
     return metadata
 
 
@@ -285,38 +303,40 @@ def get_wgrib2_level_string(pdtn: int, pdt: ArrayLike) -> str:
     get_wgrib2_level_string
         wgrib2-formatted level/layer string.
     """
-    lvlstr = ''
+    lvlstr = ""
     if pdtn == 32:
-        return 'no_level'
+        return "no_level"
     elif pdtn == 48:
-        idxs = slice(20,26)
+        idxs = slice(20, 26)
     else:
-        idxs = slice(9,15)
-    type1, sfac1, sval1, type2, sfac2, sval2 = map(int,pdt[idxs])
-    val1 = sval1/10**sfac1
-    if type1 in [100,108]: val1 *= 0.01
+        idxs = slice(9, 15)
+    type1, sfac1, sval1, type2, sfac2, sval2 = map(int, pdt[idxs])
+    val1 = sval1 / 10**sfac1
+    if type1 in [100, 108]:
+        val1 *= 0.01
     if type2 != 255:
         # Layer
-        #assert type2 == type1, "Surface types are not equal: %g - %g" % (type1,type2)
-        val2 = sval2/10**sfac2
-        if type2 in [100,108]: val2 *= 0.01
-        lvlstr = get_value_from_table(type1,table='wgrib2_level_string')[1]
-        vals = (val1,val2)
+        # assert type2 == type1, "Surface types are not equal: %g - %g" % (type1,type2)
+        val2 = sval2 / 10**sfac2
+        if type2 in [100, 108]:
+            val2 *= 0.01
+        lvlstr = get_value_from_table(type1, table="wgrib2_level_string")[1]
+        vals = (val1, val2)
     else:
         # Level
-        lvlstr = get_value_from_table(type1,table='wgrib2_level_string')[0]
-        vals = (val1)
-    if '%g' in lvlstr: lvlstr %= vals
+        lvlstr = get_value_from_table(type1, table="wgrib2_level_string")[0]
+        vals = val1
+    if "%g" in lvlstr:
+        lvlstr %= vals
     return lvlstr
 
 
 def _build_aerosol_shortname(obj) -> str:
-    """
-    """
-    _OPTICAL_WAVELENGTH_MAPPING = get_table('aerosol_optical_wavelength')
-    _LEVEL_MAPPING = get_table('aerosol_level')
-    _PARAMETER_MAPPING = get_table('aerosol_parameter')
-    _AERO_TYPE_MAPPING = get_table('aerosol_type')
+    """ """
+    _OPTICAL_WAVELENGTH_MAPPING = get_table("aerosol_optical_wavelength")
+    _LEVEL_MAPPING = get_table("aerosol_level")
+    _PARAMETER_MAPPING = get_table("aerosol_parameter")
+    _AERO_TYPE_MAPPING = get_table("aerosol_type")
 
     # Build shortname from aerosol components
     parts = []
@@ -326,71 +346,82 @@ def _build_aerosol_shortname(obj) -> str:
 
     # Add size information if applicable
     aero_size = ""
-    if hasattr(obj, 'scaledValueOfFirstSize'):
+    if hasattr(obj, "scaledValueOfFirstSize"):
         if float(obj.scaledValueOfFirstSize) > 0:
             first_size = float(obj.scaledValueOfFirstSize)
 
             # Map common PM sizes
-            size_map = {1: 'pm1', 25: 'pm25', 10: 'pm10', 20: 'pm20'}
+            size_map = {1: "pm1", 25: "pm25", 10: "pm10", 20: "pm20"}
             aero_size = size_map.get(first_size, f"pm{int(first_size)}")
 
             # Check for size intervals
-            if (hasattr(obj, 'scaledValueOfSecondSize') and
-                obj.scaledValueOfSecondSize is not None and
-                hasattr(obj, 'typeOfIntervalForAerosolSize') and
-                obj.typeOfIntervalForAerosolSize.value == 6):
-
+            if (
+                hasattr(obj, "scaledValueOfSecondSize")
+                and obj.scaledValueOfSecondSize is not None
+                and hasattr(obj, "typeOfIntervalForAerosolSize")
+                and obj.typeOfIntervalForAerosolSize.value == 6
+            ):
                 second_size = float(obj.scaledValueOfSecondSize)
                 if second_size > 0:
-                    if (first_size == 2.5 and second_size == 10):
-                        aero_size = 'PM25to10'
-                    elif (first_size == 10 and second_size == 20):
-                        aero_size = 'PM10to20'
+                    if first_size == 2.5 and second_size == 10:
+                        aero_size = "PM25to10"
+                    elif first_size == 10 and second_size == 20:
+                        aero_size = "PM10to20"
                     else:
                         aero_size = f"PM{int(first_size)}to{int(second_size)}"
 
     # Add optical and wavelength information
-    var_wavelength = ''
-    if (hasattr(obj, 'parameterNumber') and
-        hasattr(obj, 'scaledValueOfFirstWavelength') and
-        hasattr(obj, 'scaledValueOfSecondWavelength')):
-
+    var_wavelength = ""
+    if (
+        hasattr(obj, "parameterNumber")
+        and hasattr(obj, "scaledValueOfFirstWavelength")
+        and hasattr(obj, "scaledValueOfSecondWavelength")
+    ):
         optical_type = str(obj.parameterNumber)
         if obj.scaledValueOfFirstWavelength > 0:
             first_wl = obj.scaledValueOfFirstWavelength
             second_wl = obj.scaledValueOfSecondWavelength
 
             # Special case for AE between 440-870nm
-            if optical_type == '111' and first_wl == 440 and second_wl == 870:
-                key = (optical_type, '440TO870')
+            if optical_type == "111" and first_wl == 440 and second_wl == 870:
+                key = (optical_type, "440TO870")
             else:
                 # Find matching wavelength band
                 for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
-                    if (wl_key[0] == optical_type and  # Check optical_type first
-                        int(wl_key[1]) == first_wl and
-                        (second_wl is None or int(wl_key[2]) == second_wl)):
+                    if (
+                        wl_key[0] == optical_type  # Check optical_type first
+                        and int(wl_key[1]) == first_wl
+                        and (second_wl is None or int(wl_key[2]) == second_wl)
+                    ):
                         key = wl_key
                         break
                 else:
                     # If no match found, use raw values
-                    key = (optical_type, str(first_wl),
-                          str(second_wl) if second_wl is not None else '')
+                    key = (
+                        optical_type,
+                        str(first_wl),
+                        str(second_wl) if second_wl is not None else "",
+                    )
 
             # FIX THIS...
             if key in _OPTICAL_WAVELENGTH_MAPPING.keys():
                 var_wavelength = _OPTICAL_WAVELENGTH_MAPPING[key]
 
     # Add level information
-    level_str = ''
-    if hasattr(obj, 'typeOfFirstFixedSurface'):
+    level_str = ""
+    if hasattr(obj, "typeOfFirstFixedSurface"):
         first_level = str(obj.typeOfFirstFixedSurface.value)
-        first_value = str(obj.scaledValueOfFirstFixedSurface) if obj.scaledValueOfFirstFixedSurface > 0 else ''
+        first_value = (
+            str(obj.scaledValueOfFirstFixedSurface)
+            if obj.scaledValueOfFirstFixedSurface > 0
+            else ""
+        )
         if first_level in _LEVEL_MAPPING:
             level_str = f"{_LEVEL_MAPPING[first_level]}{first_value}"
 
     # Get parameter type
-    param = ''
-    if hasattr(obj, 'parameterNumber'):
+    param = ""
+    if hasattr(obj, "parameterNumber"):
         param_num = str(obj.parameterNumber)
         if param_num in _PARAMETER_MAPPING:
             param = _PARAMETER_MAPPING[param_num]
@@ -407,15 +438,17 @@ def _build_aerosol_shortname(obj) -> str:
             parts.append(aero_size)
         if param:
             parts.append(param)
-        shortname = '_'.join(parts) if len(parts) > 1 else parts[0]
+        shortname = "_".join(parts) if len(parts) > 1 else parts[0]
     else:
-        return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
+        return get_varinfo_from_table(
+            obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD
+        )[2]
 
     return shortname
 
 
 @lru_cache(maxsize=None)
-def get_table_names(var_tables: bool=False) -> tuple:
+def get_table_names(var_tables: bool = False) -> tuple:
     """
     Return the names of available GRIB2 tables.
 
@@ -435,19 +468,23 @@ def get_table_names(var_tables: bool=False) -> tuple:
         A tuple sorted names of available tables.
     """
     tables = [
-        name.replace("table_","") for name, val in globals().items()
+        name.replace("table_", "")
+        for name, val in globals().items()
         if isinstance(val, dict) and name.startswith("table_")
     ]
 
     tables = [
-        t.replace("_",".") if t.startswith(tuple("0123456789")) else t for t in tables
+        t.replace("_", ".") if t.startswith(tuple("0123456789")) else t for t in tables
     ]
 
     if var_tables:
         for d in GRIB2_DISCIPLINES:
-            modname = f'.section4_discipline{d}'
+            modname = f".section4_discipline{d}"
             _load_varinfo_tables(modname)
-        vt = [t.replace("table_","").replace("_",".") for t in _varinfo_tables_datastore.keys()]
+        vt = [
+            t.replace("table_", "").replace("_", ".")
+            for t in _varinfo_tables_datastore.keys()
+        ]
         tables.extend(vt)
 
     return tuple(sorted(tables))

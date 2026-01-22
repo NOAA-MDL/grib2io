@@ -146,7 +146,7 @@ ORIGINAL_ATTRS = TESTGRIB["TMP"].attrs
             },  # kwargs
             Warning,  # expected_type
             UserWarning,  # expected
-            "", # error message
+            "",  # error message
             id="refDate",
         ),
         pytest.param(
@@ -232,9 +232,9 @@ def test_update_attrs(kwargs, expected_type, expected, error_message):
         # Compare the two dictionaries as sets taking the symmetric difference.
         result = result1.items() ^ result2.items()
 
-        assert isinstance(
-            result, expected_type
-        ), f"Expected result type {expected_type}, got {type(result)}"
+        assert isinstance(result, expected_type), (
+            f"Expected result type {expected_type}, got {type(result)}"
+        )
 
         if expected is not None:
             assert result == expected, f"Expected {expected}, got {result}"
