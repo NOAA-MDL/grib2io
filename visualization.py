@@ -2,6 +2,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 
+
 def plot_static(da: xr.DataArray):
     """
     Generate a publication-quality static plot using Matplotlib and Cartopy.
@@ -24,10 +25,10 @@ def plot_static(da: xr.DataArray):
     da.plot(
         ax=ax,
         transform=ccrs.PlateCarree(),
-        x='longitude',
-        y='latitude',
-        cmap='viridis',
-        robust=True
+        x="longitude",
+        y="latitude",
+        cmap="viridis",
+        robust=True,
     )
 
     ax.coastlines()
@@ -37,6 +38,7 @@ def plot_static(da: xr.DataArray):
     plt.title(title)
 
     return fig
+
 
 def plot_interactive(da: xr.DataArray):
     """
@@ -56,10 +58,10 @@ def plot_interactive(da: xr.DataArray):
 
     # Aero Protocol: rasterize=True for large grids
     return da.hvplot.quadmesh(
-        x='longitude',
-        y='latitude',
+        x="longitude",
+        y="latitude",
         rasterize=True,
         geo=True,
-        tiles='OSM',
-        cmap='viridis'
+        tiles="OSM",
+        cmap="viridis",
     )
