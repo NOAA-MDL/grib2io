@@ -43,15 +43,10 @@ from pyproj import CRS
 import datetime
 
 # Check if xarray version supports DataTree
-_HAS_DATATREE = False
-try:
-    # Try importing DataTree to check if it's available
-    xarray_version = importlib.metadata.version("xarray")
-    xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split(".")]
-    min_version_parts = [2024, 10, 0]
-    _HAS_DATATREE = xarray_parts >= min_version_parts
-except (ImportError, ValueError):
-    _HAS_DATATREE = False
+_HAS_DATATREE = hasattr(xr, "DataTree")
+
+# Check for NumPy 2.0+ StringDType
+_HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
 
 _logger = logging.getLogger(__name__)
 
@@ -92,7 +87,11 @@ def _decode_ptype(values: np.ndarray) -> np.ndarray:
         return str(tables.get_value_from_table(str(int(val)), "4.201"))
 
     # Pass otypes to avoid string truncation based on the first element
-    vlookup = np.vectorize(_lookup, otypes=[np.dtypes.StringDType])
+    # Use StringDType if available (NumPy 2.0+), otherwise fallback to object
+    if _HAS_STRINGDTYPE:
+        vlookup = np.vectorize(_lookup, otypes=[np.dtypes.StringDType])
+    else:
+        vlookup = np.vectorize(_lookup, otypes=[object])
     return vlookup(values)
 
 
@@ -269,7 +268,7 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                         _decode_ptype,
                         ds["threshold_lower_limit"],
                         dask="parallelized",
-                        output_dtypes=[np.dtypes.StringDType],
+                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
                     )
 
                 # check if thresholdLowerLimit should be a dimension coordinate
@@ -296,7 +295,7 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                         _decode_ptype,
                         ds["threshold_upper_limit"],
                         dask="parallelized",
-                        output_dtypes=[np.dtypes.StringDType],
+                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
                     )
 
                 if "threshold" in ds.dims:
@@ -558,7 +557,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         save_index: bool = True,
         filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
         stack_vertical: bool = False,
-    ) -> xr.DataTree:
+    ) -> typing.Any:
         """
         Open a GRIB2 file as an xarray DataTree.
 
@@ -1193,8 +1192,11 @@ def parse_grib_index(
 
 # Custom open_datatree function to open grib files as DataTree
 def open_datatree(
-    filename, *, filters: typing.Mapping[str, typing.Any] = None, engine="grib2io"
-):
+    filename: str,
+    *,
+    filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
+    engine: str = "grib2io",
+) -> typing.Any:
     """
     Open a GRIB2 file as an xarray DataTree.
 
@@ -2243,7 +2245,7 @@ def build_datatree_from_grib(
     file_index: pd.DataFrame,
     filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
     stack_vertical: bool = False,
-) -> xr.DataTree:
+) -> typing.Any:
     """
     Build a DataTree from GRIB2 messages.
 
@@ -2343,7 +2345,7 @@ def build_datatree_from_grib(
     return root
 
 
-def process_level_branch(level_tree: xr.DataTree, df: pd.DataFrame, filename: str):
+def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str):
     """
     Process a level type branch of the data tree.
 
@@ -2473,7 +2475,7 @@ def process_level_branch(level_tree: xr.DataTree, df: pd.DataFrame, filename: st
 
 
 def process_probability_groups(
-    target_tree: xr.DataTree, pdtn_df: pd.DataFrame, filename: str
+    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
 ) -> bool:
     """
     Process probability groups and add them to the target tree.
@@ -2523,7 +2525,7 @@ def process_probability_groups(
 
 
 def process_perturbation_groups(
-    target_tree: xr.DataTree, pdtn_df: pd.DataFrame, filename: str
+    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
 ) -> bool:
     """
     Process perturbation groups and add them to the target tree.
@@ -2588,7 +2590,7 @@ def process_perturbation_groups(
 
 
 def try_process_by_variables(
-    target_tree: xr.DataTree, df: pd.DataFrame, filename: str
+    target_tree: typing.Any, df: pd.DataFrame, filename: str
 ) -> bool:
     """
     Try to separate data by variable names and create datasets.

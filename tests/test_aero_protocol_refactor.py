@@ -5,6 +5,9 @@ import datetime
 import os
 from unittest.mock import MagicMock, patch
 
+# Check for NumPy 2.0+ StringDType
+_HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
+
 # Note: We use mocking for low-level grib2io components to test xarray_backend logic
 # without requiring the full C-library environment.
 
@@ -32,7 +35,10 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
     # 1. Eager check (NumPy)
     eager_data = np.array([1, 2])
     decoded_eager = _decode_ptype(eager_data)
-    assert decoded_eager.dtype == np.dtypes.StringDType or isinstance(decoded_eager.dtype, np.dtypes.StringDType)
+    if _HAS_STRINGDTYPE:
+        assert decoded_eager.dtype == np.dtypes.StringDType or isinstance(decoded_eager.dtype, np.dtypes.StringDType)
+    else:
+        assert decoded_eager.dtype == object
     assert decoded_eager[1] == "VeryLongString"
     assert decoded_eager[0] == "Short"
 
@@ -46,11 +52,14 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
         _decode_ptype,
         da_ptype,
         dask="parallelized",
-        output_dtypes=[np.dtypes.StringDType],
+        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
     )
 
     assert decoded_lazy.chunks is not None
-    assert decoded_lazy.dtype == np.dtypes.StringDType or isinstance(decoded_lazy.dtype, np.dtypes.StringDType)
+    if _HAS_STRINGDTYPE:
+        assert decoded_lazy.dtype == np.dtypes.StringDType or isinstance(decoded_lazy.dtype, np.dtypes.StringDType)
+    else:
+        assert decoded_lazy.dtype == object
 
     # Verify result identity
     assert (decoded_lazy.compute().values == decoded_eager).all()
