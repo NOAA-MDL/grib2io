@@ -43,15 +43,10 @@ from pyproj import CRS
 import datetime
 
 # Check if xarray version supports DataTree
-_HAS_DATATREE = False
-try:
-    # Try importing DataTree to check if it's available
-    xarray_version = importlib.metadata.version("xarray")
-    xarray_parts = [int(x) if x.isdigit() else x for x in xarray_version.split(".")]
-    min_version_parts = [2024, 10, 0]
-    _HAS_DATATREE = xarray_parts >= min_version_parts
-except (ImportError, ValueError):
-    _HAS_DATATREE = False
+_HAS_DATATREE = hasattr(xr, "DataTree")
+
+# Check for NumPy 2.0+ StringDType
+_HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
 
 _logger = logging.getLogger(__name__)
 
@@ -71,6 +66,34 @@ _TREE_HIERARCHY_LEVELS = [
     "thresholdLowerLimit",
     "thresholdUpperLimit",
 ]
+
+
+def _decode_ptype(values: np.ndarray) -> np.ndarray:
+    """
+    Decode numeric precipitation type codes into human-readable strings.
+
+    Parameters
+    ----------
+    values : np.ndarray
+        Array of numeric precipitation type codes.
+
+    Returns
+    -------
+    np.ndarray
+        Array of decoded precipitation type strings.
+    """
+
+    def _lookup(val):
+        return str(tables.get_value_from_table(str(int(val)), "4.201"))
+
+    # Pass otypes to avoid string truncation based on the first element
+    # Use StringDType if available (NumPy 2.0+), otherwise fallback to object
+    if _HAS_STRINGDTYPE:
+        vlookup = np.vectorize(_lookup, otypes=[np.dtypes.StringDType])
+    else:
+        vlookup = np.vectorize(_lookup, otypes=[object])
+    return vlookup(values)
+
 
 AVAILABLE_NON_GEO_COORDS = [
     "duration",
@@ -138,7 +161,7 @@ when `data_model="nws-viz"`.
 """
 
 
-def parse_data_model(ds, data_model):
+def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
     """
     Normalize a GRIB2-derived Dataset to a target data model (currently ``"nws-viz"``).
 
@@ -214,33 +237,6 @@ def parse_data_model(ds, data_model):
     >>> list(ds2.coords)
     ['forecast_reference_time', 'lead_time', 'time', 'percentile', ...]
     """
-
-    def _decode_ptype(values):
-        """
-        Decode precipitation type values into human-readable strings.
-
-        Uses GRIB2 Table 4.201 to map numeric codes to precipitation type descriptions.
-
-        Parameters
-        ----------
-        values : array_like
-            Array of numeric precipitation type codes (e.g., integers or floats).
-            Each value corresponds to a GRIB2 Table 4.201 precipitation type code.
-
-        Returns
-        -------
-        numpy.ndarray
-            Array of decoded precipitation type strings with
-            NumPy’s flexible string data type (`np.dtypes.StringDType`).
-        """
-        results = []
-        for val in values:
-            # Convert each numeric code to string and look up in Table 4.201
-            results.append(str(tables.get_value_from_table(str(int(val)), "4.201")))
-
-        # Return array of strings using numpy's string data type
-        return np.array(results, dtype=np.dtypes.StringDType)
-
     # convert coordinates and attributes to CF if requested
     if data_model == "nws-viz":
         # define regex to convert to snake case
@@ -269,7 +265,10 @@ def parse_data_model(ds, data_model):
 
                 if "PTYPE" in ds.data_vars:
                     ds["threshold_lower_limit"] = xr.apply_ufunc(
-                        _decode_ptype, ds["threshold_lower_limit"]
+                        _decode_ptype,
+                        ds["threshold_lower_limit"],
+                        dask="parallelized",
+                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
                     )
 
                 # check if thresholdLowerLimit should be a dimension coordinate
@@ -293,7 +292,10 @@ def parse_data_model(ds, data_model):
 
                 if "PTYPE" in ds.data_vars:
                     ds["threshold_upper_limit"] = xr.apply_ufunc(
-                        _decode_ptype, ds["threshold_upper_limit"]
+                        _decode_ptype,
+                        ds["threshold_upper_limit"],
+                        dask="parallelized",
+                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
                     )
 
                 if "threshold" in ds.dims:
@@ -474,29 +476,33 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
     def open_dataset(
         self,
-        filename,
+        filename: str,
         *,
-        drop_variables=None,
-        save_index=True,
+        drop_variables: typing.Optional[typing.List[str]] = None,
+        save_index: bool = True,
         filters: typing.Mapping[str, typing.Any] = dict(),
-        data_model=None,
-    ):
+        data_model: typing.Optional[str] = None,
+    ) -> xr.Dataset:
         """
         Read and parse metadata from grib file.
 
         Parameters
         ----------
-        filename
+        filename : str
             GRIB2 file to be opened.
-        filters
+        drop_variables : list of str, optional
+            List of variables to exclude from the dataset.
+        save_index : bool, optional
+            Whether to save the GRIB2 index to a file.
+        filters : dict, optional
             Filter GRIB2 messages to single hypercube. Dict keys can be any
             GRIB2 metadata attribute name.
-        data_model
-            Parse GRIB metadata following a defined data model comvention.
+        data_model : str, optional
+            Parse GRIB metadata following a defined data model convention.
 
         Returns
         -------
-        open_dataset
+        xr.Dataset
             Xarray dataset of grib2 messages.
         """
         with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
@@ -535,17 +541,23 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # assign attributes
         ds.attrs["engine"] = "grib2io"
 
+        # Update history for provenance
+        now = datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y-%m-%d %H:%M:%S UTC"
+        )
+        ds.attrs["history"] = f"{now}: Initialized via grib2io.open_dataset\n"
+
         return ds
 
     def open_datatree(
         self,
-        filename,
+        filename: str,
         *,
-        drop_variables=None,
-        save_index=True,
-        filters: typing.Mapping[str, typing.Any] = None,
+        drop_variables: typing.Optional[typing.List[str]] = None,
+        save_index: bool = True,
+        filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
         stack_vertical: bool = False,
-    ):
+    ) -> typing.Any:
         """
         Open a GRIB2 file as an xarray DataTree.
 
@@ -581,6 +593,20 @@ class GribBackendEntrypoint(BackendEntrypoint):
             filename, file_index, filters, stack_vertical=stack_vertical
         )
 
+        # Update history for provenance
+        now = datetime.datetime.now(datetime.timezone.utc).strftime(
+            "%Y-%m-%d %H:%M:%S UTC"
+        )
+        history = f"{now}: Initialized via grib2io.open_datatree\n"
+
+        def _add_history(node):
+            if node.ds is not None:
+                node.ds.attrs["history"] = history + node.ds.attrs.get("history", "")
+            for child in node.children.values():
+                _add_history(child)
+
+        _add_history(tree)
+
         # Put warning here so it is the last message from likely other Xarray warnings.
         warnings.warn(
             "grib2io’s xarray backend DataTree support is experimental. "
@@ -593,7 +619,21 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
 
 class GribBackendArray(BackendArray):
-    def __init__(self, array, lock):
+    """
+    BackendArray implementation for GRIB2 data.
+    """
+
+    def __init__(self, array: "OnDiskArray", lock: SerializableLock):
+        """
+        Initialize the GribBackendArray.
+
+        Parameters
+        ----------
+        array : OnDiskArray
+            The on-disk array object.
+        lock : SerializableLock
+            The lock to use for thread-safe access.
+        """
         self.array = array
         self.shape = array.shape
         self.dtype = np.dtype(array.dtype)
@@ -607,8 +647,20 @@ class GribBackendArray(BackendArray):
             self._raw_getitem,
         )
 
-    def _raw_getitem(self, key: tuple):
-        """Implement thread safe access to data on disk."""
+    def _raw_getitem(self, key: tuple) -> np.ndarray:
+        """
+        Implement thread-safe access to data on disk.
+
+        Parameters
+        ----------
+        key : tuple
+            The indexing key.
+
+        Returns
+        -------
+        np.ndarray
+            The indexed array.
+        """
         with self.lock:
             return self.array[key]
 
@@ -734,13 +786,17 @@ def coords_from_cube(cube) -> typing.Dict[str, xr.Variable]:
 
 @dataclass
 class OnDiskArray:
+    """
+    On-disk array representation for GRIB2 messages.
+    """
+
     file_name: str
     index: pd.DataFrame = field(repr=False)
     cube: dict = field(repr=False)
     shape: typing.Tuple[int, ...] = field(init=False)
     ndim: int = field(init=False)
     geo_ndim: int = field(init=False)
-    dtype = "float32"
+    dtype: str = "float32"
 
     def __post_init__(self):
         # multiple grids not allowed so can just use first
@@ -763,7 +819,20 @@ class OnDiskArray:
         cols = ["msg", "sectionOffset"]
         self.index = self.index[cols]
 
-    def __getitem__(self, item) -> np.array:
+    def __getitem__(self, item: tuple) -> np.ndarray:
+        """
+        Retrieve data from disk for the specified slices.
+
+        Parameters
+        ----------
+        item : tuple
+            The slicing tuple.
+
+        Returns
+        -------
+        np.ndarray
+            The retrieved data array.
+        """
         # dimensions not in index are internal to tdlpack records; 2 dims for
         # grids; 1 dim for stations
 
@@ -877,7 +946,9 @@ def filter_index(index, k, v):
 def parse_grib_index(
     index: pd.DataFrame,
     filters: typing.Mapping[str, typing.Any] = dict(),
-):
+) -> typing.Tuple[
+    pd.DataFrame, typing.Dict[str, typing.List[str]], dict, typing.Dict[str, dict]
+]:
     """
     Apply filters.
 
@@ -1121,8 +1192,11 @@ def parse_grib_index(
 
 # Custom open_datatree function to open grib files as DataTree
 def open_datatree(
-    filename, *, filters: typing.Mapping[str, typing.Any] = None, engine="grib2io"
-):
+    filename: str,
+    *,
+    filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
+    engine: str = "grib2io",
+) -> typing.Any:
     """
     Open a GRIB2 file as an xarray DataTree.
 
@@ -1154,25 +1228,27 @@ def open_datatree(
     return build_datatree_from_grib(filename, file_index, filters)
 
 
-def build_da_without_coords(index, cube, filename, attrs) -> xr.DataArray:
+def build_da_without_coords(
+    index: pd.DataFrame, cube: dict, filename: str, attrs: dict
+) -> xr.DataArray:
     """
     Build a DataArray without coordinates from a cube of grib2 messages.
 
     Parameters
     ----------
-    index
+    index : pd.DataFrame
         Index of cube.
-    cube
+    cube : dict
         Cube of grib2 messages.
-    filename
-        Filename of grib2 file
-    add_grib_section_attrs
-        Include grib section arrays as dataArray attributes
+    filename : str
+        Filename of grib2 file.
+    attrs : dict
+        Attributes for the DataArray.
 
     Returns
     -------
-    DataArray
-        DataArray without coordinates
+    xr.DataArray
+        DataArray without coordinates.
     """
 
     dim_names = [k for k in cube.keys() if cube[k] is not None and len(cube[k]) > 1]
@@ -1244,7 +1320,37 @@ def build_da_without_coords(index, cube, filename, attrs) -> xr.DataArray:
     return da
 
 
-def assign_xr_meta(ds, frames, cube, non_geo_dims, extra_geo, coord_attrs):
+def assign_xr_meta(
+    ds: xr.Dataset,
+    frames: typing.List[pd.DataFrame],
+    cube: dict,
+    non_geo_dims: typing.Dict[str, typing.List[str]],
+    extra_geo: dict,
+    coord_attrs: typing.Dict[str, dict],
+) -> xr.Dataset:
+    """
+    Assign coordinates and attributes to the dataset.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset to update.
+    frames : list of pd.DataFrame
+        The dataframes for each variable.
+    cube : dict
+        The dimensions cube.
+    non_geo_dims : dict
+        The non-geographic dimensions.
+    extra_geo : dict
+        Extra geographic coordinates.
+    coord_attrs : dict
+        Attributes for coordinates.
+
+    Returns
+    -------
+    xr.Dataset
+        The updated dataset.
+    """
     # assign coords from the cube; the cube prevents datarrays with
     # different shapes
     ds = ds.assign_coords(coords_from_cube(cube))
@@ -1307,28 +1413,37 @@ def assign_xr_meta(ds, frames, cube, non_geo_dims, extra_geo, coord_attrs):
     return ds
 
 
-def make_variables(index, f, non_geo_dims, allow_uneven_dims=False):
+def make_variables(
+    index: pd.DataFrame,
+    f: str,
+    non_geo_dims: typing.Dict[str, typing.List[str]],
+    allow_uneven_dims: bool = False,
+) -> typing.Tuple[
+    typing.Optional[typing.List[pd.DataFrame]],
+    typing.Optional[dict],
+    typing.Optional[dict],
+]:
     """
     Create an individual dataframe index and cube for each variable.
 
     Parameters
     ----------
-    index
-        Index of cube.
-    f
-        ?
-    non_geo_dims
-        Dimensions not associated with the x,y grid
-    allow_uneven_dims
-        If True, allows uneven dimensions (used for DataTree creation)
+    index : pd.DataFrame
+        Index of messages.
+    f : str
+        Filename.
+    non_geo_dims : dict
+        Dimensions not associated with the x,y grid.
+    allow_uneven_dims : bool, optional
+        If True, allows uneven dimensions (used for DataTree creation).
 
     Returns
     -------
-    ordered_frames
+    ordered_frames : list of pd.DataFrame, optional
         List of dataframes, one for each variable.
-    cube
+    cube : dict, optional
         Cube of grib2 messages.
-    extra_geo
+    extra_geo : dict, optional
         Extra geographic coordinates.
     """
     # let shortName determine the variables
@@ -2125,7 +2240,12 @@ class Grib2ioDataArray:
         return new_da
 
 
-def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=False):
+def build_datatree_from_grib(
+    filename: str,
+    file_index: pd.DataFrame,
+    filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
+    stack_vertical: bool = False,
+) -> typing.Any:
     """
     Build a DataTree from GRIB2 messages.
 
@@ -2133,7 +2253,7 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     ----------
     filename : str
         Path to the GRIB2 file.
-    file_index : pandas.DataFrame
+    file_index : pd.DataFrame
         DataFrame of GRIB2 message index.
     filters : dict, optional
         Filter criteria for GRIB2 messages.
@@ -2143,7 +2263,7 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
 
     Returns
     -------
-    xarray.DataTree
+    xr.DataTree
         A hierarchical DataTree representation of the GRIB2 data.
     """
     if filters is None:
@@ -2225,18 +2345,20 @@ def build_datatree_from_grib(filename, file_index, filters=None, stack_vertical=
     return root
 
 
-def process_level_branch(level_tree, df, filename):
+def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str):
     """
-    Process a level type branch of the data tree, organizing by PDTN and other attributes.
+    Process a level type branch of the data tree.
+
+    Organizes the tree by PDTN and other attributes.
 
     Parameters
     ----------
-    level_tree : xarray.DataTree
-        The DataTree node for this level type
-    df : pandas.DataFrame
-        DataFrame of messages for this level type
+    level_tree : xr.DataTree
+        The DataTree node for this level type.
+    df : pd.DataFrame
+        DataFrame of messages for this level type.
     filename : str
-        Path to the GRIB2 file
+        Path to the GRIB2 file.
     """
     # Group by PDTN
     pdtn_groups = {}
@@ -2352,8 +2474,26 @@ def process_level_branch(level_tree, df, filename):
                     level_tree[pdtn_name] = pdtn_tree
 
 
-def process_probability_groups(target_tree, pdtn_df, filename):
-    """ """
+def process_probability_groups(
+    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
+) -> bool:
+    """
+    Process probability groups and add them to the target tree.
+
+    Parameters
+    ----------
+    target_tree : xr.DataTree
+        The tree node to add probability groups to.
+    pdtn_df : pd.DataFrame
+        DataFrame of messages for a specific PDTN.
+    filename : str
+        Path to the GRIB2 file.
+
+    Returns
+    -------
+    bool
+        True if successful.
+    """
     success = False
     # Group by type of probability
     prob_groups = {}
@@ -2384,23 +2524,25 @@ def process_probability_groups(target_tree, pdtn_df, filename):
     return success
 
 
-def process_perturbation_groups(target_tree, pdtn_df, filename):
+def process_perturbation_groups(
+    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
+) -> bool:
     """
     Process perturbation groups and add them to the target tree.
 
     Parameters
     ----------
-    target_tree : xarray.DataTree
-        The tree node to add perturbation groups to
-    pdtn_df : pandas.DataFrame
-        DataFrame of messages for a specific PDTN
+    target_tree : xr.DataTree
+        The tree node to add perturbation groups to.
+    pdtn_df : pd.DataFrame
+        DataFrame of messages for a specific PDTN.
     filename : str
-        Path to the GRIB2 file
+        Path to the GRIB2 file.
 
     Returns
     -------
     bool
-        True if at least one perturbation was successfully processed
+        True if at least one perturbation was successfully processed.
     """
     success = False
     # Group by perturbation number
@@ -2447,23 +2589,25 @@ def process_perturbation_groups(target_tree, pdtn_df, filename):
     return success
 
 
-def try_process_by_variables(target_tree, df, filename):
+def try_process_by_variables(
+    target_tree: typing.Any, df: pd.DataFrame, filename: str
+) -> bool:
     """
     Try to separate data by variable names and create datasets.
 
     Parameters
     ----------
-    target_tree : xarray.DataTree
-        The tree node to add variable datasets to
-    df : pandas.DataFrame
-        DataFrame of messages
+    target_tree : xr.DataTree
+        The tree node to add variable datasets to.
+    df : pd.DataFrame
+        DataFrame of messages.
     filename : str
-        Path to the GRIB2 file
+        Path to the GRIB2 file.
 
     Returns
     -------
     bool
-        True if at least one variable was successfully processed
+        True if at least one variable was successfully processed.
     """
     success = False
 
@@ -2485,24 +2629,24 @@ def try_process_by_variables(target_tree, df, filename):
 
 
 def create_datasets_from_df(
-    df, filename, verbose=False
+    df: pd.DataFrame, filename: str, verbose: bool = False
 ) -> typing.Optional[typing.List[xr.Dataset]]:
     """
     Create a list of xarray Datasets from a DataFrame of messages.
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        DataFrame of GRIB messages
+    df : pd.DataFrame
+        DataFrame of GRIB messages.
     filename : str
-        Path to the GRIB2 file
+        Path to the GRIB2 file.
     verbose : bool, optional
-        If True, prints detailed debugging information
+        If True, prints detailed debugging information.
 
     Returns
     -------
-    dss
-        List of Datasets, or None if creation failed
+    list of xr.Dataset, optional
+        List of Datasets, or None if creation failed.
     """
     try:
         if verbose:
