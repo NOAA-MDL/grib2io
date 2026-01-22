@@ -2275,7 +2275,7 @@ table_wgrib2_level_string = {
 #
 # These were added by https://github.com/bbakernoaa
 #
-# https://github.com/NOAA-MDL/grib2io/commit/4b19aee239be010cb0557f220bf06180c414bbe2 
+# https://github.com/NOAA-MDL/grib2io/commit/4b19aee239be010cb0557f220bf06180c414bbe2
 # ----------------------------------------------------------------------------------------
 
 #ORIG _AERO_TYPE_MAPPING = {

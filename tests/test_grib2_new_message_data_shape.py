@@ -17,7 +17,7 @@ def test_new_message_data_shape(request):
         msg.section4,
         drtn=3)
 
-    
+
     # Make some data
     stuff = np.ones((100, 300), dtype=np.float32)
 
@@ -26,7 +26,7 @@ def test_new_message_data_shape(request):
 
     # Test adding stuff to newmsg.
     with pytest.raises(ValueError, match=r"^Data shape mismatch.*"):
-        newmsg.data = stuff    
+        newmsg.data = stuff
 
 
 def test_new_message_data_shape_no_griddef(request):
@@ -58,4 +58,4 @@ def test_new_message_data_shape_no_griddef(request):
 
     # Test adding stuff to newmsg.
     with pytest.raises(ValueError, match=r"^Data shape mismatch.*"):
-        newmsg.data = stuff    
+        newmsg.data = stuff

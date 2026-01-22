@@ -444,7 +444,7 @@ if build_with_ip:
                 else:
                     print(f"NCEPLIBS-ip is from Homebrew. grib2io will use compiler from Homebrew: {ccomp}")
                     os.environ['CC'] = ccomp
-        
+
         # Note that both GNU and Intel support this flag.
         extmod_config['iplib']['define_macros'].append(('IPLIB_WITH_OPENMP', None))
         extmod_config['iplib']['extra_compile_args'] = ['-fopenmp']

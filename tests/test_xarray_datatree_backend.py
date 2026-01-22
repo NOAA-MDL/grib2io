@@ -68,7 +68,7 @@ def test_datatree_level_structure(request):
         # Check the name
         assert first_child.name == "pdtn_0"
 
-        # Should have branches 
+        # Should have branches
         assert len(first_child.children) > 0
 
 def test_datatree_single_pdtn_optimization(request):
@@ -187,5 +187,5 @@ def test_datatree_save_index(request: pytest.FixtureRequest):
         file.unlink()
 
     ds = xr.open_datatree(data / fname, engine='grib2io', save_index=False)
-    
+
     assert len(list(data.glob(idx_glob_str))) == 0

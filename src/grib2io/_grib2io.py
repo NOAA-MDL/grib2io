@@ -251,7 +251,7 @@ class open():
                             index = pickle.load(file)
                         self._index = index
                     except Exception as e:
-                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n" 
+                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
                                       f"re-forming index from grib2file, but not writing indexfile")
                         self._index = build_index(self._filehandle)
                     self._hasindex = True

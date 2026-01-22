@@ -4,4 +4,3 @@ table_6_0 = {
 '254':'A bit map previously defined in the same GRIB2 message applies to this product.',
 '255':'A bit map does not apply to this product.',
 }
-

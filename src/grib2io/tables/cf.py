@@ -117,7 +117,7 @@ table_shortname_to_cf = {
 }
 
 # ----------------------------------------------------------------------------------------
-# A dictionary to map GRIB2 Code Table 4.7 (Derived Forecast) to their equivalent 
+# A dictionary to map GRIB2 Code Table 4.7 (Derived Forecast) to their equivalent
 # CF Convention cell_methods.
 # ----------------------------------------------------------------------------------------
 table_4_7_cf = {

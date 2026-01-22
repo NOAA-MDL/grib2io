@@ -24,7 +24,7 @@ def test_grib2_shallow_copy(request):
     assert id(newmsg.section3) == id(msg.section3)
     assert id(newmsg.section4) == id(msg.section4)
 
-    # Test section5 ids 
+    # Test section5 ids
     assert id(newmsg.section5) != id(msg.section5)
 
     # Test dtrn is the same

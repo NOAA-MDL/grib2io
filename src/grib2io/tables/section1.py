@@ -119,4 +119,3 @@ table_1_6 = {
 '192-254':'Reserved for Local Use',
 '255':'Missing',
 }
-

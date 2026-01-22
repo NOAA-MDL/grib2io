@@ -1131,7 +1131,7 @@ class LeadTime:
         # First update validDate if necessary.
         # IMPORTANT: Update validDate components when message is time interval
         if obj.pdtn in _timeinterval_pdtns:
-            vd = obj.refDate + value 
+            vd = obj.refDate + value
             obj.yearOfEndOfTimePeriod = vd.year
             obj.monthOfEndOfTimePeriod = vd.month
             obj.dayOfEndOfTimePeriod = vd.day
