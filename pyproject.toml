@@ -58,6 +58,9 @@ grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
 Documentation = "https://noaa-mdl.github.io/grib2io"
 Repository = "https://github.com/NOAA-MDL/grib2io"
 
+[project.scripts]
+grib2io = "grib2io.cli.main:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["grib2io", "grib2io.tables", "grib2io.utils"]
