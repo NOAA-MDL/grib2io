@@ -6,10 +6,10 @@ import sys
 from .create_index import add_parser as add_create_index_parser
 from .ls import add_parser as add_ls_parser
 
-COMMANDS = [
+COMMANDS = {
     "create-index",
     "ls"
-]
+}
 
 
 def build_parser() -> argparse.ArgumentParser:

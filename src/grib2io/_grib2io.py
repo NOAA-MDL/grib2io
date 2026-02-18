@@ -354,10 +354,24 @@ class open:
             return self.select(shortName=key)
         elif isinstance(key, slice):
             return self._msgs[key]
+        elif isinstance(key, (list, tuple, set)):
+            if len(key) == 0:
+                return iter(self._msgs)
+            indices = sorted(key) if isinstance(key, set) else key
+            def _iter_msgs():
+                for i in indices:
+                    if not isinstance(i, int):
+                        raise TypeError(f"indices must be integers; got {type(i).__name__}")
+                    if abs(i) >= len(self._msgs):
+                        raise IndexError(f"index out of range: {i}")
+                    yield self._msgs[i]
+            return _iter_msgs()
         else:
             raise KeyError(
-                "Key must be an integer, slice, or GRIB2 variable shortName."
+                "Key must be an integer, slice, GRIB2 variable shortName, "
+                "or an iterable of integer indices."
             )
+
 
     @property
     def levels(self):
