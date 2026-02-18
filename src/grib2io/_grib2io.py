@@ -65,7 +65,7 @@ The following Jupyter Notebooks are available as tutorials:
 from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal, Optional, Union, IO
 import builtins
 import collections
 import copy
@@ -157,13 +157,27 @@ class open():
         abbreviation names).
     """
 
-    __slots__ = ('_fileid', '_filehandle', '_hasindex', '_index', '_msgs', '_pos',
-                 'closed', 'current_message', 'indexfile', 'messages', 'mode',
-                 'name', 'size', 'save_index', 'use_index',)
+    __slots__ = (
+        "_fileid",
+        "_filehandle",
+        "_hasindex",
+        "_index",
+        "_msgs",
+        "_pos",
+        "closed",
+        "current_message",
+        "indexfile",
+        "messages",
+        "mode",
+        "name",
+        "size",
+        "save_index",
+        "use_index",
+    )
 
     def __init__(
         self,
-        filename: Union[bytes, str, Path],
+        filename: Union[bytes, str, Path, IO],
         mode: Literal["r", "w", "x"] = "r",
         *,
         save_index = True,
@@ -177,7 +191,7 @@ class open():
         Parameters
         ----------
         filename
-            File path containing GRIB2 messages OR bytes.
+            File path containing GRIB2 messages OR bytes OR file-like object.
         mode
             File access mode where "r" opens the files for reading only; "w"
             opens the file for overwriting and "x" for writing to a new file.
@@ -191,21 +205,25 @@ class open():
             .. versionadded:: 2.6.0
         """
 
-        # All write modes are read/write.
-        # All modes are binary.
+        # All write modes are read/write; all modes are binary.
         if mode in ("a", "x", "w"):
             mode += "+"
         mode = mode + "b"
 
-        self.mode = mode
         self._hasindex = False
         self.indexfile = None
+        self.mode = mode
         self.save_index = save_index
+        self.size = 0
         self.use_index = use_index
 
         if isinstance(filename, bytes):
             if 'r' not in self.mode:
-                raise ValueError("bytes grib2 can only be opened as read")
+                raise ValueError(
+                    "Invalid mode for bytes input: GRIB2 data supplied as bytes "
+                    "is read-only. Use mode='r' or provide a filename instead."
+                )
+
             self.current_message = 0
             if filename[:2] == _GZIP_HEADER:
                 filename = gzip.decompress(filename)
@@ -218,6 +236,26 @@ class open():
             self._index = build_index(self._filehandle)
             self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
             self.messages = len(self._msgs)
+
+        elif all(hasattr(filename, attr) for attr in ("read", "seek", "tell")):
+            # Handle file-like objects (including S3File, etc.)
+            self.current_message = 0
+            self._filehandle = filename
+            self.name = getattr(filename, 'name', filename.__repr__())
+            # For file-like objects, we can't get file stats, so create a unique ID
+            self._fileid = hashlib.sha1((self.name+str(id(filename))).encode('ASCII')).hexdigest()
+            # Disable index file usage for file-like objects since we can't save/load them
+            self.use_index = False
+            self.save_index = False
+
+            if 'r' in self.mode:
+                # Build index from the file-like object
+                self._index = build_index(self._filehandle)
+                self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
+                self.messages = len(self._msgs)
+
+            # Get size for s3fs.core.S3File object.
+            self.size = self._filehandle.info()['size'] or 0
 
         else:
             self.current_message = 0
