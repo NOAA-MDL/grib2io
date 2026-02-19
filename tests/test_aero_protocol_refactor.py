@@ -1,8 +1,6 @@
 import pytest
 import xarray as xr
 import numpy as np
-import datetime
-import os
 from unittest.mock import MagicMock, patch
 
 # Check for NumPy 2.0+ StringDType
@@ -83,7 +81,7 @@ def test_scientific_provenance_initialization():
          patch("grib2io.xarray_backend.assign_xr_meta") as mock_assign:
 
         mock_parse.return_value = (MagicMock(), {}, {}, {})
-        mock_make.return_value = ([pd.DataFrame({"shortName": ["TMP"]})], {}, {})
+        mock_make.return_value = ([pd.DataFrame({"shortName": ["TMP"]})], [{"x": range(1), "y": range(1)}], {})
 
         mock_da = xr.DataArray([1.0], name="TMP")
         mock_build.return_value = mock_da
