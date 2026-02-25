@@ -336,9 +336,9 @@ def _build_chemical_shortname(obj) -> str:
         param_num = str(obj.parameterNumber)
         # Use a specific mapping for chemical parameters
         chemical_params = {
-            '0': 'den',  # Mass Density
-            '1': 'col',   # Column-Integrated Mass Density
-            '2': 'mr',    # Mass Mixing Ratio
+            '0': 'mr',    # Mass Density
+            '1': 'colmd', # Column-Integrated Mass Density
+            '2': 'mmr',   # Mass Mixing Ratio
             '52': 'vmr',  # Volume Mixing Ratio
         }
         param = chemical_params.get(param_num, '')
@@ -433,11 +433,18 @@ def _build_aerosol_shortname(obj) -> str:
             else:
                 # Find matching wavelength band
                 for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
-                    if (wl_key[0] == optical_type and  # Check optical_type first
-                        int(wl_key[1]) == first_wl and
-                        (second_wl is None or int(wl_key[2]) == second_wl)):
-                        key = wl_key
-                        break
+                    if wl_key[0] != optical_type:
+                        continue
+                    if int(wl_key[1]) != first_wl:
+                        continue
+                    if len(wl_key) == 3:
+                        if second_wl is not None and int(wl_key[2]) == second_wl:
+                            key = wl_key
+                            break
+                    elif len(wl_key) == 2:
+                        if second_wl is None:
+                            key = wl_key
+                            break
                 else:
                     # If no match found, use raw values
                     key = (optical_type, str(first_wl),

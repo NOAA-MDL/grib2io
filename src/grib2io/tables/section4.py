@@ -2310,9 +2310,9 @@ table_aerosol_type = {
 
 #ORIG _PARAMETER_MAPPING = {
 table_aerosol_parameter = {
-    '0': 'den',       # Mass Density (Concentration) [kg m-3]
-    '1': 'col',       # Column-Integrated Mass Density [kg m-2]
-    '2': 'mr',        # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
+    '0': 'mr',        # Mass Density (Concentration) [kg m-3]
+    '1': 'colmd',     # Column-Integrated Mass Density [kg m-2]
+    '2': 'mmr',       # Mass Mixing Ratio (Mass Fraction in Air) [kg kg-1]
     '3': 'EmisFlux',  # Atmosphere Emission Mass Flux [kg m-2s-1]
     '6': 'DryDepFlx', # Surface Dry Deposition Mass Flux [kg m-2s-1]
     '7': 'WetDepFlx', # Surface Wet Deposition Mass Flux [kg m-2s-1]
