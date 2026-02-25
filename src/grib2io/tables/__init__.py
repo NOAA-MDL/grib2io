@@ -337,21 +337,13 @@ def _build_chemical_shortname(obj) -> str:
         # Use a specific mapping for chemical parameters
         chemical_params = {
             '0': 'den',  # Mass Density
-            '1': 'colmd', # Column-Integrated Mass Density
+            '1': 'col',   # Column-Integrated Mass Density
             '2': 'mr',    # Mass Mixing Ratio
             '52': 'vmr',  # Volume Mixing Ratio
         }
         param = chemical_params.get(param_num, '')
         if not param and param_num in _PARAMETER_MAPPING:
              param = _PARAMETER_MAPPING[param_num]
-
-    # Add level information
-    level_str = ''
-    if hasattr(obj, 'typeOfFirstFixedSurface'):
-        first_level = str(obj.typeOfFirstFixedSurface.value)
-        first_value = str(obj.scaledValueOfFirstFixedSurface) if obj.scaledValueOfFirstFixedSurface > 0 else ''
-        if first_level in _LEVEL_MAPPING:
-            level_str = f'{_LEVEL_MAPPING[first_level]}{first_value}'
 
     # Handle source/sink
     source_sink = ''
@@ -362,8 +354,6 @@ def _build_chemical_shortname(obj) -> str:
 
     # Build the final shortname
     parts = []
-    if level_str:
-        parts.append(level_str)
     if chemical_abbr:
         parts.append(chemical_abbr)
     if param:
@@ -457,14 +447,6 @@ def _build_aerosol_shortname(obj) -> str:
             if key in _OPTICAL_WAVELENGTH_MAPPING.keys():
                 var_wavelength = _OPTICAL_WAVELENGTH_MAPPING[key]
 
-    # Add level information
-    level_str = ''
-    if hasattr(obj, 'typeOfFirstFixedSurface'):
-        first_level = str(obj.typeOfFirstFixedSurface.value)
-        first_value = str(obj.scaledValueOfFirstFixedSurface) if obj.scaledValueOfFirstFixedSurface > 0 else ''
-        if first_level in _LEVEL_MAPPING:
-            level_str = f"{_LEVEL_MAPPING[first_level]}{first_value}"
-
     # Get parameter type
     param = ''
     if hasattr(obj, 'parameterNumber'):
@@ -486,8 +468,6 @@ def _build_aerosol_shortname(obj) -> str:
             shortname = f'{shortname}_{source_sink}'
     elif aero_abbr:
         parts = []
-        if level_str:
-            parts.append(level_str)
         parts.append(aero_abbr)
         if aero_size:
             parts.append(aero_size)
