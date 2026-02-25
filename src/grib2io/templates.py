@@ -1049,6 +1049,8 @@ class ShortName:
     def __get__(self, obj, objtype=None):
         if hasattr(obj, 'typeOfAerosol'):
             return tables._build_aerosol_shortname(obj)
+        elif hasattr(obj, 'constituentType'):
+            return tables._build_chemical_shortname(obj)
         else:
             return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
     def __set__(self, obj, value):
@@ -1932,7 +1934,7 @@ class SecondWavelength:
 
 class SourceSinkIndicator:
     """[Source/Sink Indicator](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-238.shtml)"""
-    _key = {80:3, 81:3, 82:3, 83:3, 84:3, 85:3}
+    _key = {76:10, 77:10, 78:10, 79:10, 80:3, 81:3, 82:3, 83:3, 84:3, 85:3}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2], table='4.238')
     def __set__(self, obj, value):
@@ -2838,6 +2840,72 @@ class ProductDefinitionTemplate43(ProductDefinitionTemplateBase, ProductDefiniti
     unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
     timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
 
+@dataclass(init=False)
+class ProductDefinitionTemplate76(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.76](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-76.shtml)"""
+    _len = 17
+    _num = 76
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+
+@dataclass(init=False)
+class ProductDefinitionTemplate77(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.77](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-77.shtml)"""
+    _len = 20
+    _num = 77
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+@dataclass(init=False)
+class ProductDefinitionTemplate78(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.78](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-78.shtml)"""
+    _len = 31
+    _num = 78
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
+@dataclass(init=False)
+class ProductDefinitionTemplate79(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.79](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-79.shtml)"""
+    _len = 34
+    _num = 79
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
 _pdt_by_pdtn = {
     0: ProductDefinitionTemplate0,
     1: ProductDefinitionTemplate1,
@@ -2860,6 +2928,10 @@ _pdt_by_pdtn = {
     47: ProductDefinitionTemplate47,
     48: ProductDefinitionTemplate48,
     49: ProductDefinitionTemplate49,
+    76: ProductDefinitionTemplate76,
+    77: ProductDefinitionTemplate77,
+    78: ProductDefinitionTemplate78,
+    79: ProductDefinitionTemplate79,
     80: ProductDefinitionTemplate80,
     81: ProductDefinitionTemplate81,
     82: ProductDefinitionTemplate82,

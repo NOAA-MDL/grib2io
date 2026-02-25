@@ -310,6 +310,63 @@ def get_wgrib2_level_string(pdtn: int, pdt: ArrayLike) -> str:
     return lvlstr
 
 
+def _build_chemical_shortname(obj) -> str:
+    """
+    Build shortname for chemical constituent GRIB2 messages.
+    """
+    _CHEMICAL_MAPPING = get_table('4.230')
+    _AERO_MAPPING = get_table('4.233')
+    _PARAMETER_MAPPING = get_table('aerosol_parameter')
+    _LEVEL_MAPPING = get_table('aerosol_level')
+
+    # Get constituent type
+    constituent_type = str(obj.constituentType.value) if hasattr(obj, 'constituentType') and obj.constituentType is not None else ''
+    chemical_abbr = ''
+    if constituent_type in _CHEMICAL_MAPPING:
+        chemical_abbr = _CHEMICAL_MAPPING[constituent_type][1]
+    elif constituent_type in _AERO_MAPPING:
+        chemical_abbr = _AERO_MAPPING[constituent_type][1]
+
+    if chemical_abbr == 'unknown':
+        chemical_abbr = ''
+
+    # Get parameter type
+    param = ''
+    if hasattr(obj, 'parameterNumber'):
+        param_num = str(obj.parameterNumber)
+        # Use a specific mapping for chemical parameters
+        chemical_params = {
+            '0': 'mr',    # Mass Density
+            '1': 'colmd', # Column-Integrated Mass Density
+            '2': 'mmr',   # Mass Mixing Ratio
+            '52': 'vmr',  # Volume Mixing Ratio
+        }
+        param = chemical_params.get(param_num, '')
+        if not param and param_num in _PARAMETER_MAPPING:
+             param = _PARAMETER_MAPPING[param_num]
+
+    # Handle source/sink
+    source_sink = ''
+    if hasattr(obj, 'sourceSinkIndicator') and obj.sourceSinkIndicator is not None:
+        ss_val = str(obj.sourceSinkIndicator.value)
+        if ss_val != '255':
+            source_sink = f'ss{ss_val}'
+
+    # Build the final shortname
+    parts = []
+    if chemical_abbr:
+        parts.append(chemical_abbr)
+    if param:
+        parts.append(param)
+    if source_sink:
+        parts.append(source_sink)
+
+    if not parts:
+        return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
+
+    return '_'.join(parts)
+
+
 def _build_aerosol_shortname(obj) -> str:
     """
     """
@@ -317,12 +374,22 @@ def _build_aerosol_shortname(obj) -> str:
     _LEVEL_MAPPING = get_table('aerosol_level')
     _PARAMETER_MAPPING = get_table('aerosol_parameter')
     _AERO_TYPE_MAPPING = get_table('aerosol_type')
+    _AERO_TABLE_4233 = get_table('4.233')
 
     # Build shortname from aerosol components
     parts = []
 
     # Get aerosol type
     aero_type = str(obj.typeOfAerosol.value) if obj.typeOfAerosol is not None else ""
+
+    # Try to get abbreviation from optimized mapping or Table 4.233
+    aero_abbr = ''
+    if aero_type in _AERO_TYPE_MAPPING:
+        aero_abbr = _AERO_TYPE_MAPPING[aero_type]
+    elif aero_type in _AERO_TABLE_4233:
+        aero_abbr = _AERO_TABLE_4233[aero_type][1]
+        if aero_abbr == 'unknown':
+            aero_abbr = ''
 
     # Add size information if applicable
     aero_size = ""
@@ -366,11 +433,18 @@ def _build_aerosol_shortname(obj) -> str:
             else:
                 # Find matching wavelength band
                 for wl_key, wl_info in _OPTICAL_WAVELENGTH_MAPPING.items():
-                    if (wl_key[0] == optical_type and  # Check optical_type first
-                        int(wl_key[1]) == first_wl and
-                        (second_wl is None or int(wl_key[2]) == second_wl)):
-                        key = wl_key
-                        break
+                    if wl_key[0] != optical_type:
+                        continue
+                    if int(wl_key[1]) != first_wl:
+                        continue
+                    if len(wl_key) == 3:
+                        if second_wl is not None and int(wl_key[2]) == second_wl:
+                            key = wl_key
+                            break
+                    elif len(wl_key) == 2:
+                        if second_wl is None:
+                            key = wl_key
+                            break
                 else:
                     # If no match found, use raw values
                     key = (optical_type, str(first_wl),
@@ -380,14 +454,6 @@ def _build_aerosol_shortname(obj) -> str:
             if key in _OPTICAL_WAVELENGTH_MAPPING.keys():
                 var_wavelength = _OPTICAL_WAVELENGTH_MAPPING[key]
 
-    # Add level information
-    level_str = ''
-    if hasattr(obj, 'typeOfFirstFixedSurface'):
-        first_level = str(obj.typeOfFirstFixedSurface.value)
-        first_value = str(obj.scaledValueOfFirstFixedSurface) if obj.scaledValueOfFirstFixedSurface > 0 else ''
-        if first_level in _LEVEL_MAPPING:
-            level_str = f"{_LEVEL_MAPPING[first_level]}{first_value}"
-
     # Get parameter type
     param = ''
     if hasattr(obj, 'parameterNumber'):
@@ -395,18 +461,27 @@ def _build_aerosol_shortname(obj) -> str:
         if param_num in _PARAMETER_MAPPING:
             param = _PARAMETER_MAPPING[param_num]
 
+    # Handle source/sink
+    source_sink = ''
+    if hasattr(obj, 'sourceSinkIndicator') and obj.sourceSinkIndicator is not None:
+        ss_val = str(obj.sourceSinkIndicator.value)
+        if ss_val != '255':
+            source_sink = f'ss{ss_val}'
+
     # Build the final shortname
-    if var_wavelength and aero_type in _AERO_TYPE_MAPPING:
-        shortname = f"{_AERO_TYPE_MAPPING[aero_type]}{var_wavelength}"
-    elif aero_type in _AERO_TYPE_MAPPING:
+    if var_wavelength and aero_abbr:
+        shortname = f'{aero_abbr}{var_wavelength}'
+        if source_sink:
+            shortname = f'{shortname}_{source_sink}'
+    elif aero_abbr:
         parts = []
-        if level_str:
-            parts.append(level_str)
-        parts.append(_AERO_TYPE_MAPPING[aero_type])
+        parts.append(aero_abbr)
         if aero_size:
             parts.append(aero_size)
         if param:
             parts.append(param)
+        if source_sink:
+            parts.append(source_sink)
         shortname = '_'.join(parts) if len(parts) > 1 else parts[0]
     else:
         return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]

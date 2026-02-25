@@ -128,6 +128,7 @@ AVAILABLE_NON_GEO_COORDS = [
     "valueOfSecondFixedSurface",
     "typeOfAerosol",
     "constituentType",
+    "sourceSinkIndicator",
     "firstWavelength",
     "secondWavelength",
     "firstSizeOfAerosol",
@@ -150,6 +151,7 @@ AVAILABLE_NON_GEO_DIMS = [
     "level",
     "typeOfAerosol",
     "constituentType",
+    "sourceSinkIndicator",
     "firstWavelength",
     "secondWavelength",
     "firstSizeOfAerosol",
@@ -357,6 +359,17 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     _decode_code,
                     ds["constituent_type"],
                     "4.230",
+                    dask="parallelized",
+                    output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                )
+
+            elif coord == "sourceSinkIndicator":
+                ds = ds.rename({"sourceSinkIndicator": "source_sink_indicator"})
+                ds["source_sink_indicator"].attrs["long_name"] = "Source/Sink Indicator"
+                ds["source_sink_indicator"] = xr.apply_ufunc(
+                    _decode_code,
+                    ds["source_sink_indicator"],
+                    "4.238",
                     dask="parallelized",
                     output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
                 )
@@ -1263,11 +1276,17 @@ def parse_grib_index(
         index, attrs = meta_check(index, attrs, "statisticalProcess")
 
     # Logic for Trace Gas and Aerosol dimensions
-    if pdtn in {40, 41, 42, 43}:
+    if pdtn in {40, 41, 42, 43, 76, 77, 78, 79}:
         dim_coords["constituentType"] = ["constituentType"]
+
+    if pdtn in {76, 77, 78, 79}:
+        dim_coords["sourceSinkIndicator"] = ["sourceSinkIndicator"]
 
     if pdtn in {44, 45, 46, 47, 48, 49, 50, 80, 81, 82, 83, 84, 85}:
         dim_coords["typeOfAerosol"] = ["typeOfAerosol"]
+
+    if pdtn in {80, 81, 82, 83, 84}:
+        dim_coords["sourceSinkIndicator"] = ["sourceSinkIndicator"]
 
     if pdtn in {48, 49, 80, 81}:
         dim_coords["firstWavelength"] = ["firstWavelength"]
@@ -2327,6 +2346,8 @@ def open_mfdataset(
     filters: typing.Mapping[str, typing.Any] = dict(),
     data_model: typing.Optional[str] = None,
     parallel: bool = False,
+    preprocess: typing.Optional[typing.Callable] = None,
+    **kwargs,
 ) -> xr.Dataset:
     """
     Open multiple GRIB2 files as a single xarray Dataset.
@@ -2349,6 +2370,11 @@ def open_mfdataset(
         Parse GRIB metadata following a defined data model convention.
     parallel : bool, optional
         If True, use dask to read indices in parallel.
+    preprocess : callable, optional
+        A function to apply to each file's dataset before combining.
+    **kwargs : optional
+        Additional arguments passed to ``xarray.combine_by_coords`` or
+        ``xarray.merge``.
 
     Returns
     -------
@@ -2384,11 +2410,10 @@ def open_mfdataset(
     else:
         indices = [_get_index(fname, i) for i, fname in enumerate(filenames)]
 
-    file_index = pd.concat(indices, ignore_index=True)
-
-    # Validate grid consistency across files
+    # Validate grid consistency across files using only the first message of each file
     grid_cols = ["ny", "nx"]
-    unique_grids = file_index[grid_cols].drop_duplicates()
+    first_msgs = pd.concat([idx.head(1) for idx in indices], ignore_index=True)
+    unique_grids = first_msgs[grid_cols].drop_duplicates()
     if len(unique_grids) > 1:
         grid_list = unique_grids.to_dict("records")
         raise ValueError(
@@ -2396,7 +2421,30 @@ def open_mfdataset(
             f"Found grids: {grid_list}"
         )
 
-    ds = _open_dataset_from_index(file_index, list(filenames), filters, data_model)
+    if preprocess is not None or kwargs:
+        datasets = [
+            _open_dataset_from_index(idx, fname, filters, data_model)
+            for idx, fname in zip(indices, filenames)
+        ]
+        if preprocess is not None:
+            datasets = [preprocess(ds) for ds in datasets]
+
+        if 'combine' in kwargs:
+            combine_opt = kwargs.pop('combine')
+            if combine_opt == 'nested':
+                ds = xr.combine_nested(datasets, **kwargs)
+            elif combine_opt == 'by_coords':
+                ds = xr.combine_by_coords(datasets, **kwargs)
+            else:
+                ds = xr.merge(datasets, **kwargs)
+        else:
+            try:
+                ds = xr.combine_by_coords(datasets, **kwargs)
+            except Exception:
+                ds = xr.merge(datasets, **kwargs)
+    else:
+        file_index = pd.concat(indices, ignore_index=True)
+        ds = _open_dataset_from_index(file_index, list(filenames), filters, data_model)
 
     # Update history for provenance
     history = ds.attrs.get("history", "")
