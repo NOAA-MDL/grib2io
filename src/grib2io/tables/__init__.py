@@ -327,6 +327,9 @@ def _build_chemical_shortname(obj) -> str:
     elif constituent_type in _AERO_MAPPING:
         chemical_abbr = _AERO_MAPPING[constituent_type][1]
 
+    if chemical_abbr == 'unknown':
+        chemical_abbr = ''
+
     # Get parameter type
     param = ''
     if hasattr(obj, 'parameterNumber'):
@@ -381,12 +384,22 @@ def _build_aerosol_shortname(obj) -> str:
     _LEVEL_MAPPING = get_table('aerosol_level')
     _PARAMETER_MAPPING = get_table('aerosol_parameter')
     _AERO_TYPE_MAPPING = get_table('aerosol_type')
+    _AERO_TABLE_4233 = get_table('4.233')
 
     # Build shortname from aerosol components
     parts = []
 
     # Get aerosol type
     aero_type = str(obj.typeOfAerosol.value) if obj.typeOfAerosol is not None else ""
+
+    # Try to get abbreviation from optimized mapping or Table 4.233
+    aero_abbr = ''
+    if aero_type in _AERO_TYPE_MAPPING:
+        aero_abbr = _AERO_TYPE_MAPPING[aero_type]
+    elif aero_type in _AERO_TABLE_4233:
+        aero_abbr = _AERO_TABLE_4233[aero_type][1]
+        if aero_abbr == 'unknown':
+            aero_abbr = ''
 
     # Add size information if applicable
     aero_size = ""
@@ -467,15 +480,15 @@ def _build_aerosol_shortname(obj) -> str:
             source_sink = f'ss{ss_val}'
 
     # Build the final shortname
-    if var_wavelength and aero_type in _AERO_TYPE_MAPPING:
-        shortname = f'{_AERO_TYPE_MAPPING[aero_type]}{var_wavelength}'
+    if var_wavelength and aero_abbr:
+        shortname = f'{aero_abbr}{var_wavelength}'
         if source_sink:
             shortname = f'{shortname}_{source_sink}'
-    elif aero_type in _AERO_TYPE_MAPPING:
+    elif aero_abbr:
         parts = []
         if level_str:
             parts.append(level_str)
-        parts.append(_AERO_TYPE_MAPPING[aero_type])
+        parts.append(aero_abbr)
         if aero_size:
             parts.append(aero_size)
         if param:
