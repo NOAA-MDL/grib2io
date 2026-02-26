@@ -1109,6 +1109,13 @@ class _Grib2Message:
         return is_aero_template or is_aero_param or is_aero_type
 
     @property
+    def _isChemical(self):
+        """Check if GRIB2 message contains chemical data"""
+        is_chem_template = self.productDefinitionTemplateNumber.value in tables.CHEMICAL_PDTNS
+        is_chem_param = (self.parameterCategory == 20)
+        return is_chem_template or is_chem_param
+
+    @property
     def gdtn(self):
         """Return Grid Definition Template Number"""
         return self.section3[4]
