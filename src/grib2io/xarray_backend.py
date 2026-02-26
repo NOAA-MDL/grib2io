@@ -593,15 +593,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
     def open_dataset(
         self,
-        filename: str,
-        *,
-        drop_variables: typing.Optional[typing.List[str]] = None,
-        save_index: bool = True,
-        filters: typing.Mapping[str, typing.Any] = dict(),
-        data_model: typing.Optional[str] = None,
-        chunks: typing.Optional[
-            typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
-        ] = None,
+        filename_or_obj,
+        drop_variables=None,
+        save_index=True,
+        filters=None,
+        data_model=None,
+        chunks=None,
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
@@ -629,13 +626,18 @@ class GribBackendEntrypoint(BackendEntrypoint):
         xarray.Dataset
             Xarray dataset of GRIB2 messages.
         """
-        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
+        if filters is None:
+            filters = {}
+
+        with grib2io.open(
+            filename_or_obj, save_index=save_index, _xarray_backend=True
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
         ds = _open_dataset_from_index(
             file_index,
-            filename,
+            filename_or_obj,
             filters,
             data_model,
             drop_variables=drop_variables,
@@ -643,27 +645,24 @@ class GribBackendEntrypoint(BackendEntrypoint):
         )
 
         # Update history for provenance
-        history = ds.attrs.get('history', '')
+        history = ds.attrs.get("history", "")
         now = datetime.datetime.now(datetime.timezone.utc).strftime(
-            '%Y-%m-%d %H:%M:%S UTC'
+            "%Y-%m-%d %H:%M:%S UTC"
         )
-        ds.attrs['history'] = (
-            f'{now}: Initialized via grib2io.open_dataset from {filename}\n{history}'
+        ds.attrs["history"] = (
+            f"{now}: Initialized via grib2io.open_dataset from {filename_or_obj}\n{history}"
         )
 
         return ds
 
     def open_datatree(
         self,
-        filename: str,
-        *,
-        drop_variables: typing.Optional[typing.List[str]] = None,
-        save_index: bool = True,
-        filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
-        stack_vertical: bool = False,
-        chunks: typing.Optional[
-            typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
-        ] = None,
+        filename_or_obj,
+        drop_variables=None,
+        save_index=True,
+        filters=None,
+        stack_vertical=False,
+        chunks=None,
     ) -> typing.Any:
         """
         Open a GRIB2 file as an xarray DataTree.
@@ -694,13 +693,15 @@ class GribBackendEntrypoint(BackendEntrypoint):
             filters = {}
 
         # Open the file without any filters first to get all messages
-        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            filename_or_obj, save_index=save_index, _xarray_backend=True
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
         # Build tree structure from GRIB messages with specified options
         tree = build_datatree_from_grib(
-            filename,
+            filename_or_obj,
             file_index,
             filters,
             stack_vertical=stack_vertical,
@@ -2537,6 +2538,8 @@ class Grib2ioDataArray:
         del newmsg
 
         mask = mask_lon & mask_lat
+
+        mask = mask.compute()
 
         new_da = da.where(mask, drop=True)
 
