@@ -593,12 +593,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
     def open_dataset(
         self,
-        filename: str,
-        *,
-        drop_variables: typing.Optional[typing.List[str]] = None,
-        save_index: bool = True,
-        filters: typing.Mapping[str, typing.Any] = dict(),
-        data_model: typing.Optional[str] = None,
+        filename_or_obj,
+        drop_variables=None,
+        save_index=True,
+        filters=None,
+        data_model=None,
+        chunks=None,
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
@@ -617,39 +617,52 @@ class GribBackendEntrypoint(BackendEntrypoint):
         data_model : str, optional
             Parse GRIB metadata following a defined data model convention
             (e.g., "nws-viz").
+        chunks : int, dict or 'auto', optional
+            If chunks is provided, it is used to load the dataset into a
+            dask-backed dataset.
 
         Returns
         -------
         xarray.Dataset
             Xarray dataset of GRIB2 messages.
         """
-        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
+        if filters is None:
+            filters = {}
+
+        with grib2io.open(
+            filename_or_obj, save_index=save_index, _xarray_backend=True
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
         ds = _open_dataset_from_index(
-            file_index, filename, filters, data_model, drop_variables=drop_variables
+            file_index,
+            filename_or_obj,
+            filters,
+            data_model,
+            drop_variables=drop_variables,
+            chunks=chunks,
         )
 
         # Update history for provenance
-        history = ds.attrs.get('history', '')
+        history = ds.attrs.get("history", "")
         now = datetime.datetime.now(datetime.timezone.utc).strftime(
-            '%Y-%m-%d %H:%M:%S UTC'
+            "%Y-%m-%d %H:%M:%S UTC"
         )
-        ds.attrs['history'] = (
-            f'{now}: Initialized via grib2io.open_dataset from {filename}\n{history}'
+        ds.attrs["history"] = (
+            f"{now}: Initialized via grib2io.open_dataset from {filename_or_obj}\n{history}"
         )
 
         return ds
 
     def open_datatree(
         self,
-        filename: str,
-        *,
-        drop_variables: typing.Optional[typing.List[str]] = None,
-        save_index: bool = True,
-        filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
-        stack_vertical: bool = False,
+        filename_or_obj,
+        drop_variables=None,
+        save_index=True,
+        filters=None,
+        stack_vertical=False,
+        chunks=None,
     ) -> typing.Any:
         """
         Open a GRIB2 file as an xarray DataTree.
@@ -664,6 +677,9 @@ class GribBackendEntrypoint(BackendEntrypoint):
             Filter criteria for GRIB2 messages.
         stack_vertical : bool, optional
             If True, organize the tree with vertical layers stacked in a single dataset.
+        chunks : int, dict or 'auto', optional
+            If chunks is provided, it is used to load the dataset into a
+            dask-backed dataset.
 
         Returns
         -------
@@ -677,17 +693,20 @@ class GribBackendEntrypoint(BackendEntrypoint):
             filters = {}
 
         # Open the file without any filters first to get all messages
-        with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            filename_or_obj, save_index=save_index, _xarray_backend=True
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
         # Build tree structure from GRIB messages with specified options
         tree = build_datatree_from_grib(
-            filename,
+            filename_or_obj,
             file_index,
             filters,
             stack_vertical=stack_vertical,
             drop_variables=drop_variables,
+            chunks=chunks,
         )
 
         # Update history for provenance
@@ -1427,6 +1446,10 @@ def open_datatree(
     drop_variables: typing.Optional[typing.List[str]] = None,
     filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
     engine: str = "grib2io",
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
+    **kwargs,
 ) -> typing.Any:
     """
     Open a GRIB2 file as an xarray DataTree.
@@ -1441,6 +1464,11 @@ def open_datatree(
         Filter criteria for GRIB2 messages.
     engine : str, optional
         Engine to use for opening the file, defaults to "grib2io".
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
+    **kwargs : optional
+        Additional keyword arguments passed to the xarray backend.
 
     Returns
     -------
@@ -1460,7 +1488,11 @@ def open_datatree(
 
     # Build tree structure from GRIB messages
     root = build_datatree_from_grib(
-        filename, file_index, filters, drop_variables=drop_variables
+        filename,
+        file_index,
+        filters,
+        drop_variables=drop_variables,
+        chunks=chunks,
     )
 
     # Update history for provenance
@@ -2506,11 +2538,8 @@ class Grib2ioDataArray:
         del newmsg
 
         mask = mask_lon & mask_lat
-        if hasattr(mask, "chunks") and mask.chunks is not None:
-            # Xarray's .where(drop=True) requires a computed mask to determine
-            # the resulting shape. We compute the mask here to allow structural
-            # subsetting while keeping the data lazy.
-            mask = mask.compute()
+
+        mask = mask.compute()
 
         new_da = da.where(mask, drop=True)
 
@@ -2535,6 +2564,9 @@ def open_mfdataset(
     data_model: typing.Optional[str] = None,
     parallel: bool = False,
     preprocess: typing.Optional[typing.Callable] = None,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
     **kwargs,
 ) -> xr.Dataset:
     """
@@ -2564,6 +2596,9 @@ def open_mfdataset(
         Requires the ``dask`` package.
     preprocess : callable, optional
         A function to apply to each file's dataset before combining.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
     **kwargs : optional
         Additional arguments passed to the combination logic.
         If ``combine='nested'``, passed to ``xarray.combine_nested``.
@@ -2653,17 +2688,30 @@ def open_mfdataset(
     if not use_fast_path:
         if parallel:
             import dask
+
             @dask.delayed
             def _open_delayed(idx, fname):
                 return _open_dataset_from_index(
-                    idx, fname, filters, data_model, drop_variables=drop_variables
+                    idx,
+                    fname,
+                    filters,
+                    data_model,
+                    drop_variables=drop_variables,
+                    chunks=chunks,
                 )
 
-            datasets = dask.compute(*[_open_delayed(idx, fname) for idx, fname in zip(indices, filenames)])
+            datasets = dask.compute(
+                *[_open_delayed(idx, fname) for idx, fname in zip(indices, filenames)]
+            )
         else:
             datasets = [
                 _open_dataset_from_index(
-                    idx, fname, filters, data_model, drop_variables=drop_variables
+                    idx,
+                    fname,
+                    filters,
+                    data_model,
+                    drop_variables=drop_variables,
+                    chunks=chunks,
                 )
                 for idx, fname in zip(indices, filenames)
             ]
@@ -2687,7 +2735,12 @@ def open_mfdataset(
     else:
         file_index = pd.concat(indices, ignore_index=True)
         ds = _open_dataset_from_index(
-            file_index, list(filenames), filters, data_model, drop_variables=drop_variables
+            file_index,
+            list(filenames),
+            filters,
+            data_model,
+            drop_variables=drop_variables,
+            chunks=chunks,
         )
 
     # Update history for provenance
@@ -2706,6 +2759,9 @@ def _open_dataset_from_index(
     filters: typing.Mapping[str, typing.Any] = dict(),
     data_model: typing.Optional[str] = None,
     drop_variables: typing.Optional[typing.List[str]] = None,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> xr.Dataset:
     """
     Create an xarray Dataset from a GRIB2 index DataFrame.
@@ -2726,6 +2782,9 @@ def _open_dataset_from_index(
         Target data model for metadata normalization (e.g., "nws-viz").
     drop_variables : list of str, optional
         List of shortnames to exclude from the resulting Dataset.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -2797,6 +2856,9 @@ def _open_dataset_from_index(
     # assign attributes
     ds.attrs["engine"] = "grib2io"
 
+    if chunks is not None:
+        ds = ds.chunk(chunks)
+
     return ds
 
 
@@ -2806,6 +2868,9 @@ def build_datatree_from_grib(
     filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
     stack_vertical: bool = False,
     drop_variables: typing.Optional[typing.List[str]] = None,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> typing.Any:
     """
     Build a DataTree from GRIB2 messages.
@@ -2826,6 +2891,9 @@ def build_datatree_from_grib(
         within each node, rather than creating separate nodes per level value.
     drop_variables : list of str, optional
         List of variable shortnames to exclude.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -2907,7 +2975,7 @@ def build_datatree_from_grib(
         level_tree = xr.DataTree()
 
         # Process this branch based on PDTN, perturbation number, etc.
-        process_level_branch(level_tree, level_df, filename)
+        process_level_branch(level_tree, level_df, filename, chunks=chunks)
 
         # Add this branch to the main tree
         root[level_name] = level_tree
@@ -2915,7 +2983,14 @@ def build_datatree_from_grib(
     return root
 
 
-def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str):
+def process_level_branch(
+    level_tree: typing.Any,
+    df: pd.DataFrame,
+    filename: str,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
+):
     """
     Process a level type branch of the data tree.
 
@@ -2929,6 +3004,9 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
         DataFrame of messages for this level type.
     filename : str
         Path to the GRIB2 file.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
     """
     # Group by PDTN
     pdtn_groups = {}
@@ -2959,14 +3037,14 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
 
         if has_perturbations:
             # Process perturbations directly on the level tree
-            process_perturbation_groups(level_tree, pdtn_df, filename)
+            process_perturbation_groups(level_tree, pdtn_df, filename, chunks=chunks)
         elif has_probabilities:
             # Process probability groups
-            process_probability_groups(level_tree, pdtn_df, filename)
+            process_probability_groups(level_tree, pdtn_df, filename, chunks=chunks)
         else:
             # Try to create dataset directly on level
             try:
-                dss = create_datasets_from_df(pdtn_df, filename)
+                dss = create_datasets_from_df(pdtn_df, filename, chunks=chunks)
                 if dss is not None:
                     dt = xr.DataTree()
                     if len(dss) == 1:
@@ -2978,12 +3056,12 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
                     level_tree[pdtn_name] = dt
                 else:
                     # Try to separate by variable name as a fallback
-                    try_process_by_variables(level_tree, pdtn_df, filename)
+                    try_process_by_variables(level_tree, pdtn_df, filename, chunks=chunks)
             except Exception as e:
                 print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
 
                 # Try to separate by variable name as a fallback
-                try_process_by_variables(level_tree, pdtn_df, filename)
+                try_process_by_variables(level_tree, pdtn_df, filename, chunks=chunks)
     else:
         # Multiple PDTN values, process each group with PDTN branch nodes
         for pdtn, pdtn_df in pdtn_groups.items():
@@ -3007,7 +3085,7 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
                 pdtn_tree = xr.DataTree()
 
                 # Process perturbation groups
-                process_perturbation_groups(pdtn_tree, pdtn_df, filename)
+                process_perturbation_groups(pdtn_tree, pdtn_df, filename, chunks=chunks)
 
                 # Only add the PDTN branch if it has children
                 if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
@@ -3017,7 +3095,7 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
                 pdtn_tree = xr.DataTree()
 
                 # Process probability groups
-                process_probability_groups(pdtn_tree, pdtn_df, filename)
+                process_probability_groups(pdtn_tree, pdtn_df, filename, chunks=chunks)
 
                 # Only add the PDTN branch if it has children
                 if len(pdtn_tree.children) > 0 or pdtn_tree.ds is not None:
@@ -3028,7 +3106,7 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
 
                 # Try to create dataset directly on level
                 try:
-                    dss = create_datasets_from_df(pdtn_df, filename)
+                    dss = create_datasets_from_df(pdtn_df, filename, chunks=chunks)
                     if dss is not None:
                         if len(dss) == 1:
                             pdtn_tree.ds = dss[0]
@@ -3039,7 +3117,7 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
                         level_tree[pdtn_name] = pdtn_tree
                     else:
                         # Try to separate by variable name as a fallback
-                        try_process_by_variables(pdtn_tree, pdtn_df, filename)
+                        try_process_by_variables(pdtn_tree, pdtn_df, filename, chunks=chunks)
                         level_tree[pdtn_name] = pdtn_tree
                 except Exception as e:
                     print(
@@ -3047,12 +3125,17 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
                     )
 
                     # Try to separate by variable name as a fallback
-                    try_process_by_variables(pdtn_tree, pdtn_df, filename)
+                    try_process_by_variables(pdtn_tree, pdtn_df, filename, chunks=chunks)
                     level_tree[pdtn_name] = pdtn_tree
 
 
 def process_probability_groups(
-    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
+    target_tree: typing.Any,
+    pdtn_df: pd.DataFrame,
+    filename: str,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> bool:
     """
     Process probability groups and add them to the target tree.
@@ -3065,6 +3148,9 @@ def process_probability_groups(
         DataFrame of messages for a specific PDTN.
     filename : str
         Path to the GRIB2 file.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -3085,7 +3171,7 @@ def process_probability_groups(
 
         # Try to create dataset for this probability group
         try:
-            dss = create_datasets_from_df(prob_df, filename)
+            dss = create_datasets_from_df(prob_df, filename, chunks=chunks)
             dt = xr.DataTree()
             if len(dss) == 1:
                 dt.ds = dss[0]
@@ -3102,7 +3188,12 @@ def process_probability_groups(
 
 
 def process_perturbation_groups(
-    target_tree: typing.Any, pdtn_df: pd.DataFrame, filename: str
+    target_tree: typing.Any,
+    pdtn_df: pd.DataFrame,
+    filename: str,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> bool:
     """
     Process perturbation groups and add them to the target tree.
@@ -3115,6 +3206,9 @@ def process_perturbation_groups(
         DataFrame of messages for a specific PDTN.
     filename : str
         Path to the GRIB2 file.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -3150,7 +3244,7 @@ def process_perturbation_groups(
 
         # Try to create dataset for this perturbation group
         try:
-            dss = create_datasets_from_df(pert_df, filename)
+            dss = create_datasets_from_df(pert_df, filename, chunks=chunks)
             dt = xr.DataTree()
             if len(dss) == 1:
                 dt.ds = dss[0]
@@ -3167,7 +3261,12 @@ def process_perturbation_groups(
 
 
 def try_process_by_variables(
-    target_tree: typing.Any, df: pd.DataFrame, filename: str
+    target_tree: typing.Any,
+    df: pd.DataFrame,
+    filename: str,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> bool:
     """
     Try to separate data by variable names and create datasets.
@@ -3180,6 +3279,9 @@ def try_process_by_variables(
         DataFrame of messages.
     filename : str
         Path to the GRIB2 file.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -3193,7 +3295,7 @@ def try_process_by_variables(
             if pd.notna(var_name):
                 var_df = df[df["shortName"] == var_name]
                 try:
-                    var_ds = create_datasets_from_df(var_df, filename)
+                    var_ds = create_datasets_from_df(var_df, filename, chunks=chunks)
                     if var_ds is not None:
                         target_tree[f"var_{var_name}"] = var_ds[0]
                         success = True
@@ -3206,7 +3308,12 @@ def try_process_by_variables(
 
 
 def create_datasets_from_df(
-    df: pd.DataFrame, filename: str, verbose: bool = False
+    df: pd.DataFrame,
+    filename: str,
+    verbose: bool = False,
+    chunks: typing.Optional[
+        typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
+    ] = None,
 ) -> typing.Optional[typing.List[xr.Dataset]]:
     """
     Create a list of xarray Datasets from a DataFrame of messages.
@@ -3219,6 +3326,9 @@ def create_datasets_from_df(
         Path to the GRIB2 file.
     verbose : bool, optional
         If True, prints detailed debugging information.
+    chunks : int, dict or 'auto', optional
+        If chunks is provided, it is used to load the dataset into a
+        dask-backed dataset.
 
     Returns
     -------
@@ -3279,6 +3389,9 @@ def create_datasets_from_df(
             var_ds = assign_xr_meta(
                 var_ds, [var_df], var_cube, dim_coords, extra_geo, coord_attrs
             )
+
+            if chunks is not None:
+                var_ds = var_ds.chunk(chunks)
 
             ds_list.append(var_ds)
 
