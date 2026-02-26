@@ -290,6 +290,10 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
             elif coord == "percentileValue":
                 ds = ds.rename({"percentileValue": "percentile"})
 
+            elif coord == 'perturbationNumber':
+                ds = ds.rename({'perturbationNumber': 'perturbation'})
+                ds['perturbation'].attrs['long_name'] = 'Ensemble Perturbation Number'
+
             elif coord == "thresholdLowerLimit":
                 ds = ds.rename({"thresholdLowerLimit": "threshold_lower_limit"})
                 ds["threshold_lower_limit"].attrs["long_name"] = "Threshold Lower Limit"
@@ -393,6 +397,26 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                 ds = ds.rename({"secondSizeOfAerosol": "second_size_of_aerosol"})
                 ds["second_size_of_aerosol"].attrs["long_name"] = "Second Size of Aerosol"
                 ds["second_size_of_aerosol"].attrs["units"] = "m"
+
+            elif coord == 'scaledValueOfFirstWavelength':
+                ds = ds.rename({'scaledValueOfFirstWavelength': 'scaled_first_wavelength'})
+                ds['scaled_first_wavelength'].attrs['long_name'] = 'Scaled Value of First Wavelength'
+
+            elif coord == 'scaledValueOfSecondWavelength':
+                ds = ds.rename({'scaledValueOfSecondWavelength': 'scaled_second_wavelength'})
+                ds['scaled_second_wavelength'].attrs['long_name'] = 'Scaled Value of Second Wavelength'
+
+            elif coord == 'scaledValueOfCentralWaveNumber':
+                ds = ds.rename({'scaledValueOfCentralWaveNumber': 'scaled_central_wave_number'})
+                ds['scaled_central_wave_number'].attrs['long_name'] = 'Scaled Value of Central Wave Number'
+
+            elif coord == 'scaledValueOfFirstSize':
+                ds = ds.rename({'scaledValueOfFirstSize': 'scaled_first_size'})
+                ds['scaled_first_size'].attrs['long_name'] = 'Scaled Value of First Size'
+
+            elif coord == 'scaledValueOfSecondSize':
+                ds = ds.rename({'scaledValueOfSecondSize': 'scaled_second_size'})
+                ds['scaled_second_size'].attrs['long_name'] = 'Scaled Value of Second Size'
 
             # If the dataset has valueOfFirstFixedSurface as a coordinate
             elif coord == "valueOfFirstFixedSurface":
@@ -602,15 +626,17 @@ class GribBackendEntrypoint(BackendEntrypoint):
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=msgs_from_index(f._index))
 
-        ds = _open_dataset_from_index(file_index, filename, filters, data_model)
+        ds = _open_dataset_from_index(
+            file_index, filename, filters, data_model, drop_variables=drop_variables
+        )
 
         # Update history for provenance
-        history = ds.attrs.get("history", "")
+        history = ds.attrs.get('history', '')
         now = datetime.datetime.now(datetime.timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S UTC"
+            '%Y-%m-%d %H:%M:%S UTC'
         )
-        ds.attrs["history"] = (
-            f"{now}: Initialized via grib2io.open_dataset from {filename}\n{history}"
+        ds.attrs['history'] = (
+            f'{now}: Initialized via grib2io.open_dataset from {filename}\n{history}'
         )
 
         return ds
@@ -2369,12 +2395,12 @@ def open_mfdataset(
     data_model : str, optional
         Parse GRIB metadata following a defined data model convention.
     parallel : bool, optional
-        If True, use dask to read indices in parallel.
+        If True, use dask to read indices and open datasets in parallel.
     preprocess : callable, optional
         A function to apply to each file's dataset before combining.
     **kwargs : optional
-        Additional arguments passed to ``xarray.combine_by_coords`` or
-        ``xarray.merge``.
+        Additional arguments passed to ``xarray.combine_by_coords``,
+        ``xarray.combine_nested``, or ``xarray.merge``.
 
     Returns
     -------
@@ -2390,11 +2416,12 @@ def open_mfdataset(
         with grib2io.open(fname, save_index=save_index, _xarray_backend=True) as f:
             idx = pd.DataFrame(f._index)
             idx = idx.assign(msg=msgs_from_index(f._index))
-            idx["file_index"] = i
+            idx['file_index'] = i
             return idx
 
     if parallel:
         try:
+            import dask
             from dask.bag import from_sequence
 
             indices = (
@@ -2404,53 +2431,77 @@ def open_mfdataset(
             )
         except ImportError:
             warnings.warn(
-                "dask not installed, falling back to sequential index reading."
+                'dask not installed, falling back to sequential index reading.'
             )
+            parallel = False
             indices = [_get_index(fname, i) for i, fname in enumerate(filenames)]
     else:
         indices = [_get_index(fname, i) for i, fname in enumerate(filenames)]
 
+    if not indices:
+        return xr.Dataset()
+
     # Validate grid consistency across files using only the first message of each file
-    grid_cols = ["ny", "nx"]
+    grid_cols = ['ny', 'nx']
     first_msgs = pd.concat([idx.head(1) for idx in indices], ignore_index=True)
     unique_grids = first_msgs[grid_cols].drop_duplicates()
     if len(unique_grids) > 1:
-        grid_list = unique_grids.to_dict("records")
+        grid_list = unique_grids.to_dict('records')
         raise ValueError(
-            f"Multiple grids detected in open_mfdataset. All files must have the same grid. "
-            f"Found grids: {grid_list}"
+            f'Multiple grids detected in open_mfdataset. All files must have the same grid. '
+            f'Found grids: {grid_list}'
         )
 
-    if preprocess is not None or kwargs:
-        datasets = [
-            _open_dataset_from_index(idx, fname, filters, data_model)
-            for idx, fname in zip(indices, filenames)
-        ]
+    # Determine if we can use the fast path (single index concatenation)
+    # The fast path is only available if no preprocess is provided and no combination kwargs are used
+    # that would require individual datasets (like concat_dim for nested combination)
+    use_fast_path = preprocess is None and not kwargs
+
+    if not use_fast_path:
+        if parallel:
+            import dask
+            @dask.delayed
+            def _open_delayed(idx, fname):
+                return _open_dataset_from_index(
+                    idx, fname, filters, data_model, drop_variables=drop_variables
+                )
+
+            datasets = dask.compute(*[_open_delayed(idx, fname) for idx, fname in zip(indices, filenames)])
+        else:
+            datasets = [
+                _open_dataset_from_index(
+                    idx, fname, filters, data_model, drop_variables=drop_variables
+                )
+                for idx, fname in zip(indices, filenames)
+            ]
+
         if preprocess is not None:
             datasets = [preprocess(ds) for ds in datasets]
 
-        if 'combine' in kwargs:
-            combine_opt = kwargs.pop('combine')
-            if combine_opt == 'nested':
-                ds = xr.combine_nested(datasets, **kwargs)
-            elif combine_opt == 'by_coords':
-                ds = xr.combine_by_coords(datasets, **kwargs)
-            else:
-                ds = xr.merge(datasets, **kwargs)
+        combine_opt = kwargs.pop('combine', None)
+        if combine_opt == 'nested':
+            ds = xr.combine_nested(datasets, **kwargs)
+        elif combine_opt == 'by_coords':
+            ds = xr.combine_by_coords(datasets, **kwargs)
+        elif combine_opt == 'merge':
+            ds = xr.merge(datasets, **kwargs)
         else:
+            # Default behavior: try by_coords, then merge
             try:
                 ds = xr.combine_by_coords(datasets, **kwargs)
             except Exception:
                 ds = xr.merge(datasets, **kwargs)
     else:
         file_index = pd.concat(indices, ignore_index=True)
-        ds = _open_dataset_from_index(file_index, list(filenames), filters, data_model)
+        ds = _open_dataset_from_index(
+            file_index, list(filenames), filters, data_model, drop_variables=drop_variables
+        )
 
     # Update history for provenance
-    history = ds.attrs.get("history", "")
-    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    ds.attrs["history"] = (
-        f"{now}: Initialized via grib2io.open_mfdataset from {len(filenames)} files\n{history}"
+    history = ds.attrs.get('history', '')
+    now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
+    ds.attrs['history'] = (
+        f'{now}: Initialized via grib2io.open_mfdataset from {len(filenames)} files\n{history}'
     )
 
     return ds
@@ -2461,6 +2512,7 @@ def _open_dataset_from_index(
     filenames: typing.Union[str, typing.List[str]],
     filters: typing.Mapping[str, typing.Any] = dict(),
     data_model: typing.Optional[str] = None,
+    drop_variables: typing.Optional[typing.List[str]] = None,
 ) -> xr.Dataset:
     """
     Create an xarray Dataset from a GRIB2 index DataFrame.
@@ -2475,6 +2527,8 @@ def _open_dataset_from_index(
         Filter GRIB2 messages to single hypercube.
     data_model : str, optional
         Parse GRIB metadata following a defined data model convention.
+    drop_variables : list of str, optional
+        List of variables to exclude from the dataset.
 
     Returns
     -------
@@ -2486,6 +2540,9 @@ def _open_dataset_from_index(
     # filters to index and expands metadata based on product definition
     # template number
     file_index, dim_coords, attrs, coord_attrs = parse_grib_index(file_index, filters)
+
+    if drop_variables:
+        file_index = file_index[~file_index['shortName'].isin(drop_variables)]
 
     # Divide up records by variable
     frames, cubes, extra_geo = make_variables(

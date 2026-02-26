@@ -22,7 +22,7 @@ _varinfo_tables_datastore = {}
 # Note 209 is MRMS
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20, 209]
 
-AEROSOL_PDTNS = [46, 48]  # 47, 49, 80, 81, 82, 83, 84, 85] <- these don't seem to be working
+AEROSOL_PDTNS = [44, 45, 46, 47, 48, 49, 50, 80, 81, 82, 83, 84, 85]
 AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
 
 def _load_varinfo_tables(modname: str):
@@ -344,6 +344,8 @@ def _build_chemical_shortname(obj) -> str:
         param = chemical_params.get(param_num, '')
         if not param and param_num in _PARAMETER_MAPPING:
              param = _PARAMETER_MAPPING[param_num]
+        if not param:
+             param = f'param{param_num}'
 
     # Handle source/sink
     source_sink = ''
@@ -398,7 +400,7 @@ def _build_aerosol_shortname(obj) -> str:
             first_size = float(obj.scaledValueOfFirstSize)
 
             # Map common PM sizes
-            size_map = {1: 'pm1', 25: 'pm25', 10: 'pm10', 20: 'pm20'}
+            size_map = {1: 'pm1', 2.5: 'pm25', 25: 'pm25', 10: 'pm10', 20: 'pm20'}
             aero_size = size_map.get(first_size, f"pm{int(first_size)}")
 
             # Check for size intervals
@@ -410,11 +412,11 @@ def _build_aerosol_shortname(obj) -> str:
                 second_size = float(obj.scaledValueOfSecondSize)
                 if second_size > 0:
                     if (first_size == 2.5 and second_size == 10):
-                        aero_size = 'PM25to10'
+                        aero_size = 'pm25to10'
                     elif (first_size == 10 and second_size == 20):
-                        aero_size = 'PM10to20'
+                        aero_size = 'pm10to20'
                     else:
-                        aero_size = f"PM{int(first_size)}to{int(second_size)}"
+                        aero_size = f"pm{int(first_size)}to{int(second_size)}"
 
     # Add optical and wavelength information
     var_wavelength = ''
@@ -460,6 +462,8 @@ def _build_aerosol_shortname(obj) -> str:
         param_num = str(obj.parameterNumber)
         if param_num in _PARAMETER_MAPPING:
             param = _PARAMETER_MAPPING[param_num]
+        if not param:
+            param = f'param{param_num}'
 
     # Handle source/sink
     source_sink = ''
