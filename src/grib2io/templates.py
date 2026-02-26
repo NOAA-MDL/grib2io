@@ -1047,9 +1047,9 @@ class Units:
 class ShortName:
     """Short name of the variable (i.e. the variable abbreviation)."""
     def __get__(self, obj, objtype=None):
-        if hasattr(obj, 'typeOfAerosol'):
+        if obj._isAerosol:
             return tables._build_aerosol_shortname(obj)
-        elif hasattr(obj, 'constituentType'):
+        elif obj._isChemical:
             return tables._build_chemical_shortname(obj)
         else:
             return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
@@ -1802,7 +1802,7 @@ class CetralWaveNumber:
 
 class TypeOfAerosol:
     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
-    _key = {46:2, 48:2}
+    _key = {44:5, 45:5, 46:2, 47:2, 48:2, 49:2, 50:5, 80:2, 81:2, 82:2, 83:2, 84:2, 85:2}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.233')
     def __set__(self, obj, value):
@@ -1810,7 +1810,7 @@ class TypeOfAerosol:
 
 class TypeOfIntervalForAerosolSize:
     """[Type of Interval for Aerosol Size](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-91.shtml)"""
-    _key = {46:3, 48:3}
+    _key = {44:6, 45:6, 46:3, 47:3, 48:3, 49:3, 50:6, 80:3, 81:3, 82:3, 83:3, 84:3, 85:3}
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn]+2],table='4.91')
     def __set__(self, obj, value):
@@ -1818,7 +1818,7 @@ class TypeOfIntervalForAerosolSize:
 
 class ScaleFactorOfFirstSize:
     """Scale Factor of First Size"""
-    _key = {46:4, 48:4}
+    _key = {44:7, 45:7, 46:4, 47:4, 48:4, 49:4, 50:7, 80:4, 81:4, 82:4, 83:4, 84:4, 85:4}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1826,7 +1826,7 @@ class ScaleFactorOfFirstSize:
 
 class ScaledValueOfFirstSize:
     """Scaled Value of First Size"""
-    _key = {46:5, 48:5}
+    _key = {44:8, 45:8, 46:5, 47:5, 48:5, 49:5, 50:8, 80:5, 81:5, 82:5, 83:5, 84:5, 85:5}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1845,7 +1845,7 @@ class FirstSizeOfAerosol:
 
 class ScaleFactorOfSecondSize:
     """Scale Factor of Second Size"""
-    _key = {46:6, 48:6}
+    _key = {44:9, 45:9, 46:6, 47:6, 48:6, 49:6, 50:9, 80:6, 81:6, 82:6, 83:6, 84:6, 85:6}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -1853,7 +1853,7 @@ class ScaleFactorOfSecondSize:
 
 class ScaledValueOfSecondSize:
     """Scaled Value of Second Size"""
-    _key = {46:6, 48:7}
+    _key = {44:10, 45:10, 46:7, 47:7, 48:7, 49:7, 50:10, 80:7, 81:7, 82:7, 83:7, 84:7, 85:7}
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn]+2]
     def __set__(self, obj, value):
@@ -2411,6 +2411,71 @@ class ProductDefinitionTemplate32(ProductDefinitionTemplateBase):
 
 
 @dataclass(init=False)
+class ProductDefinitionTemplate44(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.44](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-44.shtml)"""
+    _len = 25
+    _num = 44
+    # Aerosol parameters
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate45(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.45](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-45.shtml)"""
+    _len = 28
+    _num = 45
+    # Aerosol parameters
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
+
+    # Ensemble parameters
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate50(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.50](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-50.shtml)"""
+    _len = 25
+    _num = 50
+    # Aerosol parameters
+    typeOfAerosol: Grib2Metadata = field(init=False, repr=False, default=TypeOfAerosol())
+    typeOfIntervalForAerosolSize: Grib2Metadata = field(init=False, repr=False, default=TypeOfIntervalForAerosolSize())
+    scaleFactorOfFirstSize: int = field(init=False, repr=False, default=ScaleFactorOfFirstSize())
+    scaledValueOfFirstSize: int = field(init=False, repr=False, default=ScaledValueOfFirstSize())
+    firstSizeOfAerosol: float = field(init=False, repr=False, default=FirstSizeOfAerosol())
+    scaleFactorOfSecondSize: int = field(init=False, repr=False, default=ScaleFactorOfSecondSize())
+    scaledValueOfSecondSize: int = field(init=False, repr=False, default=ScaledValueOfSecondSize())
+    secondSizeOfAerosol: float = field(init=False, repr=False, default=SecondSizeOfAerosol())
+
+    @classmethod
+    def _attrs(cls):
+        return [key for key in cls.__dataclass_fields__.keys() if not key.startswith('_')]
+
+
+@dataclass(init=False)
 class ProductDefinitionTemplate46(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
     """[Product Definition Template 4.46](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-46.shtml)"""
     _len = 38  # Total number of octets
@@ -2924,10 +2989,13 @@ _pdt_by_pdtn = {
     41: ProductDefinitionTemplate41,
     42: ProductDefinitionTemplate42,
     43: ProductDefinitionTemplate43,
+    44: ProductDefinitionTemplate44,
+    45: ProductDefinitionTemplate45,
     46: ProductDefinitionTemplate46,
     47: ProductDefinitionTemplate47,
     48: ProductDefinitionTemplate48,
     49: ProductDefinitionTemplate49,
+    50: ProductDefinitionTemplate50,
     76: ProductDefinitionTemplate76,
     77: ProductDefinitionTemplate77,
     78: ProductDefinitionTemplate78,

@@ -24,6 +24,7 @@ GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20, 209]
 
 AEROSOL_PDTNS = [44, 45, 46, 47, 48, 49, 50, 80, 81, 82, 83, 84, 85]
 AEROSOL_PARAMS = list(itertools.chain(range(0,19),range(50,82),range(100,113),range(192,197)))
+CHEMICAL_PDTNS = [40, 41, 42, 43, 57, 58, 67, 68, 76, 77, 78, 79]
 
 def _load_varinfo_tables(modname: str):
     """
@@ -320,7 +321,8 @@ def _build_chemical_shortname(obj) -> str:
     _LEVEL_MAPPING = get_table('aerosol_level')
 
     # Get constituent type
-    constituent_type = str(obj.constituentType.value) if hasattr(obj, 'constituentType') and obj.constituentType is not None else ''
+    const_metadata = getattr(obj, 'constituentType', None)
+    constituent_type = str(const_metadata.value) if const_metadata is not None else ''
     chemical_abbr = ''
     if constituent_type in _CHEMICAL_MAPPING:
         chemical_abbr = _CHEMICAL_MAPPING[constituent_type][1]
@@ -382,7 +384,8 @@ def _build_aerosol_shortname(obj) -> str:
     parts = []
 
     # Get aerosol type
-    aero_type = str(obj.typeOfAerosol.value) if obj.typeOfAerosol is not None else ""
+    aero_metadata = getattr(obj, 'typeOfAerosol', None)
+    aero_type = str(aero_metadata.value) if aero_metadata is not None else ""
 
     # Try to get abbreviation from optimized mapping or Table 4.233
     aero_abbr = ''
