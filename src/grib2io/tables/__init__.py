@@ -343,11 +343,12 @@ def _build_chemical_shortname(obj) -> str:
             '2': 'mmr',   # Mass Mixing Ratio
             '52': 'vmr',  # Volume Mixing Ratio
         }
-        param = chemical_params.get(param_num, '')
-        if not param and param_num in _PARAMETER_MAPPING:
-             param = _PARAMETER_MAPPING[param_num]
-        if not param:
-             param = f'param{param_num}'
+        if param_num in chemical_params:
+            param = chemical_params[param_num]
+        elif param_num in _PARAMETER_MAPPING:
+            param = _PARAMETER_MAPPING[param_num]
+        else:
+            param = f'param{param_num}'
 
     # Handle source/sink
     source_sink = ''
@@ -465,7 +466,7 @@ def _build_aerosol_shortname(obj) -> str:
         param_num = str(obj.parameterNumber)
         if param_num in _PARAMETER_MAPPING:
             param = _PARAMETER_MAPPING[param_num]
-        if not param:
+        else:
             param = f'param{param_num}'
 
     # Handle source/sink

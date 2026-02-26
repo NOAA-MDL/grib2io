@@ -601,7 +601,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         data_model: typing.Optional[str] = None,
     ) -> xr.Dataset:
         """
-        Read and parse metadata from grib file.
+        Read and parse metadata from a GRIB2 file.
 
         Parameters
         ----------
@@ -610,21 +610,22 @@ class GribBackendEntrypoint(BackendEntrypoint):
         drop_variables : list of str, optional
             List of variables to exclude from the dataset.
         save_index : bool, optional
-            Whether to save the GRIB2 index to a file.
+            Whether to save the GRIB2 index to a file (default is True).
         filters : dict, optional
-            Filter GRIB2 messages to single hypercube. Dict keys can be any
-            GRIB2 metadata attribute name.
+            Filter GRIB2 messages to a single hypercube. Dictionary keys can
+            be any GRIB2 metadata attribute name.
         data_model : str, optional
-            Parse GRIB metadata following a defined data model convention.
+            Parse GRIB metadata following a defined data model convention
+            (e.g., "nws-viz").
 
         Returns
         -------
-        xr.Dataset
-            Xarray dataset of grib2 messages.
+        xarray.Dataset
+            Xarray dataset of GRIB2 messages.
         """
         with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
-            file_index = file_index.assign(msg=msgs_from_index(f._index))
+            file_index = file_index.assign(msg=list(f))
 
         ds = _open_dataset_from_index(
             file_index, filename, filters, data_model, drop_variables=drop_variables
@@ -678,11 +679,15 @@ class GribBackendEntrypoint(BackendEntrypoint):
         # Open the file without any filters first to get all messages
         with grib2io.open(filename, save_index=save_index, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)
-            file_index = file_index.assign(msg=msgs_from_index(f._index))
+            file_index = file_index.assign(msg=list(f))
 
         # Build tree structure from GRIB messages with specified options
         tree = build_datatree_from_grib(
-            filename, file_index, filters, stack_vertical=stack_vertical
+            filename,
+            file_index,
+            filters,
+            stack_vertical=stack_vertical,
+            drop_variables=drop_variables,
         )
 
         # Update history for provenance
@@ -815,11 +820,21 @@ class PdIndex(Validator):
         setattr(obj, self.private_name, value)
 
 
-def _asarray_tuplesafe(values):
+def _asarray_tuplesafe(values: typing.Any) -> np.ndarray:
     """
     Convert values to a numpy array of at most 1-dimension and preserve tuples.
 
-    Adapted from pandas.core.common._asarray_tuplesafe
+    Adapted from ``pandas.core.common._asarray_tuplesafe``.
+
+    Parameters
+    ----------
+    values : any
+        The values to convert.
+
+    Returns
+    -------
+    np.ndarray
+        The converted numpy array.
     """
     if isinstance(values, tuple):
         result = np.empty(1, dtype=object)
@@ -833,8 +848,22 @@ def _asarray_tuplesafe(values):
     return result
 
 
-def array_safe_eq(a, b) -> bool:
-    """Check if a and b are equal, even if they are numpy arrays."""
+def array_safe_eq(a: typing.Any, b: typing.Any) -> bool:
+    """
+    Check if a and b are equal, even if they are numpy arrays.
+
+    Parameters
+    ----------
+    a : any
+        First object to compare.
+    b : any
+        Second object to compare.
+
+    Returns
+    -------
+    bool
+        True if equal, False otherwise.
+    """
     if a is b:
         return True
     if hasattr(a, "equals"):
@@ -849,8 +878,22 @@ def array_safe_eq(a, b) -> bool:
         return NotImplementedError
 
 
-def dc_eq(dc1, dc2) -> bool:
-    """Check if two dataclasses which hold numpy arrays are equal."""
+def dc_eq(dc1: typing.Any, dc2: typing.Any) -> bool:
+    """
+    Check if two dataclasses which hold numpy arrays are equal.
+
+    Parameters
+    ----------
+    dc1 : any
+        First dataclass to compare.
+    dc2 : any
+        Second dataclass to compare.
+
+    Returns
+    -------
+    bool
+        True if equal, False otherwise.
+    """
     if dc1 is dc2:
         return True
     if dc1.__class__ is not dc2.__class__:
@@ -860,7 +903,20 @@ def dc_eq(dc1, dc2) -> bool:
     return all(array_safe_eq(a1, a2) for a1, a2 in zip(t1, t2))
 
 
-def coords_from_cube(cube) -> typing.Dict[str, xr.Variable]:
+def coords_from_cube(cube: dict) -> typing.Dict[str, xr.Variable]:
+    """
+    Create a dictionary of xarray Variables from a cube definition.
+
+    Parameters
+    ----------
+    cube : dict
+        Dimension cube definition.
+
+    Returns
+    -------
+    dict of str to xarray.Variable
+        Coordinates for the Dataset/DataArray.
+    """
     keys = list(cube.keys())
     keys.remove("x")
     keys.remove("y")
@@ -1023,7 +1079,20 @@ class OnDiskArray:
         return array_field
 
 
-def dims_to_shape(d) -> tuple:
+def dims_to_shape(d: dict) -> tuple:
+    """
+    Convert dimension metadata to a shape tuple.
+
+    Parameters
+    ----------
+    d : dict
+        Dimension metadata dictionary.
+
+    Returns
+    -------
+    tuple
+        Shape tuple.
+    """
     if "nx" in d:
         t = (d["ny"], d["nx"])
     else:
@@ -1031,7 +1100,26 @@ def dims_to_shape(d) -> tuple:
     return t
 
 
-def filter_index(index, k, v):
+def filter_index(index: pd.DataFrame, k: str, v: typing.Any) -> pd.DataFrame:
+    """
+    Filter a GRIB2 index DataFrame by a key-value pair.
+
+    Supports slice and vectorized-indexing similar to xarray's ``sel``.
+
+    Parameters
+    ----------
+    index : pandas.DataFrame
+        The GRIB2 index DataFrame to filter.
+    k : str
+        Column name to filter by.
+    v : any
+        Value(s) or slice to filter for.
+
+    Returns
+    -------
+    pandas.DataFrame
+        Filtered index.
+    """
     if isinstance(v, slice):
         index = index.set_index(k)
         index = index.loc[v]
@@ -1336,6 +1424,7 @@ def parse_grib_index(
 def open_datatree(
     filename: str,
     *,
+    drop_variables: typing.Optional[typing.List[str]] = None,
     filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
     engine: str = "grib2io",
 ) -> typing.Any:
@@ -1346,6 +1435,8 @@ def open_datatree(
     ----------
     filename : str
         Path to the GRIB2 file.
+    drop_variables : list, optional
+        List of variables to exclude.
     filters : dict, optional
         Filter criteria for GRIB2 messages.
     engine : str, optional
@@ -1368,7 +1459,9 @@ def open_datatree(
         file_index = file_index.assign(msg=msgs_from_index(f._index))
 
     # Build tree structure from GRIB messages
-    root = build_datatree_from_grib(filename, file_index, filters)
+    root = build_datatree_from_grib(
+        filename, file_index, filters, drop_variables=drop_variables
+    )
 
     # Update history for provenance
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -1667,8 +1760,41 @@ def make_variables(
 
 
 def interp_nd(
-    a, *, method, grid_def_in, grid_def_out, method_options=None, num_threads=1
-):
+    a: np.ndarray,
+    *,
+    method: typing.Union[str, int],
+    grid_def_in: grib2io.Grib2GridDef,
+    grid_def_out: grib2io.Grib2GridDef,
+    method_options: typing.Optional[typing.List[int]] = None,
+    num_threads: int = 1,
+) -> np.ndarray:
+    """
+    Perform multi-dimensional interpolation on a horizontal grid.
+
+    This function reshapes the input array to (N, ny, nx) before performing
+    interpolation and then reshapes it back to its original dimensions plus
+    the new grid dimensions.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        Input array with horizontal dimensions (..., ny, nx).
+    method : str or int
+        Interpolation method.
+    grid_def_in : grib2io.Grib2GridDef
+        Input grid definition.
+    grid_def_out : grib2io.Grib2GridDef
+        Output grid definition.
+    method_options : list of int, optional
+        Interpolation options.
+    num_threads : int, optional
+        Number of threads for parallel interpolation.
+
+    Returns
+    -------
+    np.ndarray
+        Interpolated array with horizontal dimensions of the output grid.
+    """
     front_shape = a.shape[:-2]
     a = a.reshape(-1, a.shape[-2], a.shape[-1])
     a = grib2io.interpolate(
@@ -1684,8 +1810,44 @@ def interp_nd(
 
 
 def interp_nd_stations(
-    a, *, method, grid_def_in, lats, lons, method_options=None, num_threads=1
-):
+    a: np.ndarray,
+    *,
+    method: typing.Union[str, int],
+    grid_def_in: grib2io.Grib2GridDef,
+    lats: typing.Sequence[float],
+    lons: typing.Sequence[float],
+    method_options: typing.Optional[typing.List[int]] = None,
+    num_threads: int = 1,
+) -> np.ndarray:
+    """
+    Perform multi-dimensional interpolation to station points.
+
+    This function reshapes the input array to (N, ny, nx) before performing
+    interpolation and then reshapes it back to its original dimensions plus
+    the station dimension.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        Input array with horizontal dimensions (..., ny, nx).
+    method : str or int
+        Interpolation method.
+    grid_def_in : grib2io.Grib2GridDef
+        Input grid definition.
+    lats : sequence of float
+        Station latitudes.
+    lons : sequence of float
+        Station longitudes.
+    method_options : list of int, optional
+        Interpolation options.
+    num_threads : int, optional
+        Number of threads for parallel interpolation.
+
+    Returns
+    -------
+    np.ndarray
+        Interpolated array with the last dimension representing stations.
+    """
     front_shape = a.shape[:-2]
     a = a.reshape(-1, a.shape[-2], a.shape[-1])
     a = grib2io.interpolate_to_stations(
@@ -2380,7 +2542,8 @@ def open_mfdataset(
 
     This function is optimized for GRIB2 files by combining their indices
     and creating a single Dataset, which is often much faster than
-    using ``xarray.open_mfdataset``.
+    using ``xarray.open_mfdataset``. It supports parallel index reading
+    and dataset opening when ``parallel=True`` and ``dask`` is installed.
 
     Parameters
     ----------
@@ -2389,33 +2552,61 @@ def open_mfdataset(
     drop_variables : list of str, optional
         List of variables to exclude from the dataset.
     save_index : bool, optional
-        Whether to save the GRIB2 index to a file.
+        Whether to save the GRIB2 index to a file (default is True).
     filters : dict, optional
-        Filter GRIB2 messages to single hypercube.
+        Filter GRIB2 messages to a single hypercube. Dictionary keys can be
+        any GRIB2 metadata attribute name.
     data_model : str, optional
-        Parse GRIB metadata following a defined data model convention.
+        Parse GRIB metadata following a defined data model convention
+        (e.g., "nws-viz").
     parallel : bool, optional
-        If True, use dask to read indices and open datasets in parallel.
+        If True, use ``dask`` to read indices and open datasets in parallel.
+        Requires the ``dask`` package.
     preprocess : callable, optional
         A function to apply to each file's dataset before combining.
     **kwargs : optional
-        Additional arguments passed to ``xarray.combine_by_coords``,
-        ``xarray.combine_nested``, or ``xarray.merge``.
+        Additional arguments passed to the combination logic.
+        If ``combine='nested'``, passed to ``xarray.combine_nested``.
+        If ``combine='by_coords'``, passed to ``xarray.combine_by_coords``.
+        If ``combine='merge'``, passed to ``xarray.merge``.
+        If no ``combine`` argument is provided, the function attempts
+        ``xarray.combine_by_coords`` followed by ``xarray.merge``.
 
     Returns
     -------
-    xr.Dataset
+    xarray.Dataset
         Xarray dataset of grib2 messages.
+
+    Notes
+    -----
+    - This function uses a "fast path" when ``preprocess=None`` and no
+      combination ``**kwargs`` are provided, which concatenates all indices
+      into a single global index before building the Dataset.
+    - All files must share the same horizontal grid (ny, nx).
     """
     if isinstance(filenames, str):
         import glob
 
         filenames = sorted(glob.glob(filenames))
 
-    def _get_index(fname, i):
+    def _get_index(fname_and_index: typing.Tuple[str, int]) -> pd.DataFrame:
+        """
+        Internal utility to read GRIB2 index from a file.
+
+        Parameters
+        ----------
+        fname_and_index : tuple of (str, int)
+            Tuple containing the filename and its position in the file list.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The GRIB2 index for the specified file.
+        """
+        fname, i = fname_and_index
         with grib2io.open(fname, save_index=save_index, _xarray_backend=True) as f:
             idx = pd.DataFrame(f._index)
-            idx = idx.assign(msg=msgs_from_index(f._index))
+            idx = idx.assign(msg=list(f))
             idx['file_index'] = i
             return idx
 
@@ -2425,8 +2616,8 @@ def open_mfdataset(
             from dask.bag import from_sequence
 
             indices = (
-                from_sequence(range(len(filenames)))
-                .map(lambda i: _get_index(filenames[i], i))
+                from_sequence(zip(filenames, range(len(filenames))))
+                .map(_get_index)
                 .compute()
             )
         except ImportError:
@@ -2434,9 +2625,11 @@ def open_mfdataset(
                 'dask not installed, falling back to sequential index reading.'
             )
             parallel = False
-            indices = [_get_index(fname, i) for i, fname in enumerate(filenames)]
+            indices = [
+                _get_index((fname, i)) for i, fname in enumerate(filenames)
+            ]
     else:
-        indices = [_get_index(fname, i) for i, fname in enumerate(filenames)]
+        indices = [_get_index((fname, i)) for i, fname in enumerate(filenames)]
 
     if not indices:
         return xr.Dataset()
@@ -2517,23 +2710,27 @@ def _open_dataset_from_index(
     """
     Create an xarray Dataset from a GRIB2 index DataFrame.
 
+    This is an internal utility used by ``open_dataset`` and ``open_mfdataset``
+    to build a Dataset structure from a pre-computed index of GRIB2 messages.
+
     Parameters
     ----------
-    file_index : pd.DataFrame
-        GRIB2 index DataFrame.
+    file_index : pandas.DataFrame
+        GRIB2 index DataFrame, expected to contain GRIB2 metadata and
+        message pointers.
     filenames : str or list of str
-        Filename(s) corresponding to the index.
+        Path(s) to the GRIB2 file(s) referenced by the index.
     filters : dict, optional
-        Filter GRIB2 messages to single hypercube.
+        Filter GRIB2 messages to a single hypercube.
     data_model : str, optional
-        Parse GRIB metadata following a defined data model convention.
+        Target data model for metadata normalization (e.g., "nws-viz").
     drop_variables : list of str, optional
-        List of variables to exclude from the dataset.
+        List of shortnames to exclude from the resulting Dataset.
 
     Returns
     -------
-    xr.Dataset
-        Xarray dataset of grib2 messages.
+    xarray.Dataset
+        Dataset representing the GRIB2 messages.
     """
     # parse grib2io _index to dataframe and acquire non-geo possible dims
     # (scalar coord when not dim due to squeeze) parse_grib_index applies
@@ -2608,26 +2805,32 @@ def build_datatree_from_grib(
     file_index: pd.DataFrame,
     filters: typing.Optional[typing.Mapping[str, typing.Any]] = None,
     stack_vertical: bool = False,
+    drop_variables: typing.Optional[typing.List[str]] = None,
 ) -> typing.Any:
     """
     Build a DataTree from GRIB2 messages.
 
+    This internal function organizes GRIB2 messages into a hierarchical
+    tree structure based on level types, PDTNs, and other metadata.
+
     Parameters
     ----------
     filename : str
-        Path to the GRIB2 file.
-    file_index : pd.DataFrame
-        DataFrame of GRIB2 message index.
+        Path to the source GRIB2 file.
+    file_index : pandas.DataFrame
+        Index of GRIB2 messages.
     filters : dict, optional
-        Filter criteria for GRIB2 messages.
+        Filter criteria for selecting messages.
     stack_vertical : bool, optional
         If True, vertical levels will be stacked in a single dataset
-        instead of being organized in separate tree nodes.
+        within each node, rather than creating separate nodes per level value.
+    drop_variables : list of str, optional
+        List of variable shortnames to exclude.
 
     Returns
     -------
-    xr.DataTree
-        A hierarchical DataTree representation of the GRIB2 data.
+    xarray.DataTree
+        A hierarchical tree representation of the GRIB2 data.
     """
     if filters is None:
         filters = {}
@@ -2664,12 +2867,16 @@ def build_datatree_from_grib(
         file_index = file_index.assign(
             shortName=file_index.msg.apply(lambda msg: getattr(msg, "shortName", None))
         )
-        file_index = file_index.assign(
-            nx=file_index.msg.apply(lambda msg: getattr(msg, "nx", None))
-        )
-        file_index = file_index.assign(
-            ny=file_index.msg.apply(lambda msg: getattr(msg, "ny", None))
-        )
+
+    if drop_variables:
+        file_index = file_index[~file_index["shortName"].isin(drop_variables)]
+
+    file_index = file_index.assign(
+        nx=file_index.msg.apply(lambda msg: getattr(msg, "nx", None))
+    )
+    file_index = file_index.assign(
+        ny=file_index.msg.apply(lambda msg: getattr(msg, "ny", None))
+    )
 
     # Create root DataTree
     root = xr.DataTree()
@@ -2716,9 +2923,9 @@ def process_level_branch(level_tree: typing.Any, df: pd.DataFrame, filename: str
 
     Parameters
     ----------
-    level_tree : xr.DataTree
+    level_tree : xarray.DataTree
         The DataTree node for this level type.
-    df : pd.DataFrame
+    df : pandas.DataFrame
         DataFrame of messages for this level type.
     filename : str
         Path to the GRIB2 file.
@@ -2852,9 +3059,9 @@ def process_probability_groups(
 
     Parameters
     ----------
-    target_tree : xr.DataTree
+    target_tree : xarray.DataTree
         The tree node to add probability groups to.
-    pdtn_df : pd.DataFrame
+    pdtn_df : pandas.DataFrame
         DataFrame of messages for a specific PDTN.
     filename : str
         Path to the GRIB2 file.
@@ -2902,9 +3109,9 @@ def process_perturbation_groups(
 
     Parameters
     ----------
-    target_tree : xr.DataTree
+    target_tree : xarray.DataTree
         The tree node to add perturbation groups to.
-    pdtn_df : pd.DataFrame
+    pdtn_df : pandas.DataFrame
         DataFrame of messages for a specific PDTN.
     filename : str
         Path to the GRIB2 file.
@@ -2967,9 +3174,9 @@ def try_process_by_variables(
 
     Parameters
     ----------
-    target_tree : xr.DataTree
+    target_tree : xarray.DataTree
         The tree node to add variable datasets to.
-    df : pd.DataFrame
+    df : pandas.DataFrame
         DataFrame of messages.
     filename : str
         Path to the GRIB2 file.
@@ -3006,7 +3213,7 @@ def create_datasets_from_df(
 
     Parameters
     ----------
-    df : pd.DataFrame
+    df : pandas.DataFrame
         DataFrame of GRIB messages.
     filename : str
         Path to the GRIB2 file.
@@ -3015,7 +3222,7 @@ def create_datasets_from_df(
 
     Returns
     -------
-    list of xr.Dataset, optional
+    list of xarray.Dataset, optional
         List of Datasets, or None if creation failed.
     """
     try:
@@ -3156,25 +3363,31 @@ if _HAS_DATATREE:
 
             return find_griddef(self._obj)
 
-        def interp(self, method, grid_def_out, method_options=None, num_threads=1):
+        def interp(
+            self,
+            method: typing.Union[str, int],
+            grid_def_out: grib2io.Grib2GridDef,
+            method_options: typing.Optional[typing.List[int]] = None,
+            num_threads: int = 1,
+        ) -> typing.Any:
             """
             Interpolate all datasets in the tree to a new grid.
 
             Parameters
             ----------
             method : str or int
-                Interpolation method to use
+                Interpolation method to use.
             grid_def_out : grib2io.Grib2GridDef
-                Target grid definition
-            method_options : list, optional
-                Options for interpolation method
+                Target grid definition.
+            method_options : list of int, optional
+                Options for interpolation method.
             num_threads : int, optional
-                Number of threads to use for interpolation
+                Number of threads to use for interpolation.
 
             Returns
             -------
             xarray.DataTree
-                New DataTree with interpolated data
+                New DataTree with interpolated data.
             """
             new_tree = xr.DataTree()
 
@@ -3208,21 +3421,23 @@ if _HAS_DATATREE:
 
             return new_tree
 
-        def subset(self, lats, lons):
+        def subset(
+            self, lats: typing.Sequence[float], lons: typing.Sequence[float]
+        ) -> typing.Any:
             """
             Subset all datasets in the tree to a region.
 
             Parameters
             ----------
-            lats : list or tuple
-                Latitude bounds [min_lat, max_lat]
-            lons : list or tuple
-                Longitude bounds [min_lon, max_lon]
+            lats : sequence of float
+                Latitude bounds [min_lat, max_lat].
+            lons : sequence of float
+                Longitude bounds [min_lon, max_lon].
 
             Returns
             -------
             xarray.DataTree
-                New DataTree with subset data
+                New DataTree with subset data.
             """
             new_tree = xr.DataTree()
 
