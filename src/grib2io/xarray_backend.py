@@ -602,7 +602,6 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks: typing.Optional[
             typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
         ] = None,
-        **kwargs,
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
@@ -624,8 +623,6 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks : int, dict or 'auto', optional
             If chunks is provided, it is used to load the dataset into a
             dask-backed dataset.
-        **kwargs : optional
-            Additional keyword arguments passed to the xarray backend.
 
         Returns
         -------
@@ -667,7 +664,6 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks: typing.Optional[
             typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]
         ] = None,
-        **kwargs,
     ) -> typing.Any:
         """
         Open a GRIB2 file as an xarray DataTree.
@@ -685,8 +681,6 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks : int, dict or 'auto', optional
             If chunks is provided, it is used to load the dataset into a
             dask-backed dataset.
-        **kwargs : optional
-            Additional keyword arguments passed to the xarray backend.
 
         Returns
         -------
