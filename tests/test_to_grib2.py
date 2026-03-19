@@ -1,10 +1,11 @@
 import itertools
 from pathlib import Path
 
-import grib2io
 import pytest
 import xarray as xr
 from numpy.testing import assert_allclose, assert_array_equal
+
+import grib2io
 
 
 def _del_list_inplace(input_list, indices):
@@ -15,9 +16,7 @@ def _del_list_inplace(input_list, indices):
 
 def _test_any_differences(da1, da2, atol=0.005, rtol=0):
     """Test if two DataArrays are equal, including most attributes."""
-    assert_array_equal(
-        da1.attrs["GRIB2IO_section0"][:-1], da2.attrs["GRIB2IO_section0"][:-1]
-    )
+    assert_array_equal(da1.attrs["GRIB2IO_section0"][:-1], da2.attrs["GRIB2IO_section0"][:-1])
     assert_array_equal(da1.attrs["GRIB2IO_section1"], da2.attrs["GRIB2IO_section1"])
     assert_array_equal(da1.attrs["GRIB2IO_section2"], da2.attrs["GRIB2IO_section2"])
     assert_array_equal(da1.attrs["GRIB2IO_section3"], da2.attrs["GRIB2IO_section3"])
@@ -382,11 +381,10 @@ def test_ds_to_netcdf(tmp_path, request):
 
     ds1.to_netcdf(target_file, engine="netcdf4")
 
-
     # TODO: A future Xarray release will acknowledge the "dtype" NetCDF variable
     # attribute.
     ds2 = xr.open_dataset(target_file, engine="netcdf4", decode_times=False)
-    del ds2.leadTime.attrs['dtype']
+    del ds2.leadTime.attrs["dtype"]
     ds2 = xr.decode_cf(ds2)
 
     lists = []

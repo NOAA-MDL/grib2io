@@ -65,3 +65,34 @@ zip-safe = false
 
 [tool.setuptools.dynamic]
 version = {attr = "grib2io.__config__.grib2io_version"}
+
+[tool.ruff]
+line-length = 148
+target-version = "py38"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+]
+ignore = [
+    "E501",  # line too long, handled by ruff format
+    "C901",  # too complex
+    "F403",  # star imports
+    "F405",  # name defined from star imports
+    "F601",  # repeated dictionary keys
+    "F811",  # redefinition of unused variable
+    "F821",  # undefined name
+    "B023",  # function definition does not bind loop variable
+    "B007",  # loop control variable not used
+    "B018",  # useless expression
+    "E721",  # type comparison
+    "E741",  # ambiguous variable name
+    "E402",  # module level import not at top of file
+    "B008",  # function call in argument defaults
+    "F401",  # unused import
+]
