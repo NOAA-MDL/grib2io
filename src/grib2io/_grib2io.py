@@ -62,10 +62,6 @@ The following Jupyter Notebooks are available as tutorials:
 * [Subset Example](https://github.com/NOAA-MDL/grib2io/blob/master/demos/subset-example.ipynb)
 """
 
-from dataclasses import dataclass, field
-from io import BytesIO
-from pathlib import Path
-from typing import Literal, Optional, Union, IO
 import builtins
 import collections
 import copy
@@ -78,41 +74,36 @@ import re
 import struct
 import sys
 import warnings
+from dataclasses import dataclass, field
+from io import BytesIO
+from pathlib import Path
+from typing import IO, Literal, Optional, Union
 
-from numpy.typing import NDArray
 import numpy as np
 import pyproj
+from numpy.typing import NDArray
 
-from . import g2clib
-from . import tables
-from . import templates
-from . import utils
+from . import g2clib, tables, templates, utils
 
 DEFAULT_DRT_LEN = 20
-DEFAULT_FILL_VALUE = 9.9692099683868690e+36
+DEFAULT_FILL_VALUE = 9.9692099683868690e36
 DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
-TYPE_OF_VALUES_DTYPE = ('float32','int32')
+TYPE_OF_VALUES_DTYPE = ("float32", "int32")
 
-_interp_schemes = {
-    'bilinear': 0,
-    'bicubic': 1,
-    'neighbor': 2,
-    'budget':3,
-    'spectral':4,
-    'neighbor-budget':6
-}
+_interp_schemes = {"bilinear": 0, "bicubic": 1, "neighbor": 2, "budget": 3, "spectral": 4, "neighbor-budget": 6}
 
 _AUTO_NANS = True
 _GZIP_HEADER = b"\x1f\x8b"
 
-_latlon_datastore = dict()
-_msg_class_store = dict()
+_latlon_datastore = {}
+_msg_class_store = {}
 
 # This is for Python 3.8 and 3.9 compatibility
 _PathOrStr = Union[str, os.PathLike]
 
-class open():
+
+class open:
     """
     GRIB2 File Object.
 
@@ -180,11 +171,11 @@ class open():
         filename: Union[bytes, str, Path, IO],
         mode: Literal["r", "w", "x"] = "r",
         *,
-        save_index = True,
-        use_index = True,
-        _xarray_backend = False,
+        save_index=True,
+        use_index=True,
+        _xarray_backend=False,
         **kwargs,
-        ):
+    ):
         """
         Initialize GRIB2 File object instance.
 
@@ -218,21 +209,20 @@ class open():
         self.use_index = use_index
 
         if isinstance(filename, bytes):
-            if 'r' not in self.mode:
+            if "r" not in self.mode:
                 raise ValueError(
-                    "Invalid mode for bytes input: GRIB2 data supplied as bytes "
-                    "is read-only. Use mode='r' or provide a filename instead."
+                    "Invalid mode for bytes input: GRIB2 data supplied as bytes is read-only. Use mode='r' or provide a filename instead."
                 )
 
             self.current_message = 0
             if filename[:2] == _GZIP_HEADER:
                 filename = gzip.decompress(filename)
-            if filename[:4]+filename[-4:] != b'GRIB7777':
+            if filename[:4] + filename[-4:] != b"GRIB7777":
                 raise ValueError("Invalid GRIB bytes")
             self._filehandle = BytesIO(filename)
             self.name = "<in-memory-file>"
             self.size = len(filename)
-            self._fileid = hashlib.sha1((self.name+str(self.size)).encode('ASCII')).hexdigest()
+            self._fileid = hashlib.sha1((self.name + str(self.size)).encode("ASCII")).hexdigest()
             self._index = build_index(self._filehandle)
             self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
             self.messages = len(self._msgs)
@@ -241,25 +231,25 @@ class open():
             # Handle file-like objects (including S3File, etc.)
             self.current_message = 0
             self._filehandle = filename
-            self.name = getattr(filename, 'name', filename.__repr__())
+            self.name = getattr(filename, "name", filename.__repr__())
             # For file-like objects, we can't get file stats, so create a unique ID
-            self._fileid = hashlib.sha1((self.name+str(id(filename))).encode('ASCII')).hexdigest()
+            self._fileid = hashlib.sha1((self.name + str(id(filename))).encode("ASCII")).hexdigest()
             # Disable index file usage for file-like objects since we can't save/load them
             self.use_index = False
             self.save_index = False
 
-            if 'r' in self.mode:
+            if "r" in self.mode:
                 # Build index from the file-like object
                 self._index = build_index(self._filehandle)
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
                 self.messages = len(self._msgs)
 
             # Get size for s3fs.core.S3File object.
-            self.size = self._filehandle.info()['size'] or 0
+            self.size = self._filehandle.info()["size"] or 0
 
         else:
             self.current_message = 0
-            if 'r' in mode:
+            if "r" in mode:
                 self._filehandle = builtins.open(filename, mode=mode)
                 # Some GRIB2 files are gzipped, so check for that here, but
                 # raise error when using xarray backend.
@@ -267,7 +257,7 @@ class open():
                 if self._filehandle.read(2) == _GZIP_HEADER:
                     self._filehandle.close()
                     if _xarray_backend:
-                        raise RuntimeError('Gzip GRIB2 files are not supported by the Xarray backend.')
+                        raise RuntimeError("Gzip GRIB2 files are not supported by the Xarray backend.")
                     self._filehandle = gzip.open(filename, mode=mode)
                 else:
                     self._filehandle = builtins.open(filename, mode=mode)
@@ -277,20 +267,21 @@ class open():
             self.name = os.path.abspath(filename)
             fstat = os.stat(self.name)
             self.size = fstat.st_size
-            self._fileid = hashlib.sha1((self.name+str(fstat.st_ino)+
-                                     str(self.size)).encode('ASCII')).hexdigest()
+            self._fileid = hashlib.sha1((self.name + str(fstat.st_ino) + str(self.size)).encode("ASCII")).hexdigest()
 
-            if 'r' in self.mode:
-
+            if "r" in self.mode:
                 self.indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
                 if self.use_index and os.path.exists(self.indexfile):
                     try:
-                        with builtins.open(self.indexfile, 'rb') as file:
+                        with builtins.open(self.indexfile, "rb") as file:
                             index = pickle.load(file)
                         self._index = index
                     except Exception as e:
-                        warnings.warn(f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
-                                      f"re-forming index from grib2file, but not writing indexfile")
+                        warnings.warn(
+                            f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
+                            f"re-forming index from grib2file, but not writing indexfile",
+                            stacklevel=2,
+                        )
                         self._index = build_index(self._filehandle)
                     self._hasindex = True
                 else:
@@ -299,79 +290,69 @@ class open():
                         try:
                             serialize_index(self._index, self.indexfile)
                         except Exception as e:
-                            warnings.warn(f"index was not serialized for future use: {e}")
+                            warnings.warn(f"index was not serialized for future use: {e}", stacklevel=2)
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
 
                 self.messages = len(self._msgs)
-            elif 'w' or 'x' in self.mode:
+            elif "w" or "x" in self.mode:
                 self.messages = 0
                 self.current_message = None
 
         self.closed = self._filehandle.closed
 
-
     def __delete__(self, instance):
         self.close()
         del self._index
 
-
     def __enter__(self):
         return self
-
 
     def __exit__(self, atype, value, traceback):
         self.close()
 
-
     def __iter__(self):
         yield from self._msgs
-
 
     def __len__(self):
         return self.messages
 
-
     def __repr__(self):
         strings = []
         for k in self.__slots__:
-            if k.startswith('_'): continue
-            strings.append('%s = %s\n'%(k,eval('self.'+k)))
-        return ''.join(strings)
-
+            if k.startswith("_"):
+                continue
+            strings.append("%s = %s\n" % (k, eval("self." + k)))
+        return "".join(strings)
 
     def __getitem__(self, key):
-        if isinstance(key,int):
+        if isinstance(key, int):
             if abs(key) >= len(self._msgs):
                 raise IndexError("index out of range")
             else:
                 return self._msgs[key]
-        elif isinstance(key,str):
+        elif isinstance(key, str):
             return self.select(shortName=key)
-        elif isinstance(key,slice):
+        elif isinstance(key, slice):
             return self._msgs[key]
         else:
-            raise KeyError('Key must be an integer, slice, or GRIB2 variable shortName.')
-
-
+            raise KeyError("Key must be an integer, slice, or GRIB2 variable shortName.")
 
     @property
     def levels(self):
         """Provides a unique tuple of level strings."""
         if self._hasindex:
-            return tuple(sorted(set([msg.level for msg in self._msgs])))
+            return tuple(sorted({msg.level for msg in self._msgs}))
         else:
             return None
-
 
     @property
     def variables(self):
         """Provides a unique tuple of variable shortName strings."""
         if self._hasindex:
-            return tuple(sorted(set([msg.shortName for msg in self._msgs])))
+            return tuple(sorted({msg.shortName for msg in self._msgs}))
         else:
             return None
-
 
     def close(self):
         """Close the file handle."""
@@ -381,8 +362,7 @@ class open():
             self._filehandle.close()
             self.closed = self._filehandle.closed
 
-
-    def read(self, size: Optional[int]=None):
+    def read(self, size: Optional[int] = None):
         """
         Read size amount of GRIB2 messages from the current position.
 
@@ -408,18 +388,17 @@ class open():
             size = None
         if size is None or size > 1:
             start = self.tell()
-            stop = self.messages if size is None else start+size
+            stop = self.messages if size is None else start + size
             if size is None:
-                self.current_message = self.messages-1
+                self.current_message = self.messages - 1
             else:
                 self.current_message += size
-            return self._msgs[slice(start,stop,1)]
+            return self._msgs[slice(start, stop, 1)]
         elif size == 1:
             self.current_message += 1
             return self._msgs[self.current_message]
         else:
             None
-
 
     def seek(self, pos: int):
         """
@@ -431,26 +410,24 @@ class open():
             The GRIB2 Message number to set the file pointer to.
         """
         if self._hasindex:
-            self._filehandle.seek(self._index['sectionOffset'][0][pos])
+            self._filehandle.seek(self._index["sectionOffset"][0][pos])
             self.current_message = pos
-
 
     def tell(self):
         """Returns the position of the file in units of GRIB2 Messages."""
         return self.current_message
-
 
     def select(self, **kwargs):
         """Select GRIB2 messages by `Grib2Message` attributes."""
         # TODO: Added ability to process multiple values for each keyword (attribute)
         idxs = []
         nkeys = len(kwargs.keys())
-        for k,v in kwargs.items():
+        for k, v in kwargs.items():
             for m in self._msgs:
-                if hasattr(m,k) and getattr(m,k) == v: idxs.append(m._msgnum)
-        idxs = np.array(idxs,dtype=np.int32)
+                if hasattr(m, k) and getattr(m, k) == v:
+                    idxs.append(m._msgnum)
+        idxs = np.array(idxs, dtype=np.int32)
         return [self._msgs[i] for i in [ii[0] for ii in collections.Counter(idxs).most_common() if ii[1] == nkeys]]
-
 
     def write(self, msg):
         """
@@ -461,25 +438,23 @@ class open():
         msg
             GRIB2 message objects to write to file.
         """
-        if isinstance(msg,list):
+        if isinstance(msg, list):
             for m in msg:
                 self.write(m)
             return
 
-        if issubclass(msg.__class__,_Grib2Message):
+        if issubclass(msg.__class__, _Grib2Message):
             # TODO: We can consider letting pack return packed bytes instead of associating with message object
-            if hasattr(msg,'_msg'):
+            if hasattr(msg, "_msg"):
                 # write already packed bytes
                 self._filehandle.write(msg._msg)
             else:
-                if msg._signature == msg._generate_signature() and \
-                   msg._data is None and \
-                   hasattr(msg._ondiskarray,'filehandle'):
-                   # write unchanged message from input
-                   offset = msg._ondiskarray.filehandle.tell()
-                   msg._ondiskarray.filehandle.seek(msg._ondiskarray.offset)
-                   self._filehandle.write(msg._ondiskarray.filehandle.read(msg.section0[-1]))
-                   msg._ondiskarray.filehandle.seek(offset)
+                if msg._signature == msg._generate_signature() and msg._data is None and hasattr(msg._ondiskarray, "filehandle"):
+                    # write unchanged message from input
+                    offset = msg._ondiskarray.filehandle.tell()
+                    msg._ondiskarray.filehandle.seek(msg._ondiskarray.offset)
+                    self._filehandle.write(msg._ondiskarray.filehandle.read(msg.section0[-1]))
+                    msg._ondiskarray.filehandle.seek(offset)
                 else:
                     msg.pack()
                     self._filehandle.write(msg._msg)
@@ -489,11 +464,9 @@ class open():
             raise TypeError("msg must be a Grib2Message object.")
         return
 
-
     def flush(self):
         """Flush the file object buffer."""
         self._filehandle.flush()
-
 
     def levels_by_var(self, name: str):
         """
@@ -509,8 +482,7 @@ class open():
         levels_by_var
             A list of unique level strings.
         """
-        return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
-
+        return sorted({msg.level for msg in self.select(shortName=name)})
 
     def vars_by_level(self, level: str):
         """
@@ -526,7 +498,7 @@ class open():
         vars_by_level
             A list of unique variable shortName strings.
         """
-        return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
+        return sorted({msg.shortName for msg in self.select(level=level)})
 
 
 def build_index(filehandle):
@@ -598,20 +570,20 @@ def build_index(filehandle):
         If binary unpacking fails due to truncated or malformed data.
     """
     # Initialize index dictionary
-    index = dict()
-    index['section0'] = []
-    index['section1'] = []
-    index['section2'] = []
-    index['section3'] = []
-    index['section4'] = []
-    index['section5'] = []
-    index['bmapflag'] = []
-    index['offset'] = []
-    index['sectionOffset'] = []
-    index['sectionSize'] = []
-    index['msgSize'] = []
-    index['msgNumber'] = []
-    index['isSubmessage'] = []
+    index = {}
+    index["section0"] = []
+    index["section1"] = []
+    index["section2"] = []
+    index["section3"] = []
+    index["section4"] = []
+    index["section5"] = []
+    index["bmapflag"] = []
+    index["offset"] = []
+    index["sectionOffset"] = []
+    index["sectionSize"] = []
+    index["msgSize"] = []
+    index["msgNumber"] = []
+    index["isSubmessage"] = []
 
     messages = 0
 
@@ -623,8 +595,8 @@ def build_index(filehandle):
             # Initialize
             bmapflag = None
             pos = filehandle.tell()
-            section2 = b''
-            trailer = b''
+            section2 = b""
+            trailer = b""
             _secpos = dict.fromkeys(range(8))
             _secsize = dict.fromkeys(range(8))
             _isSubmessage = False
@@ -651,19 +623,19 @@ def build_index(filehandle):
                 continue
 
             # Read the rest of Section 0 using struct.
-            _secpos[0] = filehandle.tell()-4
+            _secpos[0] = filehandle.tell() - 4
             _secsize[0] = 16
             secmsg = filehandle.read(12)
-            section0 = np.concatenate(([header],list(struct.unpack('>HBBQ',secmsg))),dtype=np.int64)
-            index['section0'].append(section0)
+            section0 = np.concatenate(([header], list(struct.unpack(">HBBQ", secmsg))), dtype=np.int64)
+            index["section0"].append(section0)
 
             # Make sure message is GRIB2.
             if section0[3] != 2:
                 # Check for GRIB1 and ignore.
                 if secmsg[3] == 1:
-                    warnings.warn("GRIB version 1 message detected.  Ignoring...")
-                    grib1_size = int.from_bytes(secmsg[:3],"big")
-                    filehandle.seek(filehandle.tell()+grib1_size-16)
+                    warnings.warn("GRIB version 1 message detected.  Ignoring...", stacklevel=2)
+                    grib1_size = int.from_bytes(secmsg[:3], "big")
+                    filehandle.seek(filehandle.tell() + grib1_size - 16)
                     continue
                 else:
                     raise ValueError("Bad GRIB version number.")
@@ -674,95 +646,94 @@ def build_index(filehandle):
                 # Read first 5 bytes of the section which contains the size
                 # of the section (4 bytes) and the section number (1 byte).
                 secmsg = filehandle.read(5)
-                secsize, secnum = struct.unpack('>iB',secmsg)
+                secsize, secnum = struct.unpack(">iB", secmsg)
 
                 # Record the offset of the section number and "append" the
                 # rest of the section to secmsg.
-                _secpos[secnum] = filehandle.tell()-5
+                _secpos[secnum] = filehandle.tell() - 5
                 _secsize[secnum] = secsize
-                if secnum in {1,3,4,5}:
-                    secmsg += filehandle.read(secsize-5)
+                if secnum in {1, 3, 4, 5}:
+                    secmsg += filehandle.read(secsize - 5)
                 grbpos = 0
 
                 # Unpack section
                 if secnum == 1:
                     # Unpack Section 1
                     section1, grbpos = g2clib.unpack1(secmsg)
-                    index['section1'].append(section1)
+                    index["section1"].append(section1)
                 elif secnum == 2:
                     # Unpack Section 2
-                    section2 = filehandle.read(secsize-5)
+                    section2 = filehandle.read(secsize - 5)
                 elif secnum == 3:
                     # Unpack Section 3
                     gds, gdt, deflist, grbpos = g2clib.unpack3(secmsg)
                     gds = gds.tolist()
                     gdt = gdt.tolist()
-                    section3 = np.concatenate((gds,gdt))
-                    section3 = np.where(section3==4294967295,-1,section3)
-                    index['section3'].append(section3)
+                    section3 = np.concatenate((gds, gdt))
+                    section3 = np.where(section3 == 4294967295, -1, section3)
+                    index["section3"].append(section3)
                 elif secnum == 4:
                     # Unpack Section 4
                     pdtnum, pdt, coordlist, numcoord, grbpos = g2clib.unpack4(secmsg)
                     pdt = pdt.tolist()
-                    section4 = np.concatenate((np.array((numcoord,pdtnum)),pdt))
-                    index['section4'].append(section4)
+                    section4 = np.concatenate((np.array((numcoord, pdtnum)), pdt))
+                    index["section4"].append(section4)
                 elif secnum == 5:
                     # Unpack Section 5
                     drtn, drt, npts, _pos = g2clib.unpack5(secmsg)
-                    section5 = np.concatenate((np.array((npts,drtn)),drt))
-                    section5 = np.where(section5==4294967295,-1,section5)
-                    index['section5'].append(section5)
+                    section5 = np.concatenate((np.array((npts, drtn)), drt))
+                    section5 = np.where(section5 == 4294967295, -1, section5)
+                    index["section5"].append(section5)
                 elif secnum == 6:
                     # Unpack Section 6 - Just the bitmap flag
-                    bmapflag = struct.unpack('>B',filehandle.read(1))[0]
+                    bmapflag = struct.unpack(">B", filehandle.read(1))[0]
                     if bmapflag == 0:
-                        bmappos = filehandle.tell()-6
+                        filehandle.tell() - 6
                     elif bmapflag == 254:
                         # Do this to keep the previous position value
                         pass
                     else:
-                        bmappos = None
-                    index['bmapflag'].append(bmapflag)
-                    filehandle.seek(filehandle.tell()+secsize-6)
+                        pass
+                    index["bmapflag"].append(bmapflag)
+                    filehandle.seek(filehandle.tell() + secsize - 6)
                 elif secnum == 7:
                     # Do not unpack section 7 here, but move the file pointer
                     # to after section 7.
-                    filehandle.seek(filehandle.tell()+secsize-5)
+                    filehandle.seek(filehandle.tell() + secsize - 5)
 
                     # Update the file index.
-                    index['sectionOffset'].append(copy.deepcopy(_secpos))
-                    index['sectionSize'].append(copy.deepcopy(_secsize))
-                    index['msgSize'].append(section0[-1])
-                    index['msgNumber'].append(messages)
-                    index['isSubmessage'].append(_isSubmessage)
-                    index['section2'].append(section2)
-                    index['offset'].append(pos)
-
+                    index["sectionOffset"].append(copy.deepcopy(_secpos))
+                    index["sectionSize"].append(copy.deepcopy(_secsize))
+                    index["msgSize"].append(section0[-1])
+                    index["msgNumber"].append(messages)
+                    index["isSubmessage"].append(_isSubmessage)
+                    index["section2"].append(section2)
+                    index["offset"].append(pos)
 
                     # If here, then we have moved through GRIB2 section 1-7.
                     # Now we need to check the next 4 bytes after section 7.
-                    trailer = struct.unpack('>i',filehandle.read(4))[0]
+                    trailer = struct.unpack(">i", filehandle.read(4))[0]
 
                     # If we reach the GRIB2 trailer string ('7777'), then we
                     # can break begin processing the next GRIB2 message.  If
                     # not, then we continue within the same iteration to
                     # process a GRIB2 submessage.
-                    if trailer.to_bytes(4, "big") == b'7777':
+                    if trailer.to_bytes(4, "big") == b"7777":
                         break
                     else:
                         # If here, trailer should be the size of the first
                         # section of the next submessage, then the next byte
                         # is the section number.  Check this value.
-                        nextsec = struct.unpack('>B',filehandle.read(1))[0]
-                        if nextsec not in {2,3,4}:
+                        nextsec = struct.unpack(">B", filehandle.read(1))[0]
+                        if nextsec not in {2, 3, 4}:
                             raise ValueError("Bad GRIB2 message structure.")
-                        filehandle.seek(filehandle.tell()-5)
+                        filehandle.seek(filehandle.tell() - 5)
                         _isSubmessage = True
                         continue
                 else:
                     raise ValueError("Bad GRIB2 section number.")
 
-        except(struct.error):
+        except struct.error:
             filehandle.seek(init_offset)
             break
 
@@ -800,7 +771,7 @@ def serialize_index(index: dict, file_name: _PathOrStr):
     basename = path.name
     dotted_basename_withpid = f".{basename}_{os.getpid()}"
     temp_path = directory / dotted_basename_withpid
-    with builtins.open(temp_path, 'wb') as file:
+    with builtins.open(temp_path, "wb") as file:
         pickle.dump(index, file)
     if not os.path.exists(path):
         os.rename(temp_path, path)
@@ -847,13 +818,7 @@ def msgs_from_index(index: dict, filehandle=None):
       preserve message order.
     """
     zipped = zip(
-        index["section0"],
-        index["section1"],
-        index["section2"],
-        index["section3"],
-        index["section4"],
-        index["section5"],
-        index["bmapflag"]
+        index["section0"], index["section1"], index["section2"], index["section3"], index["section4"], index["section5"], index["bmapflag"]
     )
     msgs = [Grib2Message(*sections) for sections in zipped]
 
@@ -867,7 +832,7 @@ def msgs_from_index(index: dict, filehandle=None):
                 msg=msg,
                 offset=offset,
                 bitmap_offset=secpos[6],
-                data_offset=secpos[7]
+                data_offset=secpos[7],
             )
             msg._msgnum = n
     return msgs
@@ -907,28 +872,34 @@ class Grib2Message:
         definition template class, and a data representation template
         class.
     """
-    def __new__(self, section0: NDArray = np.array([struct.unpack('>I',b'GRIB')[0],0,0,2,0]),
-                      section1: NDArray = np.zeros((13),dtype=np.int64),
-                      section2: Optional[bytes] = None,
-                      section3: Optional[NDArray] = None,
-                      section4: Optional[NDArray] = None,
-                      section5: Optional[NDArray] = None, *args, **kwargs):
 
-        if np.all(section1==0):
+    def __new__(
+        self,
+        section0: NDArray = np.array([struct.unpack(">I", b"GRIB")[0], 0, 0, 2, 0]),
+        section1: NDArray = np.zeros((13), dtype=np.int64),
+        section2: Optional[bytes] = None,
+        section3: Optional[NDArray] = None,
+        section4: Optional[NDArray] = None,
+        section5: Optional[NDArray] = None,
+        *args,
+        **kwargs,
+    ):
+
+        if np.all(section1 == 0):
             try:
                 # Python >= 3.10
                 section1[5:11] = datetime.datetime.fromtimestamp(0, datetime.UTC).timetuple()[:6]
-            except(AttributeError):
+            except AttributeError:
                 # Python < 3.10
                 section1[5:11] = datetime.datetime.utcfromtimestamp(0).timetuple()[:6]
 
-        bases = list()
+        bases = []
         if section3 is None:
-            if 'gdtn' in kwargs.keys():
-                gdtn = kwargs['gdtn']
+            if "gdtn" in kwargs.keys():
+                gdtn = kwargs["gdtn"]
                 Gdt = templates.gdt_class_by_gdtn(gdtn)
                 bases.append(Gdt)
-                section3 = np.zeros((Gdt._len+5),dtype=np.int64)
+                section3 = np.zeros((Gdt._len + 5), dtype=np.int64)
                 section3[4] = gdtn
             else:
                 raise ValueError("Must provide GRIB2 Grid Definition Template Number or section 3 array")
@@ -938,11 +909,11 @@ class Grib2Message:
             bases.append(Gdt)
 
         if section4 is None:
-            if 'pdtn' in kwargs.keys():
-                pdtn = kwargs['pdtn']
+            if "pdtn" in kwargs.keys():
+                pdtn = kwargs["pdtn"]
                 Pdt = templates.pdt_class_by_pdtn(pdtn)
                 bases.append(Pdt)
-                section4 = np.zeros((Pdt._len+2),dtype=np.int64)
+                section4 = np.zeros((Pdt._len + 2), dtype=np.int64)
                 section4[1] = pdtn
             else:
                 raise ValueError("Must provide GRIB2 Production Definition Template Number or section 4 array")
@@ -952,11 +923,11 @@ class Grib2Message:
             bases.append(Pdt)
 
         if section5 is None:
-            if 'drtn' in kwargs.keys():
-                drtn = kwargs['drtn']
+            if "drtn" in kwargs.keys():
+                drtn = kwargs["drtn"]
                 Drt = templates.drt_class_by_drtn(drtn)
                 bases.append(Drt)
-                section5 = np.zeros((Drt._len+2),dtype=np.int64)
+                section5 = np.zeros((Drt._len + 2), dtype=np.int64)
                 section5[1] = drtn
             else:
                 raise ValueError("Must provide GRIB2 Data Representation Template Number or section 5 array")
@@ -969,9 +940,11 @@ class Grib2Message:
         try:
             Msg = _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"]
         except KeyError:
+
             @dataclass(init=False, repr=False)
             class Msg(_Grib2Message, *bases):
                 pass
+
             _msg_class_store[f"{gdtn}:{pdtn}:{drtn}"] = Msg
 
         return Msg(section0, section1, section2, section3, section4, section5, *args)
@@ -982,71 +955,72 @@ class _Grib2Message:
     """
     GRIB2 Message base class.
     """
+
     # GRIB2 Sections
-    section0: NDArray = field(init=True,repr=False)
-    section1: NDArray = field(init=True,repr=False)
-    section2: bytes = field(init=True,repr=False)
-    section3: NDArray = field(init=True,repr=False)
-    section4: NDArray = field(init=True,repr=False)
-    section5: NDArray = field(init=True,repr=False)
-    bitMapFlag: templates.Grib2Metadata = field(init=True,repr=False,default=255)
+    section0: NDArray = field(init=True, repr=False)
+    section1: NDArray = field(init=True, repr=False)
+    section2: bytes = field(init=True, repr=False)
+    section3: NDArray = field(init=True, repr=False)
+    section4: NDArray = field(init=True, repr=False)
+    section5: NDArray = field(init=True, repr=False)
+    bitMapFlag: templates.Grib2Metadata = field(init=True, repr=False, default=255)
 
     # Section 0 looked up attributes
-    indicatorSection: NDArray = field(init=False,repr=False,default=templates.IndicatorSection())
-    discipline: templates.Grib2Metadata = field(init=False,repr=False,default=templates.Discipline())
+    indicatorSection: NDArray = field(init=False, repr=False, default=templates.IndicatorSection())
+    discipline: templates.Grib2Metadata = field(init=False, repr=False, default=templates.Discipline())
 
     # Section 1 looked up attributes
-    identificationSection: NDArray = field(init=False,repr=False,default=templates.IdentificationSection())
-    originatingCenter: templates.Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingCenter())
-    originatingSubCenter: templates.Grib2Metadata = field(init=False,repr=False,default=templates.OriginatingSubCenter())
-    masterTableInfo: templates.Grib2Metadata = field(init=False,repr=False,default=templates.MasterTableInfo())
-    localTableInfo: templates.Grib2Metadata = field(init=False,repr=False,default=templates.LocalTableInfo())
-    significanceOfReferenceTime: templates.Grib2Metadata = field(init=False,repr=False,default=templates.SignificanceOfReferenceTime())
-    year: int = field(init=False,repr=False,default=templates.Year())
-    month: int = field(init=False,repr=False,default=templates.Month())
-    day: int = field(init=False,repr=False,default=templates.Day())
-    hour: int = field(init=False,repr=False,default=templates.Hour())
-    minute: int = field(init=False,repr=False,default=templates.Minute())
-    second: int = field(init=False,repr=False,default=templates.Second())
-    refDate: datetime.datetime = field(init=False,repr=False,default=templates.RefDate())
-    productionStatus: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductionStatus())
-    typeOfData: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfData())
+    identificationSection: NDArray = field(init=False, repr=False, default=templates.IdentificationSection())
+    originatingCenter: templates.Grib2Metadata = field(init=False, repr=False, default=templates.OriginatingCenter())
+    originatingSubCenter: templates.Grib2Metadata = field(init=False, repr=False, default=templates.OriginatingSubCenter())
+    masterTableInfo: templates.Grib2Metadata = field(init=False, repr=False, default=templates.MasterTableInfo())
+    localTableInfo: templates.Grib2Metadata = field(init=False, repr=False, default=templates.LocalTableInfo())
+    significanceOfReferenceTime: templates.Grib2Metadata = field(init=False, repr=False, default=templates.SignificanceOfReferenceTime())
+    year: int = field(init=False, repr=False, default=templates.Year())
+    month: int = field(init=False, repr=False, default=templates.Month())
+    day: int = field(init=False, repr=False, default=templates.Day())
+    hour: int = field(init=False, repr=False, default=templates.Hour())
+    minute: int = field(init=False, repr=False, default=templates.Minute())
+    second: int = field(init=False, repr=False, default=templates.Second())
+    refDate: datetime.datetime = field(init=False, repr=False, default=templates.RefDate())
+    productionStatus: templates.Grib2Metadata = field(init=False, repr=False, default=templates.ProductionStatus())
+    typeOfData: templates.Grib2Metadata = field(init=False, repr=False, default=templates.TypeOfData())
 
     # Section 3 looked up common attributes.  Other looked up attributes are available according
     # to the Grid Definition Template.
-    gridDefinitionSection: NDArray = field(init=False,repr=False,default=templates.GridDefinitionSection())
-    sourceOfGridDefinition: int = field(init=False,repr=False,default=templates.SourceOfGridDefinition())
-    numberOfDataPoints: int = field(init=False,repr=False,default=templates.NumberOfDataPoints())
-    interpretationOfListOfNumbers: templates.Grib2Metadata = field(init=False,repr=False,default=templates.InterpretationOfListOfNumbers())
-    gridDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.GridDefinitionTemplateNumber())
-    gridDefinitionTemplate: list = field(init=False,repr=False,default=templates.GridDefinitionTemplate())
-    _earthparams: dict = field(init=False,repr=False,default=templates.EarthParams())
-    _dxsign: float = field(init=False,repr=False,default=templates.DxSign())
-    _dysign: float = field(init=False,repr=False,default=templates.DySign())
-    _llscalefactor: float = field(init=False,repr=False,default=templates.LLScaleFactor())
-    _lldivisor: float = field(init=False,repr=False,default=templates.LLDivisor())
-    _xydivisor: float = field(init=False,repr=False,default=templates.XYDivisor())
-    shapeOfEarth: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ShapeOfEarth())
-    earthShape: str = field(init=False,repr=False,default=templates.EarthShape())
-    earthRadius: float = field(init=False,repr=False,default=templates.EarthRadius())
-    earthMajorAxis: float = field(init=False,repr=False,default=templates.EarthMajorAxis())
-    earthMinorAxis: float = field(init=False,repr=False,default=templates.EarthMinorAxis())
-    resolutionAndComponentFlags: list = field(init=False,repr=False,default=templates.ResolutionAndComponentFlags())
-    ny: int = field(init=False,repr=False,default=templates.Ny())
-    nx: int = field(init=False,repr=False,default=templates.Nx())
-    scanModeFlags: list = field(init=False,repr=False,default=templates.ScanModeFlags())
-    projParameters: dict = field(init=False,repr=False,default=templates.ProjParameters())
+    gridDefinitionSection: NDArray = field(init=False, repr=False, default=templates.GridDefinitionSection())
+    sourceOfGridDefinition: int = field(init=False, repr=False, default=templates.SourceOfGridDefinition())
+    numberOfDataPoints: int = field(init=False, repr=False, default=templates.NumberOfDataPoints())
+    interpretationOfListOfNumbers: templates.Grib2Metadata = field(init=False, repr=False, default=templates.InterpretationOfListOfNumbers())
+    gridDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False, repr=False, default=templates.GridDefinitionTemplateNumber())
+    gridDefinitionTemplate: list = field(init=False, repr=False, default=templates.GridDefinitionTemplate())
+    _earthparams: dict = field(init=False, repr=False, default=templates.EarthParams())
+    _dxsign: float = field(init=False, repr=False, default=templates.DxSign())
+    _dysign: float = field(init=False, repr=False, default=templates.DySign())
+    _llscalefactor: float = field(init=False, repr=False, default=templates.LLScaleFactor())
+    _lldivisor: float = field(init=False, repr=False, default=templates.LLDivisor())
+    _xydivisor: float = field(init=False, repr=False, default=templates.XYDivisor())
+    shapeOfEarth: templates.Grib2Metadata = field(init=False, repr=False, default=templates.ShapeOfEarth())
+    earthShape: str = field(init=False, repr=False, default=templates.EarthShape())
+    earthRadius: float = field(init=False, repr=False, default=templates.EarthRadius())
+    earthMajorAxis: float = field(init=False, repr=False, default=templates.EarthMajorAxis())
+    earthMinorAxis: float = field(init=False, repr=False, default=templates.EarthMinorAxis())
+    resolutionAndComponentFlags: list = field(init=False, repr=False, default=templates.ResolutionAndComponentFlags())
+    ny: int = field(init=False, repr=False, default=templates.Ny())
+    nx: int = field(init=False, repr=False, default=templates.Nx())
+    scanModeFlags: list = field(init=False, repr=False, default=templates.ScanModeFlags())
+    projParameters: dict = field(init=False, repr=False, default=templates.ProjParameters())
 
     # Section 4
-    productDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.ProductDefinitionTemplateNumber())
-    productDefinitionTemplate: NDArray = field(init=False,repr=False,default=templates.ProductDefinitionTemplate())
+    productDefinitionTemplateNumber: templates.Grib2Metadata = field(init=False, repr=False, default=templates.ProductDefinitionTemplateNumber())
+    productDefinitionTemplate: NDArray = field(init=False, repr=False, default=templates.ProductDefinitionTemplate())
 
     # Section 5 looked up common attributes.  Other looked up attributes are
     # available according to the Data Representation Template.
-    numberOfPackedValues: int = field(init=False,repr=False,default=templates.NumberOfPackedValues())
-    dataRepresentationTemplateNumber: templates.Grib2Metadata = field(init=False,repr=False,default=templates.DataRepresentationTemplateNumber())
-    dataRepresentationTemplate: list = field(init=False,repr=False,default=templates.DataRepresentationTemplate())
-    typeOfValues: templates.Grib2Metadata = field(init=False,repr=False,default=templates.TypeOfValues())
+    numberOfPackedValues: int = field(init=False, repr=False, default=templates.NumberOfPackedValues())
+    dataRepresentationTemplateNumber: templates.Grib2Metadata = field(init=False, repr=False, default=templates.DataRepresentationTemplateNumber())
+    dataRepresentationTemplate: list = field(init=False, repr=False, default=templates.DataRepresentationTemplate())
+    typeOfValues: templates.Grib2Metadata = field(init=False, repr=False, default=templates.TypeOfValues())
 
     def __copy__(self):
         """Shallow copy"""
@@ -1087,25 +1061,25 @@ class _Grib2Message:
         self._signature = self._generate_signature()
         try:
             self._sha1_section3 = hashlib.sha1(self.section3).hexdigest()
-        except(TypeError):
+        except TypeError:
             pass
-        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag,table='6.0')
+        self.bitMapFlag = templates.Grib2Metadata(self.bitMapFlag, table="6.0")
         self.bitmap = None
 
     @property
     def _isNDFD(self):
         """Check if GRIB2 message is from NWS NDFD"""
-        return np.all(self.section1[0:2]==[8,65535])
+        return np.all(self.section1[0:2] == [8, 65535])
 
     @property
     def _isAerosol(self):
         """Check if GRIB2 message contains aerosol data"""
         is_aero_template = self.productDefinitionTemplateNumber.value in tables.AEROSOL_PDTNS
-        is_aero_param = ((str(self.parameterCategory) == '13') |
-                     (str(self.parameterCategory) == '20')) and str(self.parameterNumber) in tables.AEROSOL_PARAMS
+        is_aero_param = ((str(self.parameterCategory) == "13") | (str(self.parameterCategory) == "20")) and str(
+            self.parameterNumber
+        ) in tables.AEROSOL_PARAMS
         # Check table 4.205 aerosol presence
-        is_aero_type = (str(self.parameterCategory) == '205' and
-                        str(self.parameterNumber) == '1')
+        is_aero_type = str(self.parameterCategory) == "205" and str(self.parameterNumber) == "1"
         return is_aero_template or is_aero_param or is_aero_type
 
     @property
@@ -1113,54 +1087,45 @@ class _Grib2Message:
         """Return Grid Definition Template Number"""
         return self.section3[4]
 
-
     @property
     def gdt(self):
         """Return Grid Definition Template."""
         return self.gridDefinitionTemplate
-
 
     @property
     def pdtn(self):
         """Return Product Definition Template Number."""
         return self.section4[1]
 
-
     @property
     def pdt(self):
         """Return Product Definition Template."""
         return self.productDefinitionTemplate
-
 
     @property
     def drtn(self):
         """Return Data Representation Template Number."""
         return self.section5[1]
 
-
     @property
     def drt(self):
         """Return Data Representation Template."""
         return self.dataRepresentationTemplate
 
-
     @property
     def pdy(self):
         """Return the PDY ('YYYYMMDD')."""
-        return ''.join([str(i) for i in self.section1[5:8]])
-
+        return "".join([str(i) for i in self.section1[5:8]])
 
     @property
     def griddef(self):
         """Return a Grib2GridDef instance for a GRIB2 message."""
         return Grib2GridDef.from_section3(self.section3)
 
-
     @property
     def lats(self):
         """Return grid latitudes."""
         return self.latlons()[0]
-
 
     @property
     def lons(self):
@@ -1172,30 +1137,25 @@ class _Grib2Message:
         """Return minimum value of data."""
         return np.nanmin(self.data)
 
-
     @property
     def max(self):
         """Return maximum value of data."""
         return np.nanmax(self.data)
-
 
     @property
     def mean(self):
         """Return mean value of data."""
         return np.nanmean(self.data)
 
-
     @property
     def median(self):
         """Return median value of data."""
         return np.nanmedian(self.data)
 
-
     @property
     def shape(self):
         """Return shape of data."""
         return self.griddef.shape
-
 
     def __repr__(self):
         """
@@ -1207,10 +1167,10 @@ class _Grib2Message:
             A string representation of the object, including information from
             sections 0, 1, 3, 4, 5, and 6.
         """
-        info = ''
-        for sect in [0,1,3,4,5,6]:
-            for k,v in self.attrs_by_section(sect,values=True).items():
-                info += f'Section {sect}: {k} = {v}\n'
+        info = ""
+        for sect in [0, 1, 3, 4, 5, 6]:
+            for k, v in self.attrs_by_section(sect, values=True).items():
+                info += f"Section {sect}: {k} = {v}\n"
         return info
 
     def __str__(self):
@@ -1223,19 +1183,13 @@ class _Grib2Message:
             A formatted string representation of the object, including
             selected attributes.
         """
-        return (f'{self._msgnum}:d={self.refDate}:{self.shortName}:'
-                f'{self.fullName} ({self.units}):{self.level}:'
-                f'{self.leadTime}')
-
+        return f"{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName} ({self.units}):{self.level}:{self.leadTime}"
 
     def _generate_signature(self):
         """Generature SHA-1 hash string from GRIB2 integer sections."""
-        return hashlib.sha1(np.concatenate((self.section0,self.section1,
-                                            self.section3,self.section4,
-                                            self.section5))).hexdigest()
+        return hashlib.sha1(np.concatenate((self.section0, self.section1, self.section3, self.section4, self.section5))).hexdigest()
 
-
-    def attrs_by_section(self, sect: int, values: bool=False):
+    def attrs_by_section(self, sect: int, values: bool = False):
         """
         Provide a tuple of attribute names for the given GRIB2 section.
 
@@ -1252,29 +1206,28 @@ class _Grib2Message:
             A list of attribute names or dict of name:value pairs if `values =
             True`.
         """
-        if sect in {0,1,6}:
+        if sect in {0, 1, 6}:
             attrs = templates._section_attrs[sect]
-        elif sect in {3,4,5}:
+        elif sect in {3, 4, 5}:
+
             def _find_class_index(n):
-                _key = {3:'Grid', 4:'Product', 5:'Data'}
-                for i,c in enumerate(self.__class__.__mro__):
+                _key = {3: "Grid", 4: "Product", 5: "Data"}
+                for i, c in enumerate(self.__class__.__mro__):
                     if _key[n] in c.__name__:
                         return i
                 else:
                     return []
+
             if sys.version_info.minor <= 8:
-                attrs = templates._section_attrs[sect]+\
-                        [a for a in dir(self.__class__.__mro__[_find_class_index(sect)]) if not a.startswith('_')]
+                attrs = templates._section_attrs[sect] + [a for a in dir(self.__class__.__mro__[_find_class_index(sect)]) if not a.startswith("_")]
             else:
-                attrs = templates._section_attrs[sect]+\
-                        self.__class__.__mro__[_find_class_index(sect)]._attrs()
+                attrs = templates._section_attrs[sect] + self.__class__.__mro__[_find_class_index(sect)]._attrs()
         else:
             attrs = []
         if values:
-            return {k:getattr(self,k) for k in attrs}
+            return {k: getattr(self, k) for k in attrs}
         else:
             return attrs
-
 
     def copy(self, deep: bool = True):
         """Returns a copy of this Grib2Message.
@@ -1299,7 +1252,6 @@ class _Grib2Message:
         """
         return copy.deepcopy(self) if deep else copy.copy(self)
 
-
     def pack(self):
         """
         Pack GRIB2 section data into a binary message.
@@ -1309,19 +1261,17 @@ class _Grib2Message:
         """
         # Create beginning of packed binary message with section 0 and 1 data.
         self._sections = []
-        self._msg,self._pos = g2clib.grib2_create(self.indicatorSection[2:4],self.identificationSection)
-        self._sections += [0,1]
+        self._msg, self._pos = g2clib.grib2_create(self.indicatorSection[2:4], self.identificationSection)
+        self._sections += [0, 1]
 
         # Add section 2 if present.
-        if isinstance(self.section2,bytes) and len(self.section2) > 0:
-            self._msg,self._pos = g2clib.grib2_addlocal(self._msg,self.section2)
+        if isinstance(self.section2, bytes) and len(self.section2) > 0:
+            self._msg, self._pos = g2clib.grib2_addlocal(self._msg, self.section2)
             self._sections.append(2)
 
         # Add section 3.
         self.section3[1] = self.nx * self.ny
-        self._msg,self._pos = g2clib.grib2_addgrid(self._msg,self.gridDefinitionSection,
-                                                   self.gridDefinitionTemplate,
-                                                   self._deflist)
+        self._msg, self._pos = g2clib.grib2_addgrid(self._msg, self.gridDefinitionSection, self.gridDefinitionTemplate, self._deflist)
         self._sections.append(3)
 
         # Prepare data.
@@ -1331,9 +1281,9 @@ class _Grib2Message:
         field = np.copy(self.data)
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
-                fieldsave = field.astype('f') # Casting makes a copy
-                field[1::2,:] = fieldsave[1::2,::-1]
-        fld = field.astype('f')
+                fieldsave = field.astype("f")  # Casting makes a copy
+                field[1::2, :] = fieldsave[1::2, ::-1]
+        fld = field.astype("f")
 
         # Prepare bitmap, if necessary
         bitmapflag = self.bitMapFlag.value
@@ -1341,33 +1291,28 @@ class _Grib2Message:
             if self.bitmap is not None:
                 bmap = np.ravel(self.bitmap).astype(DEFAULT_NUMPY_INT)
             else:
-                bmap = np.ravel(np.where(np.isnan(fld),0,1)).astype(DEFAULT_NUMPY_INT)
+                bmap = np.ravel(np.where(np.isnan(fld), 0, 1)).astype(DEFAULT_NUMPY_INT)
         else:
             bmap = None
 
         # Prepare data for packing if nans are present
         fld = np.ravel(fld)
-        if bitmapflag in {0,254}:
-            fld = np.where(np.isnan(fld),0,fld)
+        if bitmapflag in {0, 254}:
+            fld = np.where(np.isnan(fld), 0, fld)
         else:
             if np.isnan(fld).any():
-                if hasattr(self,'priMissingValue'):
-                    fld = np.where(np.isnan(fld),self.priMissingValue,fld)
-            if hasattr(self,'_missvalmap'):
-                if hasattr(self,'priMissingValue'):
-                    fld = np.where(self._missvalmap==1,self.priMissingValue,fld)
-                if hasattr(self,'secMissingValue'):
-                    fld = np.where(self._missvalmap==2,self.secMissingValue,fld)
+                if hasattr(self, "priMissingValue"):
+                    fld = np.where(np.isnan(fld), self.priMissingValue, fld)
+            if hasattr(self, "_missvalmap"):
+                if hasattr(self, "priMissingValue"):
+                    fld = np.where(self._missvalmap == 1, self.priMissingValue, fld)
+                if hasattr(self, "secMissingValue"):
+                    fld = np.where(self._missvalmap == 2, self.secMissingValue, fld)
 
         # Add sections 4, 5, 6, and 7.
-        self._msg,self._pos = g2clib.grib2_addfield(self._msg,self.pdtn,
-                                                    self.productDefinitionTemplate,
-                                                    self._coordlist,
-                                                    self.drtn,
-                                                    self.dataRepresentationTemplate,
-                                                    fld,
-                                                    bitmapflag,
-                                                    bmap)
+        self._msg, self._pos = g2clib.grib2_addfield(
+            self._msg, self.pdtn, self.productDefinitionTemplate, self._coordlist, self.drtn, self.dataRepresentationTemplate, fld, bitmapflag, bmap
+        )
         self._sections.append(4)
         self._sections.append(5)
         self._sections.append(6)
@@ -1378,7 +1323,6 @@ class _Grib2Message:
         self._sections.append(8)
         self.section0[-1] = len(self._msg)
 
-
     @property
     def data(self) -> np.array:
         """Access the unpacked data values."""
@@ -1387,7 +1331,6 @@ class _Grib2Message:
                 self._data = self._ondiskarray
             self._data = np.asarray(self._ondiskarray)
         return self._data
-
 
     @data.setter
     def data(self, arr):
@@ -1412,20 +1355,16 @@ class _Grib2Message:
             If the shape of `arr` does not match the expected dimensions.
         """
         if not isinstance(arr, np.ndarray):
-            raise ValueError(f"Grib2Message data only supports numpy arrays")
+            raise ValueError("Grib2Message data only supports numpy arrays")
         if self.nx == 0 and self.ny == 0:
             self.ny = arr.shape[0]
             self.nx = arr.shape[1]
         if arr.shape != (self.ny, self.nx):
-            raise ValueError(
-                f"Data shape mismatch: expected ({self.ny}, {self.nx}), "
-                f"got {arr.shape}"
-            )
+            raise ValueError(f"Data shape mismatch: expected ({self.ny}, {self.nx}), got {arr.shape}")
         # Ensure contiguous memory layout (important for C interoperability)
         if not arr.flags["C_CONTIGUOUS"]:
             arr = np.ascontiguousarray(arr, dtype=np.float32)
         self._data = arr
-
 
     def flush_data(self):
         """
@@ -1440,21 +1379,17 @@ class _Grib2Message:
         self._data = None
         self.bitmap = None
 
-
     def __getitem__(self, item):
         return self.data[item]
 
-
     def __setitem__(self, item):
-        raise NotImplementedError('assignment of data not supported via setitem')
-
+        raise NotImplementedError("assignment of data not supported via setitem")
 
     def latlons(self, *args, **kwrgs):
         """Alias for `grib2io.Grib2Message.grid` method."""
         return self.grid(*args, **kwrgs)
 
-
-    def grid(self, unrotate: bool=True):
+    def grid(self, unrotate: bool = True):
         """
         Return lats,lons (in degrees) of grid.
 
@@ -1475,99 +1410,98 @@ class _Grib2Message:
             latitudes and longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
-            return (_latlon_datastore[self._sha1_section3]['latitude'],
-                    _latlon_datastore[self._sha1_section3]['longitude'])
+            return (_latlon_datastore[self._sha1_section3]["latitude"], _latlon_datastore[self._sha1_section3]["longitude"])
         gdtn = self.gridDefinitionTemplateNumber.value
-        gdtmpl = self.gridDefinitionTemplate
-        reggrid = self.gridDefinitionSection[2] == 0 # This means regular 2-d grid
+        reggrid = self.gridDefinitionSection[2] == 0  # This means regular 2-d grid
         if gdtn == 0:
             # Regular lat/lon grid
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             dlon = self.gridlengthXDirection
-            dlat = self.gridlengthYDirection
-            if lon2 < lon1 and dlon < 0: lon1 = -lon1
-            lats = np.linspace(lat1,lat2,self.ny)
+            if lon2 < lon1 and dlon < 0:
+                lon1 = -lon1
+            lats = np.linspace(lat1, lat2, self.ny)
             if reggrid:
-                lons = np.linspace(lon1,lon2,self.nx)
+                lons = np.linspace(lon1, lon2, self.nx)
             else:
-                lons = np.linspace(lon1,lon2,self.ny*2)
-            lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
-        elif gdtn == 1: # Rotated Lat/Lon grid
+                lons = np.linspace(lon1, lon2, self.ny * 2)
+            lons, lats = np.meshgrid(lons, lats)  # Make 2-d arrays.
+        elif gdtn == 1:  # Rotated Lat/Lon grid
             pj = pyproj.Proj(self.projParameters)
-            lat1,lon1 = self.latitudeFirstGridpoint,self.longitudeFirstGridpoint
-            lat2,lon2 = self.latitudeLastGridpoint,self.longitudeLastGridpoint
-            if lon1 > 180.0: lon1 -= 360.0
-            if lon2 > 180.0: lon2 -= 360.0
-            lats = np.linspace(lat1,lat2,self.ny)
-            lons = np.linspace(lon1,lon2,self.nx)
-            lons,lats = np.meshgrid(lons,lats) # Make 2-d arrays.
+            lat1, lon1 = self.latitudeFirstGridpoint, self.longitudeFirstGridpoint
+            lat2, lon2 = self.latitudeLastGridpoint, self.longitudeLastGridpoint
+            if lon1 > 180.0:
+                lon1 -= 360.0
+            if lon2 > 180.0:
+                lon2 -= 360.0
+            lats = np.linspace(lat1, lat2, self.ny)
+            lons = np.linspace(lon1, lon2, self.nx)
+            lons, lats = np.meshgrid(lons, lats)  # Make 2-d arrays.
             if unrotate:
                 from grib2io.utils import rotated_grid
-                lats,lons = rotated_grid.unrotate(lats,lons,self.anglePoleRotation,
-                                                  self.latitudeSouthernPole,
-                                                  self.longitudeSouthernPole)
-        elif gdtn == 40: # Gaussian grid (only works for global!)
+
+                lats, lons = rotated_grid.unrotate(lats, lons, self.anglePoleRotation, self.latitudeSouthernPole, self.longitudeSouthernPole)
+        elif gdtn == 40:  # Gaussian grid (only works for global!)
             from grib2io.utils.gauss_grid import gaussian_latitudes
+
             lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             lon2, lat2 = self.longitudeLastGridpoint, self.latitudeLastGridpoint
             nlats = self.ny
-            if not reggrid: # Reduced Gaussian grid.
-                nlons = 2*nlats
-                dlon = 360./nlons
+            if not reggrid:  # Reduced Gaussian grid.
+                nlons = 2 * nlats
+                dlon = 360.0 / nlons
             else:
                 nlons = self.nx
                 dlon = self.gridlengthXDirection
-            lons = np.linspace(lon1,lon2,nlons)
+            lons = np.linspace(lon1, lon2, nlons)
             # Compute Gaussian lats (north to south)
             lats = gaussian_latitudes(nlats)
             if lat1 < lat2:  # reverse them if necessary
                 lats = lats[::-1]
-            lons,lats = np.meshgrid(lons,lats)
-        elif gdtn in {10,20,30,31,110}:
+            lons, lats = np.meshgrid(lons, lats)
+        elif gdtn in {10, 20, 30, 31, 110}:
             # Mercator, Lambert Conformal, Stereographic, Albers Equal Area,
             # Azimuthal Equidistant
-            dx,dy = self.gridlengthXDirection, self.gridlengthYDirection
-            lon1,lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
+            dx, dy = self.gridlengthXDirection, self.gridlengthYDirection
+            lon1, lat1 = self.longitudeFirstGridpoint, self.latitudeFirstGridpoint
             pj = pyproj.Proj(self.projParameters)
-            llcrnrx, llcrnry = pj(lon1,lat1)
-            x = llcrnrx+dx*np.arange(self.nx)
-            y = llcrnry+dy*np.arange(self.ny)
-            x,y = np.meshgrid(x, y)
-            lons,lats = pj(x, y, inverse=True)
+            llcrnrx, llcrnry = pj(lon1, lat1)
+            x = llcrnrx + dx * np.arange(self.nx)
+            y = llcrnry + dy * np.arange(self.ny)
+            x, y = np.meshgrid(x, y)
+            lons, lats = pj(x, y, inverse=True)
         elif gdtn == 90:
             # Satellite Projection
             dx = self.gridlengthXDirection
             dy = self.gridlengthYDirection
             pj = pyproj.Proj(self.projParameters)
-            x = dx*np.indices((self.ny,self.nx),'f')[1,:,:]
-            x -= 0.5*x.max()
-            y = dy*np.indices((self.ny,self.nx),'f')[0,:,:]
-            y -= 0.5*y.max()
-            lons,lats = pj(x,y,inverse=True)
+            x = dx * np.indices((self.ny, self.nx), "f")[1, :, :]
+            x -= 0.5 * x.max()
+            y = dy * np.indices((self.ny, self.nx), "f")[0, :, :]
+            y -= 0.5 * y.max()
+            lons, lats = pj(x, y, inverse=True)
             # Set lons,lats to 1.e30 where undefined
             abslons = np.fabs(lons)
             abslats = np.fabs(lats)
-            lons = np.where(abslons < 1.e20, lons, 1.e30)
-            lats = np.where(abslats < 1.e20, lats, 1.e30)
+            lons = np.where(abslons < 1.0e20, lons, 1.0e30)
+            lats = np.where(abslats < 1.0e20, lats, 1.0e30)
         elif gdtn == 32769:
             # Special NCEP Grid, Rotated Lat/Lon, Arakawa E-Grid (Non-Staggered)
             from grib2io.utils import arakawa_rotated_grid
-            from grib2io.utils.rotated_grid import DEG2RAD
+
             di, dj = 0.0, 0.0
             do_180 = False
             idir = 1 if self.scanModeFlags[0] == 0 else -1
             jdir = -1 if self.scanModeFlags[1] == 0 else 1
-            grid_oriented = 0 if self.resolutionAndComponentFlags[4] == 0 else 1
-            do_rot = 1 if grid_oriented == 1 else 0
+            0 if self.resolutionAndComponentFlags[4] == 0 else 1
             la1 = self.latitudeFirstGridpoint
             lo1 = self.longitudeFirstGridpoint
             clon = self.longitudeCenterGridpoint
             clat = self.latitudeCenterGridpoint
             lasp = clat - 90.0
             losp = clon
-            llat, llon = arakawa_rotated_grid.ll2rot(la1,lo1,lasp,losp)
-            la2, lo2 = arakawa_rotated_grid.rot2ll(-llat,-llon,lasp,losp)
+            llat, llon = arakawa_rotated_grid.ll2rot(la1, lo1, lasp, losp)
+            la2, lo2 = arakawa_rotated_grid.rot2ll(-llat, -llon, lasp, losp)
             rlat = -llat
             rlon = -llon
             if self.nx == 1:
@@ -1576,16 +1510,16 @@ class _Grib2Message:
                 ti = rlon
                 while ti < llon:
                     ti += 360.0
-                di = (ti - llon)/float(self.nx-1)
+                di = (ti - llon) / float(self.nx - 1)
             else:
                 ti = llon
                 while ti < rlon:
                     ti += 360.0
-                di = (ti - rlon)/float(self.nx-1)
+                di = (ti - rlon) / float(self.nx - 1)
             if self.ny == 1:
-               dj = 0.0
+                dj = 0.0
             else:
-                dj = (rlat - llat)/float(self.ny-1)
+                dj = (rlat - llat) / float(self.ny - 1)
                 if dj < 0.0:
                     dj = -dj
             if idir == 1:
@@ -1598,27 +1532,26 @@ class _Grib2Message:
                     rlon -= 360.0
                 if rlon < 0 and llon > 0:
                     do_180 = True
-            xlat1d = llat + (np.arange(self.ny)*jdir*dj)
-            xlon1d = llon + (np.arange(self.nx)*idir*di)
-            xlons, xlats = np.meshgrid(xlon1d,xlat1d)
+            xlat1d = llat + (np.arange(self.ny) * jdir * dj)
+            xlon1d = llon + (np.arange(self.nx) * idir * di)
+            xlons, xlats = np.meshgrid(xlon1d, xlat1d)
             rot2ll_vectorized = np.vectorize(arakawa_rotated_grid.rot2ll)
-            lats, lons = rot2ll_vectorized(xlats,xlons,lasp,losp)
+            lats, lons = rot2ll_vectorized(xlats, xlons, lasp, losp)
             if do_180:
-                lons = np.where(lons>180.0,lons-360.0,lons)
+                lons = np.where(lons > 180.0, lons - 360.0, lons)
             vector_rotation_angles_vectorized = np.vectorize(arakawa_rotated_grid.vector_rotation_angles)
             rots = vector_rotation_angles_vectorized(lats, lons, clat, losp, xlats)
             del xlat1d, xlon1d, xlats, xlons
         else:
-            raise ValueError('Unsupported grid')
+            raise ValueError("Unsupported grid")
 
-        _latlon_datastore[self._sha1_section3] = dict(latitude=lats,longitude=lons)
+        _latlon_datastore[self._sha1_section3] = {"latitude": lats, "longitude": lons}
         try:
-            _latlon_datastore[self._sha1_section3]['vector_rotation_angles'] = rots
-        except(NameError):
+            _latlon_datastore[self._sha1_section3]["vector_rotation_angles"] = rots
+        except NameError:
             pass
 
         return lats, lons
-
 
     def map_keys(self):
         """
@@ -1637,28 +1570,25 @@ class _Grib2Message:
         hold_auto_nans = _AUTO_NANS
         set_auto_nans(False)
 
-        if (np.all(self.section1[0:2] == [7, 14]) and self.shortName == "PWTHER") or (
-            self._isNDFD and self.shortName in {"WX", "WWA"}
-        ):
+        if (np.all(self.section1[0:2] == [7, 14]) and self.shortName == "PWTHER") or (self._isNDFD and self.shortName in {"WX", "WWA"}):
             keys = utils.decode_wx_strings(self.section2)
-            if hasattr(self,'priMissingValue') and self.priMissingValue not in [None,0]:
-                keys[int(self.priMissingValue)] = 'Missing'
-            if hasattr(self,'secMissingValue') and self.secMissingValue not in [None,0]:
-                keys[int(self.secMissingValue)] = 'Missing'
-            u,inv = np.unique(self.data,return_inverse=True)
+            if hasattr(self, "priMissingValue") and self.priMissingValue not in [None, 0]:
+                keys[int(self.priMissingValue)] = "Missing"
+            if hasattr(self, "secMissingValue") and self.secMissingValue not in [None, 0]:
+                keys[int(self.secMissingValue)] = "Missing"
+            u, inv = np.unique(self.data, return_inverse=True)
             fld = np.array([keys[x] for x in u])[inv].reshape(self.data.shape)
         else:
             # For data whose units are defined in a code table (i.e. classification or mask)
-            tblname = re.findall(r'\d\.\d+',self.units,re.IGNORECASE)[0]
+            tblname = re.findall(r"\d\.\d+", self.units, re.IGNORECASE)[0]
             fld = self.data.astype(np.int32).astype(str)
-            tbl = tables.get_table(tblname,expand=True)
+            tbl = tables.get_table(tblname, expand=True)
             for val in np.unique(fld):
-                fld = np.where(fld==val,tbl[val],fld)
+                fld = np.where(fld == val, tbl[val], fld)
         set_auto_nans(hold_auto_nans)
         return fld
 
-
-    def to_bytes(self, validate: bool=True):
+    def to_bytes(self, validate: bool = True):
         """
         Return packed GRIB2 message in bytes format.
 
@@ -1677,7 +1607,7 @@ class _Grib2Message:
         to_bytes
             Returns GRIB2 formatted message as bytes.
         """
-        if hasattr(self,'_msg'):
+        if hasattr(self, "_msg"):
             if validate:
                 if self.validate():
                     return self._msg
@@ -1688,9 +1618,7 @@ class _Grib2Message:
         else:
             return None
 
-
-    def interpolate(self, method, grid_def_out, method_options=None, drtn=None,
-                    num_threads=1):
+    def interpolate(self, method, grid_def_out, method_options=None, drtn=None, num_threads=1):
         """
         Grib2Message Interpolator
 
@@ -1746,26 +1674,23 @@ class _Grib2Message:
         section0 = self.section0
         section0[-1] = 0
         gds = [0, grid_def_out.npoints, 0, 255, grid_def_out.gdtn]
-        section3 = np.concatenate((gds,grid_def_out.gdt))
+        section3 = np.concatenate((gds, grid_def_out.gdt))
         drtn = self.drtn if drtn is None else drtn
 
-        msg = Grib2Message(section0,self.section1,self.section2,section3,
-                           self.section4,None,self.bitMapFlag.value,drtn=drtn)
+        msg = Grib2Message(section0, self.section1, self.section2, section3, self.section4, None, self.bitMapFlag.value, drtn=drtn)
 
         msg._msgnum = -1
         msg._deflist = self._deflist
         msg._coordlist = self._coordlist
-        shape = (msg.ny,msg.nx)
-        ndim = 2
         if msg.typeOfValues == 0:
-            dtype = 'float32'
+            pass
         elif msg.typeOfValues == 1:
-            dtype = 'int32'
-        msg._data = interpolate(self.data,method,Grib2GridDef.from_section3(self.section3),grid_def_out,
-                                method_options=method_options,num_threads=num_threads).reshape(msg.ny,msg.nx)
+            pass
+        msg._data = interpolate(
+            self.data, method, Grib2GridDef.from_section3(self.section3), grid_def_out, method_options=method_options, num_threads=num_threads
+        ).reshape(msg.ny, msg.nx)
         msg.section5[0] = grid_def_out.npoints
         return msg
-
 
     def subset(self, lats, lons):
         """
@@ -1871,26 +1796,21 @@ Subset only works for regular grids.
         max_idx = np.maximum(last_lat, last_lon)
         last_j, last_i = np.where(max_idx == np.min(max_idx))
 
-        setattr(newmsg, "latitudeFirstGridpoint", msglats[first_j[0], first_i[0]])
-        setattr(newmsg, "longitudeFirstGridpoint", msglons[first_j[0], first_i[0]])
-        setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
-        setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
+        newmsg.latitudeFirstGridpoint = msglats[first_j[0], first_i[0]]
+        newmsg.longitudeFirstGridpoint = msglons[first_j[0], first_i[0]]
+        newmsg.nx = np.abs(first_i[0] - last_i[0])
+        newmsg.ny = np.abs(first_j[0] - last_j[0])
 
         # Set *LastGridpoint attributes even if only used for gdtn=[0, 1, 40].
         # This information is used to subset xarray datasets and even though
         # unnecessary for some supported grid types, it won't affect a grib2io
         # message to set them.
-        setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
-        setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
+        newmsg.latitudeLastGridpoint = msglats[last_j[0], last_i[0]]
+        newmsg.longitudeLastGridpoint = msglons[last_j[0], last_i[0]]
 
-        setattr(
-            newmsg,
-            "data",
-            self.data[
-                min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]),
-                min(first_i[0], last_i[0]) : max(first_i[0], last_i[0]),
-            ].copy(),
-        )
+        newmsg.data = self.data[
+            min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]), min(first_i[0], last_i[0]) : max(first_i[0], last_i[0])
+        ].copy()
 
         # Need to set the newmsg._sha1_section3 to a blank string so the grid
         # method ignores the cached lat/lon values.  This will force the grid
@@ -1914,8 +1834,8 @@ Subset only works for regular grids.
         `True` if the packed GRIB2 message is complete and well-formed, `False` otherwise.
         """
         valid = False
-        if hasattr(self,'_msg'):
-            if self._msg[0:4]+self._msg[-4:] == b'GRIB7777':
+        if hasattr(self, "_msg"):
+            if self._msg[0:4] + self._msg[-4:] == b"GRIB7777":
                 if self.section0[-1] == len(self._msg):
                     valid = True
         return valid
@@ -1933,7 +1853,7 @@ class Grib2MessageOnDiskArray:
     data_offset: int
 
     def __array__(self, dtype=None):
-        return np.asarray(_data(self.filehandle, self.msg, self.bitmap_offset, self.data_offset),dtype=dtype)
+        return np.asarray(_data(self.filehandle, self.msg, self.bitmap_offset, self.data_offset), dtype=dtype)
 
 
 def _data(
@@ -1941,7 +1861,7 @@ def _data(
     msg: Grib2Message,
     bitmap_offset: Optional[int],
     data_offset: int,
-)-> np.array:
+) -> np.array:
     """
     Returns an unpacked data grid.
 
@@ -1973,8 +1893,8 @@ def _data(
     if msg._auto_nans:
         fill_value = np.nan
     else:
-        if hasattr(msg,'typeOfMissingValueManagement'):
-            fill_value = msg.priMissingValue if hasattr(msg,'priMissingValue') else np.nan
+        if hasattr(msg, "typeOfMissingValueManagement"):
+            fill_value = msg.priMissingValue if hasattr(msg, "priMissingValue") else np.nan
         else:
             fill_value = np.nan
 
@@ -1982,65 +1902,66 @@ def _data(
     if bitmap_offset is not None:
         # Position file pointer to the beginning of bitmap section.
         filehandle.seek(bitmap_offset)
-        bmap_size,num = struct.unpack('>IB',filehandle.read(5))
-        filehandle.seek(filehandle.tell()-5)
+        bmap_size, num = struct.unpack(">IB", filehandle.read(5))
+        filehandle.seek(filehandle.tell() - 5)
         ipos = 0
         bmapflag, bmap, ipos = g2clib.unpack6(filehandle.read(bmap_size), msg.section3[1])
         if bmap is not None:
-            msg.bitmap = bmap.reshape((ny,nx)).astype(np.int8)
+            msg.bitmap = bmap.reshape((ny, nx)).astype(np.int8)
 
-    if hasattr(msg,'scanModeFlags'):
+    if hasattr(msg, "scanModeFlags"):
         scanModeFlags = msg.scanModeFlags
-        storageorder = 'F' if scanModeFlags[2] else 'C'
+        storageorder = "F" if scanModeFlags[2] else "C"
 
     # Position file pointer to the beginning of data section.
     filehandle.seek(data_offset)
-    data_size,secnum = struct.unpack('>IB',filehandle.read(5))
+    data_size, secnum = struct.unpack(">IB", filehandle.read(5))
     assert secnum == 7
-    filehandle.seek(filehandle.tell()-5)
+    filehandle.seek(filehandle.tell() - 5)
     ipos = 0
     npvals = msg.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1, ipos = g2clib.unpack7(filehandle.read(data_size),msg.gdtn,gdt,msg.drtn,drt,npvals,
-                                storageorder=storageorder)
+    fld1, ipos = g2clib.unpack7(filehandle.read(data_size), msg.gdtn, gdt, msg.drtn, drt, npvals, storageorder=storageorder)
 
     # Handle the missing values
-    if msg.bitMapFlag in {0,254}:
+    if msg.bitMapFlag in {0, 254}:
         # Bitmap
-        fill_value = np.nan # If bitmap, use nans
-        fld = np.full((ngrdpts),fill_value,dtype=np.float32)
-        np.put(fld,np.nonzero(bmap),fld1)
+        fill_value = np.nan  # If bitmap, use nans
+        fld = np.full((ngrdpts), fill_value, dtype=np.float32)
+        np.put(fld, np.nonzero(bmap), fld1)
     else:
         # No bitmap, check missing values
-        if hasattr(msg,'typeOfMissingValueManagement'):
-            if msg.typeOfMissingValueManagement in {1,2}:
-                msg._missvalmap = np.zeros(fld1.shape,dtype=np.int8)
-                if hasattr(msg,'priMissingValue') and msg.priMissingValue is not None:
-                    if msg._auto_nans: fill_value = np.nan
-                    msg._missvalmap = np.where(fld1==msg.priMissingValue,1,msg._missvalmap)
-                    fld1 = np.where(msg._missvalmap==1,fill_value,fld1)
+        if hasattr(msg, "typeOfMissingValueManagement"):
+            if msg.typeOfMissingValueManagement in {1, 2}:
+                msg._missvalmap = np.zeros(fld1.shape, dtype=np.int8)
+                if hasattr(msg, "priMissingValue") and msg.priMissingValue is not None:
+                    if msg._auto_nans:
+                        fill_value = np.nan
+                    msg._missvalmap = np.where(fld1 == msg.priMissingValue, 1, msg._missvalmap)
+                    fld1 = np.where(msg._missvalmap == 1, fill_value, fld1)
             if msg.typeOfMissingValueManagement == 2:
-                if hasattr(msg,'secMissingValue') and msg.secMissingValue is not None:
-                    if msg._auto_nans: fill_value = np.nan
-                    msg._missvalmap = np.where(fld1==msg.secMissingValue,2,msg._missvalmap)
-                    fld1 = np.where(msg._missvalmap==2,fill_value,fld1)
+                if hasattr(msg, "secMissingValue") and msg.secMissingValue is not None:
+                    if msg._auto_nans:
+                        fill_value = np.nan
+                    msg._missvalmap = np.where(fld1 == msg.secMissingValue, 2, msg._missvalmap)
+                    fld1 = np.where(msg._missvalmap == 2, fill_value, fld1)
         fld = fld1
 
     # Check for reduced grid.
-    if gds[3] > 0 and gds[4] in {0,40} and msg._deflist.shape[0] > 0:
+    if gds[3] > 0 and gds[4] in {0, 40} and msg._deflist.shape[0] > 0:
         from . import redtoreg
-        nx = 2*ny
+
+        nx = 2 * ny
         lonsperlat = msg._deflist
-        fld = redtoreg._redtoreg(nx,lonsperlat.astype(np.int64),
-                                 fld.astype(np.float64),fill_value)
+        fld = redtoreg._redtoreg(nx, lonsperlat.astype(np.int64), fld.astype(np.float64), fill_value)
     else:
-        fld = np.reshape(fld,(ny,nx))
+        fld = np.reshape(fld, (ny, nx))
 
     # Check scan modes for rect grids.
     if nx is not None and ny is not None:
         if scanModeFlags[3]:
-            fldsave = fld.astype(np.float32) # casting makes a copy
-            fld[1::2,:] = fldsave[1::2,::-1]
+            fldsave = fld.astype(np.float32)  # casting makes a copy
+            fld[1::2, :] = fldsave[1::2, ::-1]
 
     # Default data type is np.float32. Convert to np.int32 according GRIB2
     # metadata attribute typeOfValues.
@@ -2063,13 +1984,14 @@ def set_auto_nans(value: bool):
         setting.
     """
     global _AUTO_NANS
-    if isinstance(value,bool):
+    if isinstance(value, bool):
         _AUTO_NANS = value
     else:
-        raise TypeError(f"Argument must be bool")
+        raise TypeError("Argument must be bool")
 
 
-def interpolate(a,
+def interpolate(
+    a,
     method: Union[int, str],
     grid_def_in,
     grid_def_out,
@@ -2137,22 +2059,22 @@ def interpolate(a,
     try:
         prev_num_threads = iplib.openmp_get_num_threads()
         iplib.openmp_set_num_threads(num_threads)
-    except(AttributeError):
+    except AttributeError:
         pass
 
     print(f"grib2io.interpolate thread report: OpenMP num threads = {iplib.openmp_get_num_threads()}")
 
-    if isinstance(method,int) and method not in _interp_schemes.values():
-        raise ValueError('Invalid interpolation method.')
-    elif isinstance(method,str):
+    if isinstance(method, int) and method not in _interp_schemes.values():
+        raise ValueError("Invalid interpolation method.")
+    elif isinstance(method, str):
         if method in _interp_schemes.keys():
             method = _interp_schemes[method]
         else:
-            raise ValueError('Invalid interpolation method.')
+            raise ValueError("Invalid interpolation method.")
 
     if method_options is None:
-        method_options = np.zeros((20),dtype=np.int32)
-        if method in {3,6}:
+        method_options = np.zeros((20), dtype=np.int32)
+        if method in {3, 6}:
             method_options[0:2] = -1
 
     mi = grid_def_in.npoints
@@ -2162,15 +2084,15 @@ def interpolate(a,
     a, newshp = _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out)
 
     # Call interpolation subroutines according to type of a.
-    if isinstance(a,np.ndarray):
+    if isinstance(a, np.ndarray):
         # Scalar
         km = a.shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
-            li = np.where(np.isnan(a),0,1).astype(np.uint8)
+            li = np.where(np.isnan(a), 0, 1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
-            li = np.zeros(a.shape,dtype=np.uint8)
+            li = np.zeros(a.shape, dtype=np.uint8)
         no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
             method,
             method_options,
@@ -2185,16 +2107,16 @@ def interpolate(a,
             li,
             a,
         )
-        out = np.where(lo==0,np.nan,go).reshape(newshp)
-    elif isinstance(a,tuple):
+        out = np.where(lo == 0, np.nan, go).reshape(newshp)
+    elif isinstance(a, tuple):
         # Vector
         km = a[0].shape[0]
         if np.any(np.isnan(a)):
             ibi = np.ones((km), dtype=np.int32)
-            li = np.where(np.isnan(a),0,1).astype(np.uint8)
+            li = np.where(np.isnan(a), 0, 1).astype(np.uint8)
         else:
             ibi = np.zeros((km), dtype=np.int32)
-            li = np.zeros(a[0].shape,dtype=np.uint8)
+            li = np.zeros(a[0].shape, dtype=np.uint8)
         no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
             method,
             method_options,
@@ -2210,27 +2132,19 @@ def interpolate(a,
             a[0],
             a[1],
         )
-        uo = np.where(lo==0,np.nan,uo).reshape(newshp)
-        vo = np.where(lo==0,np.nan,vo).reshape(newshp)
-        out = (uo,vo)
+        uo = np.where(lo == 0, np.nan, uo).reshape(newshp)
+        vo = np.where(lo == 0, np.nan, vo).reshape(newshp)
+        out = (uo, vo)
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)
-    except(AttributeError):
+    except AttributeError:
         pass
 
     return out
 
 
-def interpolate_to_stations(
-    a,
-    method: Union[int, str],
-    grid_def_in,
-    lats,
-    lons,
-    method_options=None,
-    num_threads=1
-):
+def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons, method_options=None, num_threads=1):
     """
     Module-level interpolation function for interpolation to stations.
 
@@ -2295,7 +2209,7 @@ def interpolate_to_stations(
     def _reshape_and_mask_post_interp(a, shape, mask):
         a = a.reshape(shape)
         if a.shape[-1] != mask.shape[0]:
-            raise ValueError(f"Station mask length does not match interpolated data.")
+            raise ValueError("Station mask length does not match interpolated data.")
         a[..., mask] = np.nan
         return a
 
@@ -2303,37 +2217,37 @@ def interpolate_to_stations(
     try:
         prev_num_threads = iplib.openmp_get_num_threads()
         iplib.openmp_set_num_threads(num_threads)
-    except(AttributeError):
+    except AttributeError:
         pass
 
-    if isinstance(method,int) and method not in _interp_schemes.values():
-        raise ValueError('Invalid interpolation method.')
-    elif isinstance(method,str):
+    if isinstance(method, int) and method not in _interp_schemes.values():
+        raise ValueError("Invalid interpolation method.")
+    elif isinstance(method, str):
         if method in _interp_schemes.keys():
             method = _interp_schemes[method]
         else:
-            raise ValueError('Invalid interpolation method.')
+            raise ValueError("Invalid interpolation method.")
 
     if method_options is None:
-        method_options = np.zeros((20),dtype=np.int32)
-        if method in {3,6}:
+        method_options = np.zeros((20), dtype=np.int32)
+        if method in {3, 6}:
             method_options[0:2] = -1
 
     # Check lats and lons
-    if isinstance(lats,list):
+    if isinstance(lats, list):
         nlats = len(lats)
-    elif isinstance(lats,np.ndarray) and len(lats.shape) == 1:
+    elif isinstance(lats, np.ndarray) and len(lats.shape) == 1:
         nlats = lats.shape[0]
     else:
-        raise ValueError('Station latitudes must be a list or 1-D NumPy array.')
-    if isinstance(lons,list):
+        raise ValueError("Station latitudes must be a list or 1-D NumPy array.")
+    if isinstance(lons, list):
         nlons = len(lons)
-    elif isinstance(lons,np.ndarray) and len(lons.shape) == 1:
+    elif isinstance(lons, np.ndarray) and len(lons.shape) == 1:
         nlons = lons.shape[0]
     else:
-        raise ValueError('Station longitudes must be a list or 1-D NumPy array.')
+        raise ValueError("Station longitudes must be a list or 1-D NumPy array.")
     if nlats != nlons:
-        raise ValueError('Station lats and lons must be same size.')
+        raise ValueError("Station lats and lons must be same size.")
 
     mi = grid_def_in.npoints
     mo = nlats
@@ -2343,7 +2257,7 @@ def interpolate_to_stations(
 
     # Use gdtn = -1 for stations and an empty template array
     gdtn_out = -1
-    gdt_out = np.zeros((200),dtype=np.int32)
+    gdt_out = np.zeros((200), dtype=np.int32)
 
     # Before we interpolate, get the grid coordinates for stations.
     xloc, yloc = utils.latlon_to_ij(
@@ -2357,11 +2271,11 @@ def interpolate_to_stations(
     mask = xloc_mask & yloc_mask
 
     # Call interpolation subroutines according to type of a.
-    if isinstance(a,np.ndarray):
+    if isinstance(a, np.ndarray):
         # Scalar
         km = a.shape[0]
         ibi = np.zeros((km), dtype=np.int32)
-        li = np.zeros(a.shape,dtype=np.uint8)
+        li = np.zeros(a.shape, dtype=np.uint8)
         no, rlat, rlon, ibo, lo, go, iret = iplib.interpolate_scalar(
             method,
             method_options,
@@ -2380,11 +2294,11 @@ def interpolate_to_stations(
         )
         out = _reshape_and_mask_post_interp(go, newshp, mask)
 
-    elif isinstance(a,tuple):
+    elif isinstance(a, tuple):
         # Vector
         km = a[0].shape[0]
         ibi = np.zeros((km), dtype=np.int32)
-        li = np.zeros(a[0].shape,dtype=np.uint8)
+        li = np.zeros(a[0].shape, dtype=np.uint8)
         no, rlat, rlon, crot, srot, ibo, lo, uo, vo, iret = iplib.interpolate_vector(
             method,
             method_options,
@@ -2402,14 +2316,11 @@ def interpolate_to_stations(
             lats=np.array(lats, dtype=np.float32),
             lons=np.array(lons, dtype=np.float32),
         )
-        out = (
-            _reshape_and_mask_post_interp(uo, newshp, mask),
-            _reshape_and_mask_post_interp(vo, newshp, mask)
-        )
+        out = (_reshape_and_mask_post_interp(uo, newshp, mask), _reshape_and_mask_post_interp(vo, newshp, mask))
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)
-    except(AttributeError):
+    except AttributeError:
         pass
 
     return out
@@ -2424,12 +2335,13 @@ class Grib2GridDef:
     For example, the `grib2io._Grib2Message.interpolate` method and
     `grib2io.interpolate` function accepts these objects.
     """
+
     gdtn: int
     gdt: NDArray
 
     @classmethod
     def from_section3(cls, section3):
-        return cls(section3[4],section3[5:])
+        return cls(section3[4], section3[5:])
 
     @property
     def nx(self):
@@ -2453,9 +2365,7 @@ class Grib2GridDef:
 
     def to_section3(self):
         """Return a full GRIB2 section3 array."""
-        return np.array(
-            [0, self.npoints, 0, 0, self.gdtn] + list(self.gdt)
-        ).astype(np.int64)
+        return np.array([0, self.npoints, 0, 0, self.gdtn] + list(self.gdt)).astype(np.int64)
 
 
 def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
@@ -2488,30 +2398,29 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
     _adjust_array_shape_for_interp
         Returns a `tuple` of the adjusted array and the new shape.
     """
-    if isinstance(a,tuple):
-        a0,newshp = _adjust_array_shape_for_interp(a[0],grid_def_in,grid_def_out)
-        a1,newshp = _adjust_array_shape_for_interp(a[1],grid_def_in,grid_def_out)
-        return (a0,a1),newshp
+    if isinstance(a, tuple):
+        a0, newshp = _adjust_array_shape_for_interp(a[0], grid_def_in, grid_def_out)
+        a1, newshp = _adjust_array_shape_for_interp(a[1], grid_def_in, grid_def_out)
+        return (a0, a1), newshp
 
-    if isinstance(a,np.ndarray):
-
+    if isinstance(a, np.ndarray):
         # Change type if needed.
         if a.dtype != np.float32:
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = tuple([grid_def_out.ny,grid_def_out.nx])
-            a = np.expand_dims(a.flatten(),axis=0)
+            newshp = (grid_def_out.ny, grid_def_out.nx)
+            a = np.expand_dims(a.flatten(), axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = tuple([a.shape[0],grid_def_out.ny,grid_def_out.nx])
-            a = a.reshape(*a.shape[:-2],-1)
+            newshp = (a.shape[0], grid_def_out.ny, grid_def_out.nx)
+            a = a.reshape(*a.shape[:-2], -1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
 
     return a, newshp
 
 
-def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
+def _adjust_array_shape_for_interp_stations(a, grid_def_in, nstations):
     """
     Adjust shape of input data array for interpolation to stations.
 
@@ -2541,23 +2450,22 @@ def _adjust_array_shape_for_interp_stations(a,grid_def_in,nstations):
     _adjust_array_shape_for_interp
         Returns a `tuple` of the adjusted array and the new shape.
     """
-    if isinstance(a,tuple):
-        a0,newshp = _adjust_array_shape_for_interp_stations(a[0],grid_def_in,nstations)
-        a1,newshp = _adjust_array_shape_for_interp_stations(a[1],grid_def_in,nstations)
-        return (a0,a1),newshp
+    if isinstance(a, tuple):
+        a0, newshp = _adjust_array_shape_for_interp_stations(a[0], grid_def_in, nstations)
+        a1, newshp = _adjust_array_shape_for_interp_stations(a[1], grid_def_in, nstations)
+        return (a0, a1), newshp
 
-    if isinstance(a,np.ndarray):
-
+    if isinstance(a, np.ndarray):
         # Change type if needed.
         if a.dtype != np.float32:
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = tuple([nstations])
-            a = np.expand_dims(a.flatten(),axis=0)
+            newshp = (nstations,)
+            a = np.expand_dims(a.flatten(), axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = tuple([a.shape[0],nstations])
-            a = a.reshape(*a.shape[:-2],-1)
+            newshp = (a.shape[0], nstations)
+            a = a.reshape(*a.shape[:-2], -1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
 

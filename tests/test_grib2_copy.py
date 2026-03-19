@@ -1,14 +1,12 @@
 from numpy.testing import assert_array_equal
 
-import pytest
-import numpy as np
-import datetime
 import grib2io
 
+
 def test_grib2_shallow_copy(request):
-    data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'
-    g = grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset')
-    msg = g['TMAX'][0]
+    data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
+    g = grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset")
+    msg = g["TMAX"][0]
 
     # Create shallow copy
     newmsg = msg.copy(deep=False)
@@ -24,7 +22,7 @@ def test_grib2_shallow_copy(request):
     assert id(newmsg.section3) == id(msg.section3)
     assert id(newmsg.section4) == id(msg.section4)
 
-    # Test section5 ids 
+    # Test section5 ids
     assert id(newmsg.section5) != id(msg.section5)
 
     # Test dtrn is the same
@@ -43,12 +41,12 @@ def test_grib2_shallow_copy(request):
 
 
 def test_grib2_deep_copy(request):
-    data = request.config.rootdir / 'tests' / 'input_data' / 'gfs_20221107'
-    g = grib2io.open(data / 'gfs.t00z.pgrb2.1p00.f012_subset')
-    msg = g['TMAX'][0]
+    data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
+    g = grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset")
+    msg = g["TMAX"][0]
 
     # Create shallow copy
-    newmsg = msg.copy(deep=True) # True is default, just being explicit here.
+    newmsg = msg.copy(deep=True)  # True is default, just being explicit here.
 
     # Test Grib2Message object's memory reference id different
     assert id(newmsg) != id(msg)
