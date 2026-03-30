@@ -33,7 +33,7 @@ def test_interp_to_stations_3darray(request):
         glons = np.zeros((n, ny, nx), dtype=np.float32)
         for i in range(n):
             glats[i] = newmsg.lats
-            glons[i] = newmsg.lons 
+            glons[i] = newmsg.lons
 
         # Interpolate lats and lons to stations using neighbor
         slats = grib2io.interpolate_to_stations(glats, 'neighbor', newmsg.griddef, station_lats, station_lons)

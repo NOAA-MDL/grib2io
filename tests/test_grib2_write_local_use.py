@@ -23,5 +23,5 @@ def test_grib2_write_local_use(tmp_path, request):
 
     g = grib2io.open(target_file)
     msg = g[0]
-    assert msg.section2 == b"HELLO WORLD!" 
+    assert msg.section2 == b"HELLO WORLD!"
     g.close()

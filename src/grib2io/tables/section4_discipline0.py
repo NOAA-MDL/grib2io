@@ -1023,7 +1023,7 @@ table_4_2_0_192  = {
 #         https://vlab.noaa.gov/web/mdl/ndfd-grib-all-sections#section-4-product-definition-section
 #
 # The dictionary names are in the following format:
-#     table_4_2_<discipline>_<parameterCategory>_ndfd	
+#     table_4_2_<discipline>_<parameterCategory>_ndfd
 # ----------------------------------------------------------------------------------------
 table_4_2_0_0_ndfd = {
 '193':['Apparent Temperature','K','APPT'],

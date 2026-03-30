@@ -60,6 +60,6 @@ def test_datatree_resolve_all_messages(request):
     for path, var, da in iter_dataarrays(tree):
         left_dim, count = leftmost_dim_count(da)
         total_count += count
-    names += [var for _ in range(count)]
+        names += [var for _ in range(count)]
 
     assert total_count == TOTAL_COUNT_EXPECTED

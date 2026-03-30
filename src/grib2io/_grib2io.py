@@ -1101,12 +1101,19 @@ class _Grib2Message:
     def _isAerosol(self):
         """Check if GRIB2 message contains aerosol data"""
         is_aero_template = self.productDefinitionTemplateNumber.value in tables.AEROSOL_PDTNS
-        is_aero_param = ((str(self.parameterCategory) == '13') |
-                     (str(self.parameterCategory) == '20')) and str(self.parameterNumber) in tables.AEROSOL_PARAMS
+        is_aero_param = (self.parameterCategory in {13, 20}) and \
+                        (self.parameterNumber in tables.AEROSOL_PARAMS)
         # Check table 4.205 aerosol presence
-        is_aero_type = (str(self.parameterCategory) == '205' and
-                        str(self.parameterNumber) == '1')
+        is_aero_type = (self.parameterCategory == 205 and
+                        self.parameterNumber == 1)
         return is_aero_template or is_aero_param or is_aero_type
+
+    @property
+    def _isChemical(self):
+        """Check if GRIB2 message contains chemical data"""
+        is_chem_template = self.productDefinitionTemplateNumber.value in tables.CHEMICAL_PDTNS
+        is_chem_param = (self.parameterCategory == 20)
+        return is_chem_template or is_chem_param
 
     @property
     def gdtn(self):

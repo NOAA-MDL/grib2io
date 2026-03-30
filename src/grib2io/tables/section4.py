@@ -2275,7 +2275,7 @@ table_wgrib2_level_string = {
 #
 # These were added by https://github.com/bbakernoaa
 #
-# https://github.com/NOAA-MDL/grib2io/commit/4b19aee239be010cb0557f220bf06180c414bbe2 
+# https://github.com/NOAA-MDL/grib2io/commit/4b19aee239be010cb0557f220bf06180c414bbe2
 # ----------------------------------------------------------------------------------------
 
 #ORIG _AERO_TYPE_MAPPING = {
@@ -2327,7 +2327,9 @@ table_aerosol_parameter = {
     '52':'vmr',       # Volume Mixing Ratio (Fraction in Air) [mol mol-1]
     '75':'WFFlx',     # Wildfire Flux
     '76':'EmisFlx',   # Emission Flux
-    '77':'SfcEmisFlx' # Surface Emission Flux
+    '77':'SfcEmisFlx', # Surface Emission Flux
+    '192':'',         # Particulate matter (coarse) - handled by size info
+    '193':''          # Particulate matter (fine) - handled by size info
 }
 
 #ORIG _OPTICAL_WAVELENGTH_MAPPING = {

@@ -179,4 +179,3 @@ table_4_2_209_14 = {
 '0':['Level III High Resolution Enhanced Echo Top mosaic','kft','LVL3_HREET'],
 '1':['Level III High Resouion VIL mosaic','kg/m^2','LVL3_HighResVIL'],
 }
-
