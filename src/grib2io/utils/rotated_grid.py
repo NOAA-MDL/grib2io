@@ -6,6 +6,7 @@ from numpy.typing import NDArray
 RAD2DEG = 57.29577951308232087684
 DEG2RAD = 0.01745329251994329576
 
+
 def rotate(
     latin: NDArray[np.float32],
     lonin: NDArray[np.float32],
@@ -43,29 +44,29 @@ def rotate(
         `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units
         of degrees.
     """
-    zsycen = np.sin(DEG2RAD * (splat + 90.))
-    zcycen = np.cos(DEG2RAD * (splat + 90.))
-    zxmxc  = DEG2RAD * (lonin - splon)
+    zsycen = np.sin(DEG2RAD * (splat + 90.0))
+    zcycen = np.cos(DEG2RAD * (splat + 90.0))
+    zxmxc = DEG2RAD * (lonin - splon)
     zsxmxc = np.sin(zxmxc)
     zcxmxc = np.cos(zxmxc)
     zsyreg = np.sin(DEG2RAD * latin)
     zcyreg = np.cos(DEG2RAD * latin)
     zsyrot = zcycen * zsyreg - zsycen * zcyreg * zcxmxc
 
-    zsyrot = np.where(zsyrot>1.0,1.0,zsyrot)
-    zsyrot = np.where(zsyrot<-1.0,-1.0,zsyrot)
+    zsyrot = np.where(zsyrot > 1.0, 1.0, zsyrot)
+    zsyrot = np.where(zsyrot < -1.0, -1.0, zsyrot)
 
     pyrot = np.arcsin(zsyrot) * RAD2DEG
 
     zcyrot = np.cos(pyrot * DEG2RAD)
     zcxrot = (zcycen * zcyreg * zcxmxc + zsycen * zsyreg) / zcyrot
-    zcxrot = np.where(zcxrot>1.0,1.0,zcxrot)
-    zcxrot = np.where(zcxrot<-1.0,-1.0,zcxrot)
+    zcxrot = np.where(zcxrot > 1.0, 1.0, zcxrot)
+    zcxrot = np.where(zcxrot < -1.0, -1.0, zcxrot)
     zsxrot = zcyreg * zsxmxc / zcyrot
 
     pxrot = np.arccos(zcxrot) * RAD2DEG
 
-    pxrot = np.where(zsxrot<0.0,-pxrot,pxrot)
+    pxrot = np.where(zsxrot < 0.0, -pxrot, pxrot)
 
     return pyrot, pxrot
 
@@ -135,8 +136,8 @@ def unrotate(
     # Then convert back to 'normal' (lat,lon)
     # Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error
     # avoid error on calculating e.g. asin(1.00000001)
-    z = np.where(z>1.0,1.0,z)
-    z = np.where(z<-1.0,-1.0,z)
+    z = np.where(z > 1.0, 1.0, z)
+    z = np.where(z < -1.0, -1.0, z)
 
     ret_lat = np.arcsin(z) * RAD2DEG
     ret_lon = np.arctan2(y, x) * RAD2DEG
