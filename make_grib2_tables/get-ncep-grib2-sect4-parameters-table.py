@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import pandas as pd
 import re
 import sys
-
-import pandas as pd
 
 # ----------------------------------------------------------------------------------------
 # Handle command line args
@@ -17,7 +16,13 @@ parmcat = sys.argv[2]
 # ----------------------------------------------------------------------------------------
 # Define URL according to DISCIPLINE and PARMCAT (Parameter Category)
 # ----------------------------------------------------------------------------------------
-url = r"https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-2-" + discipline + "-" + parmcat + ".shtml"
+url = (
+    r"https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-2-"
+    + discipline
+    + "-"
+    + parmcat
+    + ".shtml"
+)
 tables = pd.read_html(url)
 
 # ----------------------------------------------------------------------------------------
@@ -33,9 +38,14 @@ df.rename(columns={df.columns[0]: "Number"}, inplace=True)
 # ----------------------------------------------------------------------------------------
 name = "table_4_2_" + discipline + "_" + parmcat
 print(name, " = {")
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     parmnum = row["Number"]
-    parmname = str(row["Parameter"]).replace("*", "").replace("- Parameter deprecated", "").strip()
+    parmname = (
+        str(row["Parameter"])
+        .replace("*", "")
+        .replace("- Parameter deprecated", "")
+        .strip()
+    )
     parmname = parmname.replace("'", "")
     units = str(row["Units"])
     units = re.sub(r"\bnan\b", "unknown", units)

@@ -23,7 +23,7 @@ for df in tables:
 
     name = "table_4_1_" + discipline
     print(name, "= {")
-    for _idx, row in df.iterrows():
+    for idx, row in df.iterrows():
         category = row["Category"]
         description = row["Description"].strip().split("(")[0].strip()
         line = "'%s':'%s'," % (category, description)

@@ -1,12 +1,40 @@
 table_4_2_209_2 = {
-    "0": ["CG Average Lightning Density 1-min - NLDN", "flashes/km^2/min", "NLDN_CG_001min_AvgDensity"],
-    "1": ["CG Average Lightning Density 5-min - NLDN", "flashes/km^2/min", "NLDN_CG_005min_AvgDensity"],
-    "2": ["CG Average Lightning Density 15-min - NLDN", "flashes/km^2/min", "NLDN_CG_015min_AvgDensity"],
-    "3": ["CG Average Lightning Density 30-min - NLDN", "flashes/km^2/min", "NLDN_CG_030min_AvgDensity"],
-    "5": ["Lightning Probability 0-30 minutes - NLDN", "%", "LightningProbabilityNext30minGrid"],
-    "6": ["Lightning Probability 0-30 minutes - NLDN", "%", "LightningProbabilityNext60minGrid"],
+    "0": [
+        "CG Average Lightning Density 1-min - NLDN",
+        "flashes/km^2/min",
+        "NLDN_CG_001min_AvgDensity",
+    ],
+    "1": [
+        "CG Average Lightning Density 5-min - NLDN",
+        "flashes/km^2/min",
+        "NLDN_CG_005min_AvgDensity",
+    ],
+    "2": [
+        "CG Average Lightning Density 15-min - NLDN",
+        "flashes/km^2/min",
+        "NLDN_CG_015min_AvgDensity",
+    ],
+    "3": [
+        "CG Average Lightning Density 30-min - NLDN",
+        "flashes/km^2/min",
+        "NLDN_CG_030min_AvgDensity",
+    ],
+    "5": [
+        "Lightning Probability 0-30 minutes - NLDN",
+        "%",
+        "LightningProbabilityNext30minGrid",
+    ],
+    "6": [
+        "Lightning Probability 0-30 minutes - NLDN",
+        "%",
+        "LightningProbabilityNext60minGrid",
+    ],
     "7": ["Rapid lightning increases and decreases ", "non-dim", "LightningJumpGrid"],
-    "8": ["Rapid lightning increases and decreases over 5-minutes ", "non-dim", "LightningJumpGrid_Max_005min"],
+    "8": [
+        "Rapid lightning increases and decreases over 5-minutes ",
+        "non-dim",
+        "LightningJumpGrid_Max_005min",
+    ],
 }
 
 table_4_2_209_3 = {
@@ -52,12 +80,19 @@ table_4_2_209_3 = {
     "55": ["Isothermal Reflectivity at -15C", "dBZ", "Reflectivity_-15C"],
     "56": ["Isothermal Reflectivity at -20C", "dBZ", "Reflectivity_-20C"],
     "57": ["ReflectivityAtLowestAltitude", "dBZ", "ReflectivityAtLowestAltitude"],
-    "57": ["ReflectivityAtLowestAltitude resampled from 1 to 5km resolution", "dBZ", "ReflectivityAtLowestAltitude5km"],
-    "58": ["Non Quality Controlled Reflectivity At Lowest Altitude", "dBZ", "MergedReflectivityAtLowestAltitude"],
+    "58": [
+        "Non Quality Controlled Reflectivity At Lowest Altitude",
+        "dBZ",
+        "MergedReflectivityAtLowestAltitude",
+    ],
 }
 
 table_4_2_209_6 = {
-    "0": ["Surface Precipitation Type (Convective, Stratiform, Tropical, Hail, Snow)", "flag", "PrecipFlag"],
+    "0": [
+        "Surface Precipitation Type (Convective, Stratiform, Tropical, Hail, Snow)",
+        "flag",
+        "PrecipFlag",
+    ],
     "1": ["Radar Precipitation Rate", "mm/hr", "PrecipRate"],
     "2": ["Radar precipitation accumulation 1-hour", "mm", "RadarOnly_QPE_01H"],
     "3": ["Radar precipitation accumulation 3-hour", "mm", "RadarOnly_QPE_03H"],
@@ -66,23 +101,87 @@ table_4_2_209_6 = {
     "6": ["Radar precipitation accumulation 24-hour", "mm", "RadarOnly_QPE_24H"],
     "7": ["Radar precipitation accumulation 48-hour", "mm", "RadarOnly_QPE_48H"],
     "8": ["Radar precipitation accumulation 72-hour", "mm", "RadarOnly_QPE_72H"],
-    "30": ["Multi-sensor accumulation 1-hour (1-hour latency)", "mm", "MultiSensor_QPE_01H_Pass1"],
-    "31": ["Multi-sensor accumulation 3-hour (1-hour latency)", "mm", "MultiSensor_QPE_03H_Pass1"],
-    "32": ["Multi-sensor accumulation 6-hour (1-hour latency)", "mm", "MultiSensor_QPE_06H_Pass1"],
-    "33": ["Multi-sensor accumulation 12-hour (1-hour latency)", "mm", "MultiSensor_QPE_12H_Pass1"],
-    "34": ["Multi-sensor accumulation 24-hour (1-hour latency)", "mm", "MultiSensor_QPE_24H_Pass1"],
-    "35": ["Multi-sensor accumulation 48-hour (1-hour latency)", "mm", "MultiSensor_QPE_48H_Pass1"],
-    "36": ["Multi-sensor accumulation 72-hour (1-hour latency)", "mm", "MultiSensor_QPE_72H_Pass1"],
-    "37": ["Multi-sensor accumulation 1-hour (2-hour latency)", "mm", "MultiSensor_QPE_01H_Pass2"],
-    "38": ["Multi-sensor accumulation 3-hour (2-hour latency)", "mm", "MultiSensor_QPE_03H_Pass2"],
-    "39": ["Multi-sensor accumulation 6-hour (2-hour latency)", "mm", "MultiSensor_QPE_06H_Pass2"],
-    "40": ["Multi-sensor accumulation 12-hour (2-hour latency)", "mm", "MultiSensor_QPE_12H_Pass2"],
-    "41": ["Multi-sensor accumulation 24-hour (2-hour latency)", "mm", "MultiSensor_QPE_24H_Pass2"],
-    "42": ["Multi-sensor accumulation 48-hour (2-hour latency)", "mm", "MultiSensor_QPE_48H_Pass2"],
-    "43": ["Multi-sensor accumulation 72-hour (2-hour latency)", "mm", "MultiSensor_QPE_72H_Pass2"],
-    "44": ["Method IDs for blended single and dual-pol derived precip rates ", "flag", "SyntheticPrecipRateID"],
+    "30": [
+        "Multi-sensor accumulation 1-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_01H_Pass1",
+    ],
+    "31": [
+        "Multi-sensor accumulation 3-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_03H_Pass1",
+    ],
+    "32": [
+        "Multi-sensor accumulation 6-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_06H_Pass1",
+    ],
+    "33": [
+        "Multi-sensor accumulation 12-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_12H_Pass1",
+    ],
+    "34": [
+        "Multi-sensor accumulation 24-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_24H_Pass1",
+    ],
+    "35": [
+        "Multi-sensor accumulation 48-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_48H_Pass1",
+    ],
+    "36": [
+        "Multi-sensor accumulation 72-hour (1-hour latency)",
+        "mm",
+        "MultiSensor_QPE_72H_Pass1",
+    ],
+    "37": [
+        "Multi-sensor accumulation 1-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_01H_Pass2",
+    ],
+    "38": [
+        "Multi-sensor accumulation 3-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_03H_Pass2",
+    ],
+    "39": [
+        "Multi-sensor accumulation 6-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_06H_Pass2",
+    ],
+    "40": [
+        "Multi-sensor accumulation 12-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_12H_Pass2",
+    ],
+    "41": [
+        "Multi-sensor accumulation 24-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_24H_Pass2",
+    ],
+    "42": [
+        "Multi-sensor accumulation 48-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_48H_Pass2",
+    ],
+    "43": [
+        "Multi-sensor accumulation 72-hour (2-hour latency)",
+        "mm",
+        "MultiSensor_QPE_72H_Pass2",
+    ],
+    "44": [
+        "Method IDs for blended single and dual-pol derived precip rates ",
+        "flag",
+        "SyntheticPrecipRateID",
+    ],
     "45": ["Radar precipitation accumulation 15-minute", "mm", "RadarOnly_QPE_15M"],
-    "46": ["Radar precipitation accumulation since 12Z", "mm", "RadarOnly_QPE_Since12Z"],
+    "46": [
+        "Radar precipitation accumulation since 12Z",
+        "mm",
+        "RadarOnly_QPE_Since12Z",
+    ],
 }
 
 table_4_2_209_7 = {
@@ -96,60 +195,203 @@ table_4_2_209_7 = {
 
 table_4_2_209_8 = {
     "0": ["Radar Quality Index", "non-dim", "RadarQualityIndex"],
-    "1": ["Gauge Influence Index for 1-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_01H_Pass1"],
-    "2": ["Gauge Influence Index for 3-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_03H_Pass1"],
-    "3": ["Gauge Influence Index for 6-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_06H_Pass1"],
-    "4": ["Gauge Influence Index for 12-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_12H_Pass1"],
-    "5": ["Gauge Influence Index for 24-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_24H_Pass1"],
-    "6": ["Gauge Influence Index for 48-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_48H_Pass1"],
-    "7": ["Gauge Influence Index for 72-hour QPE (1-hour latency)", "non-dim", "GaugeInflIndex_72H_Pass1"],
-    "8": ["Seamless Hybrid Scan Reflectivity with VPR correction", "dBZ", "SeamlessHSR"],
+    "1": [
+        "Gauge Influence Index for 1-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_01H_Pass1",
+    ],
+    "2": [
+        "Gauge Influence Index for 3-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_03H_Pass1",
+    ],
+    "3": [
+        "Gauge Influence Index for 6-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_06H_Pass1",
+    ],
+    "4": [
+        "Gauge Influence Index for 12-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_12H_Pass1",
+    ],
+    "5": [
+        "Gauge Influence Index for 24-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_24H_Pass1",
+    ],
+    "6": [
+        "Gauge Influence Index for 48-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_48H_Pass1",
+    ],
+    "7": [
+        "Gauge Influence Index for 72-hour QPE (1-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_72H_Pass1",
+    ],
+    "8": [
+        "Seamless Hybrid Scan Reflectivity with VPR correction",
+        "dBZ",
+        "SeamlessHSR",
+    ],
     "9": ["Height of Seamless Hybrid Scan Reflectivity", "km AGL", "SeamlessHSRHeight"],
-    "10": ["Radar 1-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_01H"],
-    "11": ["Radar 3-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_03H"],
-    "12": ["Radar 6-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_06H"],
-    "13": ["Radar 12-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_12H"],
-    "14": ["Radar 24-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_24H"],
-    "15": ["Radar 48-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_48H"],
-    "16": ["Radar 72-hour QPE Accumulation Quality", "non-dim", "RadarAccumulationQualityIndex_72H"],
-    "17": ["Gauge Influence Index for 1-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_01H_Pass2"],
-    "18": ["Gauge Influence Index for 3-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_03H_Pass2"],
-    "19": ["Gauge Influence Index for 6-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_06H_Pass2"],
-    "20": ["Gauge Influence Index for 12-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_12H_Pass2"],
-    "21": ["Gauge Influence Index for 24-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_24H_Pass2"],
-    "22": ["Gauge Influence Index for 48-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_48H_Pass2"],
-    "23": ["Gauge Influence Index for 72-hour QPE (2-hour latency)", "non-dim", "GaugeInflIndex_72H_Pass2"],
+    "10": [
+        "Radar 1-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_01H",
+    ],
+    "11": [
+        "Radar 3-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_03H",
+    ],
+    "12": [
+        "Radar 6-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_06H",
+    ],
+    "13": [
+        "Radar 12-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_12H",
+    ],
+    "14": [
+        "Radar 24-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_24H",
+    ],
+    "15": [
+        "Radar 48-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_48H",
+    ],
+    "16": [
+        "Radar 72-hour QPE Accumulation Quality",
+        "non-dim",
+        "RadarAccumulationQualityIndex_72H",
+    ],
+    "17": [
+        "Gauge Influence Index for 1-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_01H_Pass2",
+    ],
+    "18": [
+        "Gauge Influence Index for 3-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_03H_Pass2",
+    ],
+    "19": [
+        "Gauge Influence Index for 6-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_06H_Pass2",
+    ],
+    "20": [
+        "Gauge Influence Index for 12-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_12H_Pass2",
+    ],
+    "21": [
+        "Gauge Influence Index for 24-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_24H_Pass2",
+    ],
+    "22": [
+        "Gauge Influence Index for 48-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_48H_Pass2",
+    ],
+    "23": [
+        "Gauge Influence Index for 72-hour QPE (2-hour latency)",
+        "non-dim",
+        "GaugeInflIndex_72H_Pass2",
+    ],
 }
 
 table_4_2_209_9 = {
-    "0": ["3D Reflectivty Mosaic - 33 CAPPIS (500-19000m)", "dBZ", "MergedReflectivityQC"],
+    "0": [
+        "3D Reflectivty Mosaic - 33 CAPPIS (500-19000m)",
+        "dBZ",
+        "MergedReflectivityQC",
+    ],
     "3": ["3D RhoHV Mosaic - 33 CAPPIS (500-19000m)", "non-dim", "MergedRhoHV"],
     "4": ["3D Zdr Mosaic - 33 CAPPIS (500-19000m)", "dB", "MergedZdr"],
 }
 
 table_4_2_209_10 = {
-    "0": ["Composite Reflectivity Mosaic (optimal method)", "dBZ", "MergedReflectivityQCComposite"],
-    "0": ["Composite Reflectivity Mosaic (optimal method) resampled from 1 to 5km", "dBZ", "MergedReflectivityQCComposite5km"],
-    "1": ["Height of Composite Reflectivity Mosaic (optimal method)", "m MSL", "HeightCompositeReflectivity"],
-    "2": ["Low-Level Composite Reflectivity Mosaic (0-4km)", "dBZ", "LowLevelCompositeReflectivity"],
-    "3": ["Height of Low-Level Composite Reflectivity Mosaic (0-4km)", "m MSL", "HeightLowLevelCompositeReflectivity"],
-    "4": ["Layer Composite Reflectivity Mosaic 0-24kft (low altitude)", "dBZ", "LayerCompositeReflectivity_Low"],
-    "5": ["Layer Composite Reflectivity Mosaic 24-60 kft (highest altitude)", "dBZ", "LayerCompositeReflectivity_High"],
-    "6": ["Layer Composite Reflectivity Mosaic 33-60 kft (super high altitude)", "dBZ", "LayerCompositeReflectivity_Super"],
+    "0": [
+        "Composite Reflectivity Mosaic (optimal method)",
+        "dBZ",
+        "MergedReflectivityQCComposite",
+    ],
+    "1": [
+        "Height of Composite Reflectivity Mosaic (optimal method)",
+        "m MSL",
+        "HeightCompositeReflectivity",
+    ],
+    "2": [
+        "Low-Level Composite Reflectivity Mosaic (0-4km)",
+        "dBZ",
+        "LowLevelCompositeReflectivity",
+    ],
+    "3": [
+        "Height of Low-Level Composite Reflectivity Mosaic (0-4km)",
+        "m MSL",
+        "HeightLowLevelCompositeReflectivity",
+    ],
+    "4": [
+        "Layer Composite Reflectivity Mosaic 0-24kft (low altitude)",
+        "dBZ",
+        "LayerCompositeReflectivity_Low",
+    ],
+    "5": [
+        "Layer Composite Reflectivity Mosaic 24-60 kft (highest altitude)",
+        "dBZ",
+        "LayerCompositeReflectivity_High",
+    ],
+    "6": [
+        "Layer Composite Reflectivity Mosaic 33-60 kft (super high altitude)",
+        "dBZ",
+        "LayerCompositeReflectivity_Super",
+    ],
     "7": ["Composite Reflectivity Hourly Maximum", "dBZ", "CREF_1HR_MAX"],
-    "9": ["Layer Composite Reflectivity Mosaic (2-4.5km) (for ANC)", "dBZ", "LayerCompositeReflectivity_ANC"],
+    "9": [
+        "Layer Composite Reflectivity Mosaic (2-4.5km) (for ANC)",
+        "dBZ",
+        "LayerCompositeReflectivity_ANC",
+    ],
     "10": ["Base Reflectivity Hourly Maximum", "dBZ", "BREF_1HR_MAX"],
 }
 
 table_4_2_209_11 = {
-    "0": ["Base Reflectivity Mosaic (optimal method)", "dBZ", "MergedBaseReflectivityQC"],
-    "1": ["Raw Composite Reflectivity Mosaic (max ref)", "dBZ", "MergedReflectivityComposite"],
-    "2": ["Composite Reflectivity Mosaic (max ref)", "dBZ", "MergedReflectivityQComposite"],
-    "3": ["Raw Base Reflectivity Mosaic (optimal method)", "dBZ", "MergedBaseReflectivity"],
+    "0": [
+        "Base Reflectivity Mosaic (optimal method)",
+        "dBZ",
+        "MergedBaseReflectivityQC",
+    ],
+    "1": [
+        "Raw Composite Reflectivity Mosaic (max ref)",
+        "dBZ",
+        "MergedReflectivityComposite",
+    ],
+    "2": [
+        "Composite Reflectivity Mosaic (max ref)",
+        "dBZ",
+        "MergedReflectivityQComposite",
+    ],
+    "3": [
+        "Raw Base Reflectivity Mosaic (optimal method)",
+        "dBZ",
+        "MergedBaseReflectivity",
+    ],
 }
 
 table_4_2_209_12 = {
-    "0": ["FLASH QPE-CREST Unit Streamflow", "m^3/s/km^2", "FLASH_CREST_MAXUNITSTREAMFLOW"],
+    "0": [
+        "FLASH QPE-CREST Unit Streamflow",
+        "m^3/s/km^2",
+        "FLASH_CREST_MAXUNITSTREAMFLOW",
+    ],
     "1": ["FLASH QPE-CREST Streamflow", "m^3/s", "FLASH_CREST_MAXSTREAMFLOW"],
     "2": ["FLASH QPE-CREST Soil Saturation", "%", "FLASH_CREST_MAXSOILSAT"],
     "4": ["FLASH QPE-SAC Unit Streamflow", "m^3/s/km^2", "FLASH_SAC_MAXUNITSTREAMFLOW"],
@@ -161,17 +403,29 @@ table_4_2_209_12 = {
     "17": ["FLASH QPE Average Recurrence Interval 06H", "years", "FLASH_QPE_ARI06H"],
     "18": ["FLASH QPE Average Recurrence Interval 12H", "years", "FLASH_QPE_ARI12H"],
     "19": ["FLASH QPE Average Recurrence Interval 24H", "years", "FLASH_QPE_ARI24H"],
-    "20": ["FLASH QPE Average Recurrence Interval Maximum", "years", "FLASH_QPE_ARIMAX"],
+    "20": [
+        "FLASH QPE Average Recurrence Interval Maximum",
+        "years",
+        "FLASH_QPE_ARIMAX",
+    ],
     "26": ["FLASH QPE-to-FFG Ratio 01H", "non-dim", "FLASH_QPE_FFG01H"],
     "27": ["FLASH QPE-to-FFG Ratio 03H", "non-dim", "FLASH_QPE_FFG03H"],
     "28": ["FLASH QPE-to-FFG Ratio 06H", "non-dim", "FLASH_QPE_FFG06H"],
     "29": ["FLASH QPE-to-FFG Ratio Maximum", "non-dim", "FLASH_QPE_FFGMAX"],
-    "39": ["FLASH QPE-Hydrophobic Unit Streamflow", "m^3/s/km^2", "FLASH_HP_MAXUNITSTREAMFLOW"],
+    "39": [
+        "FLASH QPE-Hydrophobic Unit Streamflow",
+        "m^3/s/km^2",
+        "FLASH_HP_MAXUNITSTREAMFLOW",
+    ],
     "40": ["FLASH QPE-Hydrophobic Streamflow", "m^3/s", "FLASH_HP_MAXSTREAMFLOW"],
 }
 
 table_4_2_209_13 = {
-    "0": ["Likelihood of convection over the next 01H", "non-dim", "ANC_ConvectiveLikelihood"],
+    "0": [
+        "Likelihood of convection over the next 01H",
+        "non-dim",
+        "ANC_ConvectiveLikelihood",
+    ],
     "1": ["01H reflectivity forecast", "dBZ", "ANC_FinalForecast"],
 }
 

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import pandas as pd
 import re
 import sys
-
-import pandas as pd
 
 # ----------------------------------------------------------------------------------------
 # Handle command line args
@@ -21,7 +20,11 @@ if "." in tblin:
 # ----------------------------------------------------------------------------------------
 # Define URL and read HTML table
 # ----------------------------------------------------------------------------------------
-url = r"https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table" + tblin_html + ".shtml"
+url = (
+    r"https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table"
+    + tblin_html
+    + ".shtml"
+)
 tables = pd.read_html(url)
 
 # ----------------------------------------------------------------------------------------
@@ -46,7 +49,7 @@ if tblin == "4.5":
 # ----------------------------------------------------------------------------------------
 name = "table_" + tblin.replace(".", "_")
 print("%s = {" % (name))
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     try:
         value = row["Code Figure"]
     except KeyError:

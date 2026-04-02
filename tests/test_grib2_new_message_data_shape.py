@@ -1,6 +1,5 @@
-import numpy as np
 import pytest
-
+import numpy as np
 import grib2io
 
 
@@ -10,7 +9,9 @@ def test_new_message_data_shape(request):
         msg = f["TMAX"][0]
 
     # Create new message
-    newmsg = grib2io.Grib2Message(msg.section0, msg.section1, None, msg.section3, msg.section4, drtn=3)
+    newmsg = grib2io.Grib2Message(
+        msg.section0, msg.section1, None, msg.section3, msg.section4, drtn=3
+    )
 
     # Make some data
     stuff = np.ones((100, 300), dtype=np.float32)

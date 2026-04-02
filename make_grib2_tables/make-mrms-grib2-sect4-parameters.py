@@ -18,7 +18,7 @@ df = df[df["Discipline"] == str(discipline)]
 # ----------------------------------------------------------------------------------------
 # Create a list of unique parameter categories.
 # ----------------------------------------------------------------------------------------
-parmcats = [int(n) for n in set(df.Category.values)]
+parmcats = [int(n) for n in set(list(df.Category.values))]
 
 # ----------------------------------------------------------------------------------------
 # Iterate over parameter categories, then rows matching, and create the dictionary entry.
@@ -27,7 +27,7 @@ for pc in parmcats:
     dictname = f"table_4_2_{discipline}_{pc} = {startdict}"
     print(dictname)
     df2 = df[df["Category"] == float(pc)]
-    for _idx, row in df2.iterrows():
+    for idx, row in df2.iterrows():
         parmcat = int(row["Category"])
         parmnum = int(row["Parameter"])
         name = row["Name"]

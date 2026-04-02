@@ -11,7 +11,12 @@ from typing import Dict, List, Optional, Tuple, Type, Union
 import numpy as np
 from numpy.typing import ArrayLike
 
-from .. import iplib, tables, templates
+try:
+    from .. import iplib
+except ImportError:
+    pass
+from .. import tables
+from .. import templates
 
 
 def decimal_to_scaled_int(
@@ -45,7 +50,9 @@ def decimal_to_scaled_int(
         if scale_factor is not None:
             scaled = dec_value * (10**scale_factor)
             if scaled != scaled.to_integral_value():
-                raise ValueError(f"Value {value} cannot be exactly scaled by 10^{scale_factor}")
+                raise ValueError(
+                    f"Value {value} cannot be exactly scaled by 10^{scale_factor}"
+                )
             return scale_factor, int(scaled)
         else:
             scale_factor = 0
@@ -53,7 +60,9 @@ def decimal_to_scaled_int(
                 dec_value *= 10
                 scale_factor += 1
                 if scale_factor > 20:
-                    raise ValueError(f"Could not find exact scale factor for value {value} within bounds.")
+                    raise ValueError(
+                        f"Could not find exact scale factor for value {value} within bounds."
+                    )
             return scale_factor, int(dec_value)
 
 
@@ -144,7 +153,9 @@ def get_leadtime(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     leadTime
         datetime.timedelta object representing the lead time of the GRIB2 message.
     """
-    lt = tables.get_value_from_table(pdt[templates.UnitOfForecastTime._key[pdtn]], "scale_time_seconds")
+    lt = tables.get_value_from_table(
+        pdt[templates.UnitOfForecastTime._key[pdtn]], "scale_time_seconds"
+    )
     lt *= pdt[templates.ValueOfForecastTime._key[pdtn]]
     return datetime.timedelta(seconds=int(lt))
 
@@ -171,8 +182,15 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     """
     if pdtn in templates._timeinterval_pdtns:
         ntime = pdt[templates.NumberOfTimeRanges._key[pdtn]]
-        duration_unit = tables.get_value_from_table(pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]], "scale_time_seconds")
-        d = ntime * duration_unit * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
+        duration_unit = tables.get_value_from_table(
+            pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]],
+            "scale_time_seconds",
+        )
+        d = (
+            ntime
+            * duration_unit
+            * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
+        )
     else:
         d = 0
     return datetime.timedelta(seconds=int(d))
@@ -226,7 +244,7 @@ def decode_wx_strings(lus: bytes) -> Dict[int, str]:
         wxstring += chr(int(b[i : i + nbits], 2) + refvalue)
     # Return string as list, split by null character.
     # return list(filter(None,wxstring.split('\0')))
-    return dict(enumerate(list(filter(None, wxstring.split("\0")))))
+    return {n: k for n, k in enumerate(list(filter(None, wxstring.split("\0"))))}
 
 
 def get_wgrib2_prob_string(
