@@ -4,9 +4,9 @@ import xarray as xr
 
 def test_named_filter(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
-    filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": 1}
+    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
     ds1 = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
-    filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": "Ground or Water Surface"}
+    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface="Ground or Water Surface")
     ds2 = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
     xr.testing.assert_equal(ds1, ds2)
 
@@ -19,7 +19,7 @@ def test_save_index(request: pytest.FixtureRequest):
     for file in data.glob(idx_glob_str):
         file.unlink()
 
-    filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": 1}
+    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
     xr.open_dataset(data / fname, engine="grib2io", filters=filters, save_index=False)
 
     assert len(list(data.glob(idx_glob_str))) == 0
@@ -27,7 +27,7 @@ def test_save_index(request: pytest.FixtureRequest):
 
 def test_multi_lead(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
-    filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": 1}
+    filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
     da = xr.open_mfdataset(
         [data / "gfs.t00z.pgrb2.1p00.f009_subset", data / "gfs.t00z.pgrb2.1p00.f012_subset"],
         engine="grib2io",
@@ -69,7 +69,7 @@ def test_interp(request):
         ]
         nbm_grid_def = Grib2GridDef(gdtn_nbm, gdt_nbm)
         data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
-        filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": 1}
+        filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
         ds = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
         da = ds.grib2io.interp("neighbor", nbm_grid_def).to_array()
         assert da.shape == (1, 1597, 2345)
@@ -108,7 +108,7 @@ def test_interp_with_openmp_threads(request):
         ]
         nbm_grid_def = Grib2GridDef(gdtn_nbm, gdt_nbm)
         data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
-        filters = {"productDefinitionTemplateNumber": 0, "typeOfFirstFixedSurface": 1}
+        filters = dict(productDefinitionTemplateNumber=0, typeOfFirstFixedSurface=1)
         ds = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
         da = ds.grib2io.interp("neighbor", nbm_grid_def, num_threads=2).to_array()
         assert da.shape == (1, 1597, 2345)

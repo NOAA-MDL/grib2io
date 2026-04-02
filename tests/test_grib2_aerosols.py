@@ -1,6 +1,5 @@
-import numpy as np
 import pytest
-
+import numpy as np
 import grib2io
 
 test_file = "tests/input_data/gefs.chem.t00z.a2d_0p25.f000.grib2_subset"
@@ -26,11 +25,11 @@ section4_eval = {
     "totAOD870": np.array([0, 48, 20, 102, 62000, 0, 6, 20, 0, 0, 7, 9, 841, 9, 876, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
     "totAOD1640": np.array([0, 48, 20, 102, 62000, 0, 6, 20, 0, 0, 7, 9, 1628, 9, 1652, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
     "totAOD11100": np.array([0, 48, 20, 102, 62000, 0, 6, 20, 0, 0, 7, 9, 11000, 9, 11200, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
-    "sfc_du_pm25": np.array([0, 48, 13, 193, 62001, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
-    "sfc_du_pm10": np.array([0, 48, 13, 192, 62001, 0, 6, 10, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
-    "sfc_ss_pm25": np.array([0, 48, 13, 193, 62008, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
-    "sfc_tot_pm10": np.array([0, 48, 13, 192, 62000, 0, 6, 10, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
-    "sfc_tot_pm25": np.array([0, 48, 13, 193, 62000, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
+    "du_pm25": np.array([0, 48, 13, 193, 62001, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
+    "du_pm10": np.array([0, 48, 13, 192, 62001, 0, 6, 10, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
+    "ss_pm25": np.array([0, 48, 13, 193, 62008, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
+    "tot_pm10": np.array([0, 48, 13, 192, 62000, 0, 6, 10, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
+    "tot_pm25": np.array([0, 48, 13, 193, 62000, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 1, 0, 0, 255, 0, 0]),
     "tot_pm10_colmd": np.array([0, 48, 20, 1, 62000, 0, 6, 10, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
     "tot_pm25_colmd": np.array([0, 48, 20, 1, 62000, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
     "du_pm25_colmd": np.array([0, 48, 20, 1, 62001, 0, 7, 25, 0, 0, 255, 0, 0, 0, 0, 2, 0, 96, 0, 0, 1, 0, 10, 0, 0, 255, 0, 0]),
@@ -231,7 +230,7 @@ test_dict = {
         "units": "Numeric",
         "fullName": "Total Aerosol Optical Thickness at 11000-11200nm",
     },
-    "sfc_du_pm25": {
+    "du_pm25": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -241,7 +240,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Dust Dry Particulate matter (fine)",
     },
-    "sfc_du_pm10": {
+    "du_pm10": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -251,7 +250,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Dust Dry Particulate matter (coarse)",
     },
-    "sfc_ss_pm25": {
+    "ss_pm25": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -261,7 +260,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Sea Salt Dry Particulate matter (fine)",
     },
-    "sfc_tot_pm10": {
+    "tot_pm10": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -271,7 +270,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Total Aerosol Particulate matter (coarse)",
     },
-    "sfc_tot_pm25": {
+    "tot_pm25": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -366,9 +365,9 @@ def test_variables(grib_file):
 
     grib_file = grib2io.open(test_file)
 
-    testkeys = list(test_dict.keys())
+    testkeys = [k for k in test_dict.keys()]
 
-    for _index, k in enumerate(testkeys):
+    for index, k in enumerate(testkeys):
         print(k)
         msg = grib_file.select(shortName=k)[0]
         np.testing.assert_array_equal(section4_eval[k], msg.section4)

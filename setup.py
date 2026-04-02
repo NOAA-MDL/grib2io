@@ -1,3 +1,7 @@
+from ctypes.util import find_library as ctypes_find_library
+from pathlib import Path
+from setuptools import setup, Extension
+import numpy
 import os
 import platform
 import shutil
@@ -5,11 +9,7 @@ import subprocess
 import sys
 import sysconfig
 import warnings
-from ctypes.util import find_library as ctypes_find_library
-from pathlib import Path
-
-import numpy
-from setuptools import Extension, setup
+from Cython.Distutils import build_ext
 
 # This maps package names to library names used in the library filename.
 pkgname_to_libname = {
@@ -91,11 +91,11 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
     else:
         # No env vars set, now find everything.
         libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
-        for l in libnames:
-            libpath = find_library(l, static=static, required=required)
+        for lib in libnames:
+            libpath = find_library(lib, static=static, required=required)
             if libpath is not None:
                 break
-        libname = l
+        libname = lib
         if libpath is None:
             pkg_libdir = None
             pkg_incdir = None
@@ -129,7 +129,7 @@ def find_include_file(
     if root is None:
         return None
 
-    for path, _subdirs, files in os.walk(root):
+    for path, subdirs, files in os.walk(root):
         if os.path.basename(path) == incdir:
             if file in files:
                 incfile = os.path.join(path, file)
@@ -311,7 +311,6 @@ all_extra_objects = []
 # ----------------------------------------------------------------------------------------
 # Build Cython sources
 # ----------------------------------------------------------------------------------------
-from Cython.Distutils import build_ext
 
 cmdclass = {"build_ext": build_ext}
 redtoreg_pyx = "src/ext/redtoreg.pyx"
@@ -327,7 +326,7 @@ pkginfo = get_package_info("g2c", static=g2c_static, required=True, include_file
 if None in pkginfo:
     raise ValueError("NCEPLIBS-g2c library not found. grib2io will not build.")
 
-extmod_config["g2clib"] = {"libraries": [pkginfo[0]], "incdirs": [pkginfo[1]], "libdirs": [pkginfo[2]], "extra_objects": []}
+extmod_config["g2clib"] = dict(libraries=[pkginfo[0]], incdirs=[pkginfo[1]], libdirs=[pkginfo[2]], extra_objects=[])
 
 if g2c_static:
     staticlib = find_library("g2c", dirs=extmod_config["g2clib"]["libdirs"], static=True)
@@ -346,14 +345,14 @@ if g2c_static:
         dep_libraries.append("png")
         dep_libraries.append("z")
 
-    for l in dep_libraries:
-        libname, incdir, libdir = get_package_info(l, static=g2c_static)
+    for dep_lib in dep_libraries:
+        libname, incdir, libdir = get_package_info(dep_lib, static=g2c_static)
         extmod_config["g2clib"]["libraries"].append(libname)
         extmod_config["g2clib"]["incdirs"].append(incdir)
         extmod_config["g2clib"]["libdirs"].append(libdir)
 
-        l = pkgname_to_libname[l][0]
-        extmod_config["g2clib"]["extra_objects"].append(find_library(l, dirs=[libdir], static=g2c_static))
+        dep_lib_name = pkgname_to_libname[dep_lib][0]
+        extmod_config["g2clib"]["extra_objects"].append(find_library(dep_lib_name, dirs=[libdir], static=g2c_static))
 
     # Clear out libraries and libdirs when using static libs
     extmod_config["g2clib"]["libraries"] = []
@@ -368,14 +367,14 @@ ip_static = check_lib_static("ip")
 pkginfo = get_package_info("ip", incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
 
 if None in pkginfo:
-    warnings.warn("NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.", stacklevel=2)
+    warnings.warn("NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")
     build_with_ip = False
 
 if build_with_ip:
     ip_from_homebrew = False
 
     # Add ip package info to the configuration dictionary.
-    extmod_config["iplib"] = {"libraries": [pkginfo[0]], "incdirs": [pkginfo[1]], "libdirs": [pkginfo[2]], "extra_objects": [], "define_macros": []}
+    extmod_config["iplib"] = dict(libraries=[pkginfo[0]], incdirs=[pkginfo[1]], libdirs=[pkginfo[2]], extra_objects=[], define_macros=[])
 
     # Find the full path to the ip library.
     ip_libname = find_library(pkgname_to_libname["ip"][0], dirs=extmod_config["iplib"]["libdirs"], static=ip_static)

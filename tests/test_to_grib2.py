@@ -1,11 +1,10 @@
 import itertools
 from pathlib import Path
 
+import grib2io
 import pytest
 import xarray as xr
 from numpy.testing import assert_allclose, assert_array_equal
-
-import grib2io
 
 
 def _del_list_inplace(input_list, indices):

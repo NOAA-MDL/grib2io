@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import re
 from io import StringIO
 from urllib.request import urlopen
-
 import pandas as pd
+import re
 import requests
 
 # ----------------------------------------------------------------------------------------
@@ -40,7 +39,7 @@ df = tables[0]
 name = "table_originating_centers"
 
 print(name, " = {")
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     if pd.isna(row["VALUE"]):
         continue
     value = row["VALUE"].lstrip("0")
@@ -64,7 +63,7 @@ df = tables[0]
 name = "table_originating_subcenters"
 
 print(name, " = {")
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     value = row["VALUE"]
     center = row["CENTER"].replace("'", "")
     line = "'%s':'%s'," % (value, center)
@@ -86,7 +85,7 @@ df = tables[0]
 name = "table_generating_process"
 
 print(name, " = {")
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     if pd.isnull(row["VALUE"]):
         continue
     value = row["VALUE"]

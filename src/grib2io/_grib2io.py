@@ -62,6 +62,10 @@ The following Jupyter Notebooks are available as tutorials:
 * [Subset Example](https://github.com/NOAA-MDL/grib2io/blob/master/demos/subset-example.ipynb)
 """
 
+from dataclasses import dataclass, field
+from io import BytesIO
+from pathlib import Path
+from typing import Literal, Optional, Union, IO
 import builtins
 import collections
 import copy
@@ -74,16 +78,15 @@ import re
 import struct
 import sys
 import warnings
-from dataclasses import dataclass, field
-from io import BytesIO
-from pathlib import Path
-from typing import IO, Literal, Optional, Union
 
+from numpy.typing import NDArray
 import numpy as np
 import pyproj
-from numpy.typing import NDArray
 
-from . import g2clib, tables, templates, utils
+from . import g2clib
+from . import tables
+from . import templates
+from . import utils
 
 DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e36
@@ -96,8 +99,8 @@ _interp_schemes = {"bilinear": 0, "bicubic": 1, "neighbor": 2, "budget": 3, "spe
 _AUTO_NANS = True
 _GZIP_HEADER = b"\x1f\x8b"
 
-_latlon_datastore = {}
-_msg_class_store = {}
+_latlon_datastore = dict()
+_msg_class_store = dict()
 
 # This is for Python 3.8 and 3.9 compatibility
 _PathOrStr = Union[str, os.PathLike]
@@ -279,8 +282,7 @@ class open:
                     except Exception as e:
                         warnings.warn(
                             f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
-                            f"re-forming index from grib2file, but not writing indexfile",
-                            stacklevel=2,
+                            f"re-forming index from grib2file, but not writing indexfile"
                         )
                         self._index = build_index(self._filehandle)
                     self._hasindex = True
@@ -290,7 +292,7 @@ class open:
                         try:
                             serialize_index(self._index, self.indexfile)
                         except Exception as e:
-                            warnings.warn(f"index was not serialized for future use: {e}", stacklevel=2)
+                            warnings.warn(f"index was not serialized for future use: {e}")
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
 
@@ -342,7 +344,7 @@ class open:
     def levels(self):
         """Provides a unique tuple of level strings."""
         if self._hasindex:
-            return tuple(sorted({msg.level for msg in self._msgs}))
+            return tuple(sorted(set([msg.level for msg in self._msgs])))
         else:
             return None
 
@@ -350,7 +352,7 @@ class open:
     def variables(self):
         """Provides a unique tuple of variable shortName strings."""
         if self._hasindex:
-            return tuple(sorted({msg.shortName for msg in self._msgs}))
+            return tuple(sorted(set([msg.shortName for msg in self._msgs])))
         else:
             return None
 
@@ -482,7 +484,7 @@ class open:
         levels_by_var
             A list of unique level strings.
         """
-        return sorted({msg.level for msg in self.select(shortName=name)})
+        return list(sorted(set([msg.level for msg in self.select(shortName=name)])))
 
     def vars_by_level(self, level: str):
         """
@@ -498,7 +500,7 @@ class open:
         vars_by_level
             A list of unique variable shortName strings.
         """
-        return sorted({msg.shortName for msg in self.select(level=level)})
+        return list(sorted(set([msg.shortName for msg in self.select(level=level)])))
 
 
 def build_index(filehandle):
@@ -570,7 +572,7 @@ def build_index(filehandle):
         If binary unpacking fails due to truncated or malformed data.
     """
     # Initialize index dictionary
-    index = {}
+    index = dict()
     index["section0"] = []
     index["section1"] = []
     index["section2"] = []
@@ -633,7 +635,7 @@ def build_index(filehandle):
             if section0[3] != 2:
                 # Check for GRIB1 and ignore.
                 if secmsg[3] == 1:
-                    warnings.warn("GRIB version 1 message detected.  Ignoring...", stacklevel=2)
+                    warnings.warn("GRIB version 1 message detected.  Ignoring...")
                     grib1_size = int.from_bytes(secmsg[:3], "big")
                     filehandle.seek(filehandle.tell() + grib1_size - 16)
                     continue
@@ -893,7 +895,7 @@ class Grib2Message:
                 # Python < 3.10
                 section1[5:11] = datetime.datetime.utcfromtimestamp(0).timetuple()[:6]
 
-        bases = []
+        bases = list()
         if section3 is None:
             if "gdtn" in kwargs.keys():
                 gdtn = kwargs["gdtn"]
@@ -1075,12 +1077,17 @@ class _Grib2Message:
     def _isAerosol(self):
         """Check if GRIB2 message contains aerosol data"""
         is_aero_template = self.productDefinitionTemplateNumber.value in tables.AEROSOL_PDTNS
-        is_aero_param = ((str(self.parameterCategory) == "13") | (str(self.parameterCategory) == "20")) and str(
-            self.parameterNumber
-        ) in tables.AEROSOL_PARAMS
+        is_aero_param = (self.parameterCategory in {13, 20}) and (self.parameterNumber in tables.AEROSOL_PARAMS)
         # Check table 4.205 aerosol presence
-        is_aero_type = str(self.parameterCategory) == "205" and str(self.parameterNumber) == "1"
+        is_aero_type = self.parameterCategory == 205 and self.parameterNumber == 1
         return is_aero_template or is_aero_param or is_aero_type
+
+    @property
+    def _isChemical(self):
+        """Check if GRIB2 message contains chemical data"""
+        is_chem_template = self.productDefinitionTemplateNumber.value in tables.CHEMICAL_PDTNS
+        is_chem_param = self.parameterCategory == 20
+        return is_chem_template or is_chem_param
 
     @property
     def gdtn(self):
@@ -1545,7 +1552,7 @@ class _Grib2Message:
         else:
             raise ValueError("Unsupported grid")
 
-        _latlon_datastore[self._sha1_section3] = {"latitude": lats, "longitude": lons}
+        _latlon_datastore[self._sha1_section3] = dict(latitude=lats, longitude=lons)
         try:
             _latlon_datastore[self._sha1_section3]["vector_rotation_angles"] = rots
         except NameError:
@@ -1796,21 +1803,26 @@ Subset only works for regular grids.
         max_idx = np.maximum(last_lat, last_lon)
         last_j, last_i = np.where(max_idx == np.min(max_idx))
 
-        newmsg.latitudeFirstGridpoint = msglats[first_j[0], first_i[0]]
-        newmsg.longitudeFirstGridpoint = msglons[first_j[0], first_i[0]]
-        newmsg.nx = np.abs(first_i[0] - last_i[0])
-        newmsg.ny = np.abs(first_j[0] - last_j[0])
+        setattr(newmsg, "latitudeFirstGridpoint", msglats[first_j[0], first_i[0]])
+        setattr(newmsg, "longitudeFirstGridpoint", msglons[first_j[0], first_i[0]])
+        setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
+        setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
 
         # Set *LastGridpoint attributes even if only used for gdtn=[0, 1, 40].
         # This information is used to subset xarray datasets and even though
         # unnecessary for some supported grid types, it won't affect a grib2io
         # message to set them.
-        newmsg.latitudeLastGridpoint = msglats[last_j[0], last_i[0]]
-        newmsg.longitudeLastGridpoint = msglons[last_j[0], last_i[0]]
+        setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
+        setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
 
-        newmsg.data = self.data[
-            min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]), min(first_i[0], last_i[0]) : max(first_i[0], last_i[0])
-        ].copy()
+        setattr(
+            newmsg,
+            "data",
+            self.data[
+                min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]),
+                min(first_i[0], last_i[0]) : max(first_i[0], last_i[0]),
+            ].copy(),
+        )
 
         # Need to set the newmsg._sha1_section3 to a blank string so the grid
         # method ignores the cached lat/lon values.  This will force the grid
@@ -2053,7 +2065,10 @@ def interpolate(
         1-index is the interpolated v.
     """
 
-    from . import iplib
+    try:
+        from . import iplib
+    except ImportError:
+        raise ImportError("NCEPLIBS-ip library not found. Interpolation is not available.")
 
     prev_num_threads = 1
     try:
@@ -2203,7 +2218,10 @@ def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons,
         that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
-    from . import iplib
+    try:
+        from . import iplib
+    except ImportError:
+        raise ImportError("NCEPLIBS-ip library not found. Interpolation is not available.")
 
     # Define function to apply mask when stations are outside grid domain
     def _reshape_and_mask_post_interp(a, shape, mask):
@@ -2409,10 +2427,10 @@ def _adjust_array_shape_for_interp(a, grid_def_in, grid_def_out):
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = (grid_def_out.ny, grid_def_out.nx)
+            newshp = tuple([grid_def_out.ny, grid_def_out.nx])
             a = np.expand_dims(a.flatten(), axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = (a.shape[0], grid_def_out.ny, grid_def_out.nx)
+            newshp = tuple([a.shape[0], grid_def_out.ny, grid_def_out.nx])
             a = a.reshape(*a.shape[:-2], -1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")
@@ -2461,10 +2479,10 @@ def _adjust_array_shape_for_interp_stations(a, grid_def_in, nstations):
             a = a.astype(np.float32)
 
         if len(a.shape) == 2 and a.shape == grid_def_in.shape:
-            newshp = (nstations,)
+            newshp = tuple([nstations])
             a = np.expand_dims(a.flatten(), axis=0)
         elif len(a.shape) == 3 and a.shape[-2:] == grid_def_in.shape:
-            newshp = (a.shape[0], nstations)
+            newshp = tuple([a.shape[0], nstations])
             a = a.reshape(*a.shape[:-2], -1)
         else:
             raise ValueError("Input array shape must be either (ny,nx) or (:,ny,nx).")

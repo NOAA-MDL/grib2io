@@ -1,6 +1,5 @@
-import numpy as np
-
 import grib2io
+import numpy as np
 
 
 def test_iter_messages_read(request):

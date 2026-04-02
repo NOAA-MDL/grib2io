@@ -1,5 +1,4 @@
 import numpy as np
-
 import grib2io
 
 np.set_printoptions(formatter={"float": "{: 0.5f}".format})

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import pandas as pd
 import re
 import sys
-
-import pandas as pd
 
 # ----------------------------------------------------------------------------------------
 # Handle command line args
@@ -46,7 +45,7 @@ if tblin == "4.5":
 # ----------------------------------------------------------------------------------------
 name = "table_" + tblin.replace(".", "_")
 print("%s = {" % (name))
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     try:
         value = row["Code Figure"]
     except KeyError:

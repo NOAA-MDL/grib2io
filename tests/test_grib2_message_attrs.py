@@ -1,9 +1,7 @@
-import datetime
-import hashlib
-
 import numpy as np
-
+import datetime
 import grib2io
+import hashlib
 
 
 def test_section0_attrs(request):

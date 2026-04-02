@@ -1,6 +1,5 @@
-import numpy as np
-
 import grib2io
+import numpy as np
 
 
 def test_grib2_write_local_use(tmp_path, request):

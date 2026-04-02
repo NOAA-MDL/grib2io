@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
+import pandas as pd
 import re
 import sys
-
-import pandas as pd
 
 # ----------------------------------------------------------------------------------------
 # Handle command line args
@@ -33,7 +32,7 @@ df.rename(columns={df.columns[0]: "Number"}, inplace=True)
 # ----------------------------------------------------------------------------------------
 name = "table_4_2_" + discipline + "_" + parmcat
 print(name, " = {")
-for _idx, row in df.iterrows():
+for idx, row in df.iterrows():
     parmnum = row["Number"]
     parmname = str(row["Parameter"]).replace("*", "").replace("- Parameter deprecated", "").strip()
     parmname = parmname.replace("'", "")

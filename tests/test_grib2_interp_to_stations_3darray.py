@@ -1,5 +1,4 @@
 import numpy as np
-
 import grib2io
 
 # Output grid (NBM 2.5km CONUS Grid)

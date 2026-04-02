@@ -2329,6 +2329,8 @@ table_aerosol_parameter = {
     "75": "WFFlx",  # Wildfire Flux
     "76": "EmisFlx",  # Emission Flux
     "77": "SfcEmisFlx",  # Surface Emission Flux
+    "192": "",  # Particulate matter (coarse) - handled by size info
+    "193": "",  # Particulate matter (fine) - handled by size info
 }
 
 # ORIG _OPTICAL_WAVELENGTH_MAPPING = {

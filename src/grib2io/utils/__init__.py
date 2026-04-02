@@ -11,7 +11,12 @@ from typing import Dict, List, Optional, Tuple, Type, Union
 import numpy as np
 from numpy.typing import ArrayLike
 
-from .. import iplib, tables, templates
+try:
+    from .. import iplib
+except ImportError:
+    pass
+from .. import tables
+from .. import templates
 
 
 def decimal_to_scaled_int(
@@ -226,7 +231,7 @@ def decode_wx_strings(lus: bytes) -> Dict[int, str]:
         wxstring += chr(int(b[i : i + nbits], 2) + refvalue)
     # Return string as list, split by null character.
     # return list(filter(None,wxstring.split('\0')))
-    return dict(enumerate(list(filter(None, wxstring.split("\0")))))
+    return {n: k for n, k in enumerate(list(filter(None, wxstring.split("\0"))))}
 
 
 def get_wgrib2_prob_string(
