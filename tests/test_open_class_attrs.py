@@ -18,12 +18,16 @@ def test_open_class_attrs(request):
 
     # Test variables property
     variables_hash_expected = "c3bea231411082822877912aac45bab4b45a3941"
-    variables_hash = hashlib.sha1("".join([i for i in g.variables]).encode("ascii")).hexdigest()
+    variables_hash = hashlib.sha1(
+        "".join([i for i in g.variables]).encode("ascii")
+    ).hexdigest()
     assert variables_hash == variables_hash_expected
 
     # Test levels property
     levels_hash_expected = "79263dc9bf3dac5cefdc3a06b6c70612350d0dd1"
-    levels_hash = hashlib.sha1("".join([i for i in g.levels]).encode("ascii")).hexdigest()
+    levels_hash = hashlib.sha1(
+        "".join([i for i in g.levels]).encode("ascii")
+    ).hexdigest()
     assert levels_hash == levels_hash_expected
 
     # Test close file

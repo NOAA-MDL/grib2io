@@ -3,12 +3,18 @@
 # and cell method.
 # ----------------------------------------------------------------------------------------
 table_shortname_to_cf = {
-    "ABSV": {"cf_standard_name": "atmosphere_absolute_vorticity", "cf_cell_methods": None},
+    "ABSV": {
+        "cf_standard_name": "atmosphere_absolute_vorticity",
+        "cf_cell_methods": None,
+    },
     "DEN": {"cf_standard_name": "air_density", "cf_cell_methods": None},
     "DEPR": {"cf_standard_name": "dew_point_depression", "cf_cell_methods": None},
     "DPT": {"cf_standard_name": "dew_point_temperature", "cf_cell_methods": None},
     "DZDT": {"cf_standard_name": "upward_air_velocity", "cf_cell_methods": None},
-    "EPOT": {"cf_standard_name": "equivalent_potential_temperature", "cf_cell_methods": None},
+    "EPOT": {
+        "cf_standard_name": "equivalent_potential_temperature",
+        "cf_cell_methods": None,
+    },
     "GP": {"cf_standard_name": "geopotential", "cf_cell_methods": None},
     "HGT": {"cf_standard_name": "geopotential_height", "cf_cell_methods": None},
     "DIST": {"cf_standard_name": "unknown", "cf_cell_methods": None},
@@ -16,19 +22,37 @@ table_shortname_to_cf = {
     "MIXR": {"cf_standard_name": "humidity_mixing_ratio", "cf_cell_methods": None},
     "POT": {"cf_standard_name": "air_potential_temperature", "cf_cell_methods": None},
     "PRES": {"cf_standard_name": "air_pressure", "cf_cell_methods": None},
-    "PRMSL": {"cf_standard_name": "air_pressure_at_mean_sea_level", "cf_cell_methods": None},
+    "PRMSL": {
+        "cf_standard_name": "air_pressure_at_mean_sea_level",
+        "cf_cell_methods": None,
+    },
     "PTEND": {"cf_standard_name": "tendency_of_air_pressure", "cf_cell_methods": None},
-    "PVORT": {"cf_standard_name": "atmosphere_potential_vorticity", "cf_cell_methods": None},
-    "RELV": {"cf_standard_name": "atmosphere_relative_vorticity", "cf_cell_methods": None},
+    "PVORT": {
+        "cf_standard_name": "atmosphere_potential_vorticity",
+        "cf_cell_methods": None,
+    },
+    "RELV": {
+        "cf_standard_name": "atmosphere_relative_vorticity",
+        "cf_cell_methods": None,
+    },
     "RH": {"cf_standard_name": "relative_humidity", "cf_cell_methods": None},
     "SPFH": {"cf_standard_name": "specific_humidity", "cf_cell_methods": None},
     "STRM": {"cf_standard_name": "atmosphere_streamfunction", "cf_cell_methods": None},
     "TMAX": {"cf_standard_name": "air_temperature", "cf_cell_methods": "time: maximum"},
     "TMIN": {"cf_standard_name": "air_temperature", "cf_cell_methods": "time: minimum"},
-    "MAXRH": {"cf_standard_name": "relative_humidity", "cf_cell_methods": "time: maximum"},
-    "MINRH": {"cf_standard_name": "relative_humidity", "cf_cell_methods": "time: minimum"},
+    "MAXRH": {
+        "cf_standard_name": "relative_humidity",
+        "cf_cell_methods": "time: maximum",
+    },
+    "MINRH": {
+        "cf_standard_name": "relative_humidity",
+        "cf_cell_methods": "time: minimum",
+    },
     "TMP": {"cf_standard_name": "air_temperature", "cf_cell_methods": None},
-    "CAPE": {"cf_standard_name": "atmosphere_convective_available_potential_energy", "cf_cell_methods": None},
+    "CAPE": {
+        "cf_standard_name": "atmosphere_convective_available_potential_energy",
+        "cf_cell_methods": None,
+    },
     "CEIL": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "ICSEV": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "ICPRB": {"cf_standard_name": "unknown", "cf_cell_methods": None},
@@ -44,240 +68,861 @@ table_shortname_to_cf = {
     "RETOP": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "MIXHT": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "PWTHER": {"cf_standard_name": "unknown", "cf_cell_methods": None},
-    "MAXREF": {"cf_standard_name": "equivalent_reflectivity_factor", "cf_cell_methods": None},
+    "MAXREF": {
+        "cf_standard_name": "equivalent_reflectivity_factor",
+        "cf_cell_methods": None,
+    },
     "SNOWLR": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "SNOWLVL": {"cf_standard_name": "unknown", "cf_cell_methods": None},
-    "ASNOW": {"cf_standard_name": "thickness_of_snowfall_amount", "cf_cell_methods": None},
+    "ASNOW": {
+        "cf_standard_name": "thickness_of_snowfall_amount",
+        "cf_cell_methods": None,
+    },
     "FICEAC": {"cf_standard_name": "unknown", "cf_cell_methods": None},
     "APTMP": {"cf_standard_name": "apparent_air_temperature", "cf_cell_methods": None},
     "UGRD": {"cf_standard_name": "eastward_wind", "cf_cell_methods": None},
-    "VAPP": {"cf_standard_name": "water_vapor_partial_pressure_in_air", "cf_cell_methods": None},
+    "VAPP": {
+        "cf_standard_name": "water_vapor_partial_pressure_in_air",
+        "cf_cell_methods": None,
+    },
     "VGRD": {"cf_standard_name": "northward_wind", "cf_cell_methods": None},
-    "VPOT": {"cf_standard_name": "atmosphere_velocity_potential", "cf_cell_methods": None},
+    "VPOT": {
+        "cf_standard_name": "atmosphere_velocity_potential",
+        "cf_cell_methods": None,
+    },
     "VTMP": {"cf_standard_name": "virtual_temperature", "cf_cell_methods": None},
-    "VVEL": {"cf_standard_name": "lagrangian_tendency_of_air_pressure", "cf_cell_methods": None},
+    "VVEL": {
+        "cf_standard_name": "lagrangian_tendency_of_air_pressure",
+        "cf_cell_methods": None,
+    },
     "VUCSH": {"cf_standard_name": "eastward_wind_shear", "cf_cell_methods": None},
     "VVCSH": {"cf_standard_name": "northward_wind_shear", "cf_cell_methods": None},
     "WDIR": {"cf_standard_name": "wind_from_direction", "cf_cell_methods": None},
     "WIND": {"cf_standard_name": "wind_speed", "cf_cell_methods": None},
     "GUST": {"cf_standard_name": "wind_speed_of_gust", "cf_cell_methods": None},
     "WTMP": {"cf_standard_name": "sea_water_temperature", "cf_cell_methods": None},
-    "ACPCP": {"cf_standard_name": "lwe_thickness_of_convective_precipitation_amount", "cf_cell_methods": "time: sum"},
-    "PTYPE": {"cf_standard_name": "predominant_precipitation_type_at_surface", "cf_cell_methods": None},
-    "APCP": {"cf_standard_name": "lwe_thickness_of_precipitation_amount", "cf_cell_methods": "time: sum"},
-    "CICE": {"cf_standard_name": "atmosphere_cloud_ice_content", "cf_cell_methods": None},
-    "CWAT": {"cf_standard_name": "atmosphere_cloud_condensate_content", "cf_cell_methods": None},
-    "EVP": {"cf_standard_name": "water_evaporation_flux", "cf_cell_methods": "time: mean"},
-    "HCDC": {"cf_standard_name": "high_type_cloud_area_fraction", "cf_cell_methods": None},
-    "LCDC": {"cf_standard_name": "low_type_cloud_area_fraction", "cf_cell_methods": None},
-    "MCDC": {"cf_standard_name": "medium_type_cloud_area_fraction", "cf_cell_methods": None},
-    "NCPCP": {"cf_standard_name": "lwe_thickness_of_large_scale_precipitation_amount", "cf_cell_methods": "time: sum"},
+    "ACPCP": {
+        "cf_standard_name": "lwe_thickness_of_convective_precipitation_amount",
+        "cf_cell_methods": "time: sum",
+    },
+    "PTYPE": {
+        "cf_standard_name": "predominant_precipitation_type_at_surface",
+        "cf_cell_methods": None,
+    },
+    "APCP": {
+        "cf_standard_name": "lwe_thickness_of_precipitation_amount",
+        "cf_cell_methods": "time: sum",
+    },
+    "CICE": {
+        "cf_standard_name": "atmosphere_cloud_ice_content",
+        "cf_cell_methods": None,
+    },
+    "CWAT": {
+        "cf_standard_name": "atmosphere_cloud_condensate_content",
+        "cf_cell_methods": None,
+    },
+    "EVP": {
+        "cf_standard_name": "water_evaporation_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "HCDC": {
+        "cf_standard_name": "high_type_cloud_area_fraction",
+        "cf_cell_methods": None,
+    },
+    "LCDC": {
+        "cf_standard_name": "low_type_cloud_area_fraction",
+        "cf_cell_methods": None,
+    },
+    "MCDC": {
+        "cf_standard_name": "medium_type_cloud_area_fraction",
+        "cf_cell_methods": None,
+    },
+    "NCPCP": {
+        "cf_standard_name": "lwe_thickness_of_large_scale_precipitation_amount",
+        "cf_cell_methods": "time: sum",
+    },
     "PRATE": {"cf_standard_name": "precipitation_flux", "cf_cell_methods": None},
-    "PWAT": {"cf_standard_name": "atmosphere_water_vapor_content", "cf_cell_methods": None},
-    "SNOC": {"cf_standard_name": "lwe_thickness_of_convective_snowfall_amount", "cf_cell_methods": "time: sum"},
-    "SNOL": {"cf_standard_name": "lwe_thickness_of_large_scale_snowfall_amount", "cf_cell_methods": "time: sum"},
+    "PWAT": {
+        "cf_standard_name": "atmosphere_water_vapor_content",
+        "cf_cell_methods": None,
+    },
+    "SNOC": {
+        "cf_standard_name": "lwe_thickness_of_convective_snowfall_amount",
+        "cf_cell_methods": "time: sum",
+    },
+    "SNOL": {
+        "cf_standard_name": "lwe_thickness_of_large_scale_snowfall_amount",
+        "cf_cell_methods": "time: sum",
+    },
     "TCDC": {"cf_standard_name": "cloud_area_fraction", "cf_cell_methods": None},
-    "WEASD": {"cf_standard_name": "lwe_thickness_of_surface_snow_amount", "cf_cell_methods": "time: sum"},
+    "WEASD": {
+        "cf_standard_name": "lwe_thickness_of_surface_snow_amount",
+        "cf_cell_methods": "time: sum",
+    },
     "LAND": {"cf_standard_name": "land_area_fraction", "cf_cell_methods": None},
     "SFCR": {"cf_standard_name": "surface_roughness_length", "cf_cell_methods": None},
     "SNOD": {"cf_standard_name": "surface_snow_thickness", "cf_cell_methods": None},
-    "SNOM": {"cf_standard_name": "surface_snow_melt_flux", "cf_cell_methods": "time: mean"},
+    "SNOM": {
+        "cf_standard_name": "surface_snow_melt_flux",
+        "cf_cell_methods": "time: mean",
+    },
     "SOILM": {"cf_standard_name": "soil_moisture_content", "cf_cell_methods": None},
     "TSOIL": {"cf_standard_name": "soil_temperature", "cf_cell_methods": None},
     "VEG": {"cf_standard_name": "vegetation_area_fraction", "cf_cell_methods": None},
     "WATR": {"cf_standard_name": "runoff_flux", "cf_cell_methods": "time: mean"},
     "ALBDO": {"cf_standard_name": "surface_albedo", "cf_cell_methods": None},
-    "DLWRF": {"cf_standard_name": "surface_downwelling_longwave_flux_in_air", "cf_cell_methods": "time: mean"},
-    "DSWRF": {"cf_standard_name": "surface_downwelling_shortwave_flux_in_air", "cf_cell_methods": "time: mean"},
-    "GRAD": {"cf_standard_name": "surface_downwelling_shortwave_flux_in_air", "cf_cell_methods": "time: mean"},
-    "LHTFL": {"cf_standard_name": "surface_upward_latent_heat_flux", "cf_cell_methods": "time: mean"},
-    "NLWRS": {"cf_standard_name": "surface_net_downward_longwave_flux", "cf_cell_methods": "time: mean"},
-    "NLWRT": {"cf_standard_name": "toa_net_downward_longwave_flux", "cf_cell_methods": "time: mean"},
-    "NSWRS": {"cf_standard_name": "surface_net_downward_shortwave_flux", "cf_cell_methods": "time: mean"},
-    "NSWRT": {"cf_standard_name": "toa_net_downward_shortwave_flux", "cf_cell_methods": "time: mean"},
-    "SHTFL": {"cf_standard_name": "surface_upward_sensible_heat_flux", "cf_cell_methods": "time: mean"},
-    "ULWRF": {"cf_standard_name": "surface_upwelling_longwave_flux_in_air", "cf_cell_methods": "time: mean"},
-    "USWRF": {"cf_standard_name": "surface_upwelling_shortwave_flux_in_air", "cf_cell_methods": "time: mean"},
-    "DSLM": {"cf_standard_name": "sea_surface_height_above_sea_level", "cf_cell_methods": None},
-    "HTSGW": {"cf_standard_name": "sea_surface_wave_significant_height", "cf_cell_methods": None},
+    "DLWRF": {
+        "cf_standard_name": "surface_downwelling_longwave_flux_in_air",
+        "cf_cell_methods": "time: mean",
+    },
+    "DSWRF": {
+        "cf_standard_name": "surface_downwelling_shortwave_flux_in_air",
+        "cf_cell_methods": "time: mean",
+    },
+    "GRAD": {
+        "cf_standard_name": "surface_downwelling_shortwave_flux_in_air",
+        "cf_cell_methods": "time: mean",
+    },
+    "LHTFL": {
+        "cf_standard_name": "surface_upward_latent_heat_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "NLWRS": {
+        "cf_standard_name": "surface_net_downward_longwave_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "NLWRT": {
+        "cf_standard_name": "toa_net_downward_longwave_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "NSWRS": {
+        "cf_standard_name": "surface_net_downward_shortwave_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "NSWRT": {
+        "cf_standard_name": "toa_net_downward_shortwave_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "SHTFL": {
+        "cf_standard_name": "surface_upward_sensible_heat_flux",
+        "cf_cell_methods": "time: mean",
+    },
+    "ULWRF": {
+        "cf_standard_name": "surface_upwelling_longwave_flux_in_air",
+        "cf_cell_methods": "time: mean",
+    },
+    "USWRF": {
+        "cf_standard_name": "surface_upwelling_shortwave_flux_in_air",
+        "cf_cell_methods": "time: mean",
+    },
+    "DSLM": {
+        "cf_standard_name": "sea_surface_height_above_sea_level",
+        "cf_cell_methods": None,
+    },
+    "HTSGW": {
+        "cf_standard_name": "sea_surface_wave_significant_height",
+        "cf_cell_methods": None,
+    },
     "ICEC": {"cf_standard_name": "sea_ice_area_fraction", "cf_cell_methods": None},
     "ICETK": {"cf_standard_name": "sea_ice_thickness", "cf_cell_methods": None},
     "SALTY": {"cf_standard_name": "sea_water_salinity", "cf_cell_methods": None},
-    "SWELL": {"cf_standard_name": "sea_surface_swell_wave_significant_height", "cf_cell_methods": None},
-    "SWDIR": {"cf_standard_name": "sea_surface_swell_wave_from_direction", "cf_cell_methods": None},
-    "SWPER": {"cf_standard_name": "sea_surface_swell_wave_period", "cf_cell_methods": None},
-    "UOGRD": {"cf_standard_name": "eastward_sea_water_velocity", "cf_cell_methods": None},
-    "VOGRD": {"cf_standard_name": "northward_sea_water_velocity", "cf_cell_methods": None},
-    "WVDIR": {"cf_standard_name": "sea_surface_wind_wave_from_direction", "cf_cell_methods": None},
-    "WVHGT": {"cf_standard_name": "sea_surface_wind_wave_significant_height", "cf_cell_methods": None},
-    "WVPER": {"cf_standard_name": "sea_surface_wind_wave_period", "cf_cell_methods": None},
-    "TOZNE": {"cf_standard_name": "atmosphere_mole_content_of_ozone", "cf_cell_methods": None},
+    "SWELL": {
+        "cf_standard_name": "sea_surface_swell_wave_significant_height",
+        "cf_cell_methods": None,
+    },
+    "SWDIR": {
+        "cf_standard_name": "sea_surface_swell_wave_from_direction",
+        "cf_cell_methods": None,
+    },
+    "SWPER": {
+        "cf_standard_name": "sea_surface_swell_wave_period",
+        "cf_cell_methods": None,
+    },
+    "UOGRD": {
+        "cf_standard_name": "eastward_sea_water_velocity",
+        "cf_cell_methods": None,
+    },
+    "VOGRD": {
+        "cf_standard_name": "northward_sea_water_velocity",
+        "cf_cell_methods": None,
+    },
+    "WVDIR": {
+        "cf_standard_name": "sea_surface_wind_wave_from_direction",
+        "cf_cell_methods": None,
+    },
+    "WVHGT": {
+        "cf_standard_name": "sea_surface_wind_wave_significant_height",
+        "cf_cell_methods": None,
+    },
+    "WVPER": {
+        "cf_standard_name": "sea_surface_wind_wave_period",
+        "cf_cell_methods": None,
+    },
+    "TOZNE": {
+        "cf_standard_name": "atmosphere_mole_content_of_ozone",
+        "cf_cell_methods": None,
+    },
     "VIS": {"cf_standard_name": "visibility_in_air", "cf_cell_methods": None},
-    "O3MR": {"cf_standard_name": "mass_fraction_of_ozone_in_air", "cf_cell_methods": None},
-    "O3_mmr": {"cf_standard_name": "mass_fraction_of_ozone_in_air", "cf_cell_methods": None},
-    "O3VMR": {"cf_standard_name": "mole_fraction_of_ozone_in_air", "cf_cell_methods": None},
-    "O3_vmr": {"cf_standard_name": "mole_fraction_of_ozone_in_air", "cf_cell_methods": None},
-    "O3CON": {"cf_standard_name": "mass_concentration_of_ozone_in_air", "cf_cell_methods": None},
-    "O3_mr": {"cf_standard_name": "mass_concentration_of_ozone_in_air", "cf_cell_methods": None},
-    "O3_colmd": {"cf_standard_name": "atmosphere_mass_content_of_ozone", "cf_cell_methods": None},
-    "COMR": {"cf_standard_name": "mass_fraction_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "CO_mmr": {"cf_standard_name": "mass_fraction_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "COVMR": {"cf_standard_name": "mole_fraction_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "CO_vmr": {"cf_standard_name": "mole_fraction_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "COCON": {"cf_standard_name": "mass_concentration_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "CO_mr": {"cf_standard_name": "mass_concentration_of_carbon_monoxide_in_air", "cf_cell_methods": None},
-    "CO_colmd": {"cf_standard_name": "atmosphere_mass_content_of_carbon_monoxide", "cf_cell_methods": None},
-    "SO2MR": {"cf_standard_name": "mass_fraction_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2_mmr": {"cf_standard_name": "mass_fraction_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2VMR": {"cf_standard_name": "mole_fraction_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2_vmr": {"cf_standard_name": "mole_fraction_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2CON": {"cf_standard_name": "mass_concentration_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2_mr": {"cf_standard_name": "mass_concentration_of_sulfur_dioxide_in_air", "cf_cell_methods": None},
-    "SO2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_sulfur_dioxide", "cf_cell_methods": None},
-    "NO2MR": {"cf_standard_name": "mass_fraction_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2_mmr": {"cf_standard_name": "mass_fraction_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2VMR": {"cf_standard_name": "mole_fraction_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2_vmr": {"cf_standard_name": "mole_fraction_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2CON": {"cf_standard_name": "mass_concentration_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2_mr": {"cf_standard_name": "mass_concentration_of_nitrogen_dioxide_in_air", "cf_cell_methods": None},
-    "NO2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_nitrogen_dioxide", "cf_cell_methods": None},
-    "CH4MR": {"cf_standard_name": "mass_fraction_of_methane_in_air", "cf_cell_methods": None},
-    "CH4_mmr": {"cf_standard_name": "mass_fraction_of_methane_in_air", "cf_cell_methods": None},
-    "CH4VMR": {"cf_standard_name": "mole_fraction_of_methane_in_air", "cf_cell_methods": None},
-    "CH4_vmr": {"cf_standard_name": "mole_fraction_of_methane_in_air", "cf_cell_methods": None},
-    "CH4CON": {"cf_standard_name": "mass_concentration_of_methane_in_air", "cf_cell_methods": None},
-    "CH4_mr": {"cf_standard_name": "mass_concentration_of_methane_in_air", "cf_cell_methods": None},
-    "CH4_colmd": {"cf_standard_name": "atmosphere_mass_content_of_methane", "cf_cell_methods": None},
-    "NOMR": {"cf_standard_name": "mass_fraction_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NO_mmr": {"cf_standard_name": "mass_fraction_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NOVMR": {"cf_standard_name": "mole_fraction_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NO_vmr": {"cf_standard_name": "mole_fraction_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NOCON": {"cf_standard_name": "mass_concentration_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NO_mr": {"cf_standard_name": "mass_concentration_of_nitrogen_monoxide_in_air", "cf_cell_methods": None},
-    "NO_colmd": {"cf_standard_name": "atmosphere_mass_content_of_nitrogen_monoxide", "cf_cell_methods": None},
-    "NH3MR": {"cf_standard_name": "mass_fraction_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3_mmr": {"cf_standard_name": "mass_fraction_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3VMR": {"cf_standard_name": "mole_fraction_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3_vmr": {"cf_standard_name": "mole_fraction_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3CON": {"cf_standard_name": "mass_concentration_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3_mr": {"cf_standard_name": "mass_concentration_of_ammonia_in_air", "cf_cell_methods": None},
-    "NH3_colmd": {"cf_standard_name": "atmosphere_mass_content_of_ammonia", "cf_cell_methods": None},
-    "HCHOMR": {"cf_standard_name": "mass_fraction_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHO_mmr": {"cf_standard_name": "mass_fraction_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHOVMR": {"cf_standard_name": "mole_fraction_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHO_vmr": {"cf_standard_name": "mole_fraction_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHOCON": {"cf_standard_name": "mass_concentration_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHO_mr": {"cf_standard_name": "mass_concentration_of_formaldehyde_in_air", "cf_cell_methods": None},
-    "HCHO_colmd": {"cf_standard_name": "atmosphere_mass_content_of_formaldehyde", "cf_cell_methods": None},
-    "CO2MR": {"cf_standard_name": "mass_fraction_of_carbon_dioxide_in_air", "cf_cell_methods": None},
-    "CO2_mmr": {"cf_standard_name": "mass_fraction_of_carbon_dioxide_in_air", "cf_cell_methods": None},
-    "CO2VMR": {"cf_standard_name": "mole_fraction_of_carbon_dioxide_in_air", "cf_cell_methods": None},
-    "CO2_vmr": {"cf_standard_name": "mole_fraction_of_carbon_dioxide_in_air", "cf_cell_methods": None},
-    "CO2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_carbon_dioxide", "cf_cell_methods": None},
-    "SO4MR": {"cf_standard_name": "mass_fraction_of_sulfate_in_air", "cf_cell_methods": None},
-    "SO4_mmr": {"cf_standard_name": "mass_fraction_of_sulfate_in_air", "cf_cell_methods": None},
-    "SO4_colmd": {"cf_standard_name": "atmosphere_mass_content_of_sulfate", "cf_cell_methods": None},
-    "H2OMR": {"cf_standard_name": "mass_fraction_of_water_vapor_in_air", "cf_cell_methods": None},
-    "H2O_mmr": {"cf_standard_name": "mass_fraction_of_water_vapor_in_air", "cf_cell_methods": None},
-    "H2OVMR": {"cf_standard_name": "mole_fraction_of_water_vapor_in_air", "cf_cell_methods": None},
-    "H2O_vmr": {"cf_standard_name": "mole_fraction_of_water_vapor_in_air", "cf_cell_methods": None},
-    "H2O_colmd": {"cf_standard_name": "atmosphere_mass_content_of_water_vapor", "cf_cell_methods": None},
-    "N2OMR": {"cf_standard_name": "mass_fraction_of_nitrous_oxide_in_air", "cf_cell_methods": None},
-    "N2O_mmr": {"cf_standard_name": "mass_fraction_of_nitrous_oxide_in_air", "cf_cell_methods": None},
-    "N2OVMR": {"cf_standard_name": "mole_fraction_of_nitrous_oxide_in_air", "cf_cell_methods": None},
-    "N2O_vmr": {"cf_standard_name": "mole_fraction_of_nitrous_oxide_in_air", "cf_cell_methods": None},
-    "N2O_colmd": {"cf_standard_name": "atmosphere_mass_content_of_nitrous_oxide", "cf_cell_methods": None},
-    "NH4MR": {"cf_standard_name": "mass_fraction_of_ammonium_in_air", "cf_cell_methods": None},
-    "NH4_mmr": {"cf_standard_name": "mass_fraction_of_ammonium_in_air", "cf_cell_methods": None},
-    "NH4_colmd": {"cf_standard_name": "atmosphere_mass_content_of_ammonium", "cf_cell_methods": None},
-    "PANMR": {"cf_standard_name": "mass_fraction_of_peroxyacetyl_nitrate_in_air", "cf_cell_methods": None},
-    "PAN_mmr": {"cf_standard_name": "mass_fraction_of_peroxyacetyl_nitrate_in_air", "cf_cell_methods": None},
-    "PAN_colmd": {"cf_standard_name": "atmosphere_mass_content_of_peroxyacetyl_nitrate", "cf_cell_methods": None},
-    "HNO3MR": {"cf_standard_name": "mass_fraction_of_nitric_acid_in_air", "cf_cell_methods": None},
-    "HNO3_mmr": {"cf_standard_name": "mass_fraction_of_nitric_acid_in_air", "cf_cell_methods": None},
-    "HNO3_colmd": {"cf_standard_name": "atmosphere_mass_content_of_nitric_acid", "cf_cell_methods": None},
-    "NO3MR": {"cf_standard_name": "mass_fraction_of_nitrate_radical_in_air", "cf_cell_methods": None},
-    "NO3_mmr": {"cf_standard_name": "mass_fraction_of_nitrate_radical_in_air", "cf_cell_methods": None},
-    "NO3_colmd": {"cf_standard_name": "atmosphere_mass_content_of_nitrate_radical", "cf_cell_methods": None},
-    "OHMR": {"cf_standard_name": "mass_fraction_of_hydroxyl_radical_in_air", "cf_cell_methods": None},
-    "OH_mmr": {"cf_standard_name": "mass_fraction_of_hydroxyl_radical_in_air", "cf_cell_methods": None},
-    "OH_colmd": {"cf_standard_name": "atmosphere_mass_content_of_hydroxyl_radical", "cf_cell_methods": None},
-    "H2O2MR": {"cf_standard_name": "mass_fraction_of_hydrogen_peroxide_in_air", "cf_cell_methods": None},
-    "H2O2_mmr": {"cf_standard_name": "mass_fraction_of_hydrogen_peroxide_in_air", "cf_cell_methods": None},
-    "H2O2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_hydrogen_peroxide", "cf_cell_methods": None},
-    "CH3OHMR": {"cf_standard_name": "mass_fraction_of_methanol_in_air", "cf_cell_methods": None},
-    "CH3OH_mmr": {"cf_standard_name": "mass_fraction_of_methanol_in_air", "cf_cell_methods": None},
-    "CH3OH_colmd": {"cf_standard_name": "atmosphere_mass_content_of_methanol", "cf_cell_methods": None},
-    "C2H6MR": {"cf_standard_name": "mass_fraction_of_ethane_in_air", "cf_cell_methods": None},
-    "C2H6_mmr": {"cf_standard_name": "mass_fraction_of_ethane_in_air", "cf_cell_methods": None},
-    "C2H6_colmd": {"cf_standard_name": "atmosphere_mass_content_of_ethane", "cf_cell_methods": None},
-    "C3H8MR": {"cf_standard_name": "mass_fraction_of_propane_in_air", "cf_cell_methods": None},
-    "C3H8_mmr": {"cf_standard_name": "mass_fraction_of_propane_in_air", "cf_cell_methods": None},
-    "C3H8_colmd": {"cf_standard_name": "atmosphere_mass_content_of_propane", "cf_cell_methods": None},
-    "ISOPMR": {"cf_standard_name": "mass_fraction_of_isoprene_in_air", "cf_cell_methods": None},
-    "C5H10_mmr": {"cf_standard_name": "mass_fraction_of_isoprene_in_air", "cf_cell_methods": None},
-    "C5H10_colmd": {"cf_standard_name": "atmosphere_mass_content_of_isoprene", "cf_cell_methods": None},
-    "BCMR": {"cf_standard_name": "mass_fraction_of_black_carbon_aerosol_in_air", "cf_cell_methods": None},
-    "BC_mmr": {"cf_standard_name": "mass_fraction_of_black_carbon_aerosol_in_air", "cf_cell_methods": None},
-    "BC_colmd": {"cf_standard_name": "atmosphere_mass_content_of_black_carbon_aerosol", "cf_cell_methods": None},
-    "DUSTRMR": {"cf_standard_name": "mass_fraction_of_dust_dry_aerosol_in_air", "cf_cell_methods": None},
-    "DU_mmr": {"cf_standard_name": "mass_fraction_of_dust_dry_aerosol_in_air", "cf_cell_methods": None},
-    "DU_colmd": {"cf_standard_name": "atmosphere_mass_content_of_dust_dry_aerosol", "cf_cell_methods": None},
-    "SSMR": {"cf_standard_name": "mass_fraction_of_sea_salt_dry_aerosol_in_air", "cf_cell_methods": None},
-    "SS_mmr": {"cf_standard_name": "mass_fraction_of_sea_salt_dry_aerosol_in_air", "cf_cell_methods": None},
-    "SS_colmd": {"cf_standard_name": "atmosphere_mass_content_of_sea_salt_dry_aerosol", "cf_cell_methods": None},
-    "OCMR": {"cf_standard_name": "mass_fraction_of_particulate_organic_matter_dry_aerosol_in_air", "cf_cell_methods": None},
-    "OM_mmr": {"cf_standard_name": "mass_fraction_of_particulate_organic_matter_dry_aerosol_in_air", "cf_cell_methods": None},
-    "OM_colmd": {"cf_standard_name": "atmosphere_mass_content_of_particulate_organic_matter_dry_aerosol", "cf_cell_methods": None},
-    "tot_mmr": {"cf_standard_name": "mass_fraction_of_total_aerosol_in_air", "cf_cell_methods": None},
-    "tot_mr": {"cf_standard_name": "mass_concentration_of_total_aerosol_in_air", "cf_cell_methods": None},
-    "tot_colmd": {"cf_standard_name": "atmosphere_mass_content_of_total_aerosol", "cf_cell_methods": None},
-    "Rn_mmr": {"cf_standard_name": "mass_fraction_of_radon_in_air", "cf_cell_methods": None},
-    "Rn_colmd": {"cf_standard_name": "atmosphere_mass_content_of_radon", "cf_cell_methods": None},
-    "Hg_mmr": {"cf_standard_name": "mass_fraction_of_mercury_in_air", "cf_cell_methods": None},
-    "Hg_colmd": {"cf_standard_name": "atmosphere_mass_content_of_mercury", "cf_cell_methods": None},
-    "Cl_mmr": {"cf_standard_name": "mass_fraction_of_chlorine_in_air", "cf_cell_methods": None},
-    "Cl_colmd": {"cf_standard_name": "atmosphere_mass_content_of_chlorine", "cf_cell_methods": None},
-    "ClO_mmr": {"cf_standard_name": "mass_fraction_of_chlorine_monoxide_in_air", "cf_cell_methods": None},
-    "ClO_colmd": {"cf_standard_name": "atmosphere_mass_content_of_chlorine_monoxide", "cf_cell_methods": None},
-    "O2_mmr": {"cf_standard_name": "mass_fraction_of_oxygen_in_air", "cf_cell_methods": None},
-    "O2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_oxygen", "cf_cell_methods": None},
-    "H2_mmr": {"cf_standard_name": "mass_fraction_of_hydrogen_in_air", "cf_cell_methods": None},
-    "H2_colmd": {"cf_standard_name": "atmosphere_mass_content_of_hydrogen", "cf_cell_methods": None},
-    "N_mmr": {"cf_standard_name": "mass_fraction_of_atomic_nitrogen_in_air", "cf_cell_methods": None},
-    "N_colmd": {"cf_standard_name": "atmosphere_mass_content_of_atomic_nitrogen", "cf_cell_methods": None},
-    "O_mmr": {"cf_standard_name": "mass_fraction_of_atomic_oxygen_in_air", "cf_cell_methods": None},
-    "O_colmd": {"cf_standard_name": "atmosphere_mass_content_of_atomic_oxygen", "cf_cell_methods": None},
-    "Br_mmr": {"cf_standard_name": "mass_fraction_of_atomic_bromine_in_air", "cf_cell_methods": None},
-    "Br_colmd": {"cf_standard_name": "atmosphere_mass_content_of_atomic_bromine", "cf_cell_methods": None},
-    "BrO_mmr": {"cf_standard_name": "mass_fraction_of_bromine_monoxide_in_air", "cf_cell_methods": None},
-    "BrO_colmd": {"cf_standard_name": "atmosphere_mass_content_of_bromine_monoxide", "cf_cell_methods": None},
-    "PM25": {"cf_standard_name": "mass_concentration_of_pm2p5_ambient_aerosol_particles_in_air", "cf_cell_methods": None},
-    "PM10": {"cf_standard_name": "mass_concentration_of_pm10_ambient_aerosol_particles_in_air", "cf_cell_methods": None},
-    "MASSDEN": {"cf_standard_name": "mass_concentration_of_chemical_constituent_in_air", "cf_cell_methods": None},
-    "MASSMR": {"cf_standard_name": "mass_fraction_of_chemical_constituent_in_air", "cf_cell_methods": None},
-    "AOD340": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "AOD440": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "AOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "AOD645": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "AOD870": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "AOD1640": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
-    "bcAOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_black_carbon_ambient_aerosol", "cf_cell_methods": None},
-    "ssAOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_sea_salt_ambient_aerosol", "cf_cell_methods": None},
-    "so4AOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_sulfate_ambient_aerosol", "cf_cell_methods": None},
-    "omAOD550": {"cf_standard_name": "atmosphere_optical_thickness_due_to_particulate_organic_matter_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD340": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD440": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD645": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD870": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "totAOD1640": {"cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD340": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD440": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD645": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD870": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
-    "duAOD1640": {"cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol", "cf_cell_methods": None},
+    "O3MR": {
+        "cf_standard_name": "mass_fraction_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3_mmr": {
+        "cf_standard_name": "mass_fraction_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3VMR": {
+        "cf_standard_name": "mole_fraction_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3_vmr": {
+        "cf_standard_name": "mole_fraction_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3CON": {
+        "cf_standard_name": "mass_concentration_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3_mr": {
+        "cf_standard_name": "mass_concentration_of_ozone_in_air",
+        "cf_cell_methods": None,
+    },
+    "O3_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_ozone",
+        "cf_cell_methods": None,
+    },
+    "COMR": {
+        "cf_standard_name": "mass_fraction_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO_mmr": {
+        "cf_standard_name": "mass_fraction_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "COVMR": {
+        "cf_standard_name": "mole_fraction_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO_vmr": {
+        "cf_standard_name": "mole_fraction_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "COCON": {
+        "cf_standard_name": "mass_concentration_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO_mr": {
+        "cf_standard_name": "mass_concentration_of_carbon_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_carbon_monoxide",
+        "cf_cell_methods": None,
+    },
+    "SO2MR": {
+        "cf_standard_name": "mass_fraction_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2_mmr": {
+        "cf_standard_name": "mass_fraction_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2VMR": {
+        "cf_standard_name": "mole_fraction_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2_vmr": {
+        "cf_standard_name": "mole_fraction_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2CON": {
+        "cf_standard_name": "mass_concentration_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2_mr": {
+        "cf_standard_name": "mass_concentration_of_sulfur_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_sulfur_dioxide",
+        "cf_cell_methods": None,
+    },
+    "NO2MR": {
+        "cf_standard_name": "mass_fraction_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2_mmr": {
+        "cf_standard_name": "mass_fraction_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2VMR": {
+        "cf_standard_name": "mole_fraction_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2_vmr": {
+        "cf_standard_name": "mole_fraction_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2CON": {
+        "cf_standard_name": "mass_concentration_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2_mr": {
+        "cf_standard_name": "mass_concentration_of_nitrogen_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_nitrogen_dioxide",
+        "cf_cell_methods": None,
+    },
+    "CH4MR": {
+        "cf_standard_name": "mass_fraction_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4_mmr": {
+        "cf_standard_name": "mass_fraction_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4VMR": {
+        "cf_standard_name": "mole_fraction_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4_vmr": {
+        "cf_standard_name": "mole_fraction_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4CON": {
+        "cf_standard_name": "mass_concentration_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4_mr": {
+        "cf_standard_name": "mass_concentration_of_methane_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH4_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_methane",
+        "cf_cell_methods": None,
+    },
+    "NOMR": {
+        "cf_standard_name": "mass_fraction_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO_mmr": {
+        "cf_standard_name": "mass_fraction_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NOVMR": {
+        "cf_standard_name": "mole_fraction_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO_vmr": {
+        "cf_standard_name": "mole_fraction_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NOCON": {
+        "cf_standard_name": "mass_concentration_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO_mr": {
+        "cf_standard_name": "mass_concentration_of_nitrogen_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_nitrogen_monoxide",
+        "cf_cell_methods": None,
+    },
+    "NH3MR": {
+        "cf_standard_name": "mass_fraction_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3_mmr": {
+        "cf_standard_name": "mass_fraction_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3VMR": {
+        "cf_standard_name": "mole_fraction_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3_vmr": {
+        "cf_standard_name": "mole_fraction_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3CON": {
+        "cf_standard_name": "mass_concentration_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3_mr": {
+        "cf_standard_name": "mass_concentration_of_ammonia_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH3_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_ammonia",
+        "cf_cell_methods": None,
+    },
+    "HCHOMR": {
+        "cf_standard_name": "mass_fraction_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHO_mmr": {
+        "cf_standard_name": "mass_fraction_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHOVMR": {
+        "cf_standard_name": "mole_fraction_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHO_vmr": {
+        "cf_standard_name": "mole_fraction_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHOCON": {
+        "cf_standard_name": "mass_concentration_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHO_mr": {
+        "cf_standard_name": "mass_concentration_of_formaldehyde_in_air",
+        "cf_cell_methods": None,
+    },
+    "HCHO_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_formaldehyde",
+        "cf_cell_methods": None,
+    },
+    "CO2MR": {
+        "cf_standard_name": "mass_fraction_of_carbon_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO2_mmr": {
+        "cf_standard_name": "mass_fraction_of_carbon_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO2VMR": {
+        "cf_standard_name": "mole_fraction_of_carbon_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO2_vmr": {
+        "cf_standard_name": "mole_fraction_of_carbon_dioxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "CO2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_carbon_dioxide",
+        "cf_cell_methods": None,
+    },
+    "SO4MR": {
+        "cf_standard_name": "mass_fraction_of_sulfate_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO4_mmr": {
+        "cf_standard_name": "mass_fraction_of_sulfate_in_air",
+        "cf_cell_methods": None,
+    },
+    "SO4_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_sulfate",
+        "cf_cell_methods": None,
+    },
+    "H2OMR": {
+        "cf_standard_name": "mass_fraction_of_water_vapor_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2O_mmr": {
+        "cf_standard_name": "mass_fraction_of_water_vapor_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2OVMR": {
+        "cf_standard_name": "mole_fraction_of_water_vapor_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2O_vmr": {
+        "cf_standard_name": "mole_fraction_of_water_vapor_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2O_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_water_vapor",
+        "cf_cell_methods": None,
+    },
+    "N2OMR": {
+        "cf_standard_name": "mass_fraction_of_nitrous_oxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "N2O_mmr": {
+        "cf_standard_name": "mass_fraction_of_nitrous_oxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "N2OVMR": {
+        "cf_standard_name": "mole_fraction_of_nitrous_oxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "N2O_vmr": {
+        "cf_standard_name": "mole_fraction_of_nitrous_oxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "N2O_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_nitrous_oxide",
+        "cf_cell_methods": None,
+    },
+    "NH4MR": {
+        "cf_standard_name": "mass_fraction_of_ammonium_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH4_mmr": {
+        "cf_standard_name": "mass_fraction_of_ammonium_in_air",
+        "cf_cell_methods": None,
+    },
+    "NH4_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_ammonium",
+        "cf_cell_methods": None,
+    },
+    "PANMR": {
+        "cf_standard_name": "mass_fraction_of_peroxyacetyl_nitrate_in_air",
+        "cf_cell_methods": None,
+    },
+    "PAN_mmr": {
+        "cf_standard_name": "mass_fraction_of_peroxyacetyl_nitrate_in_air",
+        "cf_cell_methods": None,
+    },
+    "PAN_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_peroxyacetyl_nitrate",
+        "cf_cell_methods": None,
+    },
+    "HNO3MR": {
+        "cf_standard_name": "mass_fraction_of_nitric_acid_in_air",
+        "cf_cell_methods": None,
+    },
+    "HNO3_mmr": {
+        "cf_standard_name": "mass_fraction_of_nitric_acid_in_air",
+        "cf_cell_methods": None,
+    },
+    "HNO3_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_nitric_acid",
+        "cf_cell_methods": None,
+    },
+    "NO3MR": {
+        "cf_standard_name": "mass_fraction_of_nitrate_radical_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO3_mmr": {
+        "cf_standard_name": "mass_fraction_of_nitrate_radical_in_air",
+        "cf_cell_methods": None,
+    },
+    "NO3_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_nitrate_radical",
+        "cf_cell_methods": None,
+    },
+    "OHMR": {
+        "cf_standard_name": "mass_fraction_of_hydroxyl_radical_in_air",
+        "cf_cell_methods": None,
+    },
+    "OH_mmr": {
+        "cf_standard_name": "mass_fraction_of_hydroxyl_radical_in_air",
+        "cf_cell_methods": None,
+    },
+    "OH_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_hydroxyl_radical",
+        "cf_cell_methods": None,
+    },
+    "H2O2MR": {
+        "cf_standard_name": "mass_fraction_of_hydrogen_peroxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2O2_mmr": {
+        "cf_standard_name": "mass_fraction_of_hydrogen_peroxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2O2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_hydrogen_peroxide",
+        "cf_cell_methods": None,
+    },
+    "CH3OHMR": {
+        "cf_standard_name": "mass_fraction_of_methanol_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH3OH_mmr": {
+        "cf_standard_name": "mass_fraction_of_methanol_in_air",
+        "cf_cell_methods": None,
+    },
+    "CH3OH_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_methanol",
+        "cf_cell_methods": None,
+    },
+    "C2H6MR": {
+        "cf_standard_name": "mass_fraction_of_ethane_in_air",
+        "cf_cell_methods": None,
+    },
+    "C2H6_mmr": {
+        "cf_standard_name": "mass_fraction_of_ethane_in_air",
+        "cf_cell_methods": None,
+    },
+    "C2H6_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_ethane",
+        "cf_cell_methods": None,
+    },
+    "C3H8MR": {
+        "cf_standard_name": "mass_fraction_of_propane_in_air",
+        "cf_cell_methods": None,
+    },
+    "C3H8_mmr": {
+        "cf_standard_name": "mass_fraction_of_propane_in_air",
+        "cf_cell_methods": None,
+    },
+    "C3H8_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_propane",
+        "cf_cell_methods": None,
+    },
+    "ISOPMR": {
+        "cf_standard_name": "mass_fraction_of_isoprene_in_air",
+        "cf_cell_methods": None,
+    },
+    "C5H10_mmr": {
+        "cf_standard_name": "mass_fraction_of_isoprene_in_air",
+        "cf_cell_methods": None,
+    },
+    "C5H10_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_isoprene",
+        "cf_cell_methods": None,
+    },
+    "BCMR": {
+        "cf_standard_name": "mass_fraction_of_black_carbon_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "BC_mmr": {
+        "cf_standard_name": "mass_fraction_of_black_carbon_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "BC_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_black_carbon_aerosol",
+        "cf_cell_methods": None,
+    },
+    "DUSTRMR": {
+        "cf_standard_name": "mass_fraction_of_dust_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "DU_mmr": {
+        "cf_standard_name": "mass_fraction_of_dust_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "DU_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_dust_dry_aerosol",
+        "cf_cell_methods": None,
+    },
+    "SSMR": {
+        "cf_standard_name": "mass_fraction_of_sea_salt_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "SS_mmr": {
+        "cf_standard_name": "mass_fraction_of_sea_salt_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "SS_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_sea_salt_dry_aerosol",
+        "cf_cell_methods": None,
+    },
+    "OCMR": {
+        "cf_standard_name": "mass_fraction_of_particulate_organic_matter_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "OM_mmr": {
+        "cf_standard_name": "mass_fraction_of_particulate_organic_matter_dry_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "OM_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_particulate_organic_matter_dry_aerosol",
+        "cf_cell_methods": None,
+    },
+    "tot_mmr": {
+        "cf_standard_name": "mass_fraction_of_total_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "tot_mr": {
+        "cf_standard_name": "mass_concentration_of_total_aerosol_in_air",
+        "cf_cell_methods": None,
+    },
+    "tot_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_total_aerosol",
+        "cf_cell_methods": None,
+    },
+    "Rn_mmr": {
+        "cf_standard_name": "mass_fraction_of_radon_in_air",
+        "cf_cell_methods": None,
+    },
+    "Rn_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_radon",
+        "cf_cell_methods": None,
+    },
+    "Hg_mmr": {
+        "cf_standard_name": "mass_fraction_of_mercury_in_air",
+        "cf_cell_methods": None,
+    },
+    "Hg_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_mercury",
+        "cf_cell_methods": None,
+    },
+    "Cl_mmr": {
+        "cf_standard_name": "mass_fraction_of_chlorine_in_air",
+        "cf_cell_methods": None,
+    },
+    "Cl_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_chlorine",
+        "cf_cell_methods": None,
+    },
+    "ClO_mmr": {
+        "cf_standard_name": "mass_fraction_of_chlorine_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "ClO_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_chlorine_monoxide",
+        "cf_cell_methods": None,
+    },
+    "O2_mmr": {
+        "cf_standard_name": "mass_fraction_of_oxygen_in_air",
+        "cf_cell_methods": None,
+    },
+    "O2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_oxygen",
+        "cf_cell_methods": None,
+    },
+    "H2_mmr": {
+        "cf_standard_name": "mass_fraction_of_hydrogen_in_air",
+        "cf_cell_methods": None,
+    },
+    "H2_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_hydrogen",
+        "cf_cell_methods": None,
+    },
+    "N_mmr": {
+        "cf_standard_name": "mass_fraction_of_atomic_nitrogen_in_air",
+        "cf_cell_methods": None,
+    },
+    "N_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_atomic_nitrogen",
+        "cf_cell_methods": None,
+    },
+    "O_mmr": {
+        "cf_standard_name": "mass_fraction_of_atomic_oxygen_in_air",
+        "cf_cell_methods": None,
+    },
+    "O_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_atomic_oxygen",
+        "cf_cell_methods": None,
+    },
+    "Br_mmr": {
+        "cf_standard_name": "mass_fraction_of_atomic_bromine_in_air",
+        "cf_cell_methods": None,
+    },
+    "Br_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_atomic_bromine",
+        "cf_cell_methods": None,
+    },
+    "BrO_mmr": {
+        "cf_standard_name": "mass_fraction_of_bromine_monoxide_in_air",
+        "cf_cell_methods": None,
+    },
+    "BrO_colmd": {
+        "cf_standard_name": "atmosphere_mass_content_of_bromine_monoxide",
+        "cf_cell_methods": None,
+    },
+    "PM25": {
+        "cf_standard_name": "mass_concentration_of_pm2p5_ambient_aerosol_particles_in_air",
+        "cf_cell_methods": None,
+    },
+    "PM10": {
+        "cf_standard_name": "mass_concentration_of_pm10_ambient_aerosol_particles_in_air",
+        "cf_cell_methods": None,
+    },
+    "MASSDEN": {
+        "cf_standard_name": "mass_concentration_of_chemical_constituent_in_air",
+        "cf_cell_methods": None,
+    },
+    "MASSMR": {
+        "cf_standard_name": "mass_fraction_of_chemical_constituent_in_air",
+        "cf_cell_methods": None,
+    },
+    "AOD340": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "AOD440": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "AOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "AOD645": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "AOD870": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "AOD1640": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "bcAOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_black_carbon_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "ssAOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_sea_salt_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "so4AOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_sulfate_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "omAOD550": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_particulate_organic_matter_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD340": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD440": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD645": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD870": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "totAOD1640": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD340": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD440": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD645": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD870": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
+    "duAOD1640": {
+        "cf_standard_name": "atmosphere_optical_thickness_due_to_dust_ambient_aerosol",
+        "cf_cell_methods": None,
+    },
 }
 
 # ----------------------------------------------------------------------------------------
@@ -287,7 +932,9 @@ table_shortname_to_cf = {
 table_4_7_cf = {
     0: {"cf_cell_methods": "time: mean"},
     1: {"cf_cell_methods": "time: mean (comment: weighted)"},
-    2: {"cf_cell_methods": "time: standard_deviation (comment: with respect to cluster mean)"},
+    2: {
+        "cf_cell_methods": "time: standard_deviation (comment: with respect to cluster mean)"
+    },
     3: {"cf_cell_methods": "time: standard_deviation (comment: normalized)"},
     4: {"cf_cell_methods": "time: standard_deviation"},
     5: {"cf_cell_methods": None},  # No direct CF equivalent

@@ -16,7 +16,9 @@ DEG2RAD = rotated_grid.DEG2RAD
 RAD2DEG = rotated_grid.RAD2DEG
 
 
-def ll2rot(latin: float, lonin: float, latpole: float, lonpole: float) -> tuple[float, float]:
+def ll2rot(
+    latin: float, lonin: float, latpole: float, lonpole: float
+) -> tuple[float, float]:
     """
     Rotate a latitude/longitude pair.
 
@@ -70,7 +72,9 @@ def ll2rot(latin: float, lonin: float, latpole: float, lonpole: float) -> tuple[
     return tlat, tlon
 
 
-def rot2ll(latin: float, lonin: float, latpole: float, lonpole: float) -> tuple[float, float]:
+def rot2ll(
+    latin: float, lonin: float, latpole: float, lonpole: float
+) -> tuple[float, float]:
     """
     Unrotate a latitude/longitude pair.
 
@@ -163,7 +167,10 @@ def vector_rotation_angles(
         rot = 0.0
     else:
         crot = (
-            math.cos(clat * DEG2RAD) * math.cos(tlat * DEG2RAD) + math.sin(clat * DEG2RAD) * math.sin(tlat * DEG2RAD) * math.cos(tlon * DEG2RAD)
+            math.cos(clat * DEG2RAD) * math.cos(tlat * DEG2RAD)
+            + math.sin(clat * DEG2RAD)
+            * math.sin(tlat * DEG2RAD)
+            * math.cos(tlon * DEG2RAD)
         ) / cgridlat
         srot = (-1.0 * math.sin(clat * DEG2RAD) * slon) / cgridlat
         rot = math.atan2(srot, crot)

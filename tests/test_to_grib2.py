@@ -15,7 +15,9 @@ def _del_list_inplace(input_list, indices):
 
 def _test_any_differences(da1, da2, atol=0.005, rtol=0):
     """Test if two DataArrays are equal, including most attributes."""
-    assert_array_equal(da1.attrs["GRIB2IO_section0"][:-1], da2.attrs["GRIB2IO_section0"][:-1])
+    assert_array_equal(
+        da1.attrs["GRIB2IO_section0"][:-1], da2.attrs["GRIB2IO_section0"][:-1]
+    )
     assert_array_equal(da1.attrs["GRIB2IO_section1"], da2.attrs["GRIB2IO_section1"])
     assert_array_equal(da1.attrs["GRIB2IO_section2"], da2.attrs["GRIB2IO_section2"])
     assert_array_equal(da1.attrs["GRIB2IO_section3"], da2.attrs["GRIB2IO_section3"])

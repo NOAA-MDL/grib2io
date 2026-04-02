@@ -12,7 +12,9 @@ _HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
 
 @pytest.fixture
 def mock_grib2io_backend():
-    with patch("grib2io.tables.get_value_from_table") as mock_lookup, patch("grib2io.tables.get_table") as mock_get_table:
+    with patch("grib2io.tables.get_value_from_table") as mock_lookup, patch(
+        "grib2io.tables.get_table"
+    ) as mock_get_table:
         mock_lookup.side_effect = lambda val, tbl: f"PTYPE_{val}"
         mock_get_table.return_value = {}
         yield mock_lookup, mock_get_table
@@ -30,13 +32,17 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
 
     # Setup mock to return variable length strings
     # '1' -> 'Short', '2' -> 'VeryLongString'
-    mock_lookup.side_effect = lambda val, tbl: "Short" if str(val) == "1" else "VeryLongString"
+    mock_lookup.side_effect = lambda val, tbl: (
+        "Short" if str(val) == "1" else "VeryLongString"
+    )
 
     # 1. Eager check (NumPy)
     eager_data = np.array([1, 2])
     decoded_eager = _decode_ptype(eager_data)
     if _HAS_STRINGDTYPE:
-        assert decoded_eager.dtype == np.dtypes.StringDType or isinstance(decoded_eager.dtype, np.dtypes.StringDType)
+        assert decoded_eager.dtype == np.dtypes.StringDType or isinstance(
+            decoded_eager.dtype, np.dtypes.StringDType
+        )
     else:
         assert decoded_eager.dtype == object
     assert decoded_eager[1] == "VeryLongString"
@@ -58,7 +64,9 @@ def test_ptype_vectorization_and_laziness(mock_grib2io_backend):
 
     assert decoded_lazy.chunks is not None
     if _HAS_STRINGDTYPE:
-        assert decoded_lazy.dtype == np.dtypes.StringDType or isinstance(decoded_lazy.dtype, np.dtypes.StringDType)
+        assert decoded_lazy.dtype == np.dtypes.StringDType or isinstance(
+            decoded_lazy.dtype, np.dtypes.StringDType
+        )
     else:
         assert decoded_lazy.dtype == object
 
@@ -84,7 +92,11 @@ def test_scientific_provenance_initialization():
         "grib2io.xarray_backend.build_da_without_coords"
     ) as mock_build, patch("grib2io.xarray_backend.assign_xr_meta") as mock_assign:
         mock_parse.return_value = (MagicMock(), {}, {}, {})
-        mock_make.return_value = ([pd.DataFrame({"shortName": ["TMP"]})], [{"x": range(1), "y": range(1)}], {})
+        mock_make.return_value = (
+            [pd.DataFrame({"shortName": ["TMP"]})],
+            [{"x": range(1), "y": range(1)}],
+            {},
+        )
 
         mock_da = xr.DataArray([1.0], name="TMP")
         mock_build.return_value = mock_da

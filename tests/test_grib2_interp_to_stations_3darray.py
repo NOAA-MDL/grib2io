@@ -56,8 +56,12 @@ def test_interp_to_stations_3darray(request):
             glons[i] = newmsg.lons
 
         # Interpolate lats and lons to stations using neighbor
-        slats = grib2io.interpolate_to_stations(glats, "neighbor", newmsg.griddef, station_lats, station_lons)
-        slons = grib2io.interpolate_to_stations(glons, "neighbor", newmsg.griddef, station_lats, station_lons)
+        slats = grib2io.interpolate_to_stations(
+            glats, "neighbor", newmsg.griddef, station_lats, station_lons
+        )
+        slons = grib2io.interpolate_to_stations(
+            glons, "neighbor", newmsg.griddef, station_lats, station_lons
+        )
 
         # ...
         latdiff = []
@@ -71,11 +75,24 @@ def test_interp_to_stations_3darray(request):
         rtol = 1e-3
         np.testing.assert_allclose(
             latdiff,
-            np.array([3.1509399e-03, 9.8762512e-03, 2.3097992e-03, 5.6610107e-03, 1.0345459e-02, 4.5776367e-05], dtype=np.float32),
+            np.array(
+                [
+                    3.1509399e-03,
+                    9.8762512e-03,
+                    2.3097992e-03,
+                    5.6610107e-03,
+                    1.0345459e-02,
+                    4.5776367e-05,
+                ],
+                dtype=np.float32,
+            ),
             rtol=rtol,
         )
         np.testing.assert_allclose(
             londiff,
-            np.array([0.00893402, 0.0038681, 0.00794983, 0.00233459, 0.00022888, 0.00444794], dtype=np.float32),
+            np.array(
+                [0.00893402, 0.0038681, 0.00794983, 0.00233459, 0.00022888, 0.00444794],
+                dtype=np.float32,
+            ),
             rtol=rtol,
         )

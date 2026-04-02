@@ -3,7 +3,13 @@ import grib2io
 
 
 def test_from_bytes(request):
-    file = request.config.rootdir / "tests" / "input_data" / "gfs_20221107" / "gfs.t00z.pgrb2.1p00.f012_subset"
+    file = (
+        request.config.rootdir
+        / "tests"
+        / "input_data"
+        / "gfs_20221107"
+        / "gfs.t00z.pgrb2.1p00.f012_subset"
+    )
 
     with grib2io.open(file) as f:
         data_file = [msg.data for msg in f.read()]
