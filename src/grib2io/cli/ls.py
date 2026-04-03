@@ -30,7 +30,9 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
         description="Inventory messages in a GRIB2 file",
     )
     p.add_argument("path", help="GRIB2 file")
-    p.add_argument("-i", dest="indices", action=ReadIndicesFromStdin, nargs=0, default=[], help="Read grib2io ls output from stdin")
+    p.add_argument("-i", "--stdin", dest="indices", action=ReadIndicesFromStdin, nargs=0, default=[], help="Read grib2io ls output from stdin")
+    p.add_argument("-o", "--output", dest="output", metavar="FILE", type=str, default=None, help="Write selected GRIB2 messages to FILE.")
+
     p.set_defaults(func=cmd_ls)
 
 
@@ -43,8 +45,17 @@ def cmd_ls(args: argparse.Namespace) -> int:
         print(f"grib2io: failed to open {args.path!r}: {e}", file=sys.stderr)
         return 2
 
+    if args.output is not None:
+        output = grib2io.open(args.output, mode="w")
+
     # Iterate messages.
     for msg in g[args.indices]:
         print(msg, flush=True)
+        # Add any per message action below.
+        if args.output: output.write(msg)
 
+    if args.output is not None:
+        output.close()
+
+    g.close()
     return 0
