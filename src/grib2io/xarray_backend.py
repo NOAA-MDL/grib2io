@@ -1534,6 +1534,7 @@ def open_datatree(
 
     return root
 
+    return root
 
 def build_da_without_coords(
     index: pd.DataFrame, cube: dict, filename: str, attrs: dict
