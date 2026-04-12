@@ -1,6 +1,7 @@
 import sys
 import os
-sys.path.insert(0, os.path.abspath('src'))
+
+sys.path.insert(0, os.path.abspath("src"))
 from grib2io.xarray_backend import GribBackendEntrypoint
 from xarray.backends.plugins import detect_parameters
 

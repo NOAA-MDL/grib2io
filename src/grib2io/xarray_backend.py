@@ -290,9 +290,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
             elif coord == "percentileValue":
                 ds = ds.rename({"percentileValue": "percentile"})
 
-            elif coord == 'perturbationNumber':
-                ds = ds.rename({'perturbationNumber': 'perturbation'})
-                ds['perturbation'].attrs['long_name'] = 'Ensemble Perturbation Number'
+            elif coord == "perturbationNumber":
+                ds = ds.rename({"perturbationNumber": "perturbation"})
+                ds["perturbation"].attrs["long_name"] = "Ensemble Perturbation Number"
 
             elif coord == "thresholdLowerLimit":
                 ds = ds.rename({"thresholdLowerLimit": "threshold_lower_limit"})
@@ -306,7 +306,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                         _decode_ptype,
                         ds["threshold_lower_limit"],
                         dask="parallelized",
-                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                        output_dtypes=[np.dtypes.StringDType]
+                        if _HAS_STRINGDTYPE
+                        else [object],
                     )
 
                 # check if thresholdLowerLimit should be a dimension coordinate
@@ -333,7 +335,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                         _decode_ptype,
                         ds["threshold_upper_limit"],
                         dask="parallelized",
-                        output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                        output_dtypes=[np.dtypes.StringDType]
+                        if _HAS_STRINGDTYPE
+                        else [object],
                     )
 
                 if "threshold" in ds.dims:
@@ -353,7 +357,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     ds["aerosol_type"],
                     "4.233",
                     dask="parallelized",
-                    output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                    output_dtypes=[np.dtypes.StringDType]
+                    if _HAS_STRINGDTYPE
+                    else [object],
                 )
 
             elif coord == "constituentType":
@@ -364,7 +370,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     ds["constituent_type"],
                     "4.230",
                     dask="parallelized",
-                    output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                    output_dtypes=[np.dtypes.StringDType]
+                    if _HAS_STRINGDTYPE
+                    else [object],
                 )
 
             elif coord == "sourceSinkIndicator":
@@ -375,7 +383,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     ds["source_sink_indicator"],
                     "4.238",
                     dask="parallelized",
-                    output_dtypes=[np.dtypes.StringDType] if _HAS_STRINGDTYPE else [object],
+                    output_dtypes=[np.dtypes.StringDType]
+                    if _HAS_STRINGDTYPE
+                    else [object],
                 )
 
             elif coord == "firstWavelength":
@@ -395,28 +405,46 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
 
             elif coord == "secondSizeOfAerosol":
                 ds = ds.rename({"secondSizeOfAerosol": "second_size_of_aerosol"})
-                ds["second_size_of_aerosol"].attrs["long_name"] = "Second Size of Aerosol"
+                ds["second_size_of_aerosol"].attrs["long_name"] = (
+                    "Second Size of Aerosol"
+                )
                 ds["second_size_of_aerosol"].attrs["units"] = "m"
 
-            elif coord == 'scaledValueOfFirstWavelength':
-                ds = ds.rename({'scaledValueOfFirstWavelength': 'scaled_first_wavelength'})
-                ds['scaled_first_wavelength'].attrs['long_name'] = 'Scaled Value of First Wavelength'
+            elif coord == "scaledValueOfFirstWavelength":
+                ds = ds.rename(
+                    {"scaledValueOfFirstWavelength": "scaled_first_wavelength"}
+                )
+                ds["scaled_first_wavelength"].attrs["long_name"] = (
+                    "Scaled Value of First Wavelength"
+                )
 
-            elif coord == 'scaledValueOfSecondWavelength':
-                ds = ds.rename({'scaledValueOfSecondWavelength': 'scaled_second_wavelength'})
-                ds['scaled_second_wavelength'].attrs['long_name'] = 'Scaled Value of Second Wavelength'
+            elif coord == "scaledValueOfSecondWavelength":
+                ds = ds.rename(
+                    {"scaledValueOfSecondWavelength": "scaled_second_wavelength"}
+                )
+                ds["scaled_second_wavelength"].attrs["long_name"] = (
+                    "Scaled Value of Second Wavelength"
+                )
 
-            elif coord == 'scaledValueOfCentralWaveNumber':
-                ds = ds.rename({'scaledValueOfCentralWaveNumber': 'scaled_central_wave_number'})
-                ds['scaled_central_wave_number'].attrs['long_name'] = 'Scaled Value of Central Wave Number'
+            elif coord == "scaledValueOfCentralWaveNumber":
+                ds = ds.rename(
+                    {"scaledValueOfCentralWaveNumber": "scaled_central_wave_number"}
+                )
+                ds["scaled_central_wave_number"].attrs["long_name"] = (
+                    "Scaled Value of Central Wave Number"
+                )
 
-            elif coord == 'scaledValueOfFirstSize':
-                ds = ds.rename({'scaledValueOfFirstSize': 'scaled_first_size'})
-                ds['scaled_first_size'].attrs['long_name'] = 'Scaled Value of First Size'
+            elif coord == "scaledValueOfFirstSize":
+                ds = ds.rename({"scaledValueOfFirstSize": "scaled_first_size"})
+                ds["scaled_first_size"].attrs["long_name"] = (
+                    "Scaled Value of First Size"
+                )
 
-            elif coord == 'scaledValueOfSecondSize':
-                ds = ds.rename({'scaledValueOfSecondSize': 'scaled_second_size'})
-                ds['scaled_second_size'].attrs['long_name'] = 'Scaled Value of Second Size'
+            elif coord == "scaledValueOfSecondSize":
+                ds = ds.rename({"scaledValueOfSecondSize": "scaled_second_size"})
+                ds["scaled_second_size"].attrs["long_name"] = (
+                    "Scaled Value of Second Size"
+                )
 
             # If the dataset has valueOfFirstFixedSurface as a coordinate
             elif coord == "valueOfFirstFixedSurface":
@@ -572,7 +600,6 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
         )
         ds.attrs["history"] = f"{now}: Parsed to data model {data_model}\n{history}"
 
-
     # Update history for provenance
     history = ds.attrs.get("history", "")
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -725,8 +752,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
         # Put warning here so it is the last message from likely other Xarray warnings.
         warnings.warn(
-            "grib2io’s xarray backend DataTree support is experimental. "
-            "The DataTree structure or attributes may change in future releases.",
+            "grib2io’s xarray backend DataTree support is experimental. The DataTree structure or attributes may change in future releases.",
             UserWarning,
             stacklevel=2,
         )
@@ -1505,6 +1531,8 @@ def open_datatree(
     for node in root.subtree:
         if node.ds is not None:
             node.ds.attrs["history"] = history + node.ds.attrs.get("history", "")
+
+    return root
 
     return root
 
@@ -2642,7 +2670,7 @@ def open_mfdataset(
         with grib2io.open(fname, save_index=save_index, _xarray_backend=True) as f:
             idx = pd.DataFrame(f._index)
             idx = idx.assign(msg=list(f))
-            idx['file_index'] = i
+            idx["file_index"] = i
             return idx
 
     if parallel:
@@ -2657,12 +2685,10 @@ def open_mfdataset(
             )
         except ImportError:
             warnings.warn(
-                'dask not installed, falling back to sequential index reading.'
+                "dask not installed, falling back to sequential index reading."
             )
             parallel = False
-            indices = [
-                _get_index((fname, i)) for i, fname in enumerate(filenames)
-            ]
+            indices = [_get_index((fname, i)) for i, fname in enumerate(filenames)]
     else:
         indices = [_get_index((fname, i)) for i, fname in enumerate(filenames)]
 
@@ -2670,14 +2696,13 @@ def open_mfdataset(
         return xr.Dataset()
 
     # Validate grid consistency across files using only the first message of each file
-    grid_cols = ['ny', 'nx']
+    grid_cols = ["ny", "nx"]
     first_msgs = pd.concat([idx.head(1) for idx in indices], ignore_index=True)
     unique_grids = first_msgs[grid_cols].drop_duplicates()
     if len(unique_grids) > 1:
-        grid_list = unique_grids.to_dict('records')
+        grid_list = unique_grids.to_dict("records")
         raise ValueError(
-            f'Multiple grids detected in open_mfdataset. All files must have the same grid. '
-            f'Found grids: {grid_list}'
+            f"Multiple grids detected in open_mfdataset. All files must have the same grid. Found grids: {grid_list}"
         )
 
     # Determine if we can use the fast path (single index concatenation)
@@ -2719,12 +2744,12 @@ def open_mfdataset(
         if preprocess is not None:
             datasets = [preprocess(ds) for ds in datasets]
 
-        combine_opt = kwargs.pop('combine', None)
-        if combine_opt == 'nested':
+        combine_opt = kwargs.pop("combine", None)
+        if combine_opt == "nested":
             ds = xr.combine_nested(datasets, **kwargs)
-        elif combine_opt == 'by_coords':
+        elif combine_opt == "by_coords":
             ds = xr.combine_by_coords(datasets, **kwargs)
-        elif combine_opt == 'merge':
+        elif combine_opt == "merge":
             ds = xr.merge(datasets, **kwargs)
         else:
             # Default behavior: try by_coords, then merge
@@ -2744,10 +2769,10 @@ def open_mfdataset(
         )
 
     # Update history for provenance
-    history = ds.attrs.get('history', '')
-    now = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-    ds.attrs['history'] = (
-        f'{now}: Initialized via grib2io.open_mfdataset from {len(filenames)} files\n{history}'
+    history = ds.attrs.get("history", "")
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    ds.attrs["history"] = (
+        f"{now}: Initialized via grib2io.open_mfdataset from {len(filenames)} files\n{history}"
     )
 
     return ds
@@ -2798,7 +2823,7 @@ def _open_dataset_from_index(
     file_index, dim_coords, attrs, coord_attrs = parse_grib_index(file_index, filters)
 
     if drop_variables:
-        file_index = file_index[~file_index['shortName'].isin(drop_variables)]
+        file_index = file_index[~file_index["shortName"].isin(drop_variables)]
 
     # Divide up records by variable
     frames, cubes, extra_geo = make_variables(
@@ -3056,7 +3081,9 @@ def process_level_branch(
                     level_tree[pdtn_name] = dt
                 else:
                     # Try to separate by variable name as a fallback
-                    try_process_by_variables(level_tree, pdtn_df, filename, chunks=chunks)
+                    try_process_by_variables(
+                        level_tree, pdtn_df, filename, chunks=chunks
+                    )
             except Exception as e:
                 print(f"Error creating dataset for level with pdtn {int(pdtn)}: {e}")
 
@@ -3117,7 +3144,9 @@ def process_level_branch(
                         level_tree[pdtn_name] = pdtn_tree
                     else:
                         # Try to separate by variable name as a fallback
-                        try_process_by_variables(pdtn_tree, pdtn_df, filename, chunks=chunks)
+                        try_process_by_variables(
+                            pdtn_tree, pdtn_df, filename, chunks=chunks
+                        )
                         level_tree[pdtn_name] = pdtn_tree
                 except Exception as e:
                     print(
@@ -3125,7 +3154,9 @@ def process_level_branch(
                     )
 
                     # Try to separate by variable name as a fallback
-                    try_process_by_variables(pdtn_tree, pdtn_df, filename, chunks=chunks)
+                    try_process_by_variables(
+                        pdtn_tree, pdtn_df, filename, chunks=chunks
+                    )
                     level_tree[pdtn_name] = pdtn_tree
 
 
@@ -3400,6 +3431,7 @@ def create_datasets_from_df(
         if verbose:
             print(f"Error in create_datasets_from_df: {e}")
         return None
+
 
 if _HAS_DATATREE:
 
