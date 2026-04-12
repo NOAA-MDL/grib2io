@@ -107,11 +107,6 @@ class Grib2Metadata:
     def __call__(self):
         return self.value
 
-    def __hash__(self):
-        # AS- added hash() to self.value as pandas was raising error about some
-        # non integer returns from hash method
-        return hash(self.value)
-
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
 
