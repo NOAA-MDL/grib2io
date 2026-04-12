@@ -6,14 +6,13 @@ import sys
 from .create_index import add_parser as add_create_index_parser
 from .ls import add_parser as add_ls_parser
 
-COMMANDS = {
-    "create-index",
-    "ls"
-}
+COMMANDS = {"create-index", "ls"}
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="grib2io", description="Command line utilities for grib2io")
+    p = argparse.ArgumentParser(
+        prog="grib2io", description="Command line utilities for grib2io"
+    )
     sub = p.add_subparsers(dest="command", required=True)
 
     add_ls_parser(sub)
@@ -36,4 +35,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

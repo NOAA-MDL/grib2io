@@ -20,7 +20,7 @@ def cmd_create_index(args: argparse.Namespace) -> int:
 
     # Open GRIB2 file.
     try:
-        g = grib2io.open(args.path, mode="r", use_index=False, save_index=True)
+        _ = grib2io.open(args.path, mode="r", use_index=False, save_index=True)
     except Exception as e:
         print(f"grib2io: failed to open {args.path!r}: {e}", file=sys.stderr)
         return 2
