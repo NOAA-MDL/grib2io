@@ -80,6 +80,11 @@ table_4_2_209_3 = {
     "55": ["Isothermal Reflectivity at -15C", "dBZ", "Reflectivity_-15C"],
     "56": ["Isothermal Reflectivity at -20C", "dBZ", "Reflectivity_-20C"],
     "57": ["ReflectivityAtLowestAltitude", "dBZ", "ReflectivityAtLowestAltitude"],
+    "57": [
+        "ReflectivityAtLowestAltitude resampled from 1 to 5km resolution",
+        "dBZ",
+        "ReflectivityAtLowestAltitude5km",
+    ],
     "58": [
         "Non Quality Controlled Reflectivity At Lowest Altitude",
         "dBZ",
@@ -323,6 +328,11 @@ table_4_2_209_10 = {
         "Composite Reflectivity Mosaic (optimal method)",
         "dBZ",
         "MergedReflectivityQCComposite",
+    ],
+    "0": [
+        "Composite Reflectivity Mosaic (optimal method) resampled from 1 to 5km",
+        "dBZ",
+        "MergedReflectivityQCComposite5km",
     ],
     "1": [
         "Height of Composite Reflectivity Mosaic (optimal method)",

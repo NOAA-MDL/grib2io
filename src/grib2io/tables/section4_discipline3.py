@@ -99,7 +99,11 @@ table_4_2_3_2 = {
     "36": ["Error in upper layer cloud effective radius", "m", "unknown"],
     "37": ["Lower layer cloud optical depth", "Numeric", "unknown"],
     "38": ["Lower layer cloud top pressure", "Pa", "unknown"],
-    "39": ["Error in lower layer cloud optical depth", "Numeric", "unknown"],
+    "39": [
+        "Error in lower layer cloud optical depth",
+        "Numeric",
+        "unknown",
+    ],
     "40": ["Error in lower layer cloud top pressure", "Pa", "unknown"],
     "41-191": ["Reserved", "unknown", "unknown"],
     "192-254": ["Reserved for Local Use", "unknown", "unknown"],

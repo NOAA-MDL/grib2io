@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------------
-# This table provides a mapping from the grib2io's shortName attr to CF standard name
+# This table provides a mapping from the grib2io"s shortName attr to CF standard name
 # and cell method.
 # ----------------------------------------------------------------------------------------
 table_shortname_to_cf = {
@@ -246,6 +246,7 @@ table_shortname_to_cf = {
         "cf_standard_name": "northward_sea_water_velocity",
         "cf_cell_methods": None,
     },
+    "WTMP": {"cf_standard_name": "sea_water_temperature", "cf_cell_methods": None},
     "WVDIR": {
         "cf_standard_name": "sea_surface_wind_wave_from_direction",
         "cf_cell_methods": None,
@@ -263,6 +264,7 @@ table_shortname_to_cf = {
         "cf_cell_methods": None,
     },
     "VIS": {"cf_standard_name": "visibility_in_air", "cf_cell_methods": None},
+    ## AEROSOLS BELOW ##
     "O3MR": {
         "cf_standard_name": "mass_fraction_of_ozone_in_air",
         "cf_cell_methods": None,

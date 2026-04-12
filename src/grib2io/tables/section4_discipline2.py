@@ -37,7 +37,11 @@ table_4_2_2_0 = {
     "35": ["Tile Class", "See Table 4.243", "TCLASS"],
     "36": ["Tile Fraction", "Proportion", "TFRCT"],
     "37": ["Tile Percentage", "%", "TPERCT"],
-    "38": ["Soil Volumetric Ice Content (Water Equivalent)", "m3 m-3", "SOILVIC"],
+    "38": [
+        "Soil Volumetric Ice Content (Water Equivalent)",
+        "m3 m-3",
+        "SOILVIC",
+    ],
     "39": ["Evapotranspiration Rate", "kg m-2 s-1", "EVAPTRAT"],
     "40": ["Potential Evapotranspiration Rate", "kg m-2 s-1", "PEVAPTRAT"],
     "41": ["Snow Melt Rate", "kg m-2 s-1", "SMRATE"],
@@ -129,6 +133,7 @@ table_4_2_2_0 = {
     "237": ["Evaporation of Intercepted Water", "kg m-2", "EIWATER"],
     "238": ["Plant Transpiration", "kg m-2", "PLANTTR"],
     "239": ["Soil Surface Evaporation", "kg m-2", "SOILSE"],
+    "240": ["Mixing Length Scale", "m", "MIXL"],
     "255": ["Missing", "unknown", "unknown"],
 }
 table_4_2_2_1 = {
@@ -143,10 +148,22 @@ table_4_2_2_3 = {
     "2": ["Upper Layer Soil Moisture", "kg m-3", "UPLSM"],
     "3": ["Lower Layer Soil Moisture", "kg m-3", "LOWLSM"],
     "4": ["Bottom Layer Soil Temperature", "K", "BOTLST"],
-    "5": ["Liquid Volumetric Soil Moisture (non-frozen)", "Proportion", "SOILL"],
+    "5": [
+        "Liquid Volumetric Soil Moisture (non-frozen)",
+        "Proportion",
+        "SOILL",
+    ],
     "6": ["Number of Soil Layers in Root Zone", "Numeric", "RLYRS"],
-    "7": ["Transpiration Stress-Onset (Soil Moisture)", "Proportion", "SMREF"],
-    "8": ["Direct Evaporation Cease (Soil Moisture)", "Proportion", "SMDRY"],
+    "7": [
+        "Transpiration Stress-Onset (Soil Moisture)",
+        "Proportion",
+        "SMREF",
+    ],
+    "8": [
+        "Direct Evaporation Cease (Soil Moisture)",
+        "Proportion",
+        "SMDRY",
+    ],
     "9": ["Soil Porosity", "Proportion", "POROS"],
     "10": ["Liquid Volumetric Soil Moisture (Non-Frozen)", "m3 m-3", "LIQVSM"],
     "11": ["Volumetric Transpiration Stress-Onset (Soil Moisture)", "m3 m-3", "VOLTSO"],

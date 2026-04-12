@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------------------------
 echo " -- Making originating_centers.py"
 ./get-ncep-grib2-originating-centers.py > originating_centers.py
+ruff format originating_centers.py
 
 # ----------------------------------------------------------------------------------------
 # Generate Section 0
@@ -16,6 +17,7 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table > section0.py
 done
+ruff format section0.py
 
 # ----------------------------------------------------------------------------------------
 # Generate Section 1
@@ -27,6 +29,7 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section1.py
 done
+ruff format section1.py
 
 # ----------------------------------------------------------------------------------------
 # Generate Section 3
@@ -56,6 +59,7 @@ table_earth_params = {
 for i in range(9,256):
     table_earth_params[str(i)] = {'shape':'unknown','radius':None}
 EOF
+ruff format section3.py
 
 # ----------------------------------------------------------------------------------------
 # Generate Section 4 Tables for parameter categories and parameter tables unique for each
@@ -72,6 +76,7 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section4.py
 done
+
 echo "\t - GRIB2 Time to Hours Table"
 cat << EOF >> section4.py
 table_scale_time_seconds = {
@@ -91,14 +96,20 @@ table_scale_time_seconds = {
 '13': 1.,
 '14-255': 1.}
 EOF
+
 echo "\t - wgrib2 Level/Layer String Table"
 cat table_wgrib2_level_string.txt >> section4.py
+
 echo "\t - Aerosols Tables"
 cat table_aerosols.txt >> section4.py
+
 echo "\t - grib2io custom level names"
 cat table_grib2io_custom_level_names.txt >> section4.py
+ruff format section4.py
 
-# Discipline 0
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 0
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline0.py"
 if [ -f section4_discipline0.py ]; then rm -f section4_discipline0.py; fi
 for table in $(seq 0 7 && seq 13 20 && seq 190 192)
@@ -111,59 +122,81 @@ mv -v junk section4_discipline0.py
 # NDFD Elements for Discipline 0
 cat section4_discipline0.py table_ndfd_parameters_definitions.txt > junk
 mv -v junk section4_discipline0.py
+ruff format section4_discipline0.py
 
-# Discipline 1
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 1
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline1.py"
 if [ -f section4_discipline1.py ]; then rm -f section4_discipline1.py; fi
 for table in $(seq 0 2)
 do
    ./get-ncep-grib2-sect4-parameters-table.py 1 $table >> section4_discipline1.py
 done
+ruff format section4_discipline1.py
 
-# Discipline 2
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 2
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline2.py"
 if [ -f section4_discipline2.py ]; then rm -f section4_discipline2.py; fi
 for table in 0 1 3 4 5
 do
    ./get-ncep-grib2-sect4-parameters-table.py 2 $table >> section4_discipline2.py
 done
+ruff format section4_discipline2.py
 
-# Discipline 3
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 3
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline3.py"
 if [ -f section4_discipline3.py ]; then rm -f section4_discipline3.py; fi
 for table in 0 1 2 3 4 5 6 192
 do
    ./get-ncep-grib2-sect4-parameters-table.py 3 $table >> section4_discipline3.py
 done
+ruff format section4_discipline3.py
 
-# Discipline 4
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 4
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline4.py"
 if [ -f section4_discipline4.py ]; then rm -f section4_discipline4.py; fi
 for table in $(seq 0 9)
 do
    ./get-ncep-grib2-sect4-parameters-table.py 4 $table >> section4_discipline4.py
 done
+ruff format section4_discipline4.py
 
-# Discipline 10
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 10
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline10.py"
 if [ -f section4_discipline10.py ]; then rm -f section4_discipline10.py; fi
 for table in 0 1 2 3 4 191
 do
    ./get-ncep-grib2-sect4-parameters-table.py 10 $table >> section4_discipline10.py
 done
+ruff format section4_discipline10.py
 
-# Discipline 20
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 20
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline20.py"
 if [ -f section4_discipline20.py ]; then rm -f section4_discipline20.py; fi
 for table in 0 1 2
 do
    ./get-ncep-grib2-sect4-parameters-table.py 20 $table >> section4_discipline20.py
 done
+ruff format section4_discipline20.py
 
-# Discipline 209 - MRMS GRIB2 Products
+# ----------------------------------------------------------------------------------------
+# Section 4, Discipline 209 - MRMS GRIB2 Products
+# ----------------------------------------------------------------------------------------
 echo " -- Making section4_discipline209.py"
 if [ -f section4_discipline209.py ]; then rm -f section4_discipline209.py; fi
 ./make-mrms-grib2-sect4-parameters.py >> section4_discipline209.py
+ruff format section4_discipline209.py
 
 # ----------------------------------------------------------------------------------------
 # Remove "See Note" strings from section 4 discipline files.
@@ -186,6 +219,7 @@ do
 done
 sed "s/:'201-49151',/:'Reserved',/g" section5.py > junk
 mv -v junk section5.py
+ruff format section5.py
 
 # ----------------------------------------------------------------------------------------
 # Generate Section 6
@@ -197,18 +231,21 @@ do
    echo "\t - Table $table"
    ./get-ncep-grib2-table.py $table >> section6.py
 done
+ruff format section6.py
 
 # ----------------------------------------------------------------------------------------
 # NDFD Keys
 # ----------------------------------------------------------------------------------------
 echo " -- Making ndfd_additionals.py"
 cat table_ndfd_additionals.txt >> ndfd_additionals.py
+ruff format ndfd_additionals.py
 
 # ----------------------------------------------------------------------------------------
 # CF Tables
 # ----------------------------------------------------------------------------------------
 echo " -- Making cf.py"
-cat table_cf.txt >> cf.py
+sed "s/'/\"/g" table_cf.txt >> cf.py
+ruff format cf.py
 
 # ----------------------------------------------------------------------------------------
 # Move created tables to area in package src
