@@ -20,6 +20,7 @@ for df in tables:
     df.columns = df.iloc[0]
     df.drop(1, inplace=True)
     df.columns = ["Category", "Description"]
+    df = df.drop_duplicates()
 
     name = "table_4_1_" + discipline
     print(name, "= {")

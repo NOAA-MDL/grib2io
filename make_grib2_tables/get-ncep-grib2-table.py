@@ -35,6 +35,7 @@ for i, t in enumerate(tables):
     if len(t) > 1:
         tbl_idx = i
 df = tables[tbl_idx]
+df = df.drop_duplicates()
 
 # ----------------------------------------------------------------------------------------
 # Table 4.5 has a units column with no column heading.
@@ -84,8 +85,8 @@ for idx, row in df.iterrows():
 
     # For table 1.0, for some reason, I cannot figure out, a row is not present in the
     # pandas read_html, so manually add here.
-    if tblin == "1.0" and value == "24":
-        line = "'25':'Pre-operational to be implemented by next amendment',"
-        print(line)
+#    if tblin == "1.0" and value == "24":
+#        line = "'25':'Pre-operational to be implemented by next amendment',"
+#        print(line)
 print("}")
 print("")

@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import grib2io
 
-test_file = "tests/input_data/gefs.chem.t00z.a2d_0p25.f000.grib2_subset"
+TEST_FILE = "gefs.chem.t00z.a2d_0p25.f000.grib2_subset"
 
 
 section4_eval = {
@@ -614,7 +614,7 @@ section4_eval = {
             0,
         ]
     ),
-    "du_pm25": np.array(
+    "du_pm25_param193": np.array(
         [
             0,
             48,
@@ -646,7 +646,7 @@ section4_eval = {
             0,
         ]
     ),
-    "du_pm10": np.array(
+    "du_pm10_param192": np.array(
         [
             0,
             48,
@@ -678,7 +678,7 @@ section4_eval = {
             0,
         ]
     ),
-    "ss_pm25": np.array(
+    "ss_pm25_param193": np.array(
         [
             0,
             48,
@@ -710,7 +710,7 @@ section4_eval = {
             0,
         ]
     ),
-    "tot_pm10": np.array(
+    "tot_pm10_param192": np.array(
         [
             0,
             48,
@@ -742,7 +742,7 @@ section4_eval = {
             0,
         ]
     ),
-    "tot_pm25": np.array(
+    "tot_pm25_param193": np.array(
         [
             0,
             48,
@@ -1191,7 +1191,7 @@ test_dict = {
         "units": "Numeric",
         "fullName": "Total Aerosol Optical Thickness at 11000-11200nm",
     },
-    "du_pm25": {
+    "du_pm25_param193": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -1201,7 +1201,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Dust Dry Particulate matter (fine)",
     },
-    "du_pm10": {
+    "du_pm10_param192": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -1211,7 +1211,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Dust Dry Particulate matter (coarse)",
     },
-    "ss_pm25": {
+    "ss_pm25_param193": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -1221,7 +1221,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Sea Salt Dry Particulate matter (fine)",
     },
-    "tot_pm10": {
+    "tot_pm10_param192": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -1231,7 +1231,7 @@ test_dict = {
         "units": "µg m-3",
         "fullName": "Total Aerosol Particulate matter (coarse)",
     },
-    "tot_pm25": {
+    "tot_pm25_param193": {
         "typeOfFirstFixedSurface": 1,
         "scaledValueOfFirstWavelength": 0,
         "scaledValueOfSecondWavelength": 0,
@@ -1314,22 +1314,17 @@ test_dict = {
 }
 
 
-@pytest.fixture
-def grib_file():
-    grb = grib2io.open(test_file)
-    yield grb
-    grb.close()
-
-
-def test_variables(grib_file):
+def test_variables(request):
     """Test AOD variables at different wavelengths"""
 
-    grib_file = grib2io.open(test_file)
+    datadir = request.config.rootdir / "tests" / "input_data"
+
+    grib_file = grib2io.open(datadir / TEST_FILE)
 
     testkeys = [k for k in test_dict.keys()]
 
     for index, k in enumerate(testkeys):
-        print(k)
+        print(f"shortName = {k}")
         msg = grib_file.select(shortName=k)[0]
         np.testing.assert_array_equal(section4_eval[k], msg.section4)
         assert (

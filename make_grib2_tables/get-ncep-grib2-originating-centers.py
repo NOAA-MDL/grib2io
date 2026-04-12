@@ -81,6 +81,7 @@ url = r"https://www.nco.ncep.noaa.gov/pmb/docs/on388/tablea.html"
 tables = pd.read_html(url)
 
 df = tables[0]
+df = df.drop_duplicates()
 
 name = "table_generating_process"
 

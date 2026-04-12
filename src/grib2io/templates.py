@@ -134,6 +134,9 @@ class Grib2Metadata:
     def __index__(self):
         return int(self.value)
 
+    def __hash__(self):
+        return hash(self.value)
+
     @property
     def definition(self):
         """Provide the definition of the numeric metadata."""

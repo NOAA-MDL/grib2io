@@ -1267,7 +1267,6 @@ table_4_230 = {
     "30131": ["Iodine 124", "I-124"],
     "30132": ["Iodine 125", "I-125"],
     "30133": ["Iodine 126", "I-126"],
-    "30133": ["Iodine 126", "I-126"],
     "30134": ["Iodine 129", "I-129"],
     "30135": ["Iodine 129 elementary gaseous", "I-129g"],
     "30136": ["Iodine 129 organic bonded", "I-129o"],
@@ -1388,7 +1387,6 @@ table_4_230 = {
     "30251": ["Thorium 234", "Th-234"],
     "30252": ["Protactinium 231", "Pa-231"],
     "30253": ["Protactinium 233", "Pa-233"],
-    "30254": ["Protactinium 234 metastable", "Pa-234m"],
     "30254": ["Protactinium 234 metastable", "Pa-234m"],
     "30255": ["Uranium 232", "U-232"],
     "30256": ["Uranium 233", "U-233"],
@@ -1614,7 +1612,6 @@ table_4_230 = {
     "62115": ["Olea (Olive) Pollen", "unknown"],
     "62116-62199": ["Reserved", "unknown"],
     "62200": ["Ambrosia (Ragweed, Burr-Ragweed) Pollen", "unknown"],
-    "62201": ["Artemisia (Sagebrush, Wormwood, Mugwort) Pollen", "unknown"],
     "62201": ["Artemisia (Sagebrush, Wormwood, Mugwort) Pollen", "unknown"],
     "62202": [
         "Brassica (Rape, Broccoli, Brussel Sprouts, Cabbage, Cauliflower, Collards, Kale, Kohlrabi, Mustard, Rutabaga) Pollen",

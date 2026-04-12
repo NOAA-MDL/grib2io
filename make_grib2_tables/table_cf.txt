@@ -61,7 +61,6 @@ table_shortname_to_cf = {
     'WDIR': {'cf_standard_name': 'wind_from_direction', 'cf_cell_methods': None},
     'WIND': {'cf_standard_name': 'wind_speed', 'cf_cell_methods': None},
     'GUST': {'cf_standard_name': 'wind_speed_of_gust', 'cf_cell_methods': None},
-    'WTMP': {'cf_standard_name': 'sea_water_temperature', 'cf_cell_methods': None},
     'ACPCP': {'cf_standard_name': 'lwe_thickness_of_convective_precipitation_amount', 'cf_cell_methods': 'time: sum'},
     'PTYPE': {'cf_standard_name': 'predominant_precipitation_type_at_surface', 'cf_cell_methods': None},
     'APCP': {'cf_standard_name': 'lwe_thickness_of_precipitation_amount', 'cf_cell_methods': 'time: sum'},
