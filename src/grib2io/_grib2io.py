@@ -1767,7 +1767,7 @@ class _Grib2Message:
             pass
         elif msg.typeOfValues == 1:
             pass
-        msg._data = interpolate(
+        newdata = interpolate(
             self.data,
             method,
             Grib2GridDef.from_section3(self.section3),
@@ -1776,6 +1776,7 @@ class _Grib2Message:
             num_threads=num_threads,
         ).reshape(msg.ny, msg.nx)
         msg.section5[0] = grid_def_out.npoints
+        msg._data = newdata.astype(np.float32)
         return msg
 
     def subset(self, lats, lons):
@@ -2103,8 +2104,9 @@ def interpolate(
     """
     This is the module-level interpolation function.
 
-    This interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
-    through grib2io's internal iplib Cython extension module.
+    This interfaces with the "d" version of[NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    through grib2io's internal iplib Cython extension module. The "d" version
+    defines 4-byte integers and 8-byte reals.
 
     Parameters
     ----------
@@ -2210,7 +2212,7 @@ def interpolate(
             km,
             ibi,
             li,
-            a,
+            a.astype(np.float64),
         )
         out = np.where(lo == 0, np.nan, go).reshape(newshp)
     elif isinstance(a, tuple):
@@ -2234,12 +2236,12 @@ def interpolate(
             km,
             ibi,
             li,
-            a[0],
-            a[1],
+            a[0].astype(np.float64),
+            a[1].astype(np.float64),
         )
         uo = np.where(lo == 0, np.nan, uo).reshape(newshp)
         vo = np.where(lo == 0, np.nan, vo).reshape(newshp)
-        out = (uo, vo)
+        out = (uo.astype(np.float32), vo.astype(np.float32))
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)
@@ -2261,7 +2263,7 @@ def interpolate_to_stations(
     """
     Module-level interpolation function for interpolation to stations.
 
-    Interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    Interfaces with the "d" version of [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
     via grib2io's iplib Cython exntension module. It supports scalar and
     vector interpolation according to the type of object a.
 
@@ -2404,9 +2406,9 @@ def interpolate_to_stations(
             km,
             ibi,
             li,
-            a,
-            lats=np.array(lats, dtype=np.float32),
-            lons=np.array(lons, dtype=np.float32),
+            a.astype(np.float64),
+            lats=np.array(lats, dtype=np.float64),
+            lons=np.array(lons, dtype=np.float64),
         )
         out = _reshape_and_mask_post_interp(go, newshp, mask)
 
@@ -2427,14 +2429,14 @@ def interpolate_to_stations(
             km,
             ibi,
             li,
-            a[0],
-            a[1],
-            lats=np.array(lats, dtype=np.float32),
-            lons=np.array(lons, dtype=np.float32),
+            a[0].astype(np.float64),
+            a[1].astype(np.float64),
+            lats=np.array(lats, dtype=np.float64),
+            lons=np.array(lons, dtype=np.float64),
         )
         out = (
-            _reshape_and_mask_post_interp(uo, newshp, mask),
-            _reshape_and_mask_post_interp(vo, newshp, mask),
+            _reshape_and_mask_post_interp(uo.astype(np.float32), newshp, mask),
+            _reshape_and_mask_post_interp(vo.astype(np.float32), newshp, mask),
         )
 
     try:

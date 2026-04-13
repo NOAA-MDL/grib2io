@@ -15,7 +15,7 @@ from Cython.Distutils import build_ext
 pkgname_to_libname = {
     "g2c": ["g2c"],
     "aec": ["aec"],
-    "ip": ["ip_4"],
+    "ip": ["ip_d"],
     "jasper": ["jasper"],
     "jpeg": ["turbojpeg", "jpeg"],
     "openjpeg": ["openjp2"],
@@ -376,7 +376,7 @@ extmod_config["g2clib"]["incdirs"].append(numpy.get_include())
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static("ip")
-pkginfo = get_package_info("ip", incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
+pkginfo = get_package_info("ip", incdir="include_d", static=ip_static, required=False, include_file="iplib.h")
 
 if None in pkginfo:
     warnings.warn("NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")

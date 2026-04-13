@@ -73,12 +73,12 @@ def test_interp_to_stations_3darray(request):
             latdiff,
             np.array(
                 [
-                    3.1509399e-03,
-                    9.8762512e-03,
-                    2.3097992e-03,
-                    5.6610107e-03,
-                    1.0345459e-02,
-                    4.5776367e-05,
+                    3.15060425e-03,
+                    9.87618408e-03,
+                    2.30978088e-03,
+                    5.65974731e-03,
+                    1.03450378e-02,
+                    4.41650391e-05,
                 ],
                 dtype=np.float32,
             ),
@@ -87,7 +87,7 @@ def test_interp_to_stations_3darray(request):
         np.testing.assert_allclose(
             londiff,
             np.array(
-                [0.00893402, 0.0038681, 0.00794983, 0.00233459, 0.00022888, 0.00444794],
+                [0.00893629, 0.00386768, 0.00795333, 0.00233707, 0.00023229, 0.00444852],
                 dtype=np.float32,
             ),
             rtol=rtol,
