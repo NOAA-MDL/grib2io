@@ -25,9 +25,7 @@ except (ImportError, ValueError):
     HAS_DATATREE = False
 
 # Skip all tests if DataTree is not available
-pytestmark = pytest.mark.skipif(
-    not HAS_DATATREE, reason="xarray version does not support DataTree functionality"
-)
+pytestmark = pytest.mark.skipif(not HAS_DATATREE, reason="xarray version does not support DataTree functionality")
 
 
 def test_datatree_basic_structure(request):
@@ -111,9 +109,7 @@ def test_datatree_multiple_pdtn_branches(request):
         found_multiple_pdtns = False
         for level_name, level_node in tree.children.items():
             # If there are at least two children that start with 'pdtn_'
-            pdtn_children = [
-                name for name in level_node.children if name.startswith("pdtn_")
-            ]
+            pdtn_children = [name for name in level_node.children if name.startswith("pdtn_")]
             if len(pdtn_children) > 1:
                 found_multiple_pdtns = True
 
@@ -137,9 +133,7 @@ def test_datatree_perturbation_structure(request):
 
     try:
         # Try to open a file with perturbation numbers
-        tree = xr.open_datatree(
-            data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io"
-        )
+        tree = xr.open_datatree(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io")
 
         # Look for a node with perturbation numbers
         found_perturbations = False
@@ -186,9 +180,7 @@ def test_datatree_subset_by_level(request):
     filters = {"typeOfFirstFixedSurface": 1}  # Surface level
 
     # Open the file again with the filter
-    surface_tree = xr.open_datatree(
-        data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters
-    )
+    surface_tree = xr.open_datatree(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
 
     # Verify that only the surface level is present
     assert "surface" in surface_tree.children

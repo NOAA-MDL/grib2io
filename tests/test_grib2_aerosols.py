@@ -1327,18 +1327,10 @@ def test_variables(request):
         print(f"shortName = {k}")
         msg = grib_file.select(shortName=k)[0]
         np.testing.assert_array_equal(section4_eval[k], msg.section4)
-        assert (
-            msg.scaledValueOfFirstWavelength
-            == test_dict[k]["scaledValueOfFirstWavelength"]
-        )
-        assert (
-            msg.scaledValueOfSecondWavelength
-            == test_dict[k]["scaledValueOfSecondWavelength"]
-        )
+        assert msg.scaledValueOfFirstWavelength == test_dict[k]["scaledValueOfFirstWavelength"]
+        assert msg.scaledValueOfSecondWavelength == test_dict[k]["scaledValueOfSecondWavelength"]
 
-        assert (
-            msg.typeOfFirstFixedSurface.value == test_dict[k]["typeOfFirstFixedSurface"]
-        )
+        assert msg.typeOfFirstFixedSurface.value == test_dict[k]["typeOfFirstFixedSurface"]
         assert msg.typeOfAerosol == test_dict[k]["typeOfAerosol"]
         assert msg._isAerosol
         assert msg.parameterCategory == test_dict[k]["parameterCategory"]

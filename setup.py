@@ -28,9 +28,7 @@ def _is_apple_clang(compiler):
     """Returns True if compiler is Apple Clang, not real GCC."""
     try:
         proc = subprocess.run([compiler, "--version"], capture_output=True, check=True)
-        output = proc.stdout.decode(errors="ignore") + proc.stderr.decode(
-            errors="ignore"
-        )
+        output = proc.stdout.decode(errors="ignore") + proc.stderr.decode(errors="ignore")
         if "Apple LLVM" in output or "Apple clang" in output:
             return True
         if "clang" in output and "Free Software Foundation" not in output:
@@ -56,9 +54,7 @@ def check_lib_static(name):
     if os.environ.get(env_var_name):
         val = os.environ.get(env_var_name)
         if val not in {"True", "False"}:
-            raise ValueError(
-                "Environment variable {env_var_name} must be 'True' or 'False'"
-            )
+            raise ValueError("Environment variable {env_var_name} must be 'True' or 'False'")
         bval = True if val == "True" else False
     return bval
 
@@ -93,9 +89,7 @@ def get_package_info(
     if pkg_dir is not None:
         if name in {"g2c", "ip"}:
             libname = pkgname_to_libname[name][0]
-            libpath = find_library(
-                libname, dirs=[pkg_dir], static=static, required=required
-            )
+            libpath = find_library(libname, dirs=[pkg_dir], static=static, required=required)
             if libpath is None:
                 raise ValueError(f"Cannot find {libname}.")
             pkg_libdir = os.path.dirname(libpath)
@@ -103,9 +97,7 @@ def get_package_info(
             pkg_incdir = os.path.dirname(incfile)
     else:
         # No env vars set, now find everything.
-        libnames = (
-            pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
-        )
+        libnames = pkgname_to_libname[name] if name in pkgname_to_libname.keys() else [name]
         for lib in libnames:
             libpath = find_library(lib, static=static, required=required)
             if libpath is not None:
@@ -122,9 +114,7 @@ def get_package_info(
             else:
                 pkg_libdir_root = pkg_libdir
 
-            if os.path.exists(
-                os.path.join(os.path.dirname(pkg_libdir_root), "include")
-            ):
+            if os.path.exists(os.path.join(os.path.dirname(pkg_libdir_root), "include")):
                 pkg_incdir = os.path.join(os.path.dirname(pkg_libdir_root), "include")
             if include_file is not None:
                 incfile = find_include_file(
@@ -193,9 +183,7 @@ def find_library(name, dirs=None, static=False, required=True):
             dirs.extend(os.environ["DYLD_LIBRARY_PATH"].split(":"))
 
         # Finally, look in common system paths.
-        dirs.extend(
-            ["/usr", "/usr/local", "/opt/local", "/opt/homebrew", "/opt", "/sw"]
-        )
+        dirs.extend(["/usr", "/usr/local", "/opt/local", "/opt/homebrew", "/opt", "/sw"])
 
     out = []
     for d in dirs:
@@ -224,9 +212,7 @@ def run_ar_command(filename):
 
 def run_nm_command(filename):
     """Run the nm command"""
-    cmd = subprocess.run(
-        ["nm", filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL
-    )
+    cmd = subprocess.run(["nm", filename], stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     cmdout = cmd.stdout.decode("utf-8")
     return cmdout
 
@@ -348,20 +334,14 @@ openmp_pyx = "src/ext/openmp_handler.pyx"
 # Get g2c information (THIS IS REQUIRED)
 # ----------------------------------------------------------------------------------------
 g2c_static = check_lib_static("g2c")
-pkginfo = get_package_info(
-    "g2c", static=g2c_static, required=True, include_file="grib2.h"
-)
+pkginfo = get_package_info("g2c", static=g2c_static, required=True, include_file="grib2.h")
 if None in pkginfo:
     raise ValueError("NCEPLIBS-g2c library not found. grib2io will not build.")
 
-extmod_config["g2clib"] = dict(
-    libraries=[pkginfo[0]], incdirs=[pkginfo[1]], libdirs=[pkginfo[2]], extra_objects=[]
-)
+extmod_config["g2clib"] = dict(libraries=[pkginfo[0]], incdirs=[pkginfo[1]], libdirs=[pkginfo[2]], extra_objects=[])
 
 if g2c_static:
-    staticlib = find_library(
-        "g2c", dirs=extmod_config["g2clib"]["libdirs"], static=True
-    )
+    staticlib = find_library("g2c", dirs=extmod_config["g2clib"]["libdirs"], static=True)
     extmod_config["g2clib"]["extra_objects"].append(staticlib)
     symbols = run_ar_command(staticlib)
 
@@ -384,9 +364,7 @@ if g2c_static:
         extmod_config["g2clib"]["libdirs"].append(libdir)
 
         dep_lib_name = pkgname_to_libname[dep_lib][0]
-        extmod_config["g2clib"]["extra_objects"].append(
-            find_library(dep_lib_name, dirs=[libdir], static=g2c_static)
-        )
+        extmod_config["g2clib"]["extra_objects"].append(find_library(dep_lib_name, dirs=[libdir], static=g2c_static))
 
     # Clear out libraries and libdirs when using static libs
     extmod_config["g2clib"]["libraries"] = []
@@ -398,14 +376,10 @@ extmod_config["g2clib"]["incdirs"].append(numpy.get_include())
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static("ip")
-pkginfo = get_package_info(
-    "ip", incdir="include_4", static=ip_static, required=False, include_file="iplib.h"
-)
+pkginfo = get_package_info("ip", incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
 
 if None in pkginfo:
-    warnings.warn(
-        "NCEPLIBS-ip not found or missing information. grib2io will build without interpolation."
-    )
+    warnings.warn("NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")
     build_with_ip = False
 
 if build_with_ip:
@@ -441,9 +415,7 @@ if build_with_ip:
 
     # At this point, we know where to find ip and how we are linking. Now check
     # if ip was built with OpenMP support.
-    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(
-        ip_libname, static=False
-    )
+    build_with_openmp, openmp_libname, ftn_libname = check_ip_for_openmp(ip_libname, static=False)
 
     if build_with_openmp:
         # If on macOS and ip is from Homebrew, then check the C compiler to be
@@ -454,13 +426,9 @@ if build_with_ip:
             if _is_apple_clang(ccomp):
                 ccomp = _find_homebrew_gcc()
                 if ccomp is None:
-                    raise RuntimeError(
-                        "NCEPLIBS-ip is from Homebrew. Must build iplib extension module with Homebrew GCC."
-                    )
+                    raise RuntimeError("NCEPLIBS-ip is from Homebrew. Must build iplib extension module with Homebrew GCC.")
                 else:
-                    print(
-                        f"NCEPLIBS-ip is from Homebrew. grib2io will use compiler from Homebrew: {ccomp}"
-                    )
+                    print(f"NCEPLIBS-ip is from Homebrew. grib2io will use compiler from Homebrew: {ccomp}")
                     os.environ["CC"] = ccomp
 
         # Note that both GNU and Intel support this flag.
@@ -513,9 +481,7 @@ g2clibext = Extension(
 )
 extension_modules.append(g2clibext)
 
-redtoregext = Extension(
-    "grib2io.redtoreg", [redtoreg_pyx], include_dirs=[numpy.get_include()]
-)
+redtoregext = Extension("grib2io.redtoreg", [redtoreg_pyx], include_dirs=[numpy.get_include()])
 extension_modules.append(redtoregext)
 
 # ----------------------------------------------------------------------------------------

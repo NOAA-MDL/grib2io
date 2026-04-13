@@ -933,9 +933,7 @@ table_shortname_to_cf = {
 table_4_7_cf = {
     0: {"cf_cell_methods": "time: mean"},
     1: {"cf_cell_methods": "time: mean (comment: weighted)"},
-    2: {
-        "cf_cell_methods": "time: standard_deviation (comment: with respect to cluster mean)"
-    },
+    2: {"cf_cell_methods": "time: standard_deviation (comment: with respect to cluster mean)"},
     3: {"cf_cell_methods": "time: standard_deviation (comment: normalized)"},
     4: {"cf_cell_methods": "time: standard_deviation"},
     5: {"cf_cell_methods": None},  # No direct CF equivalent

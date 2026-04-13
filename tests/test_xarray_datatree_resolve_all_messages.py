@@ -17,9 +17,7 @@ except (ImportError, ValueError):
     HAS_DATATREE = False
 
 # Skip all tests if DataTree is not available
-pytestmark = pytest.mark.skipif(
-    not HAS_DATATREE, reason="xarray version does not support DataTree functionality"
-)
+pytestmark = pytest.mark.skipif(not HAS_DATATREE, reason="xarray version does not support DataTree functionality")
 
 TOTAL_COUNT_EXPECTED = 294
 
@@ -55,9 +53,7 @@ def test_datatree_resolve_all_messages(request):
     data = request.config.rootdir / "tests" / "input_data"
 
     # Open the file as a DataTree
-    tree = xr.open_datatree(
-        data / "blend.t00z.core.f001.co_4x_reduce.grib2", engine="grib2io"
-    )
+    tree = xr.open_datatree(data / "blend.t00z.core.f001.co_4x_reduce.grib2", engine="grib2io")
 
     # Verify the basic structure
     assert isinstance(tree, xr.DataTree)

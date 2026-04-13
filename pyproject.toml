@@ -69,11 +69,13 @@ zip-safe = false
 [tool.setuptools.dynamic]
 version = {attr = "grib2io.__config__.grib2io_version"}
 
+[tool.ruff]
+line-length = 150
+
 [tool.ruff.lint]
-# Add rule codes or prefixes to ignore globally
 ignore = [
     "D",    # Ignore all docstring-related rules (D prefix)
-    "E501", # Ignore line-too-long (handled by formatter)
+    #"E501", # Ignore line-too-long (handled by formatter)
     "F401", # Ignore unused imports
     "F811", # Ignore redefinition
 ]

@@ -10,9 +10,7 @@ COMMANDS = {"create-index", "ls"}
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(
-        prog="grib2io", description="Command line utilities for grib2io"
-    )
+    p = argparse.ArgumentParser(prog="grib2io", description="Command line utilities for grib2io")
     sub = p.add_subparsers(dest="command", required=True)
 
     add_ls_parser(sub)

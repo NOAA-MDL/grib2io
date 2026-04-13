@@ -85,9 +85,7 @@ def test_section4(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
-    expected_section4 = np.array(
-        [0, 0, 16, 196, 2, 0, 96, 0, 0, 1, 12, 10, 0, 0, 255, 0, 0]
-    )
+    expected_section4 = np.array([0, 0, 16, 196, 2, 0, 96, 0, 0, 1, 12, 10, 0, 0, 255, 0, 0])
     assert msg.typeOfFirstFixedSurface.value == 10
     assert msg.typeOfFirstFixedSurface.definition == ["Entire Atmosphere", "unknown"]
     assert msg.scaleFactorOfFirstFixedSurface == 0
@@ -154,10 +152,7 @@ def test_section5(request):
         ]
     )
     assert msg.dataRepresentationTemplateNumber.value == 3
-    assert (
-        msg.dataRepresentationTemplateNumber.definition
-        == "Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)"
-    )
+    assert msg.dataRepresentationTemplateNumber.definition == "Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)"
     assert msg.numberOfPackedValues == 65160
     assert msg.typeOfValues.value == 0
     assert msg.typeOfValues.definition == "Floating Point"
@@ -168,10 +163,7 @@ def test_section5(request):
     assert msg.groupSplittingMethod.value == 1
     assert msg.groupSplittingMethod.definition == "General Group Splitting"
     assert msg.typeOfMissingValueManagement.value == 0
-    assert (
-        msg.typeOfMissingValueManagement.definition
-        == "No explicit missing values included within the data values"
-    )
+    assert msg.typeOfMissingValueManagement.definition == "No explicit missing values included within the data values"
     assert msg.priMissingValue is None
     assert msg.secMissingValue is None
     assert msg.nGroups == 3127
@@ -191,10 +183,7 @@ def test_data(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
-        assert (
-            hashlib.sha1(msg.data).hexdigest()
-            == "47a930feaf4c7389529cfb8de94578c06e3c9ce3"
-        )
+        assert hashlib.sha1(msg.data).hexdigest() == "47a930feaf4c7389529cfb8de94578c06e3c9ce3"
     assert msg.min == np.float32(-20.000002)
     assert msg.max == np.float32(45.85)
     assert msg.mean == np.float32(-11.05756)
@@ -205,9 +194,5 @@ def test_latlons(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
-    assert (
-        hashlib.sha1(msg.lats).hexdigest() == "b750c3a2dd582cf6ab62b7caec1e6c228eefd289"
-    )
-    assert (
-        hashlib.sha1(msg.lons).hexdigest() == "7eff5b0b19a5036396031315e956b8c40a567bd3"
-    )
+    assert hashlib.sha1(msg.lats).hexdigest() == "b750c3a2dd582cf6ab62b7caec1e6c228eefd289"
+    assert hashlib.sha1(msg.lons).hexdigest() == "7eff5b0b19a5036396031315e956b8c40a567bd3"

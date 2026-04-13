@@ -7,13 +7,7 @@ def test_grib2_write_local_use(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "testwrite_localuse.grib2"
 
-    grib2file = (
-        request.config.rootdir
-        / "tests"
-        / "input_data"
-        / "gfs_20221107"
-        / "gfs.t00z.pgrb2.1p00.f012_subset"
-    )
+    grib2file = request.config.rootdir / "tests" / "input_data" / "gfs_20221107" / "gfs.t00z.pgrb2.1p00.f012_subset"
     grib2out = grib2io.open(target_file, mode="w")
     with grib2io.open(grib2file) as g:
         msg = g[0]

@@ -22,9 +22,7 @@ _varinfo_tables_datastore = {}
 GRIB2_DISCIPLINES = [0, 1, 2, 3, 4, 10, 20, 209]
 
 AEROSOL_PDTNS = [44, 45, 46, 47, 48, 49, 50, 80, 81, 82, 83, 84, 85]
-AEROSOL_PARAMS = list(
-    itertools.chain(range(0, 19), range(50, 82), range(100, 113), range(192, 197))
-)
+AEROSOL_PARAMS = list(itertools.chain(range(0, 19), range(50, 82), range(100, 113), range(192, 197)))
 CHEMICAL_PDTNS = [40, 41, 42, 43, 57, 58, 67, 68, 76, 77, 78, 79]
 
 
@@ -39,9 +37,7 @@ def _load_varinfo_tables(modname: str):
         Module name to extract variable info tables from.
     """
     module = importlib.import_module(modname, package=__name__)
-    names = getattr(
-        module, "__all__", [name for name in dir(module) if name.startswith("table_")]
-    )
+    names = getattr(module, "__all__", [name for name in dir(module) if name.startswith("table_")])
     _varinfo_tables_datastore.update({name: getattr(module, name) for name in names})
 
 
@@ -65,13 +61,9 @@ def get_table(table: str, expand: bool = False) -> dict:
         GRIB2 code table as a dictionary.
     """
     if len(table) == 3 and table == "4.1":
-        raise Exception(
-            "GRIB2 Code Table 4.1 requires a 3rd value representing the discipline."
-        )
+        raise Exception("GRIB2 Code Table 4.1 requires a 3rd value representing the discipline.")
     if len(table) == 3 and table.startswith("4.2"):
-        raise Exception(
-            "Use function get_varinfo_from_table() for GRIB2 Code Table 4.2"
-        )
+        raise Exception("Use function get_varinfo_from_table() for GRIB2 Code Table 4.2")
     try:
         tbl = globals()["table_" + table.replace(".", "_")]
         if expand:
@@ -384,9 +376,7 @@ def _build_chemical_shortname(obj) -> str:
         parts.append(source_sink)
 
     if not parts:
-        return get_varinfo_from_table(
-            obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD
-        )[2]
+        return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
 
     return "_".join(parts)
 
@@ -443,11 +433,7 @@ def _build_aerosol_shortname(obj) -> str:
 
     # Add optical and wavelength information
     var_wavelength = ""
-    if (
-        hasattr(obj, "parameterNumber")
-        and hasattr(obj, "scaledValueOfFirstWavelength")
-        and hasattr(obj, "scaledValueOfSecondWavelength")
-    ):
+    if hasattr(obj, "parameterNumber") and hasattr(obj, "scaledValueOfFirstWavelength") and hasattr(obj, "scaledValueOfSecondWavelength"):
         optical_type = str(obj.parameterNumber)
         if obj.scaledValueOfFirstWavelength > 0:
             first_wl = obj.scaledValueOfFirstWavelength
@@ -515,9 +501,7 @@ def _build_aerosol_shortname(obj) -> str:
             parts.append(source_sink)
         shortname = "_".join(parts) if len(parts) > 1 else parts[0]
     else:
-        return get_varinfo_from_table(
-            obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD
-        )[2]
+        return get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[2]
 
     return shortname
 
@@ -542,24 +526,15 @@ def get_table_names(var_tables: bool = False) -> tuple:
     tuple of str
         A tuple sorted names of available tables.
     """
-    tables = [
-        name.replace("table_", "")
-        for name, val in globals().items()
-        if isinstance(val, dict) and name.startswith("table_")
-    ]
+    tables = [name.replace("table_", "") for name, val in globals().items() if isinstance(val, dict) and name.startswith("table_")]
 
-    tables = [
-        t.replace("_", ".") if t.startswith(tuple("0123456789")) else t for t in tables
-    ]
+    tables = [t.replace("_", ".") if t.startswith(tuple("0123456789")) else t for t in tables]
 
     if var_tables:
         for d in GRIB2_DISCIPLINES:
             modname = f".section4_discipline{d}"
             _load_varinfo_tables(modname)
-        vt = [
-            t.replace("table_", "").replace("_", ".")
-            for t in _varinfo_tables_datastore.keys()
-        ]
+        vt = [t.replace("table_", "").replace("_", ".") for t in _varinfo_tables_datastore.keys()]
         tables.extend(vt)
 
     return tuple(sorted(tables))

@@ -50,9 +50,7 @@ def decimal_to_scaled_int(
         if scale_factor is not None:
             scaled = dec_value * (10**scale_factor)
             if scaled != scaled.to_integral_value():
-                raise ValueError(
-                    f"Value {value} cannot be exactly scaled by 10^{scale_factor}"
-                )
+                raise ValueError(f"Value {value} cannot be exactly scaled by 10^{scale_factor}")
             return scale_factor, int(scaled)
         else:
             scale_factor = 0
@@ -60,9 +58,7 @@ def decimal_to_scaled_int(
                 dec_value *= 10
                 scale_factor += 1
                 if scale_factor > 20:
-                    raise ValueError(
-                        f"Could not find exact scale factor for value {value} within bounds."
-                    )
+                    raise ValueError(f"Could not find exact scale factor for value {value} within bounds.")
             return scale_factor, int(dec_value)
 
 
@@ -153,9 +149,7 @@ def get_leadtime(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
     leadTime
         datetime.timedelta object representing the lead time of the GRIB2 message.
     """
-    lt = tables.get_value_from_table(
-        pdt[templates.UnitOfForecastTime._key[pdtn]], "scale_time_seconds"
-    )
+    lt = tables.get_value_from_table(pdt[templates.UnitOfForecastTime._key[pdtn]], "scale_time_seconds")
     lt *= pdt[templates.ValueOfForecastTime._key[pdtn]]
     return datetime.timedelta(seconds=int(lt))
 
@@ -186,11 +180,7 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
             pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]],
             "scale_time_seconds",
         )
-        d = (
-            ntime
-            * duration_unit
-            * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
-        )
+        d = ntime * duration_unit * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
     else:
         d = 0
     return datetime.timedelta(seconds=int(d))

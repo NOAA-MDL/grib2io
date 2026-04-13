@@ -12,11 +12,7 @@ class TestBackend:
         save_index: bool = True,
         filters: typing.Mapping[str, typing.Any] = dict(),
         data_model: typing.Optional[str] = None,
-        chunks: typing.Optional[
-            typing.Union[
-                int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]
-            ]
-        ] = None,
+        chunks: typing.Optional[typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]] = None,
     ) -> xr.Dataset:
         pass
 

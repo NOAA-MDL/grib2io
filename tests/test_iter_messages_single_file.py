@@ -3,30 +3,16 @@ import numpy as np
 
 
 def test_iter_messages_read(request):
-    grib2file = (
-        request.config.rootdir
-        / "tests"
-        / "input_data"
-        / "gfs_20221107"
-        / "gfs.t00z.pgrb2.1p00.f012_subset"
-    )
+    grib2file = request.config.rootdir / "tests" / "input_data" / "gfs_20221107" / "gfs.t00z.pgrb2.1p00.f012_subset"
     with grib2io.open(grib2file) as g:
         for msg in g:
             print(msg)
-            print(
-                f"\tmin: {msg.min} max: {msg.max} mean: {msg.mean}, median: {msg.median}"
-            )
+            print(f"\tmin: {msg.min} max: {msg.max} mean: {msg.mean}, median: {msg.median}")
             msg.flush_data()
 
 
 def test_iter_messages_data_flush_pack(request):
-    grib2file = (
-        request.config.rootdir
-        / "tests"
-        / "input_data"
-        / "gfs_20221107"
-        / "gfs.t00z.pgrb2.1p00.f012_subset"
-    )
+    grib2file = request.config.rootdir / "tests" / "input_data" / "gfs_20221107" / "gfs.t00z.pgrb2.1p00.f012_subset"
     with grib2io.open(grib2file) as g:
         for msg in g:
             for _ in range(2):
@@ -40,13 +26,7 @@ def test_iter_messages_write(tmp_path, request):
     target_dir.mkdir()
     target_file = target_dir / "testwrite.grib2"
 
-    grib2file = (
-        request.config.rootdir
-        / "tests"
-        / "input_data"
-        / "gfs_20221107"
-        / "gfs.t00z.pgrb2.1p00.f012_subset"
-    )
+    grib2file = request.config.rootdir / "tests" / "input_data" / "gfs_20221107" / "gfs.t00z.pgrb2.1p00.f012_subset"
     grib2out = grib2io.open(target_file, mode="w")
     with grib2io.open(grib2file) as g:
         for msg in g[:10]:
