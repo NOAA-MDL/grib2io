@@ -56,6 +56,9 @@ The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required
 ### NCEPLIBS-ip (v5.1.0 or newer)
 The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the *conda ecosystems, then you can install via `conda install -c conda-forge nceplibs-ip`.
 
+> [!IMPORTANT]
+> **Beginning with v2.8.0, grib2io will interface to the "d" version of NCEPLIBS-ip which defines 4-byte integers and 8-byte reals.**
+
 ## Install
 
 Once again, this assumes that NCEPLIBS-g2c has been installed.  If NCEPLIBS-g2c has been installed into a "common" installation path, then it will be found, otherwise define environment variable `G2C_DIR` with the installation path.
