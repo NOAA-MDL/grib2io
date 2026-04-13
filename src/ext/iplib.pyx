@@ -23,18 +23,18 @@ cdef extern from "<stdbool.h>":
 
 
 cdef extern from "iplib.h":
-    void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, float fill,
-                float *xpts, float *ypts, float *rlon, float *rlat, int *nret, float *crot,
-                float *srot, float *xlon, float *xlat, float *ylon, float *ylat, float *area)
+    void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, double fill,
+                double *xpts, double *ypts, double *rlon, double *rlat, int *nret, double *crot,
+                double *srot, double *xlon, double *xlat, double *ylon, double *ylat, double *area)
     void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
                         int *igdtnumo, int *igdtmplo, int *igdtleno,
-                        int *mi, int *mo, int *km, int *ibi, bool *li, float *gi,
-                        int *no, float *rlat, float *rlon, int *ibo, bool *lo, float *go, int *iret)
+                        int *mi, int *mo, int *km, int *ibi, bool *li, double *gi,
+                        int *no, double *rlat, double *rlon, int *ibo, bool *lo, double *go, int *iret)
     void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
                         int *igdtnumo, int *igdtmplo, int *igdtleno,
-                        int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
-                        int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
-                        float *uo, float *vo, int *iret)
+                        int *mi, int *mo, int *km, int *ibi, bool *li, double *ui, double *vi,
+                        int *no, double *rlat, double *rlon, double *crot, double *srot, int *ibo, bool *lo,
+                        double *uo, double *vo, int *iret)
     void use_ncep_post_arakawa()
     void unuse_ncep_post_arakawa()
 
@@ -50,7 +50,7 @@ def interpolate_scalar(int ip,
                    int km,
                    cnp.ndarray[cnp.int32_t, ndim=1] ibi,
                    cnp.ndarray[cnp.uint8_t, ndim=2] li,
-                   cnp.ndarray[cnp.float32_t, ndim=2] gi,
+                   cnp.ndarray[cnp.float64_t, ndim=2] gi,
                    lats = None,
                    lons = None):
     """
@@ -113,11 +113,11 @@ def interpolate_scalar(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] rlat = np.zeros(mo, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] rlon = np.zeros(mo, dtype=np.float64)
     cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
     cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef cnp.ndarray[cnp.float32_t, ndim=2] go = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float64_t, ndim=2] go = np.zeros((mo, km), dtype=np.float64)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
@@ -126,11 +126,11 @@ def interpolate_scalar(int ip,
     cdef int i
 
     # Use memoryviews for direct C access to array data.
-    cdef float *rlat_ptr = &rlat[0]
-    cdef float *rlon_ptr = &rlon[0]
+    cdef double *rlat_ptr = &rlat[0]
+    cdef double *rlon_ptr = &rlon[0]
     cdef int32_t *ibo_ptr = &ibo[0]
     cdef uint8_t *lo_ptr = &lo[0,0]
-    cdef float *go_ptr = &go[0,0]
+    cdef double *go_ptr = &go[0,0]
 
     if lats is not None and lons is not None and igdtnumo == -1:
         for i in range(lats.shape[0]):
@@ -157,8 +157,8 @@ def interpolate_vector(int ip,
                    int km,
                    cnp.ndarray[cnp.int32_t, ndim=1] ibi,
                    cnp.ndarray[cnp.uint8_t, ndim=2] li,
-                   cnp.ndarray[cnp.float32_t, ndim=2] ui,
-                   cnp.ndarray[cnp.float32_t, ndim=2] vi,
+                   cnp.ndarray[cnp.float64_t, ndim=2] ui,
+                   cnp.ndarray[cnp.float64_t, ndim=2] vi,
                    lats = None,
                    lons = None):
     """
@@ -229,14 +229,14 @@ def interpolate_vector(int ip,
     """
     # Define output variables; allocate output arrays with correct types.
     cdef int no
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlat = np.zeros(mo, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] rlon = np.zeros(mo, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] crot = np.ones(mo, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] srot = np.zeros(mo, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] rlat = np.zeros(mo, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] rlon = np.zeros(mo, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] crot = np.ones(mo, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] srot = np.zeros(mo, dtype=np.float64)
     cdef cnp.ndarray[cnp.int32_t, ndim=1] ibo = np.zeros(km, dtype=np.int32)
     cdef cnp.ndarray[cnp.uint8_t, ndim=2] lo = np.zeros((mo, km), dtype=np.uint8)
-    cdef cnp.ndarray[cnp.float32_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float32)
+    cdef cnp.ndarray[cnp.float64_t, ndim=2] uo = np.zeros((mo, km), dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=2] vo = np.zeros((mo, km), dtype=np.float64)
     cdef int iret
 
     # Get lengths of the input and output GRIB2 Grid Definition template arrays.
@@ -245,14 +245,14 @@ def interpolate_vector(int ip,
     cdef int i
 
     # Use memoryviews for direct C access to array data.
-    cdef float *rlat_ptr = &rlat[0]
-    cdef float *rlon_ptr = &rlon[0]
-    cdef float *crot_ptr = &crot[0]
-    cdef float *srot_ptr = &srot[0]
+    cdef double *rlat_ptr = &rlat[0]
+    cdef double *rlon_ptr = &rlon[0]
+    cdef double *crot_ptr = &crot[0]
+    cdef double *srot_ptr = &srot[0]
     cdef int32_t *ibo_ptr = &ibo[0]
     cdef uint8_t *lo_ptr = &lo[0,0]
-    cdef float *uo_ptr = &uo[0,0]
-    cdef float *vo_ptr = &vo[0,0]
+    cdef double *uo_ptr = &uo[0,0]
+    cdef double *vo_ptr = &vo[0,0]
 
     if lats is not None and lons is not None and igdtnumo == -1:
         for i in range(lats.shape[0]):
@@ -324,9 +324,9 @@ def openmp_set_num_threads(int n):
 def latlon_to_ij(
     int igdtnumi,
     cnp.ndarray[cnp.int32_t, ndim=1] igdtmpli,
-    cnp.ndarray[cnp.float32_t, ndim=1] lats,
-    cnp.ndarray[cnp.float32_t, ndim=1] lons,
-    float missing_value = np.nan,
+    cnp.ndarray[cnp.float64_t, ndim=1] lats,
+    cnp.ndarray[cnp.float64_t, ndim=1] lons,
+    double missing_value = np.nan,
 ):
     """
     Convert latitude/longitude coordinates to grid (i, j) indices using the
@@ -338,20 +338,20 @@ def latlon_to_ij(
         GRIB2 grid definition template number.
     igdtmpli : ndarray of int32
         GRIB2 grid definition template values.
-    lats : ndarray of float32
+    lats : ndarray of float64
         Array of latitude coordinates in degrees.
-    lons : ndarray of float32
+    lons : ndarray of float64
         Array of longitude coordinates in degrees.
-    missing_value : float, optional
+    missing_value : double, optional
         Missing value to represent when latitude/longitude coordinate is
         outside the grid domain.
 
     Returns
     -------
-    xpts : ndarray of float32
+    xpts : ndarray of float64
         Grid x-coordinates (i-indices) corresponding to the input
         latitude/longitude points.
-    ypts : ndarray of float32
+    ypts : ndarray of float64
         Grid y-coordinates (j-indices) corresponding to the input
         latitude/longitude points.
 
@@ -375,26 +375,26 @@ def latlon_to_ij(
     cdef int nret = 0
 
     # Define and allocate arrays to pass to gdswzd().
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] xpts = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] ypts = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] crot = np.ones(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] srot = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] xlon = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] xlat = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] ylon = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] ylat = np.zeros(npts, dtype=np.float32)
-    cdef cnp.ndarray[cnp.float32_t, ndim=1] area = np.zeros(npts, dtype=np.float32)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] xpts = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] ypts = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] crot = np.ones(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] srot = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] xlon = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] xlat = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] ylon = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] ylat = np.zeros(npts, dtype=np.float64)
+    cdef cnp.ndarray[cnp.float64_t, ndim=1] area = np.zeros(npts, dtype=np.float64)
 
     # Use memoryviews for direct C access to array data.
-    cdef float *xpts_ptr = &xpts[0]
-    cdef float *ypts_ptr = &ypts[0]
-    cdef float *crot_ptr = &crot[0]
-    cdef float *srot_ptr = &srot[0]
-    cdef float *xlon_ptr = &xlon[0]
-    cdef float *xlat_ptr = &xlat[0]
-    cdef float *ylon_ptr = &ylon[0]
-    cdef float *ylat_ptr = &ylat[0]
-    cdef float *area_ptr = &area[0]
+    cdef double *xpts_ptr = &xpts[0]
+    cdef double *ypts_ptr = &ypts[0]
+    cdef double *crot_ptr = &crot[0]
+    cdef double *srot_ptr = &srot[0]
+    cdef double *xlon_ptr = &xlon[0]
+    cdef double *xlat_ptr = &xlat[0]
+    cdef double *ylon_ptr = &ylon[0]
+    cdef double *ylat_ptr = &ylat[0]
+    cdef double *area_ptr = &area[0]
 
     # Call NCEPLIBS-ip, gdswzd().
     gdswzd(

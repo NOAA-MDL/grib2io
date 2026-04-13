@@ -346,10 +346,12 @@ def latlon_to_ij(
         raise ValueError("Longitudes must be a list or 1-D NumPy array.")
     if nlats != nlons:
         raise ValueError("Latitudes and longitudes same length.")
-    return iplib.latlon_to_ij(
+    xpts, ypts = iplib.latlon_to_ij(
         gdtn.astype(np.int32),
         gdt.astype(np.int32),
-        np.array(lats, dtype=np.float32),
-        np.array(lons, dtype=np.float32),
+        np.array(lats, dtype=np.float64),
+        np.array(lons, dtype=np.float64),
         missing_value,
     )
+
+    return xpts.astype(np.float32), ypts.astype(np.float32)
