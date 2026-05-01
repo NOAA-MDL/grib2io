@@ -31,7 +31,14 @@ def test_iter_messages_write(tmp_path, request):
     with grib2io.open(grib2file) as g:
         for msg in g[:10]:
             print(type(msg))
-            newmsg = grib2io.Grib2Message(msg.section0, msg.section1, None, msg.section3, msg.section4, msg.section5)
+            newmsg = grib2io.Grib2Message(
+                msg.section0,
+                msg.section1,
+                None,
+                msg.section3,
+                msg.section4,
+                msg.section5,
+            )
             newmsg.data = np.copy(msg.data)
             newmsg.pack()
             grib2out.write(newmsg)

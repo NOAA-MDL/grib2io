@@ -10,9 +10,24 @@ data = [
         "CF Standard Name": "atmosphere_absolute_vorticity",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "DEN", "NCEP Description": "Density", "CF Standard Name": "air_density", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "DEPR", "NCEP Description": "Dew Point Depression", "CF Standard Name": "dew_point_depression", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "DPT", "NCEP Description": "Dew Point Temperature", "CF Standard Name": "dew_point_temperature", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "DEN",
+        "NCEP Description": "Density",
+        "CF Standard Name": "air_density",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "DEPR",
+        "NCEP Description": "Dew Point Depression",
+        "CF Standard Name": "dew_point_depression",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "DPT",
+        "NCEP Description": "Dew Point Temperature",
+        "CF Standard Name": "dew_point_temperature",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "DZDT",
         "NCEP Description": "Vertical Velocity (Geometric)",
@@ -25,10 +40,30 @@ data = [
         "CF Standard Name": "equivalent_potential_temperature",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "GP", "NCEP Description": "Geopotential", "CF Standard Name": "geopotential", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "HGT", "NCEP Description": "Geopotential Height", "CF Standard Name": "geopotential_height", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "DIST", "NCEP Description": "Geometric Height", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "LAPR", "NCEP Description": "Lapse Rate", "CF Standard Name": "air_temperature_lapse_rate", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "GP",
+        "NCEP Description": "Geopotential",
+        "CF Standard Name": "geopotential",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "HGT",
+        "NCEP Description": "Geopotential Height",
+        "CF Standard Name": "geopotential_height",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "DIST",
+        "NCEP Description": "Geometric Height",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "LAPR",
+        "NCEP Description": "Lapse Rate",
+        "CF Standard Name": "air_temperature_lapse_rate",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "MIXR",
         "NCEP Description": "Humidity Mixing Ratio",
@@ -41,7 +76,12 @@ data = [
         "CF Standard Name": "air_potential_temperature",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "PRES", "NCEP Description": "Pressure", "CF Standard Name": "air_pressure", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "PRES",
+        "NCEP Description": "Pressure",
+        "CF Standard Name": "air_pressure",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "PRMSL",
         "NCEP Description": "Pressure Reduced to MSL",
@@ -66,9 +106,24 @@ data = [
         "CF Standard Name": "atmosphere_relative_vorticity",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "RH", "NCEP Description": "Relative Humidity", "CF Standard Name": "relative_humidity", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SPFH", "NCEP Description": "Specific Humidity", "CF Standard Name": "specific_humidity", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "STRM", "NCEP Description": "Stream Function", "CF Standard Name": "atmosphere_streamfunction", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "RH",
+        "NCEP Description": "Relative Humidity",
+        "CF Standard Name": "relative_humidity",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SPFH",
+        "NCEP Description": "Specific Humidity",
+        "CF Standard Name": "specific_humidity",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "STRM",
+        "NCEP Description": "Stream Function",
+        "CF Standard Name": "atmosphere_streamfunction",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "TMAX",
         "NCEP Description": "Maximum Temperature",
@@ -93,69 +148,174 @@ data = [
         "CF Standard Name": "relative_humidity",
         "CF Cell Method": "time: minimum",
     },
-    {"NCEP GRIB Variable": "TMP", "NCEP Description": "Temperature", "CF Standard Name": "air_temperature", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "TMP",
+        "NCEP Description": "Temperature",
+        "CF Standard Name": "air_temperature",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "CAPE",
         "NCEP Description": "Convective Available Potential Energy",
         "CF Standard Name": "atmosphere_convective_available_potential_energy",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "CEIL", "NCEP Description": "Ceiling Height", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "ICSEV", "NCEP Description": "Icing Severity", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "ICPRB", "NCEP Description": "Icing Probability", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SIPD", "NCEP Description": "Supercooled Large Droplet Icing", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "ELLINX", "NCEP Description": "Ellrod Index", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "TURB", "NCEP Description": "Turbulence", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "CLOUDBASE", "NCEP Description": "CLoud Base Height", "CF Standard Name": "cloud_base_altitude", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "DRYTPROB", "NCEP Description": "Dry Thunderstorm Probability", "CF Standard Name": "unknown", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "CEIL",
+        "NCEP Description": "Ceiling Height",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "ICSEV",
+        "NCEP Description": "Icing Severity",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "ICPRB",
+        "NCEP Description": "Icing Probability",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SIPD",
+        "NCEP Description": "Supercooled Large Droplet Icing",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "ELLINX",
+        "NCEP Description": "Ellrod Index",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "TURB",
+        "NCEP Description": "Turbulence",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "CLOUDBASE",
+        "NCEP Description": "CLoud Base Height",
+        "CF Standard Name": "cloud_base_altitude",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "DRYTPROB",
+        "NCEP Description": "Dry Thunderstorm Probability",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "TSTM",
         "NCEP Description": "Thunderstorm Probability",
         "CF Standard Name": "thunderstorm_probability",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "TRWSPD", "NCEP Description": "Transport Wind Speed", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "TRWDIR", "NCEP Description": "Transport Wind Direction", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "VRATE", "NCEP Description": "Ventilation Rate", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "RETOP", "NCEP Description": "Echo Top", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "MIXHT", "NCEP Description": "Mixing Height", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "PWTHER", "NCEP Description": "Predominant Weather", "CF Standard Name": "unknown", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "TRWSPD",
+        "NCEP Description": "Transport Wind Speed",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "TRWDIR",
+        "NCEP Description": "Transport Wind Direction",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "VRATE",
+        "NCEP Description": "Ventilation Rate",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "RETOP",
+        "NCEP Description": "Echo Top",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "MIXHT",
+        "NCEP Description": "Mixing Height",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "PWTHER",
+        "NCEP Description": "Predominant Weather",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "MAXREF",
         "NCEP Description": "Hourly Maximum of Simulated Reflectivity",
         "CF Standard Name": "equivalent_reflectivity_factor",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "SNOWLR", "NCEP Description": "Snow Liquid Ratio", "CF Standard Name": "unknown", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SNOWLVL", "NCEP Description": "Snow Level", "CF Standard Name": "unknown", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "SNOWLR",
+        "NCEP Description": "Snow Liquid Ratio",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SNOWLVL",
+        "NCEP Description": "Snow Level",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "ASNOW",
         "NCEP Description": "Accumulated Snow",
         "CF Standard Name": "thickness_of_snowfall_amount",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "FICEAC", "NCEP Description": "Flat Ice Accumulation (FRAM)", "CF Standard Name": "unknown", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "FICEAC",
+        "NCEP Description": "Flat Ice Accumulation (FRAM)",
+        "CF Standard Name": "unknown",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "APTMP",
         "NCEP Description": "Apparent Temperature",
         "CF Standard Name": "apparent_air_temperature",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "UGRD", "NCEP Description": "u-component of Wind", "CF Standard Name": "eastward_wind", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "UGRD",
+        "NCEP Description": "u-component of Wind",
+        "CF Standard Name": "eastward_wind",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "VAPP",
         "NCEP Description": "Vapor Pressure",
         "CF Standard Name": "water_vapor_partial_pressure_in_air",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "VGRD", "NCEP Description": "v-component of Wind", "CF Standard Name": "northward_wind", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "VGRD",
+        "NCEP Description": "v-component of Wind",
+        "CF Standard Name": "northward_wind",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "VPOT",
         "NCEP Description": "Velocity Potential",
         "CF Standard Name": "atmosphere_velocity_potential",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "VTMP", "NCEP Description": "Virtual Temperature", "CF Standard Name": "virtual_temperature", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "VTMP",
+        "NCEP Description": "Virtual Temperature",
+        "CF Standard Name": "virtual_temperature",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "VVEL",
         "NCEP Description": "Vertical Velocity (Pressure)",
@@ -174,10 +334,30 @@ data = [
         "CF Standard Name": "northward_wind_shear",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "WDIR", "NCEP Description": "Wind Direction", "CF Standard Name": "wind_from_direction", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "WIND", "NCEP Description": "Wind Speed", "CF Standard Name": "wind_speed", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "GUST", "NCEP Description": "Wind Gust Speed", "CF Standard Name": "wind_speed_of_gust", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "WTMP", "NCEP Description": "Water Temperature", "CF Standard Name": "sea_water_temperature", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "WDIR",
+        "NCEP Description": "Wind Direction",
+        "CF Standard Name": "wind_from_direction",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "WIND",
+        "NCEP Description": "Wind Speed",
+        "CF Standard Name": "wind_speed",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "GUST",
+        "NCEP Description": "Wind Gust Speed",
+        "CF Standard Name": "wind_speed_of_gust",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "WTMP",
+        "NCEP Description": "Water Temperature",
+        "CF Standard Name": "sea_water_temperature",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "ACPCP",
         "NCEP Description": "Convective Precipitation",
@@ -196,14 +376,24 @@ data = [
         "CF Standard Name": "lwe_thickness_of_precipitation_amount",
         "CF Cell Method": "time: sum",
     },
-    {"NCEP GRIB Variable": "CICE", "NCEP Description": "Cloud Ice", "CF Standard Name": "atmosphere_cloud_ice_content", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "CICE",
+        "NCEP Description": "Cloud Ice",
+        "CF Standard Name": "atmosphere_cloud_ice_content",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "CWAT",
         "NCEP Description": "Cloud Water",
         "CF Standard Name": "atmosphere_cloud_condensate_content",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "EVP", "NCEP Description": "Evaporation", "CF Standard Name": "water_evaporation_flux", "CF Cell Method": "time: mean"},
+    {
+        "NCEP GRIB Variable": "EVP",
+        "NCEP Description": "Evaporation",
+        "CF Standard Name": "water_evaporation_flux",
+        "CF Cell Method": "time: mean",
+    },
     {
         "NCEP GRIB Variable": "HCDC",
         "NCEP Description": "High Cloud Cover",
@@ -228,7 +418,12 @@ data = [
         "CF Standard Name": "lwe_thickness_of_large_scale_precipitation_amount",
         "CF Cell Method": "time: sum",
     },
-    {"NCEP GRIB Variable": "PRATE", "NCEP Description": "Precipitation Rate", "CF Standard Name": "precipitation_flux", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "PRATE",
+        "NCEP Description": "Precipitation Rate",
+        "CF Standard Name": "precipitation_flux",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "PWAT",
         "NCEP Description": "Precipitable Water",
@@ -247,7 +442,12 @@ data = [
         "CF Standard Name": "lwe_thickness_of_large_scale_snowfall_amount",
         "CF Cell Method": "time: sum",
     },
-    {"NCEP GRIB Variable": "TCDC", "NCEP Description": "Total Cloud Cover", "CF Standard Name": "cloud_area_fraction", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "TCDC",
+        "NCEP Description": "Total Cloud Cover",
+        "CF Standard Name": "cloud_area_fraction",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "WEASD",
         "NCEP Description": "Water Equiv. of Accum. Snow Depth",
@@ -260,19 +460,54 @@ data = [
         "CF Standard Name": "land_area_fraction",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "SFCR", "NCEP Description": "Surface Roughness", "CF Standard Name": "surface_roughness_length", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SNOD", "NCEP Description": "Snow Depth", "CF Standard Name": "surface_snow_thickness", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SNOM", "NCEP Description": "Snow Melt", "CF Standard Name": "surface_snow_melt_flux", "CF Cell Method": "time: mean"},
+    {
+        "NCEP GRIB Variable": "SFCR",
+        "NCEP Description": "Surface Roughness",
+        "CF Standard Name": "surface_roughness_length",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SNOD",
+        "NCEP Description": "Snow Depth",
+        "CF Standard Name": "surface_snow_thickness",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SNOM",
+        "NCEP Description": "Snow Melt",
+        "CF Standard Name": "surface_snow_melt_flux",
+        "CF Cell Method": "time: mean",
+    },
     {
         "NCEP GRIB Variable": "SOILM",
         "NCEP Description": "Soil Moisture Content",
         "CF Standard Name": "soil_moisture_content",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "TSOIL", "NCEP Description": "Soil Temperature", "CF Standard Name": "soil_temperature", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "VEG", "NCEP Description": "Vegetation Cover", "CF Standard Name": "vegetation_area_fraction", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "WATR", "NCEP Description": "Water Runoff", "CF Standard Name": "runoff_flux", "CF Cell Method": "time: mean"},
-    {"NCEP GRIB Variable": "ALBDO", "NCEP Description": "Albedo", "CF Standard Name": "surface_albedo", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "TSOIL",
+        "NCEP Description": "Soil Temperature",
+        "CF Standard Name": "soil_temperature",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "VEG",
+        "NCEP Description": "Vegetation Cover",
+        "CF Standard Name": "vegetation_area_fraction",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "WATR",
+        "NCEP Description": "Water Runoff",
+        "CF Standard Name": "runoff_flux",
+        "CF Cell Method": "time: mean",
+    },
+    {
+        "NCEP GRIB Variable": "ALBDO",
+        "NCEP Description": "Albedo",
+        "CF Standard Name": "surface_albedo",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "DLWRF",
         "NCEP Description": "Downward Long-Wave Rad. Flux",
@@ -351,9 +586,24 @@ data = [
         "CF Standard Name": "sea_surface_wave_significant_height",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "ICEC", "NCEP Description": "Ice Cover", "CF Standard Name": "sea_ice_area_fraction", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "ICETK", "NCEP Description": "Ice Thickness", "CF Standard Name": "sea_ice_thickness", "CF Cell Method": None},
-    {"NCEP GRIB Variable": "SALTY", "NCEP Description": "Salinity", "CF Standard Name": "sea_water_salinity", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "ICEC",
+        "NCEP Description": "Ice Cover",
+        "CF Standard Name": "sea_ice_area_fraction",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "ICETK",
+        "NCEP Description": "Ice Thickness",
+        "CF Standard Name": "sea_ice_thickness",
+        "CF Cell Method": None,
+    },
+    {
+        "NCEP GRIB Variable": "SALTY",
+        "NCEP Description": "Salinity",
+        "CF Standard Name": "sea_water_salinity",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "SWELL",
         "NCEP Description": "Significant Height of Swell Waves",
@@ -384,7 +634,12 @@ data = [
         "CF Standard Name": "northward_sea_water_velocity",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "WTMP", "NCEP Description": "Water Temperature", "CF Standard Name": "sea_water_temperature", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "WTMP",
+        "NCEP Description": "Water Temperature",
+        "CF Standard Name": "sea_water_temperature",
+        "CF Cell Method": None,
+    },
     {
         "NCEP GRIB Variable": "WVDIR",
         "NCEP Description": "Direction of Wind Waves",
@@ -409,7 +664,12 @@ data = [
         "CF Standard Name": "atmosphere_mole_content_of_ozone",
         "CF Cell Method": None,
     },
-    {"NCEP GRIB Variable": "VIS", "NCEP Description": "Visibility", "CF Standard Name": "visibility_in_air", "CF Cell Method": None},
+    {
+        "NCEP GRIB Variable": "VIS",
+        "NCEP Description": "Visibility",
+        "CF Standard Name": "visibility_in_air",
+        "CF Cell Method": None,
+    },
 ]
 
 # Create the pandas DataFrame
@@ -419,8 +679,14 @@ cf_standard_names = pd.DataFrame(data)
 # A dictionary to map GRIB2 Code Table 4.7 (Derived Forecast)
 # to their equivalent CF Convention cell_methods.
 grib_derived_to_cf_methods = {
-    0: {"grib_meaning": "Unweighted Mean of All Members", "cf_cell_methods": "time: mean"},
-    1: {"grib_meaning": "Weighted Mean of All Members", "cf_cell_methods": "time: mean (comment: weighted)"},
+    0: {
+        "grib_meaning": "Unweighted Mean of All Members",
+        "cf_cell_methods": "time: mean",
+    },
+    1: {
+        "grib_meaning": "Weighted Mean of All Members",
+        "cf_cell_methods": "time: mean (comment: weighted)",
+    },
     2: {
         "grib_meaning": "Standard Deviation with respect to Cluster Mean",
         "cf_cell_methods": "time: standard_deviation (comment: with respect to cluster mean)",
@@ -429,24 +695,81 @@ grib_derived_to_cf_methods = {
         "grib_meaning": "Standard Deviation with respect to Cluster Mean, Normalized",
         "cf_cell_methods": "time: standard_deviation (comment: normalized)",
     },
-    4: {"grib_meaning": "Spread of All Members", "cf_cell_methods": "time: standard_deviation"},
-    5: {"grib_meaning": "Large Anomaly Index of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    6: {"grib_meaning": "Unweighted Mean of the Cluster Members", "cf_cell_methods": "time: mean (comment: of cluster members)"},
-    7: {"grib_meaning": "Interquartile Range", "cf_cell_methods": "time: range (comment: interquartile)"},
-    8: {"grib_meaning": "Minimum Of All Ensemble Members", "cf_cell_methods": "time: minimum"},
-    9: {"grib_meaning": "Maximum Of All Ensemble Members", "cf_cell_methods": "time: maximum"},
-    10: {"grib_meaning": "Variance of all ensemble members", "cf_cell_methods": "time: variance"},
-    192: {"grib_meaning": "Unweighted Mode of All Members", "cf_cell_methods": "time: mode"},
-    193: {"grib_meaning": "Percentile value (10%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    194: {"grib_meaning": "Percentile value (50%) of All Members", "cf_cell_methods": "time: median"},
-    195: {"grib_meaning": "Percentile value (90%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    197: {"grib_meaning": "Climate Percentile", "cf_cell_methods": None},  # No direct CF equivalent
-    198: {"grib_meaning": "Deviation of Ensemble Mean from Daily Climatology", "cf_cell_methods": None},  # Not a cell method
-    199: {"grib_meaning": "Extreme Forecast Index", "cf_cell_methods": None},  # No direct CF equivalent
+    4: {
+        "grib_meaning": "Spread of All Members",
+        "cf_cell_methods": "time: standard_deviation",
+    },
+    5: {
+        "grib_meaning": "Large Anomaly Index of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    6: {
+        "grib_meaning": "Unweighted Mean of the Cluster Members",
+        "cf_cell_methods": "time: mean (comment: of cluster members)",
+    },
+    7: {
+        "grib_meaning": "Interquartile Range",
+        "cf_cell_methods": "time: range (comment: interquartile)",
+    },
+    8: {
+        "grib_meaning": "Minimum Of All Ensemble Members",
+        "cf_cell_methods": "time: minimum",
+    },
+    9: {
+        "grib_meaning": "Maximum Of All Ensemble Members",
+        "cf_cell_methods": "time: maximum",
+    },
+    10: {
+        "grib_meaning": "Variance of all ensemble members",
+        "cf_cell_methods": "time: variance",
+    },
+    192: {
+        "grib_meaning": "Unweighted Mode of All Members",
+        "cf_cell_methods": "time: mode",
+    },
+    193: {
+        "grib_meaning": "Percentile value (10%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    194: {
+        "grib_meaning": "Percentile value (50%) of All Members",
+        "cf_cell_methods": "time: median",
+    },
+    195: {
+        "grib_meaning": "Percentile value (90%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    197: {
+        "grib_meaning": "Climate Percentile",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    198: {
+        "grib_meaning": "Deviation of Ensemble Mean from Daily Climatology",
+        "cf_cell_methods": None,
+    },  # Not a cell method
+    199: {
+        "grib_meaning": "Extreme Forecast Index",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
     200: {"grib_meaning": "Equally Weighted Mean", "cf_cell_methods": "time: mean"},
-    201: {"grib_meaning": "Percentile value (5%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    202: {"grib_meaning": "Percentile value (25%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    203: {"grib_meaning": "Percentile value (75%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    204: {"grib_meaning": "Percentile value (95%) of All Members", "cf_cell_methods": None},  # No direct CF equivalent
-    255: {"grib_meaning": "Missing", "cf_cell_methods": None},  # Represents a missing value
+    201: {
+        "grib_meaning": "Percentile value (5%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    202: {
+        "grib_meaning": "Percentile value (25%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    203: {
+        "grib_meaning": "Percentile value (75%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    204: {
+        "grib_meaning": "Percentile value (95%) of All Members",
+        "cf_cell_methods": None,
+    },  # No direct CF equivalent
+    255: {
+        "grib_meaning": "Missing",
+        "cf_cell_methods": None,
+    },  # Represents a missing value
 }

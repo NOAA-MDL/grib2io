@@ -7,21 +7,21 @@
 extern "C" {
 #endif
 
-void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, float fill,
-            float *xpts, float *ypts, float *rlon, float *rlat, int *nret, float *crot,
-            float *srot, float *xlon, float *xlat, float *ylon, float *ylat, float *area);
+void gdswzd(int igdtnum, int *igdtmpl, int igdtlen, int iopt, int npts, double fill,
+            double *xpts, double *ypts, double *rlon, double *rlat, int *nret, double *crot,
+            double *srot, double *xlon, double *xlat, double *ylon, double *ylat, double *area);
 
-void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni, 
-                    int *igdtnumo, int *igdtmplo, int *igdtleno, 
-                    int *mi, int *mo, int *km, int *ibi, bool *li, float *gi, 
-                    int *no, float *rlat, float *rlon, int *ibo, bool *lo, float *go, int *iret);
+void ipolates_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
+                    int *igdtnumo, int *igdtmplo, int *igdtleno,
+                    int *mi, int *mo, int *km, int *ibi, bool *li, double *gi,
+                    int *no, double *rlat, double *rlon, int *ibo, bool *lo, double *go, int *iret);
 
 
 void ipolatev_grib2(int *ip, int *ipopt, int *igdtnumi, int *igdtmpli, int *igdtleni,
                     int *igdtnumo, int *igdtmplo, int *igdtleno,
-                    int *mi, int *mo, int *km, int *ibi, bool *li, float *ui, float *vi,
-                    int *no, float *rlat, float *rlon, float *crot, float *srot, int *ibo, bool *lo,
-                    float *uo, float *vo, int *iret);
+                    int *mi, int *mo, int *km, int *ibi, bool *li, double *ui, double *vi,
+                    int *no, double *rlat, double *rlon, double *crot, double *srot, int *ibo, bool *lo,
+                    double *uo, double *vo, int *iret);
 
 void use_ncep_post_arakawa();
 

@@ -84,7 +84,11 @@ def test_scientific_provenance_initialization():
         "grib2io.xarray_backend.build_da_without_coords"
     ) as mock_build, patch("grib2io.xarray_backend.assign_xr_meta") as mock_assign:
         mock_parse.return_value = (MagicMock(), {}, {}, {})
-        mock_make.return_value = ([pd.DataFrame({"shortName": ["TMP"]})], [{"x": range(1), "y": range(1)}], {})
+        mock_make.return_value = (
+            [pd.DataFrame({"shortName": ["TMP"]})],
+            [{"x": range(1), "y": range(1)}],
+            {},
+        )
 
         mock_da = xr.DataArray([1.0], name="TMP")
         mock_build.return_value = mock_da

@@ -63,6 +63,9 @@ grib2io = "grib2io.cli:main"
 Documentation = "https://noaa-mdl.github.io/grib2io"
 Repository = "https://github.com/NOAA-MDL/grib2io"
 
+[project.scripts]
+grib2io = "grib2io.cli.main:main"
+
 [tool.setuptools]
 package-dir = {"" = "src"}
 packages = ["grib2io", "grib2io.tables", "grib2io.utils"]
@@ -70,3 +73,15 @@ zip-safe = false
 
 [tool.setuptools.dynamic]
 version = {attr = "grib2io.__config__.grib2io_version"}
+
+[tool.ruff]
+line-length = 150
+
+[tool.ruff.lint]
+ignore = [
+    "D",    # Ignore all docstring-related rules (D prefix)
+    #"E501", # Ignore line-too-long (handled by formatter)
+    "F401", # Ignore unused imports
+    "F811", # Ignore redefinition
+]
+

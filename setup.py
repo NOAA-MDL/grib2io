@@ -15,7 +15,7 @@ from Cython.Distutils import build_ext
 pkgname_to_libname = {
     "g2c": ["g2c"],
     "aec": ["aec"],
-    "ip": ["ip_4"],
+    "ip": ["ip_d"],
     "jasper": ["jasper"],
     "jpeg": ["turbojpeg", "jpeg"],
     "openjpeg": ["openjp2"],
@@ -66,7 +66,14 @@ def get_grib2io_version():
     return ver
 
 
-def get_package_info(name, incdir="include", static=False, required=True, include_file=None, compiler=None):
+def get_package_info(
+    name,
+    incdir="include",
+    static=False,
+    required=True,
+    include_file=None,
+    compiler=None,
+):
     """Get package information."""
     # First try to get package information from env vars
     pkg_dir = os.environ.get(name.upper() + "_DIR")
@@ -110,7 +117,12 @@ def get_package_info(name, incdir="include", static=False, required=True, includ
             if os.path.exists(os.path.join(os.path.dirname(pkg_libdir_root), "include")):
                 pkg_incdir = os.path.join(os.path.dirname(pkg_libdir_root), "include")
             if include_file is not None:
-                incfile = find_include_file(include_file, incdir=incdir, root=os.path.dirname(pkg_libdir_root), compiler=compiler)
+                incfile = find_include_file(
+                    include_file,
+                    incdir=incdir,
+                    root=os.path.dirname(pkg_libdir_root),
+                    compiler=compiler,
+                )
                 if incfile is not None:
                     pkg_incdir = os.path.dirname(incfile)
 
@@ -364,7 +376,7 @@ extmod_config["g2clib"]["incdirs"].append(numpy.get_include())
 # Get NCEPLIBS-ip information
 # ----------------------------------------------------------------------------------------
 ip_static = check_lib_static("ip")
-pkginfo = get_package_info("ip", incdir="include_4", static=ip_static, required=False, include_file="iplib.h")
+pkginfo = get_package_info("ip", incdir="include_d", static=ip_static, required=False, include_file="iplib.h")
 
 if None in pkginfo:
     warnings.warn("NCEPLIBS-ip not found or missing information. grib2io will build without interpolation.")
@@ -374,10 +386,20 @@ if build_with_ip:
     ip_from_homebrew = False
 
     # Add ip package info to the configuration dictionary.
-    extmod_config["iplib"] = dict(libraries=[pkginfo[0]], incdirs=[pkginfo[1]], libdirs=[pkginfo[2]], extra_objects=[], define_macros=[])
+    extmod_config["iplib"] = dict(
+        libraries=[pkginfo[0]],
+        incdirs=[pkginfo[1]],
+        libdirs=[pkginfo[2]],
+        extra_objects=[],
+        define_macros=[],
+    )
 
     # Find the full path to the ip library.
-    ip_libname = find_library(pkgname_to_libname["ip"][0], dirs=extmod_config["iplib"]["libdirs"], static=ip_static)
+    ip_libname = find_library(
+        pkgname_to_libname["ip"][0],
+        dirs=extmod_config["iplib"]["libdirs"],
+        static=ip_static,
+    )
 
     # Check if on macOS, then check if ip is from Homebrew.
     if sys.platform == "darwin":
@@ -515,4 +537,9 @@ with open(os.path.join(this_directory, "README.md"), encoding="utf-8") as f:
 # ----------------------------------------------------------------------------------------
 # Run setup.py.  See pyproject.toml for package metadata.
 # ----------------------------------------------------------------------------------------
-setup(ext_modules=extension_modules, cmdclass=cmdclass, long_description=long_description, long_description_content_type="text/markdown")
+setup(
+    ext_modules=extension_modules,
+    cmdclass=cmdclass,
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+)

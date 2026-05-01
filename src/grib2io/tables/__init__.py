@@ -256,7 +256,15 @@ def get_metadata_from_shortname(shortname: str):
             for pn in range(256):
                 varinfo = get_varinfo_from_table(d, pc, pn, False)
                 if shortname == varinfo[2]:
-                    metadata.append(dict(discipline=d, parameterCategory=pc, parameterNumber=pn, fullName=varinfo[0], units=varinfo[1]))
+                    metadata.append(
+                        dict(
+                            discipline=d,
+                            parameterCategory=pc,
+                            parameterNumber=pn,
+                            fullName=varinfo[0],
+                            units=varinfo[1],
+                        )
+                    )
     return metadata
 
 
@@ -451,7 +459,11 @@ def _build_aerosol_shortname(obj) -> str:
                             break
                 else:
                     # If no match found, use raw values
-                    key = (optical_type, str(first_wl), str(second_wl) if second_wl is not None else "")
+                    key = (
+                        optical_type,
+                        str(first_wl),
+                        str(second_wl) if second_wl is not None else "",
+                    )
 
             # FIX THIS...
             if key in _OPTICAL_WAVELENGTH_MAPPING.keys():

@@ -49,7 +49,6 @@ Discipline,Category,Parameter,Name,Frequency,Unit,Missing,Range Folded,No Covera
 209,3,55,Reflectivity_-15C,2-min,dBZ,-99,n/a,-999,Isothermal Reflectivity at -15C,
 209,3,56,Reflectivity_-20C,2-min,dBZ,-99,n/a,-999,Isothermal Reflectivity at -20C,
 209,3,57,ReflectivityAtLowestAltitude,2-min,dBZ,-99,n/a,-999,ReflectivityAtLowestAltitude,
-209,3,57,ReflectivityAtLowestAltitude5km,2-min,dBZ,-99,n/a,-999,ReflectivityAtLowestAltitude resampled from 1 to 5km resolution,ConUS only - removed at v12.1
 209,3,58,MergedReflectivityAtLowestAltitude,2-min,dBZ,-99,n/a,-999,Non Quality Controlled Reflectivity At Lowest Altitude,
 209,6,0,PrecipFlag,2-min,flag,-1,n/a,-3,"Surface Precipitation Type (Convective, Stratiform, Tropical, Hail, Snow)",see flag table
 209,6,1,PrecipRate,2-min,mm/hr,-1,n/a,-3,Radar Precipitation Rate,
@@ -111,7 +110,6 @@ Discipline,Category,Parameter,Name,Frequency,Unit,Missing,Range Folded,No Covera
 209,9,3,MergedRhoHV,5-min,non-dim,-99,n/a,-999,3D RhoHV Mosaic - 33 CAPPIS (500-19000m),"33 levels (one file per level), ConUS only"
 209,9,4,MergedZdr,5-min,dB,-99,n/a,-999,3D Zdr Mosaic - 33 CAPPIS (500-19000m),"33 levels (one file per level), ConUS only"
 209,10,0,MergedReflectivityQCComposite,2-min,dBZ,-99,n/a,-999,Composite Reflectivity Mosaic (optimal method),
-209,10,0,MergedReflectivityQCComposite5km,2-min,dBZ,-99,n/a,-999,Composite Reflectivity Mosaic (optimal method) resampled from 1 to 5km,ConUS only - removed at v12.1
 209,10,1,HeightCompositeReflectivity,2-min,m MSL,-1,n/a,-3,Height of Composite Reflectivity Mosaic (optimal method),
 209,10,2,LowLevelCompositeReflectivity,2-min,dBZ,-99,n/a,-999,Low-Level Composite Reflectivity Mosaic (0-4km),
 209,10,3,HeightLowLevelCompositeReflectivity,2-min,m MSL,-1,n/a,-3,Height of Low-Level Composite Reflectivity Mosaic (0-4km),

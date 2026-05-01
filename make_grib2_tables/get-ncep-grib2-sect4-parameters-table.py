@@ -26,6 +26,7 @@ df = tables[0]
 df.columns = df.iloc[0]
 df = df.drop([0])
 df.rename(columns={df.columns[0]: "Number"}, inplace=True)
+df = df.drop_duplicates()
 
 # ----------------------------------------------------------------------------------------
 # Write table as Python dictionary

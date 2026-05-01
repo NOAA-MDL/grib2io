@@ -213,7 +213,6 @@ table_ndfd_tc_rain_threat = {
 4: 'Potential for localized flooding rain',
 6: 'Potential for moderate flooding rain',
 8: 'Potential for major flooding rain',
-8: 'Potential for major flooding rain',
 }
 
 table_ndfd_tc_tornado_threat = {

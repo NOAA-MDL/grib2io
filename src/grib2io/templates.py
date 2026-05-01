@@ -101,11 +101,6 @@ class Grib2Metadata:
     def __call__(self):
         return self.value
 
-    def __hash__(self):
-        # AS- added hash() to self.value as pandas was raising error about some
-        # non integer returns from hash method
-        return hash(self.value)
-
     def __repr__(self):
         return f"{self.__class__.__name__}({self.value}, table = '{self.table}')"
 
@@ -132,6 +127,9 @@ class Grib2Metadata:
 
     def __index__(self):
         return int(self.value)
+
+    def __hash__(self):
+        return hash(self.value)
 
     @property
     def definition(self):
@@ -617,7 +615,23 @@ class Ny:
 class ScanModeFlags:
     """[Scanning Mode](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-4.shtml)"""
 
-    _key = {0: 18, 1: 18, 10: 15, 20: 17, 30: 17, 31: 17, 40: 18, 41: 18, 90: 16, 110: 15, 203: 18, 204: 18, 205: 18, 32768: 18, 32769: 18}
+    _key = {
+        0: 18,
+        1: 18,
+        10: 15,
+        20: 17,
+        30: 17,
+        31: 17,
+        40: 18,
+        41: 18,
+        90: 16,
+        110: 15,
+        203: 18,
+        204: 18,
+        205: 18,
+        32768: 18,
+        32769: 18,
+    }
 
     def __get__(self, obj, objtype=None):
         if obj.gdtn == 50:
@@ -632,7 +646,23 @@ class ScanModeFlags:
 class ResolutionAndComponentFlags:
     """[Resolution and Component Flags](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table3-3.shtml)"""
 
-    _key = {0: 13, 1: 13, 10: 11, 20: 11, 30: 11, 31: 11, 40: 13, 41: 13, 90: 11, 110: 11, 203: 13, 204: 13, 205: 13, 32768: 13, 32769: 13}
+    _key = {
+        0: 13,
+        1: 13,
+        10: 11,
+        20: 11,
+        30: 11,
+        31: 11,
+        40: 13,
+        41: 13,
+        90: 11,
+        110: 11,
+        203: 13,
+        204: 13,
+        205: 13,
+        32768: 13,
+        32769: 13,
+    }
 
     def __get__(self, obj, objtype=None):
         if obj.gdtn == 50:
@@ -647,7 +677,22 @@ class ResolutionAndComponentFlags:
 class LatitudeFirstGridpoint:
     """Latitude of first gridpoint"""
 
-    _key = {0: 11, 1: 11, 10: 9, 20: 9, 30: 9, 31: 9, 40: 11, 41: 11, 110: 9, 203: 11, 204: 11, 205: 11, 32768: 11, 32769: 11}
+    _key = {
+        0: 11,
+        1: 11,
+        10: 9,
+        20: 9,
+        30: 9,
+        31: 9,
+        40: 11,
+        41: 11,
+        110: 9,
+        203: 11,
+        204: 11,
+        205: 11,
+        32768: 11,
+        32769: 11,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor * obj.section3[self._key[obj.gdtn] + 5] / obj._lldivisor
@@ -659,7 +704,22 @@ class LatitudeFirstGridpoint:
 class LongitudeFirstGridpoint:
     """Longitude of first gridpoint"""
 
-    _key = {0: 12, 1: 12, 10: 10, 20: 10, 30: 10, 31: 10, 40: 12, 41: 12, 110: 10, 203: 12, 204: 12, 205: 12, 32768: 12, 32769: 12}
+    _key = {
+        0: 12,
+        1: 12,
+        10: 10,
+        20: 10,
+        30: 10,
+        31: 10,
+        40: 12,
+        41: 12,
+        110: 10,
+        203: 12,
+        204: 12,
+        205: 12,
+        32768: 12,
+        32769: 12,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor * obj.section3[self._key[obj.gdtn] + 5] / obj._lldivisor
@@ -671,7 +731,18 @@ class LongitudeFirstGridpoint:
 class LatitudeLastGridpoint:
     """Latitude of last gridpoint"""
 
-    _key = {0: 14, 1: 14, 10: 13, 40: 14, 41: 14, 203: 14, 204: 14, 205: 14, 32768: 14, 32769: 19}
+    _key = {
+        0: 14,
+        1: 14,
+        10: 13,
+        40: 14,
+        41: 14,
+        203: 14,
+        204: 14,
+        205: 14,
+        32768: 14,
+        32769: 19,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor * obj.section3[self._key[obj.gdtn] + 5] / obj._lldivisor
@@ -683,7 +754,18 @@ class LatitudeLastGridpoint:
 class LongitudeLastGridpoint:
     """Longitude of last gridpoint"""
 
-    _key = {0: 15, 1: 15, 10: 14, 40: 15, 41: 15, 203: 15, 204: 15, 205: 15, 32768: 15, 32769: 20}
+    _key = {
+        0: 15,
+        1: 15,
+        10: 14,
+        40: 15,
+        41: 15,
+        203: 15,
+        204: 15,
+        205: 15,
+        32768: 15,
+        32769: 20,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj._llscalefactor * obj.section3[self._key[obj.gdtn] + 5] / obj._lldivisor
@@ -719,7 +801,21 @@ class LongitudeCenterGridpoint:
 class GridlengthXDirection:
     """Grid lenth in the X-Direction"""
 
-    _key = {0: 16, 1: 16, 10: 17, 20: 14, 30: 14, 31: 14, 40: 16, 41: 16, 203: 16, 204: 16, 205: 16, 32768: 16, 32769: 16}
+    _key = {
+        0: 16,
+        1: 16,
+        10: 17,
+        20: 14,
+        30: 14,
+        31: 14,
+        40: 16,
+        41: 16,
+        203: 16,
+        204: 16,
+        205: 16,
+        32768: 16,
+        32769: 16,
+    }
 
     def __get__(self, obj, objtype=None):
         return (obj._llscalefactor * obj.section3[self._key[obj.gdtn] + 5] / obj._xydivisor) * obj._dxsign
@@ -731,7 +827,19 @@ class GridlengthXDirection:
 class GridlengthYDirection:
     """Grid lenth in the Y-Direction"""
 
-    _key = {0: 17, 1: 17, 10: 18, 20: 15, 30: 15, 31: 15, 203: 17, 204: 17, 205: 17, 32768: 17, 32769: 17}
+    _key = {
+        0: 17,
+        1: 17,
+        10: 18,
+        20: 15,
+        30: 15,
+        31: 15,
+        203: 17,
+        204: 17,
+        205: 17,
+        32768: 17,
+        32769: 17,
+    }
 
     def __get__(self, obj, objtype=None):
         if obj.gdtn in {40, 41}:
@@ -1764,7 +1872,19 @@ class Level:
 class TypeOfEnsembleForecast:
     """[Type of Ensemble Forecast](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-6.shtml)"""
 
-    _key = {1: 15, 11: 15, 41: 16, 43: 19, 45: 16, 47: 16, 49: 26, 81: 26, 83: 26, 84: 26, 85: 26}
+    _key = {
+        1: 15,
+        11: 15,
+        41: 16,
+        43: 19,
+        45: 16,
+        47: 16,
+        49: 26,
+        81: 26,
+        83: 26,
+        84: 26,
+        85: 26,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1778,7 +1898,19 @@ class TypeOfEnsembleForecast:
 class PerturbationNumber:
     """Ensemble Perturbation Number"""
 
-    _key = {1: 16, 11: 16, 41: 17, 43: 20, 45: 17, 47: 17, 49: 27, 81: 27, 83: 27, 84: 27, 85: 27}
+    _key = {
+        1: 16,
+        11: 16,
+        41: 17,
+        43: 20,
+        45: 17,
+        47: 17,
+        49: 27,
+        81: 27,
+        83: 27,
+        84: 27,
+        85: 27,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -1792,7 +1924,21 @@ class PerturbationNumber:
 class NumberOfEnsembleForecasts:
     """Total Number of Ensemble Forecasts"""
 
-    _key = {1: 17, 2: 16, 11: 17, 12: 16, 41: 18, 43: 21, 45: 18, 47: 18, 49: 28, 81: 28, 83: 28, 84: 28, 85: 28}
+    _key = {
+        1: 17,
+        2: 16,
+        11: 17,
+        12: 16,
+        41: 18,
+        43: 21,
+        45: 18,
+        47: 18,
+        49: 28,
+        81: 28,
+        83: 28,
+        84: 28,
+        85: 28,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2089,7 +2235,13 @@ class Duration:
 class ValidDate:
     """Valid Date of the forecast. NOTE: This is a `datetime.datetime` object."""
 
-    _key = {8: slice(15, 21), 9: slice(22, 28), 10: slice(16, 22), 11: slice(18, 24), 12: slice(17, 23)}
+    _key = {
+        8: slice(15, 21),
+        9: slice(22, 28),
+        10: slice(16, 22),
+        11: slice(18, 24),
+        12: slice(17, 23),
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2134,7 +2286,25 @@ class NumberOfMissingValues:
 class StatisticalProcess:
     """[Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-10.shtml)"""
 
-    _key = {8: 23, 9: 30, 10: 24, 11: 26, 12: 25, 15: 15, 42: 24, 43: 30, 46: 30, 47: 30, 49: 30, 80: 30, 81: 30, 82: 30, 83: 30, 84: 30, 85: 30}
+    _key = {
+        8: 23,
+        9: 30,
+        10: 24,
+        11: 26,
+        12: 25,
+        15: 15,
+        42: 24,
+        43: 30,
+        46: 30,
+        47: 30,
+        49: 30,
+        80: 30,
+        81: 30,
+        82: 30,
+        83: 30,
+        84: 30,
+        85: 30,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2148,7 +2318,25 @@ class StatisticalProcess:
 class TypeOfTimeIncrementOfStatisticalProcess:
     """[Type of Time Increment of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
 
-    _key = {4: 31, 8: 24, 9: 31, 10: 25, 11: 27, 12: 26, 42: 25, 43: 31, 46: 31, 47: 31, 49: 31, 80: 31, 81: 31, 82: 31, 83: 31, 84: 31, 85: 31}
+    _key = {
+        4: 31,
+        8: 24,
+        9: 31,
+        10: 25,
+        11: 27,
+        12: 26,
+        42: 25,
+        43: 31,
+        46: 31,
+        47: 31,
+        49: 31,
+        80: 31,
+        81: 31,
+        82: 31,
+        83: 31,
+        84: 31,
+        85: 31,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2162,7 +2350,25 @@ class TypeOfTimeIncrementOfStatisticalProcess:
 class UnitOfTimeRangeOfStatisticalProcess:
     """[Unit of Time Range of Statistical Process](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-11.shtml)"""
 
-    _key = {4: 32, 8: 25, 9: 32, 10: 26, 11: 28, 12: 27, 42: 26, 43: 32, 46: 32, 47: 32, 49: 32, 80: 32, 81: 32, 82: 32, 83: 32, 84: 32, 85: 32}
+    _key = {
+        4: 32,
+        8: 25,
+        9: 32,
+        10: 26,
+        11: 28,
+        12: 27,
+        42: 26,
+        43: 32,
+        46: 32,
+        47: 32,
+        49: 32,
+        80: 32,
+        81: 32,
+        82: 32,
+        83: 32,
+        84: 32,
+        85: 32,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2176,7 +2382,25 @@ class UnitOfTimeRangeOfStatisticalProcess:
 class TimeRangeOfStatisticalProcess:
     """Time Range of Statistical Process"""
 
-    _key = {4: 33, 8: 26, 9: 33, 10: 27, 11: 29, 12: 28, 42: 27, 43: 33, 46: 33, 47: 33, 49: 33, 80: 33, 81: 33, 82: 33, 83: 33, 84: 33, 85: 33}
+    _key = {
+        4: 33,
+        8: 26,
+        9: 33,
+        10: 27,
+        11: 29,
+        12: 28,
+        42: 27,
+        43: 33,
+        46: 33,
+        47: 33,
+        49: 33,
+        80: 33,
+        81: 33,
+        82: 33,
+        83: 33,
+        84: 33,
+        85: 33,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2190,7 +2414,25 @@ class TimeRangeOfStatisticalProcess:
 class UnitOfTimeRangeOfSuccessiveFields:
     """[Unit of Time Range of Successive Fields](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-4.shtml)"""
 
-    _key = {4: 34, 8: 27, 9: 34, 10: 28, 11: 30, 12: 29, 42: 28, 43: 34, 46: 34, 47: 34, 49: 34, 80: 34, 81: 34, 82: 34, 83: 34, 84: 34, 85: 34}
+    _key = {
+        4: 34,
+        8: 27,
+        9: 34,
+        10: 28,
+        11: 30,
+        12: 29,
+        42: 28,
+        43: 34,
+        46: 34,
+        47: 34,
+        49: 34,
+        80: 34,
+        81: 34,
+        82: 34,
+        83: 34,
+        84: 34,
+        85: 34,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2204,7 +2446,25 @@ class UnitOfTimeRangeOfSuccessiveFields:
 class TimeIncrementOfSuccessiveFields:
     """Time Increment of Successive Fields"""
 
-    _key = {4: 35, 8: 28, 9: 35, 10: 29, 11: 31, 12: 30, 42: 29, 43: 35, 46: 67, 47: 67, 49: 67, 80: 35, 81: 35, 82: 35, 83: 35, 84: 35, 85: 35}
+    _key = {
+        4: 35,
+        8: 28,
+        9: 35,
+        10: 29,
+        11: 31,
+        12: 30,
+        42: 29,
+        43: 35,
+        46: 67,
+        47: 67,
+        49: 67,
+        80: 35,
+        81: 35,
+        82: 35,
+        83: 35,
+        84: 35,
+        85: 35,
+    }
 
     def __get__(self, obj, objtype=None):
         pdtn = obj.section4[1]
@@ -2339,7 +2599,21 @@ class CetralWaveNumber:
 class TypeOfAerosol:
     """[Type of Aerosol](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-233.shtml)"""
 
-    _key = {44: 5, 45: 5, 46: 2, 47: 2, 48: 2, 49: 2, 50: 5, 80: 2, 81: 2, 82: 2, 83: 2, 84: 2, 85: 2}
+    _key = {
+        44: 5,
+        45: 5,
+        46: 2,
+        47: 2,
+        48: 2,
+        49: 2,
+        50: 5,
+        80: 2,
+        81: 2,
+        82: 2,
+        83: 2,
+        84: 2,
+        85: 2,
+    }
 
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn] + 2], table="4.233")
@@ -2351,7 +2625,21 @@ class TypeOfAerosol:
 class TypeOfIntervalForAerosolSize:
     """[Type of Interval for Aerosol Size](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_table4-91.shtml)"""
 
-    _key = {44: 6, 45: 6, 46: 3, 47: 3, 48: 3, 49: 3, 50: 6, 80: 3, 81: 3, 82: 3, 83: 3, 84: 3, 85: 3}
+    _key = {
+        44: 6,
+        45: 6,
+        46: 3,
+        47: 3,
+        48: 3,
+        49: 3,
+        50: 6,
+        80: 3,
+        81: 3,
+        82: 3,
+        83: 3,
+        84: 3,
+        85: 3,
+    }
 
     def __get__(self, obj, objtype=None):
         return Grib2Metadata(obj.section4[self._key[obj.pdtn] + 2], table="4.91")
@@ -2363,7 +2651,21 @@ class TypeOfIntervalForAerosolSize:
 class ScaleFactorOfFirstSize:
     """Scale Factor of First Size"""
 
-    _key = {44: 7, 45: 7, 46: 4, 47: 4, 48: 4, 49: 4, 50: 7, 80: 4, 81: 4, 82: 4, 83: 4, 84: 4, 85: 4}
+    _key = {
+        44: 7,
+        45: 7,
+        46: 4,
+        47: 4,
+        48: 4,
+        49: 4,
+        50: 7,
+        80: 4,
+        81: 4,
+        82: 4,
+        83: 4,
+        84: 4,
+        85: 4,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn] + 2]
@@ -2375,7 +2677,21 @@ class ScaleFactorOfFirstSize:
 class ScaledValueOfFirstSize:
     """Scaled Value of First Size"""
 
-    _key = {44: 8, 45: 8, 46: 5, 47: 5, 48: 5, 49: 5, 50: 8, 80: 5, 81: 5, 82: 5, 83: 5, 84: 5, 85: 5}
+    _key = {
+        44: 8,
+        45: 8,
+        46: 5,
+        47: 5,
+        48: 5,
+        49: 5,
+        50: 8,
+        80: 5,
+        81: 5,
+        82: 5,
+        83: 5,
+        84: 5,
+        85: 5,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn] + 2]
@@ -2401,7 +2717,21 @@ class FirstSizeOfAerosol:
 class ScaleFactorOfSecondSize:
     """Scale Factor of Second Size"""
 
-    _key = {44: 9, 45: 9, 46: 6, 47: 6, 48: 6, 49: 6, 50: 9, 80: 6, 81: 6, 82: 6, 83: 6, 84: 6, 85: 6}
+    _key = {
+        44: 9,
+        45: 9,
+        46: 6,
+        47: 6,
+        48: 6,
+        49: 6,
+        50: 9,
+        80: 6,
+        81: 6,
+        82: 6,
+        83: 6,
+        84: 6,
+        85: 6,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn] + 2]
@@ -2413,7 +2743,21 @@ class ScaleFactorOfSecondSize:
 class ScaledValueOfSecondSize:
     """Scaled Value of Second Size"""
 
-    _key = {44: 10, 45: 10, 46: 7, 47: 7, 48: 7, 49: 7, 50: 10, 80: 7, 81: 7, 82: 7, 83: 7, 84: 7, 85: 7}
+    _key = {
+        44: 10,
+        45: 10,
+        46: 7,
+        47: 7,
+        48: 7,
+        49: 7,
+        50: 10,
+        80: 7,
+        81: 7,
+        82: 7,
+        83: 7,
+        84: 7,
+        85: 7,
+    }
 
     def __get__(self, obj, objtype=None):
         return obj.section4[self._key[obj.pdtn] + 2]
@@ -3466,6 +3810,150 @@ class ProductDefinitionTemplate85(ProductDefinitionTemplateBase, ProductDefiniti
     typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
     perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
     numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate40(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 40](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-40.shtml)"""
+
+    _len = 16
+    _num = 40
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate41(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 41](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-41.shtml)"""
+
+    _len = 19
+    _num = 41
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate42(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 42](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-42.shtml)"""
+
+    _len = 30
+    _num = 42
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate43(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 43](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-43.shtml)"""
+
+    _len = 33
+    _num = 43
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate76(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.76](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-76.shtml)"""
+
+    _len = 17
+    _num = 76
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate77(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.77](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-77.shtml)"""
+
+    _len = 20
+    _num = 77
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate78(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.78](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-78.shtml)"""
+
+    _len = 31
+    _num = 78
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
+
+
+@dataclass(init=False)
+class ProductDefinitionTemplate79(ProductDefinitionTemplateBase, ProductDefinitionTemplateSurface):
+    """[Product Definition Template 4.79](https://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_doc/grib2_temp4-79.shtml)"""
+
+    _len = 34
+    _num = 79
+    constituentType: Grib2Metadata = field(init=False, repr=False, default=ConstituentType())
+    sourceSinkIndicator: Grib2Metadata = field(init=False, repr=False, default=SourceSinkIndicator())
+    typeOfEnsembleForecast: Grib2Metadata = field(init=False, repr=False, default=TypeOfEnsembleForecast())
+    perturbationNumber: int = field(init=False, repr=False, default=PerturbationNumber())
+    numberOfEnsembleForecasts: int = field(init=False, repr=False, default=NumberOfEnsembleForecasts())
+    yearOfEndOfTimePeriod: int = field(init=False, repr=False, default=YearOfEndOfTimePeriod())
+    monthOfEndOfTimePeriod: int = field(init=False, repr=False, default=MonthOfEndOfTimePeriod())
+    dayOfEndOfTimePeriod: int = field(init=False, repr=False, default=DayOfEndOfTimePeriod())
+    hourOfEndOfTimePeriod: int = field(init=False, repr=False, default=HourOfEndOfTimePeriod())
+    minuteOfEndOfTimePeriod: int = field(init=False, repr=False, default=MinuteOfEndOfTimePeriod())
+    secondOfEndOfTimePeriod: int = field(init=False, repr=False, default=SecondOfEndOfTimePeriod())
+    numberOfTimeRanges: int = field(init=False, repr=False, default=NumberOfTimeRanges())
+    numberOfMissingValues: int = field(init=False, repr=False, default=NumberOfMissingValues())
+    statisticalProcess: Grib2Metadata = field(init=False, repr=False, default=StatisticalProcess())
+    typeOfTimeIncrementOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfTimeIncrementOfStatisticalProcess())
+    unitOfTimeRangeOfStatisticalProcess: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfStatisticalProcess())
+    timeRangeOfStatisticalProcess: int = field(init=False, repr=False, default=TimeRangeOfStatisticalProcess())
+    unitOfTimeRangeOfSuccessiveFields: Grib2Metadata = field(init=False, repr=False, default=UnitOfTimeRangeOfSuccessiveFields())
+    timeIncrementOfSuccessiveFields: int = field(init=False, repr=False, default=TimeIncrementOfSuccessiveFields())
 
 
 @dataclass(init=False)

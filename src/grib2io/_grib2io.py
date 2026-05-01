@@ -94,7 +94,14 @@ DEFAULT_NUMPY_INT = np.int64
 GRIB2_EDITION_NUMBER = 2
 TYPE_OF_VALUES_DTYPE = ("float32", "int32")
 
-_interp_schemes = {"bilinear": 0, "bicubic": 1, "neighbor": 2, "budget": 3, "spectral": 4, "neighbor-budget": 6}
+_interp_schemes = {
+    "bilinear": 0,
+    "bicubic": 1,
+    "neighbor": 2,
+    "budget": 3,
+    "spectral": 4,
+    "neighbor-budget": 6,
+}
 
 _AUTO_NANS = True
 _GZIP_HEADER = b"\x1f\x8b"
@@ -337,8 +344,22 @@ class open:
             return self.select(shortName=key)
         elif isinstance(key, slice):
             return self._msgs[key]
+        elif isinstance(key, (list, tuple, set)):
+            if len(key) == 0:
+                return iter(self._msgs)
+            indices = sorted(key) if isinstance(key, set) else key
+
+            def _iter_msgs():
+                for i in indices:
+                    if not isinstance(i, int):
+                        raise TypeError(f"indices must be integers; got {type(i).__name__}")
+                    if abs(i) >= len(self._msgs):
+                        raise IndexError(f"index out of range: {i}")
+                    yield self._msgs[i]
+
+            return _iter_msgs()
         else:
-            raise KeyError("Key must be an integer, slice, or GRIB2 variable shortName.")
+            raise KeyError("Key must be an integer, slice, GRIB2 variable shortName, or an iterable of integer indices.")
 
     @property
     def levels(self):
@@ -820,7 +841,13 @@ def msgs_from_index(index: dict, filehandle=None):
       preserve message order.
     """
     zipped = zip(
-        index["section0"], index["section1"], index["section2"], index["section3"], index["section4"], index["section5"], index["bmapflag"]
+        index["section0"],
+        index["section1"],
+        index["section2"],
+        index["section3"],
+        index["section4"],
+        index["section5"],
+        index["bmapflag"],
     )
     msgs = [Grib2Message(*sections) for sections in zipped]
 
@@ -1194,7 +1221,17 @@ class _Grib2Message:
 
     def _generate_signature(self):
         """Generature SHA-1 hash string from GRIB2 integer sections."""
-        return hashlib.sha1(np.concatenate((self.section0, self.section1, self.section3, self.section4, self.section5))).hexdigest()
+        return hashlib.sha1(
+            np.concatenate(
+                (
+                    self.section0,
+                    self.section1,
+                    self.section3,
+                    self.section4,
+                    self.section5,
+                )
+            )
+        ).hexdigest()
 
     def attrs_by_section(self, sect: int, values: bool = False):
         """
@@ -1278,7 +1315,12 @@ class _Grib2Message:
 
         # Add section 3.
         self.section3[1] = self.nx * self.ny
-        self._msg, self._pos = g2clib.grib2_addgrid(self._msg, self.gridDefinitionSection, self.gridDefinitionTemplate, self._deflist)
+        self._msg, self._pos = g2clib.grib2_addgrid(
+            self._msg,
+            self.gridDefinitionSection,
+            self.gridDefinitionTemplate,
+            self._deflist,
+        )
         self._sections.append(3)
 
         # Prepare data.
@@ -1318,7 +1360,15 @@ class _Grib2Message:
 
         # Add sections 4, 5, 6, and 7.
         self._msg, self._pos = g2clib.grib2_addfield(
-            self._msg, self.pdtn, self.productDefinitionTemplate, self._coordlist, self.drtn, self.dataRepresentationTemplate, fld, bitmapflag, bmap
+            self._msg,
+            self.pdtn,
+            self.productDefinitionTemplate,
+            self._coordlist,
+            self.drtn,
+            self.dataRepresentationTemplate,
+            fld,
+            bitmapflag,
+            bmap,
         )
         self._sections.append(4)
         self._sections.append(5)
@@ -1417,7 +1467,10 @@ class _Grib2Message:
             latitudes and longitudes in units of degrees.
         """
         if self._sha1_section3 in _latlon_datastore.keys():
-            return (_latlon_datastore[self._sha1_section3]["latitude"], _latlon_datastore[self._sha1_section3]["longitude"])
+            return (
+                _latlon_datastore[self._sha1_section3]["latitude"],
+                _latlon_datastore[self._sha1_section3]["longitude"],
+            )
         gdtn = self.gridDefinitionTemplateNumber.value
         reggrid = self.gridDefinitionSection[2] == 0  # This means regular 2-d grid
         if gdtn == 0:
@@ -1447,7 +1500,13 @@ class _Grib2Message:
             if unrotate:
                 from grib2io.utils import rotated_grid
 
-                lats, lons = rotated_grid.unrotate(lats, lons, self.anglePoleRotation, self.latitudeSouthernPole, self.longitudeSouthernPole)
+                lats, lons = rotated_grid.unrotate(
+                    lats,
+                    lons,
+                    self.anglePoleRotation,
+                    self.latitudeSouthernPole,
+                    self.longitudeSouthernPole,
+                )
         elif gdtn == 40:  # Gaussian grid (only works for global!)
             from grib2io.utils.gauss_grid import gaussian_latitudes
 
@@ -1579,9 +1638,15 @@ class _Grib2Message:
 
         if (np.all(self.section1[0:2] == [7, 14]) and self.shortName == "PWTHER") or (self._isNDFD and self.shortName in {"WX", "WWA"}):
             keys = utils.decode_wx_strings(self.section2)
-            if hasattr(self, "priMissingValue") and self.priMissingValue not in [None, 0]:
+            if hasattr(self, "priMissingValue") and self.priMissingValue not in [
+                None,
+                0,
+            ]:
                 keys[int(self.priMissingValue)] = "Missing"
-            if hasattr(self, "secMissingValue") and self.secMissingValue not in [None, 0]:
+            if hasattr(self, "secMissingValue") and self.secMissingValue not in [
+                None,
+                0,
+            ]:
                 keys[int(self.secMissingValue)] = "Missing"
             u, inv = np.unique(self.data, return_inverse=True)
             fld = np.array([keys[x] for x in u])[inv].reshape(self.data.shape)
@@ -1684,7 +1749,16 @@ class _Grib2Message:
         section3 = np.concatenate((gds, grid_def_out.gdt))
         drtn = self.drtn if drtn is None else drtn
 
-        msg = Grib2Message(section0, self.section1, self.section2, section3, self.section4, None, self.bitMapFlag.value, drtn=drtn)
+        msg = Grib2Message(
+            section0,
+            self.section1,
+            self.section2,
+            section3,
+            self.section4,
+            None,
+            self.bitMapFlag.value,
+            drtn=drtn,
+        )
 
         msg._msgnum = -1
         msg._deflist = self._deflist
@@ -1693,10 +1767,16 @@ class _Grib2Message:
             pass
         elif msg.typeOfValues == 1:
             pass
-        msg._data = interpolate(
-            self.data, method, Grib2GridDef.from_section3(self.section3), grid_def_out, method_options=method_options, num_threads=num_threads
+        newdata = interpolate(
+            self.data,
+            method,
+            Grib2GridDef.from_section3(self.section3),
+            grid_def_out,
+            method_options=method_options,
+            num_threads=num_threads,
         ).reshape(msg.ny, msg.nx)
         msg.section5[0] = grid_def_out.npoints
+        msg._data = newdata.astype(np.float32)
         return msg
 
     def subset(self, lats, lons):
@@ -1865,7 +1945,10 @@ class Grib2MessageOnDiskArray:
     data_offset: int
 
     def __array__(self, dtype=None):
-        return np.asarray(_data(self.filehandle, self.msg, self.bitmap_offset, self.data_offset), dtype=dtype)
+        return np.asarray(
+            _data(self.filehandle, self.msg, self.bitmap_offset, self.data_offset),
+            dtype=dtype,
+        )
 
 
 def _data(
@@ -1933,7 +2016,15 @@ def _data(
     ipos = 0
     npvals = msg.numberOfPackedValues
     ngrdpts = msg.numberOfDataPoints
-    fld1, ipos = g2clib.unpack7(filehandle.read(data_size), msg.gdtn, gdt, msg.drtn, drt, npvals, storageorder=storageorder)
+    fld1, ipos = g2clib.unpack7(
+        filehandle.read(data_size),
+        msg.gdtn,
+        gdt,
+        msg.drtn,
+        drt,
+        npvals,
+        storageorder=storageorder,
+    )
 
     # Handle the missing values
     if msg.bitMapFlag in {0, 254}:
@@ -2013,8 +2104,9 @@ def interpolate(
     """
     This is the module-level interpolation function.
 
-    This interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
-    through grib2io's internal iplib Cython extension module.
+    This interfaces with the "d" version of[NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    through grib2io's internal iplib Cython extension module. The "d" version
+    defines 4-byte integers and 8-byte reals.
 
     Parameters
     ----------
@@ -2065,7 +2157,10 @@ def interpolate(
         1-index is the interpolated v.
     """
 
-    from . import iplib
+    try:
+        from . import iplib
+    except ImportError:
+        raise ImportError("NCEPLIBS-ip library not found. Interpolation is not available.")
 
     prev_num_threads = 1
     try:
@@ -2117,7 +2212,7 @@ def interpolate(
             km,
             ibi,
             li,
-            a,
+            a.astype(np.float64),
         )
         out = np.where(lo == 0, np.nan, go).reshape(newshp)
     elif isinstance(a, tuple):
@@ -2141,12 +2236,12 @@ def interpolate(
             km,
             ibi,
             li,
-            a[0],
-            a[1],
+            a[0].astype(np.float64),
+            a[1].astype(np.float64),
         )
         uo = np.where(lo == 0, np.nan, uo).reshape(newshp)
         vo = np.where(lo == 0, np.nan, vo).reshape(newshp)
-        out = (uo, vo)
+        out = (uo.astype(np.float32), vo.astype(np.float32))
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)
@@ -2156,11 +2251,19 @@ def interpolate(
     return out
 
 
-def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons, method_options=None, num_threads=1):
+def interpolate_to_stations(
+    a,
+    method: Union[int, str],
+    grid_def_in,
+    lats,
+    lons,
+    method_options=None,
+    num_threads=1,
+):
     """
     Module-level interpolation function for interpolation to stations.
 
-    Interfaces with the 4-byte (32-bit float) [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
+    Interfaces with the "d" version of [NCEPLIBS-ip library](https://github.com/NOAA-EMC/NCEPLIBS-ip)
     via grib2io's iplib Cython exntension module. It supports scalar and
     vector interpolation according to the type of object a.
 
@@ -2215,7 +2318,10 @@ def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons,
         that 0-index is the interpolated u and 1-index is the
         interpolated v.
     """
-    from . import iplib
+    try:
+        from . import iplib
+    except ImportError:
+        raise ImportError("NCEPLIBS-ip library not found. Interpolation is not available.")
 
     # Define function to apply mask when stations are outside grid domain
     def _reshape_and_mask_post_interp(a, shape, mask):
@@ -2300,9 +2406,9 @@ def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons,
             km,
             ibi,
             li,
-            a,
-            lats=np.array(lats, dtype=np.float32),
-            lons=np.array(lons, dtype=np.float32),
+            a.astype(np.float64),
+            lats=np.array(lats, dtype=np.float64),
+            lons=np.array(lons, dtype=np.float64),
         )
         out = _reshape_and_mask_post_interp(go, newshp, mask)
 
@@ -2323,12 +2429,15 @@ def interpolate_to_stations(a, method: Union[int, str], grid_def_in, lats, lons,
             km,
             ibi,
             li,
-            a[0],
-            a[1],
-            lats=np.array(lats, dtype=np.float32),
-            lons=np.array(lons, dtype=np.float32),
+            a[0].astype(np.float64),
+            a[1].astype(np.float64),
+            lats=np.array(lats, dtype=np.float64),
+            lons=np.array(lons, dtype=np.float64),
         )
-        out = (_reshape_and_mask_post_interp(uo, newshp, mask), _reshape_and_mask_post_interp(vo, newshp, mask))
+        out = (
+            _reshape_and_mask_post_interp(uo.astype(np.float32), newshp, mask),
+            _reshape_and_mask_post_interp(vo.astype(np.float32), newshp, mask),
+        )
 
     try:
         iplib.openmp_set_num_threads(prev_num_threads)

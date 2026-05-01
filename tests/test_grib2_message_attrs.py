@@ -48,7 +48,32 @@ def test_section3(request):
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
     expected_section3 = np.array(
-        [0, 65160, 0, 0, 0, 6, 0, 0, 0, 0, 0, 0, 360, 181, 0, -1, 90000000, 0, 48, -90000000, 359000000, 1000000, 1000000, 0]
+        [
+            0,
+            65160,
+            0,
+            0,
+            0,
+            6,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            360,
+            181,
+            0,
+            -1,
+            90000000,
+            0,
+            48,
+            -90000000,
+            359000000,
+            1000000,
+            1000000,
+            0,
+        ]
     )
     np.testing.assert_array_equal(expected_section3, msg.section3)
     np.testing.assert_array_equal(expected_section3[:5], msg.gridDefinitionSection)
@@ -102,7 +127,30 @@ def test_section5(request):
     data = request.config.rootdir / "tests" / "input_data" / "gfs_20221107"
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
-    expected_section5 = np.array([65160, 3, 3304718338, 0, 2, 15, 0, 1, 0, 1649987994, -1, 3127, 0, 4, 1, 1, 49, 8, 2, 2])
+    expected_section5 = np.array(
+        [
+            65160,
+            3,
+            3304718338,
+            0,
+            2,
+            15,
+            0,
+            1,
+            0,
+            1649987994,
+            -1,
+            3127,
+            0,
+            4,
+            1,
+            1,
+            49,
+            8,
+            2,
+            2,
+        ]
+    )
     assert msg.dataRepresentationTemplateNumber.value == 3
     assert msg.dataRepresentationTemplateNumber.definition == "Grid Point Data - Complex Packing and Spatial Differencing (see Template 5.3)"
     assert msg.numberOfPackedValues == 65160
