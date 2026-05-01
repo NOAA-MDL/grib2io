@@ -577,10 +577,7 @@ def _ensure_kerchunk():
     try:
         import fsspec  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "kerchunk is required for reference generation. "
-            "Install with: pip install grib2io[kerchunk]"
-        )
+        raise ImportError("kerchunk is required for reference generation. Install with: pip install grib2io[kerchunk]")
 
 
 def _ensure_icechunk():
@@ -588,10 +585,7 @@ def _ensure_icechunk():
     try:
         import icechunk  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "icechunk is required for virtual store support. "
-            "Install with: pip install grib2io[icechunk]"
-        )
+        raise ImportError("icechunk is required for virtual store support. Install with: pip install grib2io[icechunk]")
 
 
 # ---------------------------------------------------------------------------
@@ -673,10 +667,7 @@ def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, 
 
     history = ds.attrs.get("history", "")
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    ds.attrs["history"] = (
-        f"{now}: Initialized via grib2io xarray backend from Kerchunk reference "
-        f"{filename_or_obj}\n{history}"
-    )
+    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Kerchunk reference {filename_or_obj}\n{history}"
 
     return ds
 
@@ -720,10 +711,7 @@ def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, c
 
     history = ds.attrs.get("history", "")
     now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    ds.attrs["history"] = (
-        f"{now}: Initialized via grib2io xarray backend from Icechunk store "
-        f"{filename_or_obj}\n{history}"
-    )
+    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Icechunk store {filename_or_obj}\n{history}"
 
     return ds
 

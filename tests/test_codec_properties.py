@@ -40,10 +40,10 @@ INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
 # Map of test files to the DRT types they contain
 TEST_FILES = {
-    "gfs.t00z.pgrb2.1p00.f024": {0, 3},       # simple + complex packing, some with bitmaps
-    "gfs.complex.grib2": {3},                    # complex packing (DRT 3)
-    "gfs.jpeg.grib2": {40},                      # JPEG2000 (DRT 40)
-    "gfs.png.grib2": {41},                       # PNG (DRT 41)
+    "gfs.t00z.pgrb2.1p00.f024": {0, 3},  # simple + complex packing, some with bitmaps
+    "gfs.complex.grib2": {3},  # complex packing (DRT 3)
+    "gfs.jpeg.grib2": {40},  # JPEG2000 (DRT 40)
+    "gfs.png.grib2": {41},  # PNG (DRT 41)
     "blend.t00z.core.f001.co_4x_reduce.grib2": {0, 2, 3},  # mixed DRTs
 }
 
@@ -54,6 +54,7 @@ TARGET_DRTS = {0, 2, 3, 40, 41}
 # ---------------------------------------------------------------------------
 # Helpers: build a catalog of (file, message_index) pairs grouped by DRT
 # ---------------------------------------------------------------------------
+
 
 def _build_message_catalog():
     """Scan test files and build a catalog of messages grouped by DRT type.
@@ -76,10 +77,7 @@ def _build_message_catalog():
             if drtn in TARGET_DRTS:
                 has_bitmap = index["bmapflag"][i] in {0, 254}
                 msg = msgs[i]
-                has_mvm = (
-                    hasattr(msg, "typeOfMissingValueManagement")
-                    and int(msg.typeOfMissingValueManagement) in {1, 2}
-                )
+                has_mvm = hasattr(msg, "typeOfMissingValueManagement") and int(msg.typeOfMissingValueManagement) in {1, 2}
                 catalog.append((filepath, i, drtn, has_bitmap, has_mvm))
     return catalog
 
@@ -114,10 +112,7 @@ def _decode_message(filepath, msg_idx):
         gdtn = int(msg.gdtn)
         bitmap_flag = int(msg.bitMapFlag)
         has_bitmap = bitmap_flag in {0, 254}
-        has_mvm = (
-            hasattr(msg, "typeOfMissingValueManagement")
-            and int(msg.typeOfMissingValueManagement) in {1, 2}
-        )
+        has_mvm = hasattr(msg, "typeOfMissingValueManagement") and int(msg.typeOfMissingValueManagement) in {1, 2}
 
         # Read section 7 bytes
         sec7_offset = index["sectionOffset"][msg_idx][7]
@@ -190,6 +185,7 @@ catalog_index_strategy = st.sampled_from(range(len(_CATALOG)))
 # Property test: Codec Decode Equivalence
 # ---------------------------------------------------------------------------
 
+
 @settings(
     max_examples=100,
     deadline=None,
@@ -218,8 +214,7 @@ def test_codec_decode_equivalence(idx):
 
     # Shape must match
     assert codec_data.shape == ref_data.shape, (
-        f"Shape mismatch: codec={codec_data.shape}, ref={ref_data.shape} "
-        f"(file={os.path.basename(filepath)}, msg={msg_idx}, DRT={drtn})"
+        f"Shape mismatch: codec={codec_data.shape}, ref={ref_data.shape} (file={os.path.basename(filepath)}, msg={msg_idx}, DRT={drtn})"
     )
 
     # NaN placement must match exactly
@@ -233,14 +228,14 @@ def test_codec_decode_equivalence(idx):
 
     # Non-NaN values must be equal within floating-point tolerance
     assert np.allclose(codec_data, ref_data, equal_nan=True, rtol=1e-6, atol=1e-6), (
-        f"Value mismatch: max diff={np.nanmax(np.abs(codec_data - ref_data))} "
-        f"(file={os.path.basename(filepath)}, msg={msg_idx}, DRT={drtn})"
+        f"Value mismatch: max diff={np.nanmax(np.abs(codec_data - ref_data))} (file={os.path.basename(filepath)}, msg={msg_idx}, DRT={drtn})"
     )
 
 
 # ---------------------------------------------------------------------------
 # Per-DRT targeted tests to ensure each DRT type is covered
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.parametrize("drtn", sorted(TARGET_DRTS))
 @settings(
@@ -279,6 +274,7 @@ def test_codec_decode_per_drt(data, drtn):
 # Bitmap-specific property test
 # ---------------------------------------------------------------------------
 
+
 @settings(
     max_examples=100,
     deadline=None,
@@ -306,21 +302,14 @@ def test_codec_bitmap_nan_placement(data):
     ref_nans = np.isnan(ref_data)
 
     # NaN count must match
-    assert codec_nans.sum() == ref_nans.sum(), (
-        f"NaN count mismatch: codec={codec_nans.sum()}, ref={ref_nans.sum()}"
-    )
+    assert codec_nans.sum() == ref_nans.sum(), f"NaN count mismatch: codec={codec_nans.sum()}, ref={ref_nans.sum()}"
 
     # NaN positions must match exactly
-    assert np.array_equal(codec_nans, ref_nans), (
-        "NaN positions differ between codec and reference output"
-    )
+    assert np.array_equal(codec_nans, ref_nans), "NaN positions differ between codec and reference output"
 
     # Non-NaN values must match
     mask = ~ref_nans
     if mask.any():
-        assert np.allclose(
-            codec_data[mask], ref_data[mask], rtol=1e-6, atol=1e-6
-        ), (
-            f"Non-NaN value mismatch: max diff="
-            f"{np.max(np.abs(codec_data[mask] - ref_data[mask]))}"
+        assert np.allclose(codec_data[mask], ref_data[mask], rtol=1e-6, atol=1e-6), (
+            f"Non-NaN value mismatch: max diff={np.max(np.abs(codec_data[mask] - ref_data[mask]))}"
         )

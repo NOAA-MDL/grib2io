@@ -102,9 +102,7 @@ class TestIcechunkImportError:
         with patch.dict(sys.modules, {"icechunk": None}):
             from grib2io.icechunk import _ensure_icechunk
 
-            with pytest.raises(
-                ImportError, match=r"pip install grib2io\[icechunk\]"
-            ):
+            with pytest.raises(ImportError, match=r"pip install grib2io\[icechunk\]"):
                 _ensure_icechunk()
 
     def test_icechunk_writer_init_raises_when_icechunk_missing(self):
@@ -178,10 +176,7 @@ class TestIcechunkWriteRead:
             # Verify each variable has dimensions
             for var_name in ds.data_vars:
                 var = ds[var_name]
-                assert len(var.dims) >= 2, (
-                    f"Variable {var_name} should have at least 2 dims "
-                    f"(y, x), got {var.dims}"
-                )
+                assert len(var.dims) >= 2, f"Variable {var_name} should have at least 2 dims (y, x), got {var.dims}"
 
             # Verify .zgroup metadata was written (dataset should open)
             assert ds is not None
@@ -321,8 +316,7 @@ class TestIcechunkMultiFileAppend:
                 refdate_idx = list(ds2[first_var].dims).index("refDate")
                 new_shape = ds2[first_var].shape
                 assert new_shape[refdate_idx] > initial_shape[refdate_idx], (
-                    f"Expected refDate dimension to grow after append. "
-                    f"Initial: {initial_shape}, New: {new_shape}"
+                    f"Expected refDate dimension to grow after append. Initial: {initial_shape}, New: {new_shape}"
                 )
 
 

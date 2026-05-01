@@ -64,9 +64,7 @@ class TestJsonSerialization:
         gen = ReferenceGenerator([gfs_jpeg_path])
         gen.generate()
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             json_path = tmp.name
 
         try:
@@ -88,9 +86,7 @@ class TestJsonSerialization:
         gen = ReferenceGenerator([gfs_jpeg_path])
         gen._manifest = manifest
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             json_path = tmp.name
 
         try:
@@ -137,9 +133,7 @@ class TestJsonSerialization:
         gen = ReferenceGenerator([gfs_jpeg_path])
         manifest = gen.generate()
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             json_path = tmp.name
 
         try:
@@ -159,9 +153,7 @@ class TestJsonSerialization:
                 if key.endswith((".zarray", ".zattrs", ".zgroup")):
                     orig_val = json.loads(manifest["refs"][key])
                     loaded_val = json.loads(store[key])
-                    assert orig_val == loaded_val, (
-                        f"Metadata mismatch for {key}"
-                    )
+                    assert orig_val == loaded_val, f"Metadata mismatch for {key}"
         finally:
             os.unlink(json_path)
 
@@ -169,9 +161,7 @@ class TestJsonSerialization:
         """to_json() auto-generates the manifest if generate() was not called."""
         gen = ReferenceGenerator([gfs_jpeg_path])
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             json_path = tmp.name
 
         try:
@@ -190,9 +180,7 @@ class TestJsonSerialization:
         gen = ReferenceGenerator([gfs_jpeg_path, gfs_complex_path])
         gen.generate()
 
-        with tempfile.NamedTemporaryFile(
-            suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as tmp:
             json_path = tmp.name
 
         try:
@@ -222,11 +210,13 @@ def _has_parquet_engine():
     """Check if a Parquet engine (fastparquet or pyarrow) is available."""
     try:
         import fastparquet  # noqa: F401
+
         return True
     except ImportError:
         pass
     try:
         import pyarrow  # noqa: F401
+
         return True
     except ImportError:
         pass
@@ -249,17 +239,12 @@ class TestParquetSerialization:
             parquet_path = os.path.join(tmpdir, "refs")
             gen.to_parquet(parquet_path)
 
-            assert os.path.isdir(parquet_path), (
-                f"Parquet output directory not created at {parquet_path}"
-            )
+            assert os.path.isdir(parquet_path), f"Parquet output directory not created at {parquet_path}"
 
             # Should contain at least one .parq file
             contents = os.listdir(parquet_path)
             parq_files = [f for f in contents if f.endswith(".parq")]
-            assert len(parq_files) > 0, (
-                f"No .parq files found in {parquet_path}. "
-                f"Contents: {contents}"
-            )
+            assert len(parq_files) > 0, f"No .parq files found in {parquet_path}. Contents: {contents}"
 
     def test_parquet_output_structure(self, gfs_jpeg_path):
         """Parquet output directory has expected structure."""
@@ -273,9 +258,7 @@ class TestParquetSerialization:
             contents = os.listdir(parquet_path)
 
             # Should have .zmetadata file
-            assert ".zmetadata" in contents, (
-                f".zmetadata not found. Contents: {contents}"
-            )
+            assert ".zmetadata" in contents, f".zmetadata not found. Contents: {contents}"
 
             # .zmetadata should be valid JSON
             with open(os.path.join(parquet_path, ".zmetadata")) as f:
@@ -311,10 +294,12 @@ class TestErrorHandling:
     def test_multiple_files_one_missing_raises_error(self, gfs_jpeg_path):
         """FileNotFoundError raised when one file in a list is missing."""
         with pytest.raises(FileNotFoundError, match="GRIB2 file not found"):
-            ReferenceGenerator([
-                gfs_jpeg_path,
-                "/nonexistent/path/to/file.grib2",
-            ])
+            ReferenceGenerator(
+                [
+                    gfs_jpeg_path,
+                    "/nonexistent/path/to/file.grib2",
+                ]
+            )
 
     def test_json_inaccessible_output_path(self, gfs_jpeg_path):
         """Error raised when JSON output path is not writable."""

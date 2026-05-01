@@ -31,6 +31,7 @@ INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 # Helper: decode a single message via both Grib2Codec and _data()
 # ---------------------------------------------------------------------------
 
+
 def _decode_message(filepath, msg_idx):
     """Decode a single message via both Grib2Codec and _data(), return both arrays.
 
@@ -49,10 +50,7 @@ def _decode_message(filepath, msg_idx):
         gdtn = int(msg.gdtn)
         bitmap_flag = int(msg.bitMapFlag)
         has_bitmap = bitmap_flag in {0, 254}
-        has_mvm = (
-            hasattr(msg, "typeOfMissingValueManagement")
-            and int(msg.typeOfMissingValueManagement) in {1, 2}
-        )
+        has_mvm = hasattr(msg, "typeOfMissingValueManagement") and int(msg.typeOfMissingValueManagement) in {1, 2}
 
         # Read section 7 bytes
         sec7_offset = index["sectionOffset"][msg_idx][7]
@@ -125,6 +123,7 @@ def _find_first_message_with_drt(filepath, target_drtn):
 # 1. Interface compliance tests
 # ===========================================================================
 
+
 class TestGrib2CodecInterface:
     """Verify Grib2Codec is a proper numcodecs.abc.Codec subclass."""
 
@@ -149,8 +148,14 @@ class TestGrib2CodecInterface:
         **Validates: Requirement 3.1**
         """
         codec = Grib2Codec(
-            drtn=0, drt=[0] * 5, gdtn=0, gdt=[0] * 19,
-            gds=[0] * 5, nx=10, ny=10, bitmap_flag=255,
+            drtn=0,
+            drt=[0] * 5,
+            gdtn=0,
+            gdt=[0] * 19,
+            gds=[0] * 5,
+            nx=10,
+            ny=10,
+            bitmap_flag=255,
         )
         assert isinstance(codec, Codec)
 
@@ -160,8 +165,14 @@ class TestGrib2CodecInterface:
         **Validates: Requirement 3.1**
         """
         codec = Grib2Codec(
-            drtn=0, drt=[0] * 5, gdtn=0, gdt=[0] * 19,
-            gds=[0] * 5, nx=10, ny=10, bitmap_flag=255,
+            drtn=0,
+            drt=[0] * 5,
+            gdtn=0,
+            gdt=[0] * 19,
+            gds=[0] * 5,
+            nx=10,
+            ny=10,
+            bitmap_flag=255,
         )
         with pytest.raises(NotImplementedError, match="decode-only"):
             codec.encode(b"dummy")
@@ -176,10 +187,17 @@ class TestGrib2CodecConfig:
         **Validates: Requirement 3.1**
         """
         codec = Grib2Codec(
-            drtn=40, drt=[1, 2, 3], gdtn=0, gdt=[4, 5, 6],
-            gds=[7, 8, 9, 10, 11], nx=1440, ny=721,
-            bitmap_flag=255, scan_mode_flags=[0, 1, 0, 0],
-            type_of_values=0, number_of_data_points=1038240,
+            drtn=40,
+            drt=[1, 2, 3],
+            gdtn=0,
+            gdt=[4, 5, 6],
+            gds=[7, 8, 9, 10, 11],
+            nx=1440,
+            ny=721,
+            bitmap_flag=255,
+            scan_mode_flags=[0, 1, 0, 0],
+            type_of_values=0,
+            number_of_data_points=1038240,
             number_of_packed_values=1038240,
         )
         config = codec.get_config()
@@ -195,12 +213,19 @@ class TestGrib2CodecConfig:
         **Validates: Requirement 3.1**
         """
         original = Grib2Codec(
-            drtn=3, drt=[10, 20, 30, 40, 50], gdtn=0,
+            drtn=3,
+            drt=[10, 20, 30, 40, 50],
+            gdtn=0,
             gdt=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
-            gds=[0, 1038240, 0, 0, 0], nx=1440, ny=721,
-            bitmap_flag=0, bitmap_offset=12345, bitmap_length=6789,
+            gds=[0, 1038240, 0, 0, 0],
+            nx=1440,
+            ny=721,
+            bitmap_flag=0,
+            bitmap_offset=12345,
+            bitmap_length=6789,
             scan_mode_flags=[0, 1, 0, 0, 0, 0, 0, 0],
-            type_of_values=0, number_of_data_points=1038240,
+            type_of_values=0,
+            number_of_data_points=1038240,
             number_of_packed_values=1038240,
         )
         config = original.get_config()
@@ -228,8 +253,13 @@ class TestGrib2CodecConfig:
         **Validates: Requirement 3.1**
         """
         original = Grib2Codec(
-            drtn=0, drt=[0, 0, 0, 0, 0], gdtn=0,
-            gdt=[0] * 19, gds=[0] * 5, nx=100, ny=50,
+            drtn=0,
+            drt=[0, 0, 0, 0, 0],
+            gdtn=0,
+            gdt=[0] * 19,
+            gds=[0] * 5,
+            nx=100,
+            ny=50,
             bitmap_flag=255,
         )
         config = original.get_config()
@@ -246,9 +276,16 @@ class TestGrib2CodecConfig:
         """
         config = {
             "id": "grib2io",
-            "drtn": 0, "drt": [0] * 5, "gdtn": 0, "gdt": [0] * 19,
-            "gds": [0] * 5, "nx": 10, "ny": 10, "bitmap_flag": 255,
-            "type_of_values": 0, "number_of_data_points": 100,
+            "drtn": 0,
+            "drt": [0] * 5,
+            "gdtn": 0,
+            "gdt": [0] * 19,
+            "gds": [0] * 5,
+            "nx": 10,
+            "ny": 10,
+            "bitmap_flag": 255,
+            "type_of_values": 0,
+            "number_of_data_points": 100,
             "number_of_packed_values": 100,
         }
         codec = Grib2Codec.from_config(config)
@@ -258,6 +295,7 @@ class TestGrib2CodecConfig:
 # ===========================================================================
 # 2. Per-DRT type decoding tests
 # ===========================================================================
+
 
 class TestGrib2CodecDRT0:
     """Test simple packing (DRT 0) decoding.
@@ -353,6 +391,7 @@ class TestGrib2CodecDRT41:
 # 3. Bitmap handling tests
 # ===========================================================================
 
+
 class TestGrib2CodecBitmap:
     """Test bitmap handling using gfs.t00z.pgrb2.1p00.f024 (which contains bitmap messages).
 
@@ -398,10 +437,7 @@ class TestGrib2CodecBitmap:
         ref_nans = np.isnan(ref_data)
 
         assert codec_nans.sum() > 0, "Expected NaN values in bitmap message"
-        assert np.array_equal(codec_nans, ref_nans), (
-            f"NaN placement mismatch: codec NaN count={codec_nans.sum()}, "
-            f"ref NaN count={ref_nans.sum()}"
-        )
+        assert np.array_equal(codec_nans, ref_nans), f"NaN placement mismatch: codec NaN count={codec_nans.sum()}, ref NaN count={ref_nans.sum()}"
 
     def test_bitmap_non_nan_values_match(self, bitmap_file):
         """Non-NaN values must match between codec and reference for bitmap messages.
@@ -416,9 +452,7 @@ class TestGrib2CodecBitmap:
 
         mask = ~np.isnan(ref_data)
         assert mask.any(), "Expected some non-NaN values"
-        assert np.allclose(
-            codec_data[mask], ref_data[mask], rtol=1e-6, atol=1e-6
-        )
+        assert np.allclose(codec_data[mask], ref_data[mask], rtol=1e-6, atol=1e-6)
 
     def test_bitmap_decode_shape(self, bitmap_file):
         """Codec output shape must match reference for bitmap messages.

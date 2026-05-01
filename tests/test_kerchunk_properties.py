@@ -34,12 +34,12 @@ INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
 # All available test files with their characteristics
 TEST_FILES = [
-    "gfs.t00z.pgrb2.1p00.f024",                  # mixed DRT types, multiple vars/levels, has bitmaps
-    "gfs.complex.grib2",                           # complex packing (DRT 3)
-    "gfs.jpeg.grib2",                              # JPEG2000 (DRT 40)
-    "gfs.png.grib2",                               # PNG (DRT 41)
-    "blend.t00z.core.f001.co_4x_reduce.grib2",    # reduced grids, mixed DRTs
-    "blend.t00z.core.f001.tmp.co.grib2",           # another blend file
+    "gfs.t00z.pgrb2.1p00.f024",  # mixed DRT types, multiple vars/levels, has bitmaps
+    "gfs.complex.grib2",  # complex packing (DRT 3)
+    "gfs.jpeg.grib2",  # JPEG2000 (DRT 40)
+    "gfs.png.grib2",  # PNG (DRT 41)
+    "blend.t00z.core.f001.co_4x_reduce.grib2",  # reduced grids, mixed DRTs
+    "blend.t00z.core.f001.tmp.co.grib2",  # another blend file
 ]
 
 # Files known to contain bitmap messages (bmapflag 0 or 254)
@@ -78,10 +78,7 @@ for _sf in _SMALL_FILES:
 # Validate that test files exist
 _AVAILABLE_FILES = [f for f in TEST_FILES if os.path.isfile(os.path.join(INPUT_DATA, f))]
 _AVAILABLE_BITMAP_FILES = [f for f in BITMAP_FILES if os.path.isfile(os.path.join(INPUT_DATA, f))]
-_AVAILABLE_MULTI_FILE_GROUPS = [
-    g for g in MULTI_FILE_GROUPS
-    if all(os.path.isfile(os.path.join(INPUT_DATA, f)) for f in g)
-]
+_AVAILABLE_MULTI_FILE_GROUPS = [g for g in MULTI_FILE_GROUPS if all(os.path.isfile(os.path.join(INPUT_DATA, f)) for f in g)]
 
 # Required fields in .zarray metadata
 ZARRAY_REQUIRED_FIELDS = {"chunks", "dtype", "fill_value", "shape", "compressor", "order"}
@@ -121,6 +118,7 @@ def _get_manifest(file_key):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _extract_variable_names(refs):
     """Extract data variable names from manifest refs.
 
@@ -146,7 +144,7 @@ def _get_data_chunk_keys(refs, var_name):
     prefix = f"{var_name}/"
     for key in refs:
         if key.startswith(prefix):
-            suffix = key[len(prefix):]
+            suffix = key[len(prefix) :]
             # Skip metadata and bitmap keys
             if suffix.startswith(".") or ".bitmap" in key:
                 continue
@@ -181,7 +179,7 @@ for _fname in _AVAILABLE_FILES:
             _prefix = f"{_vn}/"
             for _k in _manifest["refs"]:
                 if _k.startswith(_prefix):
-                    _suffix = _k[len(_prefix):]
+                    _suffix = _k[len(_prefix) :]
                     if not _suffix.startswith(".") and ".bitmap" not in _k:
                         _parts = _suffix.split(".")
                         if all(_p.isdigit() for _p in _parts):
@@ -199,6 +197,7 @@ for _group in _AVAILABLE_MULTI_FILE_GROUPS:
 # ===========================================================================
 # Property 1: Manifest Structural Validity
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -236,25 +235,19 @@ def test_manifest_structural_validity(data):
     zarray = json.loads(refs[zarray_key])
 
     missing_fields = ZARRAY_REQUIRED_FIELDS - set(zarray.keys())
-    assert not missing_fields, (
-        f"Variable {var_name} .zarray missing fields: {missing_fields}"
-    )
+    assert not missing_fields, f"Variable {var_name} .zarray missing fields: {missing_fields}"
 
     # Verify .zarray field types
     assert isinstance(zarray["chunks"], list), f"{var_name} chunks must be a list"
     assert isinstance(zarray["shape"], list), f"{var_name} shape must be a list"
     assert isinstance(zarray["dtype"], str), f"{var_name} dtype must be a string"
     assert isinstance(zarray["order"], str), f"{var_name} order must be a string"
-    assert len(zarray["shape"]) == len(zarray["chunks"]), (
-        f"{var_name} shape and chunks must have same length"
-    )
+    assert len(zarray["shape"]) == len(zarray["chunks"]), f"{var_name} shape and chunks must have same length"
 
     # Verify compressor is a dict with 'id' = 'grib2io'
     compressor = zarray["compressor"]
     assert isinstance(compressor, dict), f"{var_name} compressor must be a dict"
-    assert compressor.get("id") == "grib2io", (
-        f"{var_name} compressor id must be 'grib2io'"
-    )
+    assert compressor.get("id") == "grib2io", f"{var_name} compressor id must be 'grib2io'"
 
     # Verify .zattrs
     zattrs_key = f"{var_name}/.zattrs"
@@ -262,17 +255,13 @@ def test_manifest_structural_validity(data):
     zattrs = json.loads(refs[zattrs_key])
 
     missing_attrs = ZATTRS_REQUIRED_FIELDS - set(zattrs.keys())
-    assert not missing_attrs, (
-        f"Variable {var_name} .zattrs missing fields: {missing_attrs}"
-    )
+    assert not missing_attrs, f"Variable {var_name} .zattrs missing fields: {missing_attrs}"
 
     # Verify _ARRAY_DIMENSIONS is a list ending with y, x
     dims = zattrs["_ARRAY_DIMENSIONS"]
     assert isinstance(dims, list), f"{var_name} _ARRAY_DIMENSIONS must be a list"
     assert len(dims) >= 2, f"{var_name} must have at least y, x dimensions"
-    assert dims[-2:] == ["y", "x"], (
-        f"{var_name} last two dimensions must be ['y', 'x'], got {dims[-2:]}"
-    )
+    assert dims[-2:] == ["y", "x"], f"{var_name} last two dimensions must be ['y', 'x'], got {dims[-2:]}"
 
 
 @settings(
@@ -293,9 +282,7 @@ def test_manifest_bitmap_codec_config(data):
     **Validates: Requirements 1.5, 1.6**
     """
     assume(len(_BITMAP_CHUNK_CATALOG) > 0)
-    filename, var_name, ref_key, ref_type = data.draw(
-        st.sampled_from(_BITMAP_CHUNK_CATALOG)
-    )
+    filename, var_name, ref_key, ref_type = data.draw(st.sampled_from(_BITMAP_CHUNK_CATALOG))
 
     manifest = _get_manifest((filename,))
     refs = manifest["refs"]
@@ -303,54 +290,35 @@ def test_manifest_bitmap_codec_config(data):
     zarray = json.loads(refs[f"{var_name}/.zarray"])
     compressor = zarray["compressor"]
 
-    assert compressor["bitmap_flag"] in {0, 254}, (
-        f"Variable {var_name} expected bitmap_flag in {{0, 254}}, "
-        f"got {compressor['bitmap_flag']}"
-    )
+    assert compressor["bitmap_flag"] in {0, 254}, f"Variable {var_name} expected bitmap_flag in {{0, 254}}, got {compressor['bitmap_flag']}"
     assert compressor["bitmap_offset"] is not None, (
-        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} "
-        f"must have non-null bitmap_offset"
+        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} must have non-null bitmap_offset"
     )
     assert compressor["bitmap_length"] is not None, (
-        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} "
-        f"must have non-null bitmap_length"
+        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} must have non-null bitmap_length"
     )
-    assert isinstance(compressor["bitmap_offset"], int), (
-        f"Variable {var_name} bitmap_offset must be an int"
-    )
-    assert isinstance(compressor["bitmap_length"], int), (
-        f"Variable {var_name} bitmap_length must be an int"
-    )
-    assert compressor["bitmap_length"] > 0, (
-        f"Variable {var_name} bitmap_length must be > 0"
-    )
+    assert isinstance(compressor["bitmap_offset"], int), f"Variable {var_name} bitmap_offset must be an int"
+    assert isinstance(compressor["bitmap_length"], int), f"Variable {var_name} bitmap_length must be an int"
+    assert compressor["bitmap_length"] > 0, f"Variable {var_name} bitmap_length must be > 0"
 
     # Verify the specific ref is valid
     assert ref_key in refs, f"Ref {ref_key} not found in manifest"
     ref_value = refs[ref_key]
-    assert isinstance(ref_value, list) and len(ref_value) == 3, (
-        f"Ref {ref_key} must be [uri, offset, length]"
-    )
+    assert isinstance(ref_value, list) and len(ref_value) == 3, f"Ref {ref_key} must be [uri, offset, length]"
     uri, offset, length = ref_value
-    assert isinstance(offset, int) and offset >= 0, (
-        f"Ref {ref_key} has invalid offset: {offset}"
-    )
-    assert isinstance(length, int) and length > 0, (
-        f"Ref {ref_key} has invalid length: {length}"
-    )
+    assert isinstance(offset, int) and offset >= 0, f"Ref {ref_key} has invalid offset: {offset}"
+    assert isinstance(length, int) and length > 0, f"Ref {ref_key} has invalid length: {length}"
 
     # Verify the referenced bytes are within file bounds
     file_path = uri.replace("file://", "")
     file_size = os.path.getsize(file_path)
-    assert offset + length <= file_size, (
-        f"Ref {ref_key} references bytes [{offset}:{offset + length}] "
-        f"but file is only {file_size} bytes"
-    )
+    assert offset + length <= file_size, f"Ref {ref_key} references bytes [{offset}:{offset + length}] but file is only {file_size} bytes"
 
 
 # ===========================================================================
 # Property 2: Chunk Key Uniqueness and Determinism
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -373,17 +341,13 @@ def test_chunk_key_uniqueness(data):
     chunk_keys = _get_data_chunk_keys(refs, var_name)
 
     # All chunk keys must be unique
-    assert len(chunk_keys) == len(set(chunk_keys)), (
-        f"Variable {var_name} has duplicate chunk keys"
-    )
+    assert len(chunk_keys) == len(set(chunk_keys)), f"Variable {var_name} has duplicate chunk keys"
 
     # Each chunk key must follow the Zarr naming convention
     for key in chunk_keys:
-        suffix = key[len(f"{var_name}/"):]
+        suffix = key[len(f"{var_name}/") :]
         parts = suffix.split(".")
-        assert all(p.isdigit() for p in parts), (
-            f"Chunk key {key} does not follow Zarr naming convention"
-        )
+        assert all(p.isdigit() for p in parts), f"Chunk key {key} does not follow Zarr naming convention"
 
 
 @settings(
@@ -410,9 +374,7 @@ def test_chunk_key_determinism(data):
     refs2 = manifest2["refs"]
 
     # Same set of keys
-    assert set(refs1.keys()) == set(refs2.keys()), (
-        f"Determinism violation: key sets differ for {filename}"
-    )
+    assert set(refs1.keys()) == set(refs2.keys()), f"Determinism violation: key sets differ for {filename}"
 
     # Pick a random subset of keys to compare values
     all_keys = sorted(refs1.keys())
@@ -420,14 +382,13 @@ def test_chunk_key_determinism(data):
 
     val1 = refs1[key_to_check]
     val2 = refs2[key_to_check]
-    assert val1 == val2, (
-        f"Determinism violation: values differ for key '{key_to_check}' in {filename}"
-    )
+    assert val1 == val2, f"Determinism violation: values differ for key '{key_to_check}' in {filename}"
 
 
 # ===========================================================================
 # Property 3: Multi-Dimensional Hierarchy Correctness
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -456,9 +417,7 @@ def test_multidimensional_hierarchy_correctness(data):
     dims = zattrs["_ARRAY_DIMENSIONS"]
 
     # shape and dims must have same length
-    assert len(shape) == len(dims), (
-        f"Variable {var_name}: shape length {len(shape)} != dims length {len(dims)}"
-    )
+    assert len(shape) == len(dims), f"Variable {var_name}: shape length {len(shape)} != dims length {len(dims)}"
 
     # Last two dims are y, x (spatial) - non-spatial dims are the rest
     non_spatial_dims = dims[:-2]
@@ -466,41 +425,33 @@ def test_multidimensional_hierarchy_correctness(data):
 
     # All non-spatial dimension sizes must be >= 1
     for d, s in zip(non_spatial_dims, non_spatial_shape):
-        assert s >= 1, (
-            f"Variable {var_name}: dimension {d} has size {s}, expected >= 1"
-        )
+        assert s >= 1, f"Variable {var_name}: dimension {d} has size {s}, expected >= 1"
 
     # Total data chunk keys should equal product of non-spatial dimension sizes
     chunk_keys = _get_data_chunk_keys(refs, var_name)
     expected_chunks = reduce(mul, non_spatial_shape, 1) if non_spatial_shape else 1
 
     assert len(chunk_keys) == expected_chunks, (
-        f"Variable {var_name}: {len(chunk_keys)} chunk keys != "
-        f"expected {expected_chunks} (product of non-spatial dims {non_spatial_shape})"
+        f"Variable {var_name}: {len(chunk_keys)} chunk keys != expected {expected_chunks} (product of non-spatial dims {non_spatial_shape})"
     )
 
     # Verify that chunk indices are within bounds
     for key in chunk_keys:
-        suffix = key[len(f"{var_name}/"):]
+        suffix = key[len(f"{var_name}/") :]
         indices = [int(p) for p in suffix.split(".")]
 
         # Number of indices should match number of dimensions
-        assert len(indices) == len(dims), (
-            f"Variable {var_name}: chunk key {key} has {len(indices)} indices "
-            f"but {len(dims)} dimensions"
-        )
+        assert len(indices) == len(dims), f"Variable {var_name}: chunk key {key} has {len(indices)} indices but {len(dims)} dimensions"
 
         # Each index must be within the shape bounds
         for idx_val, dim_size, dim_name in zip(indices, shape, dims):
-            assert 0 <= idx_val < dim_size, (
-                f"Variable {var_name}: chunk key {key} has index {idx_val} "
-                f"for dimension {dim_name} with size {dim_size}"
-            )
+            assert 0 <= idx_val < dim_size, f"Variable {var_name}: chunk key {key} has index {idx_val} for dimension {dim_name} with size {dim_size}"
 
 
 # ===========================================================================
 # Property 6: Multi-File Reference Source Correctness
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -532,50 +483,36 @@ def test_multifile_source_correctness(data):
         ref_value = refs[key]
 
         # Data chunk refs must be [uri, offset, length] lists
-        assert isinstance(ref_value, list), (
-            f"Chunk ref {key} must be a list, got {type(ref_value)}"
-        )
-        assert len(ref_value) == 3, (
-            f"Chunk ref {key} must have 3 elements [uri, offset, length], "
-            f"got {len(ref_value)}"
-        )
+        assert isinstance(ref_value, list), f"Chunk ref {key} must be a list, got {type(ref_value)}"
+        assert len(ref_value) == 3, f"Chunk ref {key} must have 3 elements [uri, offset, length], got {len(ref_value)}"
 
         uri, offset, length = ref_value
 
         # URI must be one of the input file URIs
-        assert uri in expected_uris, (
-            f"Chunk ref {key} points to URI '{uri}' which is not one of "
-            f"the input files: {expected_uris}"
-        )
+        assert uri in expected_uris, f"Chunk ref {key} points to URI '{uri}' which is not one of the input files: {expected_uris}"
 
         # Offset and length must be non-negative integers
-        assert isinstance(offset, int) and offset >= 0, (
-            f"Chunk ref {key} has invalid offset: {offset}"
-        )
-        assert isinstance(length, int) and length > 0, (
-            f"Chunk ref {key} has invalid length: {length}"
-        )
+        assert isinstance(offset, int) and offset >= 0, f"Chunk ref {key} has invalid offset: {offset}"
+        assert isinstance(length, int) and length > 0, f"Chunk ref {key} has invalid length: {length}"
 
         # Verify the referenced bytes are actually readable from the file
         file_path = uri.replace("file://", "")
         file_size = os.path.getsize(file_path)
         assert offset + length <= file_size, (
-            f"Chunk ref {key} references bytes [{offset}:{offset + length}] "
-            f"but file {file_path} is only {file_size} bytes"
+            f"Chunk ref {key} references bytes [{offset}:{offset + length}] but file {file_path} is only {file_size} bytes"
         )
 
     # Also check bitmap companion refs point to valid files
     for key, value in refs.items():
         if key.startswith(f"{var_name}/.bitmap/") and isinstance(value, list):
             uri, offset, length = value
-            assert uri in expected_uris, (
-                f"Bitmap ref {key} points to URI '{uri}' not in input files"
-            )
+            assert uri in expected_uris, f"Bitmap ref {key} points to URI '{uri}' not in input files"
 
 
 # ===========================================================================
 # Property 7: Multi-File Dimension Concatenation
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -628,18 +565,14 @@ def test_multifile_dimension_concatenation(data):
             # All individual files agree on the spatial grid
             for ind_shape in individual_shapes:
                 assert combined_shape[-2:] == ind_shape[-2:], (
-                    f"Variable {var_name}: spatial dims mismatch. "
-                    f"Combined={combined_shape[-2:]}, individual={ind_shape[-2:]}"
+                    f"Variable {var_name}: spatial dims mismatch. Combined={combined_shape[-2:]}, individual={ind_shape[-2:]}"
                 )
 
         # For non-spatial dimensions, the combined size should be >= max
         # of individual sizes (concatenation can only grow or stay same)
         non_spatial_combined = combined_shape[:-2]
         for dim_idx in range(len(non_spatial_combined)):
-            individual_sizes = [
-                s[dim_idx] for s in individual_shapes
-                if len(s) > dim_idx + 2
-            ]
+            individual_sizes = [s[dim_idx] for s in individual_shapes if len(s) > dim_idx + 2]
             if individual_sizes:
                 max_individual = max(individual_sizes)
                 assert non_spatial_combined[dim_idx] >= max_individual, (
@@ -652,15 +585,13 @@ def test_multifile_dimension_concatenation(data):
     non_spatial_shape = combined_shape[:-2]
     chunk_keys = _get_data_chunk_keys(combined_refs, var_name)
     expected_chunks = reduce(mul, non_spatial_shape, 1) if non_spatial_shape else 1
-    assert len(chunk_keys) == expected_chunks, (
-        f"Variable {var_name}: {len(chunk_keys)} chunk keys != "
-        f"expected {expected_chunks} in combined manifest"
-    )
+    assert len(chunk_keys) == expected_chunks, f"Variable {var_name}: {len(chunk_keys)} chunk keys != expected {expected_chunks} in combined manifest"
 
 
 # ===========================================================================
 # Feature: kerchunk-icechunk-support, Property 4: JSON Serialization Round-Trip
 # ===========================================================================
+
 
 @settings(
     max_examples=100,
@@ -685,9 +616,7 @@ def test_json_serialization_round_trip_keys(data):
     manifest = _get_manifest((filename,))
 
     # Serialize to a temporary JSON file
-    with tempfile.NamedTemporaryFile(
-        suffix=".json", mode="w", delete=False
-    ) as tmp:
+    with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as tmp:
         json.dump(manifest, tmp)
         json_path = tmp.name
 
@@ -700,9 +629,7 @@ def test_json_serialization_round_trip_keys(data):
         original_keys = set(manifest["refs"].keys())
 
         assert loaded_keys == original_keys, (
-            f"Key mismatch for {filename}.\n"
-            f"  Missing from loaded: {original_keys - loaded_keys}\n"
-            f"  Extra in loaded: {loaded_keys - original_keys}"
+            f"Key mismatch for {filename}.\n  Missing from loaded: {original_keys - loaded_keys}\n  Extra in loaded: {loaded_keys - original_keys}"
         )
     finally:
         os.unlink(json_path)
@@ -731,9 +658,7 @@ def test_json_serialization_round_trip_metadata(data):
     filename, var_name = data.draw(st.sampled_from(_VAR_CATALOG))
     manifest = _get_manifest((filename,))
 
-    with tempfile.NamedTemporaryFile(
-        suffix=".json", mode="w", delete=False
-    ) as tmp:
+    with tempfile.NamedTemporaryFile(suffix=".json", mode="w", delete=False) as tmp:
         json.dump(manifest, tmp)
         json_path = tmp.name
 
@@ -744,24 +669,18 @@ def test_json_serialization_round_trip_metadata(data):
         # Check .zgroup
         orig_zgroup = json.loads(manifest["refs"][".zgroup"])
         loaded_zgroup = json.loads(store[".zgroup"])
-        assert orig_zgroup == loaded_zgroup, (
-            f".zgroup mismatch: orig={orig_zgroup}, loaded={loaded_zgroup}"
-        )
+        assert orig_zgroup == loaded_zgroup, f".zgroup mismatch: orig={orig_zgroup}, loaded={loaded_zgroup}"
 
         # Check variable .zarray
         zarray_key = f"{var_name}/.zarray"
         orig_zarray = json.loads(manifest["refs"][zarray_key])
         loaded_zarray = json.loads(store[zarray_key])
-        assert orig_zarray == loaded_zarray, (
-            f"{zarray_key} mismatch:\n  orig={orig_zarray}\n  loaded={loaded_zarray}"
-        )
+        assert orig_zarray == loaded_zarray, f"{zarray_key} mismatch:\n  orig={orig_zarray}\n  loaded={loaded_zarray}"
 
         # Check variable .zattrs
         zattrs_key = f"{var_name}/.zattrs"
         orig_zattrs = json.loads(manifest["refs"][zattrs_key])
         loaded_zattrs = json.loads(store[zattrs_key])
-        assert orig_zattrs == loaded_zattrs, (
-            f"{zattrs_key} mismatch:\n  orig={orig_zattrs}\n  loaded={loaded_zattrs}"
-        )
+        assert orig_zattrs == loaded_zattrs, f"{zattrs_key} mismatch:\n  orig={orig_zattrs}\n  loaded={loaded_zattrs}"
     finally:
         os.unlink(json_path)

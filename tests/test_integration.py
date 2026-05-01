@@ -31,10 +31,12 @@ INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _has_icechunk():
     """Check if icechunk is installed."""
     try:
         import icechunk  # noqa: F401
+
         return True
     except ImportError:
         return False
@@ -43,6 +45,7 @@ def _has_icechunk():
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture
 def gfs_jpeg_path():
@@ -114,9 +117,7 @@ class TestKerchunkPipeline:
                     var_name = candidate
                     break
 
-            assert var_name is not None, (
-                "No data variable with grib2io codec found in manifest"
-            )
+            assert var_name is not None, "No data variable with grib2io codec found in manifest"
 
             # Step 4: Read data via xarray from the reference store
             ds_ref = xr.open_zarr(mapper, consolidated=False)
@@ -137,9 +138,7 @@ class TestKerchunkPipeline:
                         direct_data = m.data
                         break
 
-            assert direct_data is not None, (
-                f"No messages found with shortName={short_name}"
-            )
+            assert direct_data is not None, f"No messages found with shortName={short_name}"
 
             # The reference data may have extra leading dimensions; extract
             # the 2D spatial slice that corresponds to the first message
@@ -149,15 +148,14 @@ class TestKerchunkPipeline:
 
             # Compare within floating-point tolerance
             # Both should have the same shape
-            assert ref_2d.shape == direct_data.shape, (
-                f"Shape mismatch: ref={ref_2d.shape}, direct={direct_data.shape}"
-            )
+            assert ref_2d.shape == direct_data.shape, f"Shape mismatch: ref={ref_2d.shape}, direct={direct_data.shape}"
 
             # Check NaN positions match
             ref_nans = np.isnan(ref_2d)
             direct_nans = np.isnan(direct_data)
             np.testing.assert_array_equal(
-                ref_nans, direct_nans,
+                ref_nans,
+                direct_nans,
                 err_msg="NaN positions differ between reference and direct read",
             )
 
@@ -201,10 +199,7 @@ class TestKerchunkPipeline:
         # (variable names may have suffixes for disambiguation)
         for dv in direct_vars:
             matching = [mv for mv in manifest_vars if mv.startswith(dv)]
-            assert len(matching) > 0, (
-                f"Variable '{dv}' from GRIB2 file not found in manifest. "
-                f"Manifest vars: {manifest_vars}"
-            )
+            assert len(matching) > 0, f"Variable '{dv}' from GRIB2 file not found in manifest. Manifest vars: {manifest_vars}"
 
     def test_kerchunk_json_fsspec_store_keys_match(self, gfs_jpeg_path):
         """Keys from fsspec store match the original manifest refs keys.
@@ -227,8 +222,7 @@ class TestKerchunkPipeline:
             manifest_keys = set(manifest["refs"].keys())
 
             assert fsspec_keys == manifest_keys, (
-                f"Key mismatch. Only in fsspec: {fsspec_keys - manifest_keys}. "
-                f"Only in manifest: {manifest_keys - fsspec_keys}"
+                f"Key mismatch. Only in fsspec: {fsspec_keys - manifest_keys}. Only in manifest: {manifest_keys - fsspec_keys}"
             )
         finally:
             os.unlink(json_path)
@@ -348,12 +342,8 @@ class TestMultiFilePipeline:
         jpeg_uri = f"file://{os.path.abspath(gfs_jpeg_path)}"
         complex_uri = f"file://{os.path.abspath(gfs_complex_path)}"
 
-        assert jpeg_uri in source_uris, (
-            f"gfs.jpeg.grib2 URI not found in refs. URIs: {source_uris}"
-        )
-        assert complex_uri in source_uris, (
-            f"gfs.complex.grib2 URI not found in refs. URIs: {source_uris}"
-        )
+        assert jpeg_uri in source_uris, f"gfs.jpeg.grib2 URI not found in refs. URIs: {source_uris}"
+        assert complex_uri in source_uris, f"gfs.complex.grib2 URI not found in refs. URIs: {source_uris}"
 
     def test_multi_file_manifest_has_data_variables(self, gfs_jpeg_path, gfs_complex_path):
         """Combined manifest has at least one data variable with .zarray/.zattrs.
@@ -372,9 +362,7 @@ class TestMultiFilePipeline:
             var_name = zk.rsplit("/.zarray", 1)[0]
             assert f"{var_name}/.zattrs" in refs
 
-    def test_multi_file_chunk_refs_point_to_correct_files(
-        self, gfs_jpeg_path, gfs_complex_path
-    ):
+    def test_multi_file_chunk_refs_point_to_correct_files(self, gfs_jpeg_path, gfs_complex_path):
         """Each chunk ref [uri, offset, length] points to a valid source file.
 
         Validates: Requirement 5.1
@@ -391,15 +379,9 @@ class TestMultiFilePipeline:
         for key, value in refs.items():
             if isinstance(value, list) and len(value) == 3:
                 uri, offset, length = value
-                assert uri in valid_uris, (
-                    f"Chunk ref '{key}' points to unknown URI: {uri}"
-                )
-                assert isinstance(offset, int) and offset >= 0, (
-                    f"Invalid offset for '{key}': {offset}"
-                )
-                assert isinstance(length, int) and length > 0, (
-                    f"Invalid length for '{key}': {length}"
-                )
+                assert uri in valid_uris, f"Chunk ref '{key}' points to unknown URI: {uri}"
+                assert isinstance(offset, int) and offset >= 0, f"Invalid offset for '{key}': {offset}"
+                assert isinstance(length, int) and length > 0, f"Invalid length for '{key}': {length}"
 
     def test_multi_file_openable_via_fsspec(self, gfs_jpeg_path, gfs_complex_path):
         """Combined manifest can be serialized to JSON and opened via fsspec.
@@ -424,12 +406,8 @@ class TestMultiFilePipeline:
             assert len(ds.data_vars) > 0, "Multi-file dataset has no data variables"
 
             # Should have spatial dimensions
-            assert "y" in ds.dims or any(
-                "y" in ds[v].dims for v in ds.data_vars
-            ), "No 'y' dimension found"
-            assert "x" in ds.dims or any(
-                "x" in ds[v].dims for v in ds.data_vars
-            ), "No 'x' dimension found"
+            assert "y" in ds.dims or any("y" in ds[v].dims for v in ds.data_vars), "No 'y' dimension found"
+            assert "x" in ds.dims or any("x" in ds[v].dims for v in ds.data_vars), "No 'x' dimension found"
         finally:
             os.unlink(json_path)
 
@@ -479,9 +457,7 @@ class TestCLIPipeline:
 
         Validates: Requirement 6.3
         """
-        with tempfile.NamedTemporaryFile(
-            suffix="_all.json", delete=False
-        ) as tmp_all, tempfile.NamedTemporaryFile(
+        with tempfile.NamedTemporaryFile(suffix="_all.json", delete=False) as tmp_all, tempfile.NamedTemporaryFile(
             suffix="_filtered.json", delete=False
         ) as tmp_filt:
             all_path = tmp_all.name
@@ -508,12 +484,16 @@ class TestCLIPipeline:
             assert short_name is not None, "Could not find a shortName in manifest"
 
             # Generate filtered
-            main([
-                "kerchunk",
-                "--filters", f"shortName={short_name}",
-                "--output", filt_path,
-                gfs_jpeg_path,
-            ])
+            main(
+                [
+                    "kerchunk",
+                    "--filters",
+                    f"shortName={short_name}",
+                    "--output",
+                    filt_path,
+                    gfs_jpeg_path,
+                ]
+            )
 
             with open(filt_path) as f:
                 filt_data = json.load(f)
@@ -537,12 +517,15 @@ class TestCLIPipeline:
             out_path = tmp.name
 
         try:
-            main([
-                "kerchunk",
-                "--output", out_path,
-                gfs_jpeg_path,
-                gfs_complex_path,
-            ])
+            main(
+                [
+                    "kerchunk",
+                    "--output",
+                    out_path,
+                    gfs_jpeg_path,
+                    gfs_complex_path,
+                ]
+            )
 
             assert os.path.isfile(out_path)
 
@@ -555,9 +538,7 @@ class TestCLIPipeline:
                 if isinstance(value, list) and len(value) == 3:
                     source_uris.add(value[0])
 
-            assert len(source_uris) >= 2, (
-                f"Expected refs from at least 2 files, got URIs: {source_uris}"
-            )
+            assert len(source_uris) >= 2, f"Expected refs from at least 2 files, got URIs: {source_uris}"
 
         finally:
             os.unlink(out_path)

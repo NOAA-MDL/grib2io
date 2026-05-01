@@ -40,15 +40,13 @@ _logger = logging.getLogger(__name__)
 # Lazy import guards
 # ---------------------------------------------------------------------------
 
+
 def _ensure_kerchunk():
     """Raise ``ImportError`` if *kerchunk* is not available."""
     try:
         import kerchunk  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "kerchunk is required for reference generation. "
-            "Install with: pip install grib2io[kerchunk]"
-        )
+        raise ImportError("kerchunk is required for reference generation. Install with: pip install grib2io[kerchunk]")
 
 
 def _ensure_numcodecs():
@@ -56,10 +54,7 @@ def _ensure_numcodecs():
     try:
         import numcodecs  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "numcodecs is required for the GRIB2 codec. "
-            "Install with: pip install grib2io[kerchunk]"
-        )
+        raise ImportError("numcodecs is required for the GRIB2 codec. Install with: pip install grib2io[kerchunk]")
 
 
 # ---------------------------------------------------------------------------
@@ -82,6 +77,7 @@ _ORDERED_DIM_NAMES = [
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 class ReferenceGenerator:
     """Generate Kerchunk v1 reference manifests from GRIB2 files.
@@ -140,9 +136,7 @@ class ReferenceGenerator:
             try:
                 self._scan_file(file_path, file_uri, all_var_messages)
             except Exception as e:
-                raise ValueError(
-                    f"Failed to parse GRIB2 file '{file_path}': {e}"
-                ) from e
+                raise ValueError(f"Failed to parse GRIB2 file '{file_path}': {e}") from e
 
         # For each variable group, map messages to dimensions and build refs.
         # Track used variable names to handle collisions (same shortName
@@ -186,6 +180,7 @@ class ReferenceGenerator:
         if self._manifest is None:
             self.generate()
         from kerchunk.df import refs_to_dataframe
+
         refs_to_dataframe(self._manifest, output_path)
 
     # ------------------------------------------------------------------
@@ -372,6 +367,7 @@ class ReferenceGenerator:
 # Internal data class for message entries
 # ---------------------------------------------------------------------------
 
+
 class _MsgEntry:
     """Lightweight container for a scanned GRIB2 message."""
 
@@ -413,6 +409,7 @@ class _MsgEntry:
 # ---------------------------------------------------------------------------
 # Helper functions
 # ---------------------------------------------------------------------------
+
 
 def _file_uri(file_path: str) -> str:
     """Convert a local file path to a ``file://`` URI."""
@@ -713,9 +710,7 @@ def _map_messages_to_dimensions(
     msg_index_map: Dict[tuple, int] = {}
     for idx, entry in enumerate(msg_entries):
         msg = entry.msg
-        dim_tuple = tuple(
-            _get_dim_value(msg, d) for d in active_dims
-        )
+        dim_tuple = tuple(_get_dim_value(msg, d) for d in active_dims)
         msg_index_map[dim_tuple] = idx
 
     return {

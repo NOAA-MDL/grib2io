@@ -36,16 +36,14 @@ def _parse_filters(raw_filters: list[str] | None) -> dict:
     for item in raw_filters:
         if "=" not in item:
             print(
-                f"error: invalid filter syntax '{item}'. "
-                "Expected format: key=value",
+                f"error: invalid filter syntax '{item}'. Expected format: key=value",
                 file=sys.stderr,
             )
             sys.exit(2)
         key, _, value = item.partition("=")
         if not key:
             print(
-                f"error: invalid filter syntax '{item}'. "
-                "Key must not be empty. Expected format: key=value",
+                f"error: invalid filter syntax '{item}'. Key must not be empty. Expected format: key=value",
                 file=sys.stderr,
             )
             sys.exit(2)

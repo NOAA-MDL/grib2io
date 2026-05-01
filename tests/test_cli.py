@@ -41,8 +41,10 @@ def gfs_complex_path():
 @pytest.fixture
 def tmp_output(tmp_path):
     """Return a helper that builds output paths inside a temp directory."""
+
     def _make(name):
         return str(tmp_path / name)
+
     return _make
 
 
@@ -121,11 +123,13 @@ def _has_parquet_engine():
     """Check if a Parquet engine is available."""
     try:
         import fastparquet  # noqa: F401
+
         return True
     except ImportError:
         pass
     try:
         import pyarrow  # noqa: F401
+
         return True
     except ImportError:
         pass
@@ -145,12 +149,16 @@ class TestKerchunkParquetOutput:
         Validates: Requirement 7.3
         """
         out = tmp_output("refs_parquet")
-        main([
-            "kerchunk",
-            "--output-format", "parquet",
-            "--output", out,
-            gfs_jpeg_path,
-        ])
+        main(
+            [
+                "kerchunk",
+                "--output-format",
+                "parquet",
+                "--output",
+                out,
+                gfs_jpeg_path,
+            ]
+        )
 
         assert os.path.isdir(out), f"Parquet output directory not created at {out}"
 
@@ -181,12 +189,16 @@ class TestKerchunkFilters:
 
         # Generate with a filter that selects a specific variable
         out_filtered = tmp_output("filtered.json")
-        main([
-            "kerchunk",
-            "--filters", "shortName=TMP",
-            "--output", out_filtered,
-            gfs_jpeg_path,
-        ])
+        main(
+            [
+                "kerchunk",
+                "--filters",
+                "shortName=TMP",
+                "--output",
+                out_filtered,
+                gfs_jpeg_path,
+            ]
+        )
 
         with open(out_filtered) as f:
             data_filtered = json.load(f)
@@ -205,12 +217,17 @@ class TestKerchunkFilters:
         """
         gfs_path = os.path.join(INPUT_DATA, "gfs.t00z.pgrb2.1p00.f024")
         out = tmp_output("multi_filter.json")
-        main([
-            "kerchunk",
-            "--filters", "shortName=TMP", "typeOfFirstFixedSurface=100",
-            "--output", out,
-            gfs_path,
-        ])
+        main(
+            [
+                "kerchunk",
+                "--filters",
+                "shortName=TMP",
+                "typeOfFirstFixedSurface=100",
+                "--output",
+                out,
+                gfs_path,
+            ]
+        )
 
         assert os.path.isfile(out)
         with open(out) as f:
@@ -296,11 +313,14 @@ class TestKerchunkErrors:
         Validates: Requirement 7.5
         """
         with pytest.raises(SystemExit) as exc_info:
-            main([
-                "kerchunk",
-                "--output-format", "csv",
-                "tests/input_data/gfs.jpeg.grib2",
-            ])
+            main(
+                [
+                    "kerchunk",
+                    "--output-format",
+                    "csv",
+                    "tests/input_data/gfs.jpeg.grib2",
+                ]
+            )
         assert exc_info.value.code == 2
 
     def test_invalid_filter_syntax_exits_with_code_2(self, gfs_jpeg_path):
@@ -309,22 +329,29 @@ class TestKerchunkErrors:
         Validates: Requirement 7.5
         """
         with pytest.raises(SystemExit) as exc_info:
-            main([
-                "kerchunk",
-                "--filters", "badfilter",
-                "--output", "/dev/null",
-                gfs_jpeg_path,
-            ])
+            main(
+                [
+                    "kerchunk",
+                    "--filters",
+                    "badfilter",
+                    "--output",
+                    "/dev/null",
+                    gfs_jpeg_path,
+                ]
+            )
         assert exc_info.value.code == 2
 
     def test_nonexistent_file_raises_error(self, tmp_output):
         """Non-existent GRIB2 file returns non-zero exit code."""
         out = tmp_output("out.json")
-        result = main([
-            "kerchunk",
-            "--output", out,
-            "/nonexistent/path/file.grib2",
-        ])
+        result = main(
+            [
+                "kerchunk",
+                "--output",
+                out,
+                "/nonexistent/path/file.grib2",
+            ]
+        )
         assert result == 2
 
 

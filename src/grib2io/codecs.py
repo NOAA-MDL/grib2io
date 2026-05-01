@@ -23,15 +23,13 @@ from . import g2clib
 # Lazy import guard
 # ---------------------------------------------------------------------------
 
+
 def _ensure_numcodecs():
     """Raise ``ImportError`` if *numcodecs* is not available."""
     try:
         import numcodecs  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "numcodecs is required for the GRIB2 codec. "
-            "Install with: pip install grib2io[kerchunk]"
-        )
+        raise ImportError("numcodecs is required for the GRIB2 codec. Install with: pip install grib2io[kerchunk]")
 
 
 # ---------------------------------------------------------------------------
@@ -92,9 +90,7 @@ class Grib2Codec(Codec):
 
     def encode(self, buf):
         """Not supported — GRIB2 encoding is handled by ``grib2io.open()``."""
-        raise NotImplementedError(
-            "Grib2Codec is decode-only; GRIB2 encoding is handled by grib2io.open()"
-        )
+        raise NotImplementedError("Grib2Codec is decode-only; GRIB2 encoding is handled by grib2io.open()")
 
     # ---- decode ----------------------------------------------------------
 
@@ -137,9 +133,7 @@ class Grib2Codec(Codec):
         if self.bitmap_flag in {0, 254} and self.bitmap_length is not None and self.bitmap_length > 0:
             bmap_bytes = buf[: self.bitmap_length]
             sec7_buf = buf[self.bitmap_length :]
-            _bmapflag, bmap, _bpos = g2clib.unpack6(
-                bmap_bytes, self.number_of_data_points
-            )
+            _bmapflag, bmap, _bpos = g2clib.unpack6(bmap_bytes, self.number_of_data_points)
 
         # Unpack section 7 data
         fld1, _ipos = g2clib.unpack7(

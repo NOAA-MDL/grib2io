@@ -59,9 +59,7 @@ class TestCoreWithoutOptionalDeps:
 
         # These should not be in the module dict unless previously accessed
         # We check that __getattr__ is the mechanism, not eager import
-        assert "__getattr__" in dir(grib2io) or callable(
-            getattr(type(grib2io), "__getattr__", None)
-        )
+        assert "__getattr__" in dir(grib2io) or callable(getattr(type(grib2io), "__getattr__", None))
 
 
 # ---------------------------------------------------------------------------

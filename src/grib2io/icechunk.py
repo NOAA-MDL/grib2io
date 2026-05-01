@@ -44,20 +44,19 @@ _logger = logging.getLogger(__name__)
 # Lazy import guard
 # ---------------------------------------------------------------------------
 
+
 def _ensure_icechunk():
     """Raise ``ImportError`` if *icechunk* is not available."""
     try:
         import icechunk  # noqa: F401
     except ImportError:
-        raise ImportError(
-            "icechunk is required for virtual store support. "
-            "Install with: pip install grib2io[icechunk]"
-        )
+        raise ImportError("icechunk is required for virtual store support. Install with: pip install grib2io[icechunk]")
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _is_metadata_key(key: str) -> bool:
     """Return ``True`` if *key* is a Zarr metadata key."""
@@ -177,11 +176,13 @@ def _make_zarr_v3_group_metadata(v2_zgroup_str: str) -> str:
     str
         Zarr v3 group metadata JSON string.
     """
-    return json.dumps({
-        "zarr_format": 3,
-        "node_type": "group",
-        "attributes": {},
-    })
+    return json.dumps(
+        {
+            "zarr_format": 3,
+            "node_type": "group",
+            "attributes": {},
+        }
+    )
 
 
 def _make_zarr_v3_array_metadata(
@@ -292,6 +293,7 @@ def _store_set_sync(store, key: str, data: bytes) -> None:
         The raw bytes to write.
     """
     from zarr.core.buffer import default_buffer_prototype
+
     buf = default_buffer_prototype().buffer.from_bytes(data)
     store._sync(store.set(key, buf))
 
@@ -312,6 +314,7 @@ def _store_get_sync(store, key: str):
         The raw bytes, or ``None`` if the key does not exist.
     """
     from zarr.core.buffer import default_buffer_prototype
+
     buf = store._sync(store.get(key, default_buffer_prototype()))
     if buf is not None:
         return buf.to_bytes()
@@ -321,6 +324,7 @@ def _store_get_sync(store, key: str):
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
 
 class IcechunkWriter:
     """Write grib2io reference manifests into an Icechunk virtual store.
@@ -358,6 +362,7 @@ class IcechunkWriter:
             return self._storage_config
 
         import icechunk
+
         return icechunk.local_filesystem_storage(path=self._store_path)
 
     def _create_or_open_repo(self, mode: str, virtual_prefixes: Set[str]):
@@ -380,9 +385,7 @@ class IcechunkWriter:
         config = icechunk.config.RepositoryConfig.default()
         for prefix in virtual_prefixes:
             container_store = self._make_container_store(prefix)
-            config.set_virtual_chunk_container(
-                icechunk.virtual.VirtualChunkContainer(prefix, container_store)
-            )
+            config.set_virtual_chunk_container(icechunk.virtual.VirtualChunkContainer(prefix, container_store))
 
         # Build authorize_virtual_chunk_access mapping
         # Use None for credentials (will use environment or anonymous)
@@ -491,10 +494,10 @@ class IcechunkWriter:
         """
         # First pass: collect all metadata by variable so we can merge
         # .zarray and .zattrs into a single zarr.json per variable.
-        zarray_refs: Dict[str, str] = {}   # var_name -> .zarray JSON str
-        zattrs_refs: Dict[str, str] = {}   # var_name -> .zattrs JSON str
+        zarray_refs: Dict[str, str] = {}  # var_name -> .zarray JSON str
+        zattrs_refs: Dict[str, str] = {}  # var_name -> .zattrs JSON str
         root_zgroup: Optional[str] = None
-        data_refs: Dict[str, Any] = {}     # chunk keys -> values
+        data_refs: Dict[str, Any] = {}  # chunk keys -> values
         inline_data_refs: Dict[str, str] = {}  # inline data keys -> values
 
         for key, value in refs.items():
@@ -516,7 +519,8 @@ class IcechunkWriter:
             else:
                 _logger.warning(
                     "Skipping unrecognized manifest entry: %s = %r",
-                    key, value,
+                    key,
+                    value,
                 )
 
         # Write root group metadata as zarr.json
@@ -617,13 +621,9 @@ class IcechunkWriter:
             existing_shape = None
             existing_v3_meta = None
             try:
-                existing_bytes = _store_get_sync(
-                    store, f"{var_name}/zarr.json"
-                )
+                existing_bytes = _store_get_sync(store, f"{var_name}/zarr.json")
                 if existing_bytes is not None:
-                    existing_v3_meta = json.loads(
-                        existing_bytes.decode("utf-8")
-                    )
+                    existing_v3_meta = json.loads(existing_bytes.decode("utf-8"))
                     existing_shape = existing_v3_meta.get("shape")
             except Exception:
                 pass
@@ -651,9 +651,7 @@ class IcechunkWriter:
                 new_zarray["shape"] = updated_shape
 
                 # Write updated zarr.json (merged .zarray + .zattrs)
-                v3_array = _make_zarr_v3_array_metadata(
-                    json.dumps(new_zarray), new_zattrs_str
-                )
+                v3_array = _make_zarr_v3_array_metadata(json.dumps(new_zarray), new_zattrs_str)
                 _store_set_sync(
                     store,
                     f"{var_name}/zarr.json",
@@ -663,9 +661,7 @@ class IcechunkWriter:
                 # Write data chunks with adjusted indices
                 for key, value in chunk_refs.items():
                     uri, chunk_offset, length = value
-                    adjusted_key = self._adjust_chunk_key(
-                        key, var_name, append_axis, offset
-                    )
+                    adjusted_key = self._adjust_chunk_key(key, var_name, append_axis, offset)
                     v3_key = _chunk_key_v2_to_v3(adjusted_key)
                     store.set_virtual_ref(
                         v3_key,
@@ -676,9 +672,7 @@ class IcechunkWriter:
                     )
             else:
                 # No existing data or append_dim not relevant — write as-is
-                v3_array = _make_zarr_v3_array_metadata(
-                    json.dumps(new_zarray), new_zattrs_str
-                )
+                v3_array = _make_zarr_v3_array_metadata(json.dumps(new_zarray), new_zattrs_str)
                 _store_set_sync(
                     store,
                     f"{var_name}/zarr.json",
@@ -706,9 +700,7 @@ class IcechunkWriter:
             coord_name = parts[0] if len(parts) >= 2 else None
 
             if coord_name == append_dim:
-                self._extend_coord(
-                    store, coord_name, key, value, zarray_refs, zattrs_refs
-                )
+                self._extend_coord(store, coord_name, key, value, zarray_refs, zattrs_refs)
             else:
                 raw_bytes = _decode_inline_value(value)
                 v3_key = _chunk_key_v2_to_v3(key)
@@ -758,7 +750,7 @@ class IcechunkWriter:
         if not key.startswith(prefix):
             return key
 
-        index_str = key[len(prefix):]
+        index_str = key[len(prefix) :]
         indices = index_str.split(".")
         if append_axis < len(indices):
             indices[append_axis] = str(int(indices[append_axis]) + offset)
@@ -806,17 +798,13 @@ class IcechunkWriter:
             # Read existing zarr.json to get dtype
             existing_v3_bytes = None
             try:
-                existing_v3_bytes = _store_get_sync(
-                    store, f"{coord_name}/zarr.json"
-                )
+                existing_v3_bytes = _store_get_sync(store, f"{coord_name}/zarr.json")
             except Exception:
                 pass
 
             dtype = np.float64
             if existing_v3_bytes is not None:
-                existing_v3_meta = json.loads(
-                    existing_v3_bytes.decode("utf-8")
-                )
+                existing_v3_meta = json.loads(existing_v3_bytes.decode("utf-8"))
                 dt_str = existing_v3_meta.get("data_type", "float64")
                 dtype_map = {
                     "float32": np.float32,
@@ -854,9 +842,7 @@ class IcechunkWriter:
             coord_zarray["chunks"] = [len(combined)]
 
             zattrs_str = zattrs_refs.get(coord_name)
-            v3_array = _make_zarr_v3_array_metadata(
-                json.dumps(coord_zarray), zattrs_str
-            )
+            v3_array = _make_zarr_v3_array_metadata(json.dumps(coord_zarray), zattrs_str)
             _store_set_sync(
                 store,
                 f"{coord_name}/zarr.json",
@@ -895,8 +881,6 @@ class IcechunkWriter:
             called).
         """
         if self._session is None:
-            raise RuntimeError(
-                "No active session. Call write() before commit()."
-            )
+            raise RuntimeError("No active session. Call write() before commit().")
         snapshot_id = self._session.commit(message)
         return str(snapshot_id)
