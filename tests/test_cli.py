@@ -15,7 +15,8 @@ import os
 
 import pytest
 
-from grib2io.cli import main, _parse_filters
+from grib2io.cli.main import main
+from grib2io.cli.kerchunk import _parse_filters
 
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
@@ -317,14 +318,14 @@ class TestKerchunkErrors:
         assert exc_info.value.code == 2
 
     def test_nonexistent_file_raises_error(self, tmp_output):
-        """Non-existent GRIB2 file raises FileNotFoundError."""
+        """Non-existent GRIB2 file returns non-zero exit code."""
         out = tmp_output("out.json")
-        with pytest.raises(FileNotFoundError):
-            main([
-                "kerchunk",
-                "--output", out,
-                "/nonexistent/path/file.grib2",
-            ])
+        result = main([
+            "kerchunk",
+            "--output", out,
+            "/nonexistent/path/file.grib2",
+        ])
+        assert result == 2
 
 
 # ===========================================================================

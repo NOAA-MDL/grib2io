@@ -22,7 +22,7 @@ import xarray as xr
 import grib2io
 import grib2io.codecs  # Ensure Grib2Codec is registered with numcodecs
 from grib2io.kerchunk import ReferenceGenerator
-from grib2io.cli import main
+from grib2io.cli.main import main
 
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 

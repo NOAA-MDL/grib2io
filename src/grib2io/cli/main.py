@@ -4,9 +4,10 @@ import argparse
 import sys
 
 from .create_index import add_parser as add_create_index_parser
+from .kerchunk import add_parser as add_kerchunk_parser
 from .ls import add_parser as add_ls_parser
 
-COMMANDS = {"create-index", "ls"}
+COMMANDS = {"create-index", "kerchunk", "ls"}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -15,6 +16,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     add_ls_parser(sub)
     add_create_index_parser(sub)
+    add_kerchunk_parser(sub)
 
     return p
 
