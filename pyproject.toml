@@ -50,9 +50,14 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 xarray = ["xarray"]
+kerchunk = ["kerchunk", "numcodecs"]
+icechunk = ["icechunk"]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
+
+[project.scripts]
+grib2io = "grib2io.cli:main"
 
 [project.urls]
 Documentation = "https://noaa-mdl.github.io/grib2io"
