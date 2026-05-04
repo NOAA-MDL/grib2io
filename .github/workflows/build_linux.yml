@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build-linux:
-    
+
     name: py${{ matrix.python-version }}_cc=${{ matrix.ccompiler }}_static=${{ matrix.staticlib }}
     runs-on: ubuntu-latest
     env:
@@ -14,7 +14,7 @@ jobs:
         python-version: ["3.8","3.9","3.10","3.11","3.12","3.13","3.14"]
         ccompiler: ["gcc-14"]
         staticlib: ["False"]
-   
+
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
@@ -64,7 +64,7 @@ jobs:
         cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON -DBLA_VENDOR=OpenBLAS ..
         make -j2
         sudo make install
-        
+
     - name: Install grib2io and test
       run: |
         python --version
