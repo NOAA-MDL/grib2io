@@ -1,4 +1,5 @@
 import itertools
+import sys
 from pathlib import Path
 
 import grib2io
@@ -294,6 +295,7 @@ def test_ds_write_messed_up(tmp_path, request):
         ds1.grib2io.to_grib2(target_file)
 
 
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="zarr v3 requires Python >= 3.12")
 def test_ds_to_zarr(tmp_path, request):
     """Test writing and reading a Dataset to a zarr file."""
     _ = pytest.importorskip("zarr")

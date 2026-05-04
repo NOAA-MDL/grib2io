@@ -40,10 +40,10 @@ jobs:
       run: |
         python -m pip install kerchunk
 
-    - name: Install optional python dependencies (icechunk, Python >= 3.12)
+    - name: Install optional python dependencies (zarr + icechunk, Python >= 3.12)
       if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
       run: |
-        python -m pip install icechunk
+        python -m pip install zarr icechunk
 
     - name: Install NCEPLIBS-g2c
       run: |
