@@ -532,6 +532,13 @@ class IcechunkWriter:
         # reads, rather than as raw chunk bytes at the zarr.json key.
         root = zarr.open_group(store, mode="w", zarr_format=3)
 
+        # Identify which variables have virtual (data) refs — those need
+        # Grib2SerializerCodec as their zarr v3 serializer.
+        data_var_names: set = {key.split("/")[0] for key in data_refs}
+
+        # Import the zarr v3 serializer codec (registered at import time)
+        from grib2io.codecs import Grib2SerializerCodec as _Grib2Ser
+
         for var_name, zarray_str in zarray_refs.items():
             v2_zarray = json.loads(zarray_str)
             zattrs_str = zattrs_refs.get(var_name)
@@ -543,27 +550,41 @@ class IcechunkWriter:
             fill_value = v2_zarray.get("fill_value", None)
             dim_names = v2_zattrs.get("_ARRAY_DIMENSIONS", [])
 
-            # Preserve grib2io compressor config in array attributes so it
-            # can be recovered if the codec is needed later.
-            compressor = v2_zarray.get("compressor")
-            if compressor and compressor.get("id") == "grib2io":
-                v2_zattrs["_grib2io_compressor"] = compressor
-
             dtype = np.dtype(dtype_str)
             if fill_value == "NaN" or fill_value is None:
                 fv: Any = float("nan") if np.issubdtype(dtype, np.floating) else 0
             else:
                 fv = fill_value
 
-            root.create_array(
-                var_name,
-                shape=shape,
-                chunks=chunks,
-                dtype=dtype,
-                fill_value=fv,
-                dimension_names=dim_names if dim_names else None,
-                attributes=v2_zattrs if v2_zattrs else None,
-            )
+            if var_name in data_var_names:
+                # Data variable — use Grib2SerializerCodec so zarr v3 can
+                # decode the raw GRIB2 section 7 bytes from virtual chunks.
+                compressor = v2_zarray.get("compressor", {}) or {}
+                codec_cfg = {k: v for k, v in compressor.items() if k != "id"}
+                serializer = _Grib2Ser(**codec_cfg)
+                root.create_array(
+                    var_name,
+                    shape=shape,
+                    chunks=chunks,
+                    dtype=dtype,
+                    fill_value=fv,
+                    serializer=serializer,
+                    compressors=[],
+                    filters=[],
+                    dimension_names=dim_names if dim_names else None,
+                    attributes=v2_zattrs if v2_zattrs else None,
+                )
+            else:
+                # Coordinate array — plain bytes serializer (default)
+                root.create_array(
+                    var_name,
+                    shape=shape,
+                    chunks=chunks,
+                    dtype=dtype,
+                    fill_value=fv,
+                    dimension_names=dim_names if dim_names else None,
+                    attributes=v2_zattrs if v2_zattrs else None,
+                )
 
         # Write coordinate (inline) data via zarr's Array write API so
         # that encoding goes through the proper codec pipeline.

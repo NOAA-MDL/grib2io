@@ -281,39 +281,41 @@ class TestIcechunkPipeline:
 
             ds_ice = xr.open_zarr(store, consolidated=False)
 
-            # Step 4: Verify the dataset has variables and structure
+            # Step 4: Verify the dataset has variables
             assert len(ds_ice.data_vars) > 0, "Icechunk dataset has no data variables"
 
-            # Step 5: Verify variable structure matches direct grib2io read.
-            # Note: reading actual data values via ds[var].values requires
-            # Grib2Codec to be registered as a zarr v3 ArrayBytesCodec
-            # (serializer), which is a separate zarr v3 integration task.
-            # Here we verify shape, dimensions, and attributes only.
+            # Step 5: Compare a variable to direct grib2io read
             var_name = list(ds_ice.data_vars)[0]
-            ice_var = ds_ice[var_name]
+            ice_data = ds_ice[var_name].values
 
-            # Variable should have at least y and x dimensions
-            assert len(ice_var.dims) >= 2, (
-                f"Variable {var_name} should have at least 2 dims, got {ice_var.dims}"
-            )
+            # Get the shortName from attributes
+            short_name = ds_ice[var_name].attrs.get("shortName", var_name)
 
-            # Shape should be non-trivial
-            assert all(s > 0 for s in ice_var.shape), (
-                f"Variable {var_name} has zero-size dimension: {ice_var.shape}"
-            )
-
-            # Verify the spatial size matches direct grib2io read
-            short_name = ice_var.attrs.get("shortName", var_name)
+            direct_data = None
             with grib2io.open(gfs_jpeg_path) as f:
                 for m in f:
                     if str(m.shortName) == short_name:
-                        assert m.nx == ice_var.shape[-1], (
-                            f"x-dimension mismatch: zarr={ice_var.shape[-1]}, grib2io={m.nx}"
-                        )
-                        assert m.ny == ice_var.shape[-2], (
-                            f"y-dimension mismatch: zarr={ice_var.shape[-2]}, grib2io={m.ny}"
-                        )
+                        direct_data = m.data
                         break
+
+            assert direct_data is not None
+
+            # Extract 2D slice from icechunk data
+            ice_2d = ice_data
+            while ice_2d.ndim > 2:
+                ice_2d = ice_2d[0]
+
+            assert ice_2d.shape == direct_data.shape
+
+            # Compare non-NaN values
+            mask = ~np.isnan(ice_2d) & ~np.isnan(direct_data)
+            if mask.any():
+                np.testing.assert_allclose(
+                    ice_2d[mask].astype(np.float32),
+                    direct_data[mask].astype(np.float32),
+                    rtol=1e-5,
+                    atol=1e-5,
+                )
 
 
 # ===========================================================================
