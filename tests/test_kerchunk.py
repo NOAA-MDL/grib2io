@@ -13,10 +13,12 @@ import json
 import os
 import tempfile
 
-import fsspec
 import pytest
 
-from grib2io.kerchunk import ReferenceGenerator
+pytest.importorskip("numcodecs", reason="numcodecs is not installed")
+fsspec = pytest.importorskip("fsspec", reason="fsspec is not installed")
+
+from grib2io.kerchunk import ReferenceGenerator  # noqa: E402
 
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 

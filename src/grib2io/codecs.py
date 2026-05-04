@@ -36,10 +36,16 @@ def _ensure_numcodecs():
 # Codec implementation
 # ---------------------------------------------------------------------------
 
-_ensure_numcodecs()
+try:
+    from numcodecs.abc import Codec
+    from numcodecs.registry import register_codec
+    _HAS_NUMCODECS = True
+except ImportError:
+    _HAS_NUMCODECS = False
+    Codec = object  # type: ignore[assignment,misc]
 
-from numcodecs.abc import Codec  # noqa: E402
-from numcodecs.registry import register_codec  # noqa: E402
+    def register_codec(cls):  # type: ignore[misc]
+        pass
 
 
 class Grib2Codec(Codec):
@@ -71,6 +77,11 @@ class Grib2Codec(Codec):
         number_of_data_points: int = 0,
         number_of_packed_values: int = 0,
     ):
+        if not _HAS_NUMCODECS:
+            raise ImportError(
+                "numcodecs is required for Grib2Codec. "
+                "Install with: pip install grib2io[kerchunk]"
+            )
         self.drtn = drtn
         self.drt = list(drt)
         self.gdtn = gdtn

@@ -34,6 +34,17 @@ jobs:
         python3 -m pip install --upgrade setuptools
         python3 -m pip install --upgrade wheel
         python3 -m pip install -r requirements.txt
+        python3 -m pip install numcodecs fsspec hypothesis
+
+    - name: Install optional python dependencies (kerchunk, Python >= 3.11)
+      if: ${{ contains(fromJson('["3.11","3.12","3.13","3.14"]'), matrix.python-version) }}
+      run: |
+        python3 -m pip install kerchunk
+
+    - name: Install optional python dependencies (icechunk, Python >= 3.12)
+      if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
+      run: |
+        python3 -m pip install icechunk
 
     - name: Install grib2io and test
       run: |

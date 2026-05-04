@@ -22,8 +22,12 @@ from functools import reduce
 from itertools import combinations as _combinations, permutations as _permutations
 from operator import mul
 
-from hypothesis import given, settings, HealthCheck, assume
-from hypothesis import strategies as st
+import pytest
+
+pytest.importorskip("numcodecs", reason="numcodecs is not installed")
+hypothesis = pytest.importorskip("hypothesis", reason="hypothesis is not installed")
+from hypothesis import given, settings, HealthCheck, assume  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
 
 from grib2io.kerchunk import ReferenceGenerator, _file_uri
 
