@@ -97,20 +97,36 @@ class TestCodecsImportError:
     """Accessing codecs features without numcodecs installed raises ImportError."""
 
     def test_codecs_module_import_fails_without_numcodecs(self):
-        """Importing grib2io.codecs fails with ImportError when numcodecs is absent.
+        """Importing grib2io.codecs succeeds gracefully when numcodecs is absent,
+        but instantiating Grib2Codec raises ImportError with install instructions.
 
-        The codecs module calls _ensure_numcodecs() at module level, so
-        the entire module import should fail with a clear error message.
+        The module uses a try/except around the numcodecs import so that the
+        module itself can always be imported.  Usage (instantiation) raises the
+        error with a clear message.
         """
-        # Remove the cached module so re-import triggers the guard
+        # Remove the cached module so re-import exercises the guard path
         saved = sys.modules.pop("grib2io.codecs", None)
         try:
-            with mock.patch.dict(sys.modules, {"numcodecs": None}):
+            # Null out numcodecs and all known sub-modules that may already
+            # be cached in sys.modules so the try/except in codecs.py
+            # actually falls through to the except branch.
+            patch_modules = {
+                "numcodecs": None,
+                "numcodecs.abc": None,
+                "numcodecs.registry": None,
+            }
+            with mock.patch.dict(sys.modules, patch_modules):
+                # Module import should succeed (graceful degradation)
+                mod = importlib.import_module("grib2io.codecs")
+                # But instantiation should fail with a clear error
                 with pytest.raises(
                     ImportError,
                     match=r"pip install grib2io\[kerchunk\]",
                 ):
-                    importlib.import_module("grib2io.codecs")
+                    mod.Grib2Codec(
+                        drtn=0, drt=[], gdtn=0, gdt=[], gds=[],
+                        nx=1, ny=1, bitmap_flag=255,
+                    )
         finally:
             # Restore the original module
             if saved is not None:

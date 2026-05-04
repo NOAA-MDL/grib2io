@@ -480,10 +480,14 @@ class IcechunkWriter:
             self._write_create(refs, store)
 
     def _write_create(self, refs: Dict[str, Any], store) -> None:
-        """Write all refs to a fresh store.
+        """Write all refs to a fresh store using zarr's Python API.
 
-        Converts Kerchunk v1 (Zarr v2) metadata and chunk keys to
-        Zarr v3 format as required by Icechunk.
+        Creates the root group and all arrays via ``zarr.open_group`` /
+        ``group.create_array`` so that Zarr v3 metadata is stored through
+        the proper path that icechunk and zarr recognise.  Coordinate
+        (inline) data is written via the zarr Array write API, and virtual
+        chunk refs for data variables are registered with
+        ``store.set_virtual_ref``.
 
         Parameters
         ----------
@@ -492,17 +496,18 @@ class IcechunkWriter:
         store : IcechunkStore
             The Icechunk store to write to.
         """
-        # First pass: collect all metadata by variable so we can merge
-        # .zarray and .zattrs into a single zarr.json per variable.
+        import numpy as np
+        import zarr
+
+        # Collect all metadata by variable
         zarray_refs: Dict[str, str] = {}  # var_name -> .zarray JSON str
         zattrs_refs: Dict[str, str] = {}  # var_name -> .zattrs JSON str
-        root_zgroup: Optional[str] = None
-        data_refs: Dict[str, Any] = {}  # chunk keys -> values
-        inline_data_refs: Dict[str, str] = {}  # inline data keys -> values
+        data_refs: Dict[str, Any] = {}    # chunk key -> [uri, offset, len]
+        inline_data_refs: Dict[str, str] = {}  # chunk key -> inline value
 
         for key, value in refs.items():
             if key == ".zgroup":
-                root_zgroup = value
+                pass  # zarr.open_group handles the root group metadata
             elif key.endswith("/.zarray"):
                 var_name = key.rsplit("/.zarray", 1)[0]
                 zarray_refs[var_name] = value
@@ -514,8 +519,7 @@ class IcechunkWriter:
             elif _is_inline_data(value) and not _is_metadata_key(key):
                 inline_data_refs[key] = value
             elif _is_metadata_key(key):
-                # Other metadata keys (e.g., root .zattrs) — skip for now
-                pass
+                pass  # skip other metadata keys
             else:
                 _logger.warning(
                     "Skipping unrecognized manifest entry: %s = %r",
@@ -523,28 +527,63 @@ class IcechunkWriter:
                     value,
                 )
 
-        # Write root group metadata as zarr.json
-        if root_zgroup is not None:
-            v3_group = _make_zarr_v3_group_metadata(root_zgroup)
-            _store_set_sync(store, "zarr.json", v3_group.encode("utf-8"))
+        # Create root group and all arrays via zarr's Python API so that
+        # metadata is stored in the location that zarr/icechunk actually
+        # reads, rather than as raw chunk bytes at the zarr.json key.
+        root = zarr.open_group(store, mode="w", zarr_format=3)
 
-        # Write array metadata: merge .zarray + .zattrs into zarr.json
         for var_name, zarray_str in zarray_refs.items():
+            v2_zarray = json.loads(zarray_str)
             zattrs_str = zattrs_refs.get(var_name)
-            v3_array = _make_zarr_v3_array_metadata(zarray_str, zattrs_str)
-            _store_set_sync(
-                store,
-                f"{var_name}/zarr.json",
-                v3_array.encode("utf-8"),
+            v2_zattrs = json.loads(zattrs_str) if zattrs_str else {}
+
+            shape = v2_zarray["shape"]
+            chunks = v2_zarray.get("chunks", shape)
+            dtype_str = v2_zarray.get("dtype", "<f4")
+            fill_value = v2_zarray.get("fill_value", None)
+            dim_names = v2_zattrs.get("_ARRAY_DIMENSIONS", [])
+
+            # Preserve grib2io compressor config in array attributes so it
+            # can be recovered if the codec is needed later.
+            compressor = v2_zarray.get("compressor")
+            if compressor and compressor.get("id") == "grib2io":
+                v2_zattrs["_grib2io_compressor"] = compressor
+
+            dtype = np.dtype(dtype_str)
+            if fill_value == "NaN" or fill_value is None:
+                fv: Any = float("nan") if np.issubdtype(dtype, np.floating) else 0
+            else:
+                fv = fill_value
+
+            root.create_array(
+                var_name,
+                shape=shape,
+                chunks=chunks,
+                dtype=dtype,
+                fill_value=fv,
+                dimension_names=dim_names if dim_names else None,
+                attributes=v2_zattrs if v2_zattrs else None,
             )
 
-        # Write inline data (coordinate arrays) with v3 chunk keys
+        # Write coordinate (inline) data via zarr's Array write API so
+        # that encoding goes through the proper codec pipeline.
         for key, value in inline_data_refs.items():
-            raw_bytes = _decode_inline_value(value)
-            v3_key = _chunk_key_v2_to_v3(key)
-            _store_set_sync(store, v3_key, raw_bytes)
+            parts = key.split("/")
+            var_name = parts[0]
+            if var_name not in zarray_refs:
+                _logger.warning(
+                    "Inline data for unknown variable %s, skipping", var_name
+                )
+                continue
 
-        # Write virtual chunk references with v3 chunk keys
+            raw_bytes = _decode_inline_value(value)
+            v2_zarray = json.loads(zarray_refs[var_name])
+            dtype = np.dtype(v2_zarray["dtype"])
+            shape = v2_zarray["shape"]
+            coord_values = np.frombuffer(raw_bytes, dtype=dtype).reshape(shape)
+            root[var_name][...] = coord_values
+
+        # Write virtual chunk references for data arrays (unchanged path)
         for key, value in data_refs.items():
             uri, offset, length = value
             v3_key = _chunk_key_v2_to_v3(key)
@@ -564,12 +603,9 @@ class IcechunkWriter:
     ) -> None:
         """Append new data to an existing store along *append_dim*.
 
-        This handles extending existing arrays by:
-        1. Reading existing array metadata to determine current shape
-        2. Computing the offset along the append dimension
-        3. Updating array shape to reflect the concatenated size
-        4. Writing new data chunks with adjusted indices
-        5. Extending coordinate arrays
+        Opens the existing zarr group and uses zarr's Python API to resize
+        arrays and write new coordinate data, ensuring metadata is stored
+        correctly.
 
         Parameters
         ----------
@@ -580,16 +616,18 @@ class IcechunkWriter:
         append_dim : str
             Dimension name along which to append.
         """
+        import numpy as np
+        import zarr
+
         # Separate refs by type
         zarray_refs: Dict[str, str] = {}
         zattrs_refs: Dict[str, str] = {}
         data_refs: Dict[str, Any] = {}
         inline_refs: Dict[str, str] = {}
-        root_zgroup: Optional[str] = None
 
         for key, value in refs.items():
-            if key == ".zgroup":
-                root_zgroup = value
+            if key in {".zgroup"}:
+                pass
             elif key.endswith("/.zarray"):
                 var_name = key.rsplit("/.zarray", 1)[0]
                 zarray_refs[var_name] = value
@@ -601,123 +639,97 @@ class IcechunkWriter:
             elif _is_inline_data(value) and not _is_metadata_key(key):
                 inline_refs[key] = value
 
-        # Group data refs by variable (top-level array name)
+        # Open the existing group via zarr API
+        root = zarr.open_group(store, mode="r+", zarr_format=3)
+
+        # Group data refs by variable
         var_data_refs: Dict[str, Dict[str, list]] = {}
         for key, value in data_refs.items():
-            parts = key.split("/")
-            var_name = parts[0]
+            var_name = key.split("/")[0]
             var_data_refs.setdefault(var_name, {})[key] = value
 
-        # For each variable, determine the append offset and write
+        # Extend each data variable and register new virtual refs
         for var_name, chunk_refs in var_data_refs.items():
             new_zarray_str = zarray_refs.get(var_name)
             if new_zarray_str is None:
                 continue
 
             new_zarray = json.loads(new_zarray_str)
-            new_shape = new_zarray["shape"]
+            new_shape_per_append = new_zarray["shape"]
 
-            # Try to read existing zarr.json from the store
-            existing_shape = None
-            existing_v3_meta = None
-            try:
-                existing_bytes = _store_get_sync(store, f"{var_name}/zarr.json")
-                if existing_bytes is not None:
-                    existing_v3_meta = json.loads(existing_bytes.decode("utf-8"))
-                    existing_shape = existing_v3_meta.get("shape")
-            except Exception:
-                pass
-
-            # Determine the append dimension index from .zattrs
+            # Determine append axis from dimension labels
             new_zattrs_str = zattrs_refs.get(var_name)
+            dim_labels: list = []
             if new_zattrs_str:
-                new_zattrs = json.loads(new_zattrs_str)
-                dim_labels = new_zattrs.get("_ARRAY_DIMENSIONS", [])
-            else:
-                dim_labels = []
+                dim_labels = json.loads(new_zattrs_str).get("_ARRAY_DIMENSIONS", [])
 
-            if append_dim in dim_labels:
-                append_axis = dim_labels.index(append_dim)
-            else:
-                append_axis = None
+            append_axis = dim_labels.index(append_dim) if append_dim in dim_labels else None
 
-            if existing_shape is not None and append_axis is not None:
-                # Compute offset: existing size along append axis
+            if var_name in root and append_axis is not None:
+                zarr_arr = root[var_name]
+                existing_shape = list(zarr_arr.shape)
                 offset = existing_shape[append_axis]
 
-                # Update shape: extend along append axis
-                updated_shape = list(existing_shape)
-                updated_shape[append_axis] += new_shape[append_axis]
-                new_zarray["shape"] = updated_shape
+                # Resize array along append axis
+                new_size = existing_shape[append_axis] + new_shape_per_append[append_axis]
+                new_shape_full = list(existing_shape)
+                new_shape_full[append_axis] = new_size
+                zarr_arr.resize(new_shape_full)
+            else:
+                offset = 0
 
-                # Write updated zarr.json (merged .zarray + .zattrs)
-                v3_array = _make_zarr_v3_array_metadata(json.dumps(new_zarray), new_zattrs_str)
-                _store_set_sync(
-                    store,
-                    f"{var_name}/zarr.json",
-                    v3_array.encode("utf-8"),
-                )
-
-                # Write data chunks with adjusted indices
-                for key, value in chunk_refs.items():
-                    uri, chunk_offset, length = value
+            # Write virtual refs with adjusted chunk indices
+            for key, value in chunk_refs.items():
+                uri, chunk_offset, length = value
+                if append_axis is not None and offset > 0:
                     adjusted_key = self._adjust_chunk_key(key, var_name, append_axis, offset)
-                    v3_key = _chunk_key_v2_to_v3(adjusted_key)
-                    store.set_virtual_ref(
-                        v3_key,
-                        uri,
-                        offset=int(chunk_offset),
-                        length=int(length),
-                        validate_container=True,
-                    )
-            else:
-                # No existing data or append_dim not relevant — write as-is
-                v3_array = _make_zarr_v3_array_metadata(json.dumps(new_zarray), new_zattrs_str)
-                _store_set_sync(
-                    store,
-                    f"{var_name}/zarr.json",
-                    v3_array.encode("utf-8"),
+                else:
+                    adjusted_key = key
+                v3_key = _chunk_key_v2_to_v3(adjusted_key)
+                store.set_virtual_ref(
+                    v3_key,
+                    uri,
+                    offset=int(chunk_offset),
+                    length=int(length),
+                    validate_container=True,
                 )
-                for key, value in chunk_refs.items():
-                    uri, chunk_offset, length = value
-                    v3_key = _chunk_key_v2_to_v3(key)
-                    store.set_virtual_ref(
-                        v3_key,
-                        uri,
-                        offset=int(chunk_offset),
-                        length=int(length),
-                        validate_container=True,
-                    )
 
-        # Write root group if present
-        if root_zgroup is not None:
-            v3_group = _make_zarr_v3_group_metadata(root_zgroup)
-            _store_set_sync(store, "zarr.json", v3_group.encode("utf-8"))
+        # Handle coordinate arrays
+        for key, inline_value in inline_refs.items():
+            coord_name = key.split("/")[0] if "/" in key else None
+            if coord_name is None:
+                continue
 
-        # Handle coordinate arrays for the append dimension
-        for key, value in inline_refs.items():
-            parts = key.split("/")
-            coord_name = parts[0] if len(parts) >= 2 else None
+            raw_bytes = _decode_inline_value(inline_value)
+            new_zarray_str = zarray_refs.get(coord_name)
+            if new_zarray_str is None:
+                continue
+            dtype = np.dtype(json.loads(new_zarray_str)["dtype"])
+            new_values = np.frombuffer(raw_bytes, dtype=dtype)
 
-            if coord_name == append_dim:
-                self._extend_coord(store, coord_name, key, value, zarray_refs, zattrs_refs)
-            else:
-                raw_bytes = _decode_inline_value(value)
-                v3_key = _chunk_key_v2_to_v3(key)
-                _store_set_sync(store, v3_key, raw_bytes)
-
-        # Write remaining metadata (coordinate .zarray/.zattrs) that
-        # aren't for data variables
-        for var_name in zarray_refs:
-            if var_name not in var_data_refs and var_name != append_dim:
-                zarray_str = zarray_refs[var_name]
-                zattrs_str = zattrs_refs.get(var_name)
-                v3_array = _make_zarr_v3_array_metadata(zarray_str, zattrs_str)
-                _store_set_sync(
-                    store,
-                    f"{var_name}/zarr.json",
-                    v3_array.encode("utf-8"),
+            if coord_name == append_dim and coord_name in root:
+                # Concatenate with existing coordinate values
+                existing_arr = root[coord_name][...]
+                combined = np.concatenate([existing_arr, new_values])
+                root[coord_name].resize(len(combined))
+                root[coord_name][...] = combined
+            elif coord_name not in root:
+                # Create new coordinate array via zarr API
+                v2_zattrs = json.loads(zattrs_refs[coord_name]) if coord_name in zattrs_refs else {}
+                dim_names = v2_zattrs.get("_ARRAY_DIMENSIONS", [])
+                shape = [len(new_values)]
+                root.create_array(
+                    coord_name,
+                    shape=shape,
+                    chunks=shape,
+                    dtype=dtype,
+                    fill_value=0,
+                    dimension_names=dim_names if dim_names else None,
+                    attributes=v2_zattrs if v2_zattrs else None,
                 )
+                root[coord_name][...] = new_values
+            # else: coordinate already exists and isn't the append dim — leave as-is
+
 
     def _adjust_chunk_key(
         self,
