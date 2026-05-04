@@ -502,7 +502,7 @@ class IcechunkWriter:
         # Collect all metadata by variable
         zarray_refs: Dict[str, str] = {}  # var_name -> .zarray JSON str
         zattrs_refs: Dict[str, str] = {}  # var_name -> .zattrs JSON str
-        data_refs: Dict[str, Any] = {}    # chunk key -> [uri, offset, len]
+        data_refs: Dict[str, Any] = {}  # chunk key -> [uri, offset, len]
         inline_data_refs: Dict[str, str] = {}  # chunk key -> inline value
 
         for key, value in refs.items():
@@ -592,9 +592,7 @@ class IcechunkWriter:
             parts = key.split("/")
             var_name = parts[0]
             if var_name not in zarray_refs:
-                _logger.warning(
-                    "Inline data for unknown variable %s, skipping", var_name
-                )
+                _logger.warning("Inline data for unknown variable %s, skipping", var_name)
                 continue
 
             raw_bytes = _decode_inline_value(value)
@@ -750,7 +748,6 @@ class IcechunkWriter:
                 )
                 root[coord_name][...] = new_values
             # else: coordinate already exists and isn't the append dim — leave as-is
-
 
     def _adjust_chunk_key(
         self,

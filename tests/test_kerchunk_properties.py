@@ -18,18 +18,24 @@ distinct examples per test even though the file pool is small.
 
 import json
 import os
+import sys
 from functools import reduce
 from itertools import combinations as _combinations, permutations as _permutations
 from operator import mul
 
 import pytest
 
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="kerchunk support requires Python >= 3.11",
+)
+
 pytest.importorskip("numcodecs", reason="numcodecs is not installed")
 hypothesis = pytest.importorskip("hypothesis", reason="hypothesis is not installed")
 from hypothesis import given, settings, HealthCheck, assume  # noqa: E402
 from hypothesis import strategies as st  # noqa: E402
 
-from grib2io.kerchunk import ReferenceGenerator, _file_uri
+from grib2io.kerchunk import ReferenceGenerator, _file_uri  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test data paths

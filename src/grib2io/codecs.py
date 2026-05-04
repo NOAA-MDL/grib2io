@@ -39,6 +39,7 @@ def _ensure_numcodecs():
 try:
     from numcodecs.abc import Codec
     from numcodecs.registry import register_codec
+
     _HAS_NUMCODECS = True
 except ImportError:
     _HAS_NUMCODECS = False
@@ -78,10 +79,7 @@ class Grib2Codec(Codec):
         number_of_packed_values: int = 0,
     ):
         if not _HAS_NUMCODECS:
-            raise ImportError(
-                "numcodecs is required for Grib2Codec. "
-                "Install with: pip install grib2io[kerchunk]"
-            )
+            raise ImportError("numcodecs is required for Grib2Codec. Install with: pip install grib2io[kerchunk]")
         self.drtn = drtn
         self.drt = list(drt)
         self.gdtn = gdtn
@@ -185,12 +183,14 @@ try:
     from zarr.core.array_spec import ArraySpec
     from zarr.core.buffer import Buffer, NDBuffer
     import zarr.registry as _zarr_registry
+
     _HAS_ZARR_V3 = True
 except ImportError:
     _HAS_ZARR_V3 = False
 
 
 if _HAS_ZARR_V3:
+
     @dataclass(frozen=True)
     class Grib2SerializerCodec(ArrayBytesCodec):
         """Zarr v3 ``ArrayBytesCodec`` (serializer) for GRIB2 virtual chunks.
@@ -260,10 +260,7 @@ if _HAS_ZARR_V3:
             object.__setattr__(self, "bitmap_flag", int(bitmap_flag))
             object.__setattr__(self, "bitmap_offset", bitmap_offset)
             object.__setattr__(self, "bitmap_length", bitmap_length)
-            object.__setattr__(
-                self, "scan_mode_flags",
-                tuple(scan_mode_flags) if scan_mode_flags is not None else None
-            )
+            object.__setattr__(self, "scan_mode_flags", tuple(scan_mode_flags) if scan_mode_flags is not None else None)
             object.__setattr__(self, "type_of_values", int(type_of_values))
             object.__setattr__(self, "number_of_data_points", int(number_of_data_points))
             object.__setattr__(self, "number_of_packed_values", int(number_of_packed_values))
@@ -398,4 +395,3 @@ def _decode_grib2_bytes(
         fld = fld.astype(np.int32)
 
     return fld
-

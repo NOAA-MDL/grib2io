@@ -19,9 +19,9 @@ import pytest
 numcodecs = pytest.importorskip("numcodecs", reason="numcodecs is not installed")
 from numcodecs.abc import Codec  # noqa: E402
 
-import grib2io._grib2io as _g2io_module
-from grib2io._grib2io import build_index, msgs_from_index, _data
-from grib2io.codecs import Grib2Codec
+import grib2io._grib2io as _g2io_module  # noqa: E402
+from grib2io._grib2io import build_index, msgs_from_index, _data  # noqa: E402
+from grib2io.codecs import Grib2Codec  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test data paths

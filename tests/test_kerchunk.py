@@ -11,9 +11,15 @@ Requirements: 2.1, 2.2, 2.3, 2.4
 
 import json
 import os
+import sys
 import tempfile
 
 import pytest
+
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 11),
+    reason="kerchunk support requires Python >= 3.11",
+)
 
 pytest.importorskip("numcodecs", reason="numcodecs is not installed")
 fsspec = pytest.importorskip("fsspec", reason="fsspec is not installed")

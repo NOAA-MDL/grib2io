@@ -18,6 +18,11 @@ from unittest.mock import patch
 
 import pytest
 
+pytestmark = pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="icechunk support requires Python >= 3.12",
+)
+
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
 # Check if icechunk is available

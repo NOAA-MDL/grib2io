@@ -124,8 +124,14 @@ class TestCodecsImportError:
                     match=r"pip install grib2io\[kerchunk\]",
                 ):
                     mod.Grib2Codec(
-                        drtn=0, drt=[], gdtn=0, gdt=[], gds=[],
-                        nx=1, ny=1, bitmap_flag=255,
+                        drtn=0,
+                        drt=[],
+                        gdtn=0,
+                        gdt=[],
+                        gds=[],
+                        nx=1,
+                        ny=1,
+                        bitmap_flag=255,
                     )
         finally:
             # Restore the original module

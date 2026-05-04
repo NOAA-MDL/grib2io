@@ -32,9 +32,9 @@ hypothesis = pytest.importorskip("hypothesis", reason="hypothesis is not install
 from hypothesis import given, settings, HealthCheck, assume  # noqa: E402
 from hypothesis import strategies as st  # noqa: E402
 
-import grib2io._grib2io as _g2io_module
-from grib2io._grib2io import build_index, msgs_from_index, _data
-from grib2io.codecs import Grib2Codec
+import grib2io._grib2io as _g2io_module  # noqa: E402
+from grib2io._grib2io import build_index, msgs_from_index, _data  # noqa: E402
+from grib2io.codecs import Grib2Codec  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Test data paths

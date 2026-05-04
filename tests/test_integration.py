@@ -12,6 +12,7 @@ Requirements: 1.1, 2.3, 3.9, 4.3, 5.1, 5.2, 6.1, 6.3
 
 import json
 import os
+import sys
 import tempfile
 
 import fsspec
@@ -23,6 +24,11 @@ import grib2io
 import grib2io.codecs  # Ensure Grib2Codec is registered with numcodecs
 from grib2io.kerchunk import ReferenceGenerator
 from grib2io.cli.main import main
+
+# Kerchunk/Icechunk tests require Python >= 3.11. The icechunk-specific
+# class below adds a tighter >= 3.12 guard.
+if sys.version_info < (3, 11):
+    pytest.skip("kerchunk/icechunk integration requires Python >= 3.11", allow_module_level=True)
 
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
@@ -233,6 +239,10 @@ class TestKerchunkPipeline:
 # ===========================================================================
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="icechunk support requires Python >= 3.12",
+)
 @pytest.mark.skipif(
     not _has_icechunk(),
     reason="icechunk is not installed",
