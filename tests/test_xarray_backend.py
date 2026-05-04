@@ -13,6 +13,7 @@ Requirements: 6.1, 6.2, 6.3, 6.4
 
 import json
 import os
+import sys
 import tempfile
 from unittest import mock
 
@@ -197,6 +198,10 @@ class TestImportErrors:
 # ===========================================================================
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 12),
+    reason="zarr v3 requires Python >= 3.12",
+)
 class TestReferenceBackedDataset:
     """Tests that reference-backed datasets match direct GRIB2 reads."""
 
