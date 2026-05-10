@@ -840,11 +840,12 @@ def msgs_from_index(index: dict, filehandle=None):
     - The `_msgnum` attribute of each message is assigned sequentially to
       preserve message order.
     """
+    n = len(index["section4"])
     zipped = zip(
-        index["section0"],
-        index["section1"],
+        index["section0"] * n if len(index["section0"]) < n else index["section0"],
+        index["section1"] * n if len(index["section1"]) < n else index["section1"],
         index["section2"],
-        index["section3"],
+        index["section3"] * n if len(index["section3"]) < n else index["section3"],
         index["section4"],
         index["section5"],
         index["bmapflag"],
