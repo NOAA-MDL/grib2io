@@ -841,11 +841,15 @@ def msgs_from_index(index: dict, filehandle=None):
       preserve message order.
     """
     n = len(index["section4"])
+    def _expand(lst):
+        if len(lst) < n:
+            return [lst[0].copy() for _ in range(n)]
+        return lst
     zipped = zip(
-        index["section0"] * n if len(index["section0"]) < n else index["section0"],
-        index["section1"] * n if len(index["section1"]) < n else index["section1"],
+        _expand(index["section0"]),
+        _expand(index["section1"]),
         index["section2"],
-        index["section3"] * n if len(index["section3"]) < n else index["section3"],
+        _expand(index["section3"]),
         index["section4"],
         index["section5"],
         index["bmapflag"],
