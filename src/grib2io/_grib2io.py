@@ -841,10 +841,12 @@ def msgs_from_index(index: dict, filehandle=None):
       preserve message order.
     """
     n = len(index["section4"])
+
     def _expand(lst):
         if len(lst) < n:
             return [lst[0].copy() for _ in range(n)]
         return lst
+
     zipped = zip(
         _expand(index["section0"]),
         _expand(index["section1"]),
