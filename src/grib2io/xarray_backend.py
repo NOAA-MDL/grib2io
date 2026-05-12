@@ -27,8 +27,13 @@ from xarray.backends import (
 )
 from copy import copy
 from dataclasses import dataclass, field, astuple
+import datetime
+import glob
 import itertools
+import json
 import logging
+import os
+import re
 import typing
 import warnings
 
@@ -37,9 +42,7 @@ from . import tables
 import numpy as np
 import pandas as pd
 import xarray as xr
-import re
 from pyproj import CRS
-import datetime
 
 # Check if xarray version supports DataTree
 _HAS_DATATREE = hasattr(xr, "DataTree")
@@ -564,6 +567,155 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
     return ds
 
 
+# ---------------------------------------------------------------------------
+# Lazy import guards for optional dependencies
+# ---------------------------------------------------------------------------
+
+
+def _ensure_kerchunk():
+    """Raise ``ImportError`` if *kerchunk* / *fsspec* reference support is not available."""
+    try:
+        import fsspec  # noqa: F401
+    except ImportError:
+        raise ImportError("kerchunk is required for reference generation. Install with: pip install grib2io[kerchunk]")
+
+
+def _ensure_icechunk():
+    """Raise ``ImportError`` if *icechunk* is not available."""
+    try:
+        import icechunk  # noqa: F401
+    except ImportError:
+        raise ImportError("icechunk is required for virtual store support. Install with: pip install grib2io[icechunk]")
+
+
+# ---------------------------------------------------------------------------
+# Format detection helpers
+# ---------------------------------------------------------------------------
+
+
+def _is_kerchunk_reference(filename_or_obj) -> bool:
+    """Detect whether *filename_or_obj* is a Kerchunk reference file.
+
+    Detection logic:
+    - **JSON reference**: path is a string ending with ``.json`` and the file
+      contains a ``"version"`` key at the top level.
+    - **Parquet reference**: path is a string pointing to a directory that
+      contains a ``.zmetadata`` file and at least one ``refs.*.parq`` file.
+    """
+    if not isinstance(filename_or_obj, (str, os.PathLike)):
+        return False
+
+    path = str(filename_or_obj)
+
+    # JSON reference detection
+    if path.endswith(".json"):
+        try:
+            with open(path) as f:
+                data = json.load(f)
+            return isinstance(data, dict) and "version" in data
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
+            return False
+
+    # Parquet reference detection
+    if os.path.isdir(path):
+        has_zmetadata = os.path.isfile(os.path.join(path, ".zmetadata"))
+        has_parq = bool(glob.glob(os.path.join(path, "refs.*.parq")))
+        return has_zmetadata and has_parq
+
+    return False
+
+
+def _is_icechunk_store(filename_or_obj) -> bool:
+    """Detect whether *filename_or_obj* is an Icechunk store."""
+    # Check for IcechunkStore instance (without importing icechunk at top level)
+    type_name = type(filename_or_obj).__name__
+    type_module = type(filename_or_obj).__module__ or ""
+    if type_name == "IcechunkStore" and "icechunk" in type_module:
+        return True
+
+    # Check for Icechunk URI schemes
+    if isinstance(filename_or_obj, str):
+        icechunk_schemes = (
+            "icechunk://",
+            "icechunk+s3://",
+            "icechunk+file://",
+            "icechunk+gcs://",
+        )
+        return filename_or_obj.startswith(icechunk_schemes)
+
+    return False
+
+
+def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
+    """Open a Kerchunk reference file as an xarray Dataset."""
+    _ensure_kerchunk()
+    import fsspec
+
+    fs = fsspec.filesystem("reference", fo=str(filename_or_obj))
+    mapper = fs.get_mapper("")
+
+    open_kwargs = {"consolidated": False}
+    if chunks is not None:
+        open_kwargs["chunks"] = chunks
+    if drop_variables is not None:
+        open_kwargs["drop_variables"] = drop_variables
+
+    ds = xr.open_zarr(mapper, **open_kwargs)
+
+    if data_model is not None:
+        ds = parse_data_model(ds, data_model)
+
+    history = ds.attrs.get("history", "")
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Kerchunk reference {filename_or_obj}\n{history}"
+
+    return ds
+
+
+def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
+    """Open an Icechunk store as an xarray Dataset."""
+    _ensure_icechunk()
+    import icechunk
+
+    if isinstance(filename_or_obj, icechunk.IcechunkStore):
+        store = filename_or_obj
+    else:
+        uri = str(filename_or_obj)
+        if uri.startswith("icechunk+s3://"):
+            storage = icechunk.s3_storage(uri.replace("icechunk+s3://", "s3://"))
+        elif uri.startswith("icechunk+gcs://"):
+            storage = icechunk.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
+        elif uri.startswith("icechunk+file://"):
+            local_path = uri.replace("icechunk+file://", "")
+            storage = icechunk.local_filesystem_storage(path=local_path)
+        elif uri.startswith("icechunk://"):
+            local_path = uri.replace("icechunk://", "")
+            storage = icechunk.local_filesystem_storage(path=local_path)
+        else:
+            storage = icechunk.local_filesystem_storage(path=uri)
+
+        repo = icechunk.Repository.open(storage)
+        session = repo.readonly_session("main")
+        store = session.store
+
+    open_kwargs = {"consolidated": False}
+    if chunks is not None:
+        open_kwargs["chunks"] = chunks
+    if drop_variables is not None:
+        open_kwargs["drop_variables"] = drop_variables
+
+    ds = xr.open_zarr(store, **open_kwargs)
+
+    if data_model is not None:
+        ds = parse_data_model(ds, data_model)
+
+    history = ds.attrs.get("history", "")
+    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Icechunk store {filename_or_obj}\n{history}"
+
+    return ds
+
+
 class GribBackendEntrypoint(BackendEntrypoint):
     """
     xarray backend engine entrypoint for opening and decoding grib2 files.
@@ -611,6 +763,22 @@ class GribBackendEntrypoint(BackendEntrypoint):
         """
         if filters is None:
             filters = {}
+
+        # --- Format detection: Kerchunk reference or Icechunk store ---
+        if _is_kerchunk_reference(filename_or_obj):
+            return _open_from_reference(
+                filename_or_obj,
+                data_model=data_model,
+                drop_variables=drop_variables,
+                chunks=chunks,
+            )
+        if _is_icechunk_store(filename_or_obj):
+            return _open_from_icechunk(
+                filename_or_obj,
+                data_model=data_model,
+                drop_variables=drop_variables,
+                chunks=chunks,
+            )
 
         with grib2io.open(filename_or_obj, save_index=save_index, _xarray_backend=True) as f:
             file_index = pd.DataFrame(f._index)

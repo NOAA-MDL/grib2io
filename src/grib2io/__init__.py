@@ -37,6 +37,9 @@ __all__ = [
     "tables",
     "templates",
     "utils",
+    "codecs",
+    "kerchunk",
+    "icechunk",
     "Grib2Message",
     "_Grib2Message",
     "Grib2GridDef",
@@ -50,6 +53,26 @@ has_aec_support = bool(_has_aec)
 
 ncep_grib2_table_version = _ncep_grib2_table_version
 g2c_version = __g2clib_version__
+
+# ---------------------------------------------------------------------------
+# Lazy imports for optional-dependency modules
+# ---------------------------------------------------------------------------
+# These modules are only imported when explicitly accessed (e.g.,
+# ``grib2io.codecs``, ``grib2io.kerchunk``, ``grib2io.icechunk``).
+# This keeps the core package lightweight and avoids ImportError when
+# optional dependencies (numcodecs, kerchunk, icechunk) are not installed.
+
+_LAZY_MODULES = {"codecs", "kerchunk", "icechunk"}
+
+
+def __getattr__(name: str):
+    if name in _LAZY_MODULES:
+        import importlib
+
+        module = importlib.import_module(f".{name}", __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def show_config():
