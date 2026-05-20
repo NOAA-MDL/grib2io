@@ -194,7 +194,9 @@ class ReferenceGenerator:
         all_var_messages: Dict[str, list],
     ) -> None:
         """Scan a single GRIB2 file and collect message entries."""
-        with grib2io.open(file_path, save_index=False, use_index=False) as f:
+        # Enable use_index=True to leverage sidecar index files (.grib2ioidx)
+        # for efficient scanning, especially on remote storage like S3.
+        with grib2io.open(file_path, save_index=False, use_index=True) as f:
             index = f._index
             msgs = list(f)
 
