@@ -241,68 +241,111 @@ class open:
             # Handle file-like objects (including S3File, etc.)
             self.current_message = 0
             self._filehandle = filename
-            self.name = getattr(filename, "name", filename.__repr__())
-            # For file-like objects, we can't get file stats, so create a unique ID
-            self._fileid = hashlib.sha1((self.name + str(id(filename))).encode("ASCII")).hexdigest()
-            # Disable index file usage for file-like objects since we can't save/load them
-            self.use_index = False
-            self.save_index = False
+            self.name = getattr(filename, "name", getattr(filename, "path", filename.__repr__()))
+            # Try to get size from filehandle info
+            try:
+                self.size = self._filehandle.info().get("size", 0)
+            except (AttributeError, TypeError):
+                self.size = 0
+            # For file-like objects, create a unique ID
+            self._fileid = hashlib.sha1((self.name + str(self.size)).encode("ASCII")).hexdigest()
 
             if "r" in self.mode:
-                # Build index from the file-like object
-                self._index = build_index(self._filehandle)
+                # For remote file-like objects, we might still want to try loading an index
+                # if it exists as a sidecar.
+                self.indexfile = f"{self.name}.grib2ioidx"
+                idx_loaded = False
+                if self.use_index:
+                    try:
+                        # Try to find a fsspec-compatible index file
+                        import fsspec
+
+                        with fsspec.open(self.indexfile, "rb") as f:
+                            self._index = pickle.load(f)
+                        idx_loaded = True
+                        self._hasindex = True
+                    except Exception:
+                        pass
+
+                if not idx_loaded:
+                    self._index = build_index(self._filehandle)
+
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
                 self.messages = len(self._msgs)
 
-            # Get size for s3fs.core.S3File object.
-            self.size = self._filehandle.info()["size"] or 0
-
         else:
             self.current_message = 0
-            if "r" in mode:
-                self._filehandle = builtins.open(filename, mode=mode)
-                # Some GRIB2 files are gzipped, so check for that here, but
-                # raise error when using xarray backend.
-                # Gzip files contain a 2-byte header b'\x1f\x8b'.
-                if self._filehandle.read(2) == _GZIP_HEADER:
-                    self._filehandle.close()
-                    if _xarray_backend:
-                        raise RuntimeError("Gzip GRIB2 files are not supported by the Xarray backend.")
-                    self._filehandle = gzip.open(filename, mode=mode)
+            is_remote = isinstance(filename, str) and "://" in filename
+
+            if is_remote:
+                import fsspec
+
+                self._filehandle = fsspec.open(filename, mode=mode).open()
+                self.name = filename
+                try:
+                    self.size = self._filehandle.info().get("size", 0)
+                except (AttributeError, TypeError):
+                    self.size = 0
+                self._fileid = hashlib.sha1((self.name + str(self.size)).encode("ASCII")).hexdigest()
+            else:
+                if "r" in mode:
+                    self._filehandle = builtins.open(filename, mode=mode)
+                    # Some GRIB2 files are gzipped, so check for that here, but
+                    # raise error when using xarray backend.
+                    # Gzip files contain a 2-byte header b'\x1f\x8b'.
+                    if self._filehandle.read(2) == _GZIP_HEADER:
+                        self._filehandle.close()
+                        if _xarray_backend:
+                            raise RuntimeError("Gzip GRIB2 files are not supported by the Xarray backend.")
+                        self._filehandle = gzip.open(filename, mode=mode)
+                    else:
+                        self._filehandle = builtins.open(filename, mode=mode)
                 else:
                     self._filehandle = builtins.open(filename, mode=mode)
-            else:
-                self._filehandle = builtins.open(filename, mode=mode)
                 self.name = os.path.abspath(filename)
-            self.name = os.path.abspath(filename)
-            fstat = os.stat(self.name)
-            self.size = fstat.st_size
-            self._fileid = hashlib.sha1((self.name + str(fstat.st_ino) + str(self.size)).encode("ASCII")).hexdigest()
+                fstat = os.stat(self.name)
+                self.size = fstat.st_size
+                self._fileid = hashlib.sha1((self.name + str(fstat.st_ino) + str(self.size)).encode("ASCII")).hexdigest()
 
             if "r" in self.mode:
-                self.indexfile = f"{self.name}_{self._fileid}.grib2ioidx"
-                if self.use_index and os.path.exists(self.indexfile):
-                    try:
-                        with builtins.open(self.indexfile, "rb") as file:
-                            index = pickle.load(file)
-                        self._index = index
-                    except Exception as e:
-                        warnings.warn(
-                            f"found indexfile: {self.indexfile}, but unable to load it: {e}\n"
-                            f"re-forming index from grib2file, but not writing indexfile"
-                        )
-                        self._index = build_index(self._filehandle)
-                    self._hasindex = True
-                else:
+                # Try discovery of multiple possible index file locations
+                index_paths = [
+                    f"{self.name}_{self._fileid}.grib2ioidx",
+                    f"{self.name}.grib2ioidx",
+                ]
+                idx_loaded = False
+
+                if self.use_index:
+                    for idx_path in index_paths:
+                        try:
+                            if is_remote:
+                                import fsspec
+
+                                with fsspec.open(idx_path, "rb") as f:
+                                    self._index = pickle.load(f)
+                            else:
+                                if os.path.exists(idx_path):
+                                    with builtins.open(idx_path, "rb") as f:
+                                        self._index = pickle.load(f)
+                                else:
+                                    continue
+                            self.indexfile = idx_path
+                            idx_loaded = True
+                            self._hasindex = True
+                            break
+                        except Exception:
+                            continue
+
+                if not idx_loaded:
                     self._index = build_index(self._filehandle)
-                    if self.save_index:
+                    self.indexfile = index_paths[0]
+                    if self.save_index and not is_remote:
                         try:
                             serialize_index(self._index, self.indexfile)
                         except Exception as e:
                             warnings.warn(f"index was not serialized for future use: {e}")
 
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
-
                 self.messages = len(self._msgs)
             elif "w" or "x" in self.mode:
                 self.messages = 0

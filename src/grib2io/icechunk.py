@@ -363,7 +363,15 @@ class IcechunkWriter:
 
         import icechunk
 
-        return icechunk.local_filesystem_storage(path=self._store_path)
+        # Basic URI scheme detection for storage creation
+        if self._store_path.startswith("s3://"):
+            return icechunk.storage.s3_storage(self._store_path)
+        elif self._store_path.startswith("gcs://"):
+            return icechunk.storage.gcs_storage(self._store_path)
+        elif self._store_path.startswith("azure://") or self._store_path.startswith("abfs://"):
+            return icechunk.storage.azure_storage(self._store_path)
+        else:
+            return icechunk.storage.local_filesystem_storage(path=self._store_path)
 
     def _create_or_open_repo(self, mode: str, virtual_prefixes: Set[str]):
         """Create or open an Icechunk repository.
@@ -431,11 +439,12 @@ class IcechunkWriter:
                 local_path = local_path[:-1]
             return icechunk.storage.local_filesystem_store(local_path)
         elif prefix.startswith("s3://"):
-            return icechunk.storage.s3_store(region="us-east-1")
+            # For S3, we try to infer common settings or use defaults
+            return icechunk.storage.s3_store()
         elif prefix.startswith("gcs://"):
-            return icechunk.storage.gcs_store(opts={})
+            return icechunk.storage.gcs_store()
         elif prefix.startswith("http://") or prefix.startswith("https://"):
-            return icechunk.storage.http_store(opts={})
+            return icechunk.storage.http_store()
         else:
             # Default to local filesystem
             return icechunk.storage.local_filesystem_store(prefix)

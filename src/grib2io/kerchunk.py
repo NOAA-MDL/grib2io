@@ -103,9 +103,9 @@ class ReferenceGenerator:
         else:
             file_paths = [str(p) for p in file_paths]
 
-        # Validate file accessibility
+        # Validate file accessibility (for local files)
         for fp in file_paths:
-            if not os.path.isfile(fp):
+            if "://" not in fp and not os.path.isfile(fp):
                 raise FileNotFoundError(f"GRIB2 file not found: {fp}")
 
         self.file_paths = file_paths
@@ -414,7 +414,9 @@ class _MsgEntry:
 
 
 def _file_uri(file_path: str) -> str:
-    """Convert a local file path to a ``file://`` URI."""
+    """Convert a file path to a URI. Handles local paths and remote URLs."""
+    if "://" in file_path:
+        return file_path
     abs_path = os.path.abspath(file_path)
     return f"file://{abs_path}"
 

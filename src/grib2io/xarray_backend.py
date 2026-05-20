@@ -672,30 +672,41 @@ def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, 
     return ds
 
 
-def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
+def _open_from_icechunk(
+    filename_or_obj,
+    data_model=None,
+    drop_variables=None,
+    chunks=None,
+    branch="main",
+    **kwargs,
+) -> xr.Dataset:
     """Open an Icechunk store as an xarray Dataset."""
     _ensure_icechunk()
     import icechunk
 
-    if isinstance(filename_or_obj, icechunk.IcechunkStore):
+    if hasattr(filename_or_obj, "get") and hasattr(filename_or_obj, "set"):
+        # Assume it's already a store-like object
         store = filename_or_obj
     else:
         uri = str(filename_or_obj)
         if uri.startswith("icechunk+s3://"):
-            storage = icechunk.s3_storage(uri.replace("icechunk+s3://", "s3://"))
+            storage = icechunk.storage.s3_storage(uri.replace("icechunk+s3://", "s3://"))
         elif uri.startswith("icechunk+gcs://"):
-            storage = icechunk.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
+            storage = icechunk.storage.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
         elif uri.startswith("icechunk+file://"):
             local_path = uri.replace("icechunk+file://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
+            storage = icechunk.storage.local_filesystem_storage(path=local_path)
         elif uri.startswith("icechunk://"):
             local_path = uri.replace("icechunk://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
+            storage = icechunk.storage.local_filesystem_storage(path=local_path)
+        elif "://" in uri:
+            # Fallback for other URI schemes
+            storage = icechunk.storage.local_filesystem_storage(path=uri)
         else:
-            storage = icechunk.local_filesystem_storage(path=uri)
+            storage = icechunk.storage.local_filesystem_storage(path=uri)
 
         repo = icechunk.Repository.open(storage)
-        session = repo.readonly_session("main")
+        session = repo.readonly_session(branch)
         store = session.store
 
     open_kwargs = {"consolidated": False}
@@ -703,6 +714,9 @@ def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, c
         open_kwargs["chunks"] = chunks
     if drop_variables is not None:
         open_kwargs["drop_variables"] = drop_variables
+
+    # Merge additional kwargs
+    open_kwargs.update(kwargs)
 
     ds = xr.open_zarr(store, **open_kwargs)
 
