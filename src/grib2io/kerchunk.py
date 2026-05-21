@@ -27,8 +27,9 @@ import base64
 import json
 import logging
 import os
+import re
 from urllib.parse import urlparse
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Set, Union
 
 import numpy as np
 
@@ -230,6 +231,120 @@ class ReferenceGenerator:
     # Internal scanning
     # ------------------------------------------------------------------
 
+    def _build_remote_index_filtered(
+        self,
+        file_path: str,
+        shortname_filter: Union[str, Set[str]],
+        scan_storage_options: dict,
+    ):
+        """Build a GRIB2 index for a remote file, pre-filtered by shortName.
+
+        Instead of fetching headers for every message (~700 HTTP requests for a
+        full GFS 0.25° file), this method:
+
+        1. Checks grib2io's local cache – if the full or filtered index was
+           saved from a previous run, it loads it instantly.
+        2. Otherwise fetches the wgrib2 ``.idx`` sidecar (a small text file)
+           and keeps only the byte offsets whose shortName matches the filter,
+           reducing HTTP range requests from ~700 to ~1–50.
+        3. Saves the partial index to a filter-specific cache key so the next
+           call for the same file+filter is also instant.
+        4. Falls back to ``grib2io.open`` (full index, slow on first call) if
+           no ``.idx`` sidecar is available.
+
+        Returns
+        -------
+        tuple(dict, list)
+            ``(index, msgs)`` where *index* is a grib2io index dict and *msgs*
+            is a list of :class:`~grib2io.Grib2Message` objects.
+        """
+        import builtins
+        import hashlib
+        import pickle
+
+        import fsspec
+
+        from grib2io._grib2io import build_index
+        from grib2io import msgs_from_index
+
+        cache_root = os.path.join(os.path.expanduser("~"), ".cache", "grib2io")
+
+        # Open the remote file to obtain its size (one lightweight HEAD/info call).
+        # For the filtered fast-path we override cache settings: "readahead" with
+        # a small block size means consecutive section-header reads within the same
+        # message share one HTTP range request instead of each triggering a new one.
+        fh_options = dict(scan_storage_options)
+        fh_options["default_cache_type"] = "readahead"
+        fh_options["default_block_size"] = 4096
+        fh = fsspec.open(file_path, "rb", **fh_options).open()
+        try:
+            size = int(fh.info().get("size", 0) or 0)
+        except Exception:
+            size = 0
+
+        # ------------------------------------------------------------------ #
+        # 1. Full-index cache (populated by unfiltered grib2io.open calls)    #
+        # ------------------------------------------------------------------ #
+        full_cache_key = hashlib.sha1((file_path + str(size)).encode("ASCII")).hexdigest()
+        full_cache_path = os.path.join(cache_root, f"{full_cache_key}.grib2ioidx")
+        if os.path.exists(full_cache_path):
+            with builtins.open(full_cache_path, "rb") as cf:
+                index = pickle.load(cf)
+            msgs = msgs_from_index(index, filehandle=fh)
+            fh.close()
+            return index, msgs
+
+        # ------------------------------------------------------------------ #
+        # 2. Filter-specific partial-index cache                              #
+        # ------------------------------------------------------------------ #
+        filter_repr = ":".join(f"{k}={v}" for k, v in sorted(self.filters.items()))
+        filtered_cache_key = hashlib.sha1((file_path + str(size) + ":" + filter_repr).encode("ASCII")).hexdigest()
+        filtered_cache_path = os.path.join(cache_root, f"{filtered_cache_key}.grib2ioidx")
+        if os.path.exists(filtered_cache_path):
+            with builtins.open(filtered_cache_path, "rb") as cf:
+                index = pickle.load(cf)
+            msgs = msgs_from_index(index, filehandle=fh)
+            fh.close()
+            return index, msgs
+
+        # ------------------------------------------------------------------ #
+        # 3. wgrib2 .idx sidecar pre-filtering                                #
+        # ------------------------------------------------------------------ #
+        idx_url = file_path + ".idx"
+        idx_fetch_ok = False
+        filtered_offsets: List[int] = []
+        try:
+            with fsspec.open(idx_url, "r", **scan_storage_options) as idxf:
+                filtered_offsets = _prefilter_idx_offsets(idxf, shortname_filter, self.filters)
+            idx_fetch_ok = True
+        except Exception:
+            pass
+
+        if idx_fetch_ok:
+            if not filtered_offsets:
+                # shortName simply does not appear in this file.
+                fh.close()
+                return {}, []
+            index = build_index(fh, offsets=filtered_offsets)
+            msgs = msgs_from_index(index, filehandle=fh)
+            fh.close()
+            # Persist the partial index so the next call is instant.
+            try:
+                os.makedirs(cache_root, exist_ok=True)
+                with builtins.open(filtered_cache_path, "wb") as cf:
+                    pickle.dump(index, cf)
+            except Exception:
+                pass
+            return index, msgs
+
+        # ------------------------------------------------------------------ #
+        # 4. Fall back: let grib2io.open build the full index (slow on first  #
+        #    call, but saves to grib2io's own cache for future calls).         #
+        # ------------------------------------------------------------------ #
+        fh.close()
+        with grib2io.open(file_path, save_index=True, use_index=True, **scan_storage_options) as f:
+            return f._index, list(f)
+
     def _scan_file(
         self,
         file_path: str,
@@ -243,13 +358,25 @@ class ReferenceGenerator:
                 msgs = list(f)
         else:
             scan_storage_options = _remote_scan_storage_options(self.storage_options)
-            # Keep local behavior side-effect free, but allow remote scans to
-            # persist the parsed index in grib2io's local cache (~/.cache/grib2io).
-            # This avoids rebuilding the index from remote headers on repeated
-            # runs when only a wgrib2 .idx is available remotely.
-            with grib2io.open(file_path, save_index=True, use_index=True, **scan_storage_options) as f:
-                index = f._index
-                msgs = list(f)
+            shortname_filter = self.filters.get("shortName") if self.filters else None
+            # Normalise list/tuple to a set so _prefilter_idx_offsets can do a
+            # fast membership test; leave scalar strings as-is.
+            if isinstance(shortname_filter, (list, tuple)):
+                shortname_filter = set(shortname_filter)
+            if shortname_filter is not None:
+                # Fast path: pre-filter by shortName using the wgrib2 .idx
+                # sidecar to avoid making ~700 range requests for non-matching
+                # messages.  Falls back to grib2io.open if no sidecar exists.
+                index, msgs = self._build_remote_index_filtered(file_path, shortname_filter, scan_storage_options)
+            else:
+                # Keep local behavior side-effect free, but allow remote scans
+                # to persist the parsed index in grib2io's local cache
+                # (~/.cache/grib2io/).  This avoids rebuilding the index from
+                # remote headers on repeated runs when only a wgrib2 .idx is
+                # available remotely.
+                with grib2io.open(file_path, save_index=True, use_index=True, **scan_storage_options) as f:
+                    index = f._index
+                    msgs = list(f)
 
         n_msgs = len(msgs)
         for i in range(n_msgs):
@@ -322,16 +449,37 @@ class ReferenceGenerator:
             all_var_messages.setdefault(group_key, []).append(entry)
 
     def _matches_filters(self, msg) -> bool:
-        """Check if a message matches all user-supplied filters."""
+        """Check if a message matches all user-supplied filters.
+
+        Filter values may be:
+
+        * **scalar** – exact equality (``{"shortName": "TMP"}``)
+        * **list / tuple / set** – membership test
+          (``{"level": [500, 850, 250]}``)
+        * **slice** – inclusive range test
+          (``{"level": slice(500, 850)}``)
+        """
         for key, value in self.filters.items():
             msg_val = getattr(msg, key, None)
             if msg_val is None:
                 return False
-            # Handle Grib2Metadata objects
+            # Unwrap Grib2Metadata wrapper objects
             if hasattr(msg_val, "value"):
                 msg_val = msg_val.value
-            if msg_val != value:
-                return False
+            if isinstance(value, slice):
+                lo = value.start if value.start is not None else float("-inf")
+                hi = value.stop if value.stop is not None else float("inf")
+                try:
+                    if not (lo <= msg_val <= hi):
+                        return False
+                except TypeError:
+                    return False
+            elif isinstance(value, (list, tuple, set)):
+                if msg_val not in value:
+                    return False
+            else:
+                if msg_val != value:
+                    return False
         return True
 
     # ------------------------------------------------------------------
@@ -509,6 +657,115 @@ def _remote_scan_storage_options(storage_options: Dict[str, Any]) -> Dict[str, A
     }
     tuned.update(storage_options)
     return tuned
+
+
+def _value_matches(val: float, filter_val: Any) -> bool:
+    """Return True if *val* satisfies the scalar / list / slice *filter_val*."""
+    if isinstance(filter_val, (list, tuple, set)):
+        return val in filter_val or val in {float(v) for v in filter_val}
+    if isinstance(filter_val, slice):
+        lo = float(filter_val.start) if filter_val.start is not None else float("-inf")
+        hi = float(filter_val.stop) if filter_val.stop is not None else float("inf")
+        return lo <= val <= hi
+    return val == filter_val or val == float(filter_val)
+
+
+# Mapping from GRIB2 Table 4.5 typeOfFirstFixedSurface to wgrib2 .idx level
+# string prefixes for single-valued surfaces (no numeric level component).
+_TOFS_FIXED_STRINGS: Dict[int, tuple] = {
+    1: ("surface", "ground or water surface"),
+    6: ("max wind",),
+    7: ("tropopause",),
+    10: ("top of atmosphere",),
+    11: ("top of atmosphere",),
+    101: ("mean sea level",),
+}
+
+
+def _idx_level_matches(level_str: str, tofs: Any, level_filter: Any) -> bool:
+    """Return True if the wgrib2 ``.idx`` level string is consistent with filters.
+
+    Conservative: returns True when the level type is unrecognised so that
+    false negatives (silently skipping a matching message) are avoided.
+
+    Recognised mappings:
+
+    * ``typeOfFirstFixedSurface=103`` (height above ground, m):
+      ``"2 m above ground"``
+    * ``typeOfFirstFixedSurface=100`` (isobaric surface, Pa):
+      ``"500 mb"`` — grib2io returns Pa so ``500 mb`` → ``level=50000``.
+      Both hPa and Pa values are tried to handle version differences.
+    * Fixed-label surfaces (1, 6, 7, 10, 11, 101): matched by keyword.
+    """
+    if tofs is None and level_filter is None:
+        return True
+
+    # Height above ground in metres (tofs = 103)
+    if tofs == 103:
+        m = re.match(r"^(\d+(?:\.\d+)?)\s+m\s+above\s+ground", level_str)
+        if not m:
+            return False
+        return level_filter is None or _value_matches(float(m.group(1)), level_filter)
+
+    # Isobaric surface in Pa (tofs = 100); wgrib2 uses hPa ("mb")
+    if tofs == 100:
+        m = re.match(r"^(\d+(?:\.\d+)?)\s+mb", level_str)
+        if not m:
+            return False
+        if level_filter is None:
+            return True
+        idx_mb = float(m.group(1))
+        # grib2io returns Pa (500 mb → 50000); accept both Pa and hPa
+        return _value_matches(idx_mb * 100, level_filter) or _value_matches(idx_mb, level_filter)
+
+    # Fixed-label surfaces with no numeric level component
+    if tofs in _TOFS_FIXED_STRINGS:
+        ls = level_str.lower()
+        return any(ls.startswith(s) for s in _TOFS_FIXED_STRINGS[tofs])
+
+    # Unknown surface type — keep conservatively
+    return True
+
+
+def _prefilter_idx_offsets(
+    filehandle,
+    shortname: Union[str, Set[str]],
+    filters: Optional[Dict[str, Any]] = None,
+) -> List[int]:
+    """Parse a wgrib2 ``.idx`` sidecar and return byte offsets matching filters.
+
+    The wgrib2 ``.idx`` line format is::
+
+        MSG_NUM:BYTE_OFFSET:d=YYYYMMDDCC:SHORTNAME:LEVEL:FORECAST:
+
+    *shortname* may be a single string or a set/list of strings.  When
+    *filters* is provided, the level string (``parts[4]``) is also checked
+    against ``typeOfFirstFixedSurface`` and ``level`` entries in *filters*,
+    which can drastically reduce the number of messages passed to
+    :func:`build_index` (e.g. from ~50 TMP pressure levels to 1 for T2M).
+
+    Returns an empty list if the sidecar cannot be parsed or contains no
+    matching messages.
+    """
+    names: Set[str] = {shortname} if isinstance(shortname, str) else set(shortname)
+    tofs = filters.get("typeOfFirstFixedSurface") if filters else None
+    level_filter = filters.get("level") if filters else None
+    offsets: List[int] = []
+    for line in filehandle:
+        if isinstance(line, bytes):
+            line = line.decode("utf-8", errors="replace")
+        parts = line.split(":")
+        if len(parts) >= 5 and parts[3] in names:
+            # Level-string pre-filter: skip if we can definitively rule out a
+            # match from the .idx level description (e.g. "500 mb" vs "2 m
+            # above ground").  Conservative: unknown formats are kept.
+            if not _idx_level_matches(parts[4], tofs, level_filter):
+                continue
+            try:
+                offsets.append(int(parts[1]))
+            except ValueError:
+                continue
+    return offsets
 
 
 def _build_chunk_key(var_name: str, dim_indices: List[int]) -> str:

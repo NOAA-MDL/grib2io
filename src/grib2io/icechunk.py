@@ -1026,6 +1026,7 @@ def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
 def open_grib2(
     url: str,
     storage_options: dict | None = None,
+    filters: dict | None = None,
     store_path: str | None = None,
     **xr_kwargs,
 ):
@@ -1042,6 +1043,12 @@ def open_grib2(
     Cloud credentials are resolved automatically from the URI prefix.  For
     anonymous public S3 buckets, pass ``storage_options={"anon": True}``.
 
+    For remote files, grib2io automatically uses a ``.idx`` sidecar file
+    (e.g. ``url + ".idx"``) when available to skip streaming the large data
+    payloads and read only message header bytes.  Combining this with
+    ``filters`` to restrict which GRIB2 messages are indexed makes manifest
+    generation near-instant even for multi-gigabyte files.
+
     Parameters
     ----------
     url:
@@ -1052,6 +1059,15 @@ def open_grib2(
         fsspec storage options forwarded to
         :class:`~grib2io.kerchunk.ReferenceGenerator`, e.g.
         ``{"anon": True}`` for public S3 buckets.
+    filters:
+        Optional dict of ``Grib2Message`` attribute filters passed to
+        :class:`~grib2io.kerchunk.ReferenceGenerator`.  Only messages
+        matching all key/value pairs are included in the manifest.  Use this
+        to restrict the dataset to specific variables and dramatically reduce
+        manifest-generation time for large files.  For example, to extract
+        only 2-metre temperature::
+
+            filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2}
     store_path:
         Filesystem path for the Icechunk repository.  A temporary directory is
         created and used when omitted.
@@ -1073,12 +1089,20 @@ def open_grib2(
     ... )
     >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
 
+    Filter to a single variable (much faster for large files):
+
+    >>> ds = open_grib2(
+    ...     "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000",
+    ...     storage_options={"anon": True},
+    ...     filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2},
+    ... )
+
     Local file:
 
     >>> ds = open_grib2("/data/gfs.t00z.pgrb2.1p00.f024")
     """
     from grib2io.kerchunk import ReferenceGenerator
 
-    gen = ReferenceGenerator(url, storage_options=storage_options or {})
+    gen = ReferenceGenerator(url, filters=filters, storage_options=storage_options or {})
     manifest = gen.generate()
     return open_dataset(manifest, store_path=store_path, **xr_kwargs)
