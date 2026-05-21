@@ -165,7 +165,7 @@ class TestKerchunkParquetOutput:
         parq_files = []
         for root, dirs, files in os.walk(out):
             parq_files.extend([f for f in files if f.endswith(".parq")])
-        assert len(parq_files) > 0, f"No .parq files found. Contents: {contents}"
+        assert len(parq_files) > 0, "No .parq files found"
 
 
 # ===========================================================================

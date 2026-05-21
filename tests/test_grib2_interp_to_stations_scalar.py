@@ -5,6 +5,7 @@ try:
     import grib2io.iplib as iplib
 except ImportError:
     import pytest
+
     pytest.skip("NCEPLIBS-ip not found", allow_module_level=True)
 
 # Test stations
