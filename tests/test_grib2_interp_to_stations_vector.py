@@ -1,6 +1,12 @@
 import numpy as np
 import grib2io
 
+try:
+    import grib2io.iplib as iplib
+except ImportError:
+    import pytest
+    pytest.skip("NCEPLIBS-ip not found", allow_module_level=True)
+
 np.set_printoptions(formatter={"float": "{: 0.5f}".format})
 
 # Test stations

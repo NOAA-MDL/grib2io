@@ -103,9 +103,9 @@ class ReferenceGenerator:
         else:
             file_paths = [str(p) for p in file_paths]
 
-        # Validate file accessibility (for local files)
+        # Validate file accessibility
         for fp in file_paths:
-            if "://" not in fp and not os.path.isfile(fp):
+            if not os.path.isfile(fp):
                 raise FileNotFoundError(f"GRIB2 file not found: {fp}")
 
         self.file_paths = file_paths
@@ -194,9 +194,7 @@ class ReferenceGenerator:
         all_var_messages: Dict[str, list],
     ) -> None:
         """Scan a single GRIB2 file and collect message entries."""
-        # Enable use_index=True to leverage sidecar index files (.grib2ioidx)
-        # for efficient scanning, especially on remote storage like S3.
-        with grib2io.open(file_path, save_index=False, use_index=True) as f:
+        with grib2io.open(file_path, save_index=False, use_index=False) as f:
             index = f._index
             msgs = list(f)
 
@@ -414,9 +412,7 @@ class _MsgEntry:
 
 
 def _file_uri(file_path: str) -> str:
-    """Convert a file path to a URI. Handles local paths and remote URLs."""
-    if "://" in file_path:
-        return file_path
+    """Convert a local file path to a ``file://`` URI."""
     abs_path = os.path.abspath(file_path)
     return f"file://{abs_path}"
 

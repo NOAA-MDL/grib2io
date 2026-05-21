@@ -281,6 +281,7 @@ def test_multi_lead(request):
 def test_interp(request):
     try:
         from grib2io._grib2io import Grib2GridDef
+        import grib2io.iplib as iplib  # noqa: F401
 
         gdtn_nbm = 30
         gdt_nbm = [
@@ -320,6 +321,7 @@ def test_interp(request):
 def test_interp_with_openmp_threads(request):
     try:
         from grib2io._grib2io import Grib2GridDef
+        import grib2io.iplib as iplib  # noqa: F401
 
         gdtn_nbm = 30
         gdt_nbm = [

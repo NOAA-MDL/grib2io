@@ -249,10 +249,11 @@ class TestParquetSerialization:
 
             assert os.path.isdir(parquet_path), f"Parquet output directory not created at {parquet_path}"
 
-            # Should contain at least one .parq file
-            contents = os.listdir(parquet_path)
-            parq_files = [f for f in contents if f.endswith(".parq")]
-            assert len(parq_files) > 0, f"No .parq files found in {parquet_path}. Contents: {contents}"
+            # Should contain at least one .parq file (possibly in subdirectories)
+            parq_files = []
+            for root, dirs, files in os.walk(parquet_path):
+                parq_files.extend([f for f in files if f.endswith(".parq")])
+            assert len(parq_files) > 0, f"No .parq files found in {parquet_path}"
 
     def test_parquet_output_structure(self, gfs_jpeg_path):
         """Parquet output directory has expected structure."""
