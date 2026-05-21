@@ -387,9 +387,13 @@ class IcechunkWriter:
             container_store = self._make_container_store(prefix)
             config.set_virtual_chunk_container(icechunk.virtual.VirtualChunkContainer(prefix, container_store))
 
-        # Build authorize_virtual_chunk_access mapping
-        # Use None for credentials (will use environment or anonymous)
-        authorize = {prefix: None for prefix in virtual_prefixes}
+        # Build authorize_virtual_chunk_access mapping with appropriate credentials.
+        # icechunk.containers_credentials() validates and returns the {prefix: cred} dict
+        # in the format expected by Repository.open_or_create/open.
+        # None values (local file:// prefixes) are valid — they authorize local access
+        # without credentials. Do NOT filter them out.
+        raw_authorize = {prefix: self._make_credentials_for_prefix(prefix) for prefix in virtual_prefixes}
+        authorize = icechunk.containers_credentials(raw_authorize) if raw_authorize else None
 
         if mode == "w":
             self._repo = icechunk.Repository.open_or_create(
@@ -406,6 +410,29 @@ class IcechunkWriter:
             )
 
         self._session = self._repo.writable_session("main")
+
+    def _make_credentials_for_prefix(self, prefix: str):
+        """Return appropriate Icechunk credentials for a virtual chunk URI prefix.
+
+        Parameters
+        ----------
+        prefix : str
+            URI prefix like ``s3://bucket/prefix/``, ``file:///path/``, etc.
+
+        Returns
+        -------
+        Credentials or ``None``
+            Anonymous credentials for public S3/GCS; ``None`` for local files.
+        """
+        import icechunk  # local import — only used inside the class
+
+        if prefix.startswith("s3://"):
+            return icechunk.s3_anonymous_credentials()
+        elif prefix.startswith("gs://") or prefix.startswith("gcs://"):
+            return icechunk.gcs_credentials(anon=True)
+        else:
+            # Local filesystem or other — no credentials needed
+            return None
 
     def _make_container_store(self, prefix: str):
         """Create an appropriate Icechunk storage backend for a virtual
@@ -559,8 +586,11 @@ class IcechunkWriter:
             if var_name in data_var_names:
                 # Data variable — use Grib2SerializerCodec so zarr v3 can
                 # decode the raw GRIB2 section 7 bytes from virtual chunks.
-                compressor = v2_zarray.get("compressor", {}) or {}
-                codec_cfg = {k: v for k, v in compressor.items() if k != "id"}
+                # The manifest stores the codec config in filters[0]
+                # (compressor is null); fall back to compressor for older manifests.
+                filters_list = v2_zarray.get("filters", []) or []
+                codec_src = filters_list[0] if filters_list else (v2_zarray.get("compressor") or {})
+                codec_cfg = {k: v for k, v in codec_src.items() if k != "id"}
                 serializer = _Grib2Ser(**codec_cfg)
                 root.create_array(
                     var_name,
@@ -914,3 +944,141 @@ class IcechunkWriter:
             raise RuntimeError("No active session. Call write() before commit().")
         snapshot_id = self._session.commit(message)
         return str(snapshot_id)
+
+    def get_readonly_session(self):
+        """Return a read-only Icechunk session for data access after committing.
+
+        Uses the same repository object (and therefore the same virtual chunk
+        credentials) that were set up during :meth:`write`.  Call this after
+        :meth:`commit` to open the store with ``xarray.open_zarr``.
+
+        Returns
+        -------
+        icechunk.Session
+            A read-only session on the ``"main"`` branch.
+
+        Raises
+        ------
+        RuntimeError
+            If :meth:`write` has not been called yet.
+
+        Example
+        -------
+        >>> session = writer.get_readonly_session()
+        >>> ds = xr.open_zarr(session.store, consolidated=False)
+        """
+        if self._repo is None:
+            raise RuntimeError("No repository open. Call write() before get_readonly_session().")
+        return self._repo.readonly_session("main")
+
+
+def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
+    """Open a grib2io kerchunk manifest as an :class:`xarray.Dataset`.
+
+    Writes the manifest into a temporary (or caller-supplied) Icechunk virtual
+    store and immediately opens it with :func:`xarray.open_zarr`.  Works for
+    manifests whose chunk data lives locally **or** on remote object stores
+    (S3, GCS, …) — credentials are resolved automatically from the virtual
+    chunk URI prefixes embedded in the manifest.
+
+    Parameters
+    ----------
+    manifest:
+        A kerchunk v1 reference manifest dict, as produced by
+        :meth:`grib2io.kerchunk.ReferenceGenerator.generate`.
+    store_path:
+        Filesystem path for the Icechunk repository.  A temporary directory is
+        created and used when omitted (suitable for ephemeral/notebook use).
+    **xr_kwargs:
+        Additional keyword arguments forwarded to :func:`xarray.open_zarr`
+        (e.g. ``chunks={}`` to enable Dask lazy loading).
+
+    Returns
+    -------
+    xarray.Dataset
+
+    Examples
+    --------
+    Remote S3 data (anonymous access resolved automatically):
+
+    >>> from grib2io.icechunk import open_dataset
+    >>> ds = open_dataset(manifest)
+    >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
+
+    Local data with a persistent store:
+
+    >>> ds = open_dataset(manifest, store_path="/tmp/my_grib2_store")
+    """
+    import tempfile
+    import xarray as xr
+
+    if store_path is None:
+        store_path = tempfile.mkdtemp(prefix="grib2io_icechunk_")
+
+    writer = IcechunkWriter(store_path)
+    writer.write(manifest)
+    writer.commit("grib2io kerchunk manifest")
+    session = writer.get_readonly_session()
+    xr_kwargs.setdefault("consolidated", False)
+    return xr.open_zarr(session.store, **xr_kwargs)
+
+
+def open_grib2(
+    url: str,
+    storage_options: dict | None = None,
+    store_path: str | None = None,
+    **xr_kwargs,
+):
+    """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
+
+    One-call interface that combines manifest generation and dataset opening:
+
+    1. Builds a kerchunk reference manifest from *url* (local path or remote
+       object-store URI) using :class:`~grib2io.kerchunk.ReferenceGenerator`.
+    2. Passes the manifest to :func:`open_dataset`, which writes it into a
+       temporary Icechunk virtual store and opens it with
+       :func:`xarray.open_zarr`.
+
+    Cloud credentials are resolved automatically from the URI prefix.  For
+    anonymous public S3 buckets, pass ``storage_options={"anon": True}``.
+
+    Parameters
+    ----------
+    url:
+        Path or URI to a GRIB2 file, e.g.
+        ``"s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000"``
+        or a local path like ``"/data/gfs.t00z.pgrb2.1p00.f024"``.
+    storage_options:
+        fsspec storage options forwarded to
+        :class:`~grib2io.kerchunk.ReferenceGenerator`, e.g.
+        ``{"anon": True}`` for public S3 buckets.
+    store_path:
+        Filesystem path for the Icechunk repository.  A temporary directory is
+        created and used when omitted.
+    **xr_kwargs:
+        Additional keyword arguments forwarded to :func:`xarray.open_zarr`.
+
+    Returns
+    -------
+    xarray.Dataset
+
+    Examples
+    --------
+    Public S3 bucket (anonymous access):
+
+    >>> from grib2io.icechunk import open_grib2
+    >>> ds = open_grib2(
+    ...     "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000",
+    ...     storage_options={"anon": True},
+    ... )
+    >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
+
+    Local file:
+
+    >>> ds = open_grib2("/data/gfs.t00z.pgrb2.1p00.f024")
+    """
+    from grib2io.kerchunk import ReferenceGenerator
+
+    gen = ReferenceGenerator(url, storage_options=storage_options or {})
+    manifest = gen.generate()
+    return open_dataset(manifest, store_path=store_path, **xr_kwargs)

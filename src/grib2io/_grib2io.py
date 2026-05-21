@@ -273,7 +273,7 @@ class open:
             if is_remote:
                 import fsspec
 
-                self._filehandle = fsspec.open(filename, mode=mode).open()
+                self._filehandle = fsspec.open(filename, mode=mode, **kwargs).open()
                 self.name = filename
                 try:
                     self.size = self._filehandle.info().get("size", 0)
@@ -304,13 +304,29 @@ class open:
                 index_paths = [f"{self.name}_{self._fileid}.grib2ioidx", f"{self.name}.grib2ioidx"]
                 idx_paths = [f"{self.name}.idx"]
                 idx_loaded = False
+                remote_index_cache_path = None
+                if is_remote:
+                    cache_root = os.path.join(os.path.expanduser("~"), ".cache", "grib2io")
+                    cache_key = hashlib.sha1((self.name + str(self.size)).encode("ASCII")).hexdigest()
+                    remote_index_cache_path = os.path.join(cache_root, f"{cache_key}.grib2ioidx")
                 if self.use_index:
+                    if is_remote and remote_index_cache_path and os.path.exists(remote_index_cache_path):
+                        try:
+                            with builtins.open(remote_index_cache_path, "rb") as f:
+                                self._index = pickle.load(f)
+                            self.indexfile = remote_index_cache_path
+                            idx_loaded = True
+                            self._hasindex = True
+                        except Exception:
+                            idx_loaded = False
                     for idx_path in index_paths:
+                        if idx_loaded:
+                            break
                         try:
                             if is_remote:
                                 import fsspec
 
-                                with fsspec.open(idx_path, "rb") as f:
+                                with fsspec.open(idx_path, "rb", **kwargs) as f:
                                     self._index = pickle.load(f)
                             else:
                                 if os.path.exists(idx_path):
@@ -330,7 +346,7 @@ class open:
                                 if is_remote:
                                     import fsspec
 
-                                    with fsspec.open(idx_path, "r") as f:
+                                    with fsspec.open(idx_path, "r", **kwargs) as f:
                                         offsets = _parse_wgrib2_idx(f)
                                 else:
                                     if os.path.exists(idx_path):
@@ -346,15 +362,25 @@ class open:
                                     break
                             except Exception:
                                 continue
+                    if is_remote and idx_loaded and self.save_index and remote_index_cache_path:
+                        if self.indexfile != remote_index_cache_path:
+                            try:
+                                os.makedirs(os.path.dirname(remote_index_cache_path), exist_ok=True)
+                                serialize_index(self._index, remote_index_cache_path)
+                            except Exception:
+                                pass
                 if not idx_loaded:
                     self._index = build_index(self._filehandle)
                     self.indexfile = index_paths[0]
-                    if self.save_index and not is_remote:
+                    if self.save_index:
                         try:
-                            serialize_index(self._index, self.indexfile)
+                            if is_remote and remote_index_cache_path:
+                                os.makedirs(os.path.dirname(remote_index_cache_path), exist_ok=True)
+                                serialize_index(self._index, remote_index_cache_path)
+                                self.indexfile = remote_index_cache_path
+                            else:
+                                serialize_index(self._index, self.indexfile)
                         except Exception as e:
-                            import warnings
-
                             warnings.warn(f"index was not serialized for future use: {e}")
                 self._msgs = msgs_from_index(self._index, filehandle=self._filehandle)
                 self.messages = len(self._msgs)

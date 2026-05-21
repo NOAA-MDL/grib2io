@@ -14,6 +14,7 @@ import os
 import sys
 import tempfile
 
+import numpy as np
 import pytest
 
 pytestmark = pytest.mark.skipif(
@@ -33,6 +34,14 @@ SMALL_TEST_FILES = [
     "gfs.jpeg.grib2",
     "gfs.complex.grib2",
 ]
+
+
+def test_file_uri_preserves_remote_uri():
+    """URI inputs should be preserved for streaming backends."""
+    from grib2io.kerchunk import _file_uri
+
+    s3_uri = "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000"
+    assert _file_uri(s3_uri) == s3_uri
 
 
 # ---------------------------------------------------------------------------
@@ -344,3 +353,103 @@ class TestErrorHandling:
         result = gen.generate()
         assert gen.manifest is result
         assert gen.manifest["version"] == 1
+
+
+def test_remote_scan_enables_index_cache(monkeypatch):
+    """Remote scans should allow grib2io to persist/reuse parsed indices."""
+
+    class _Meta:
+        def __init__(self, value):
+            self.value = value
+
+    class _Msg:
+        shortName = "TMP"
+        typeOfFirstFixedSurface = _Meta(103)
+        productDefinitionTemplateNumber = _Meta(0)
+        typeOfSecondFixedSurface = _Meta(255)
+
+    class _FakeOpen:
+        def __init__(self):
+            self._index = {
+                "sectionOffset": [{6: None, 7: 1234}],
+                "sectionSize": [{6: 0, 7: 567}],
+                "bmapflag": [255],
+                "section3": [np.array([0, 0, 0, 0, 0, 0], dtype=np.int64)],
+                "section5": [np.array([0, 0, 0], dtype=np.int64)],
+            }
+            self._msgs = [_Msg()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def __iter__(self):
+            return iter(self._msgs)
+
+    captured = {}
+
+    def _fake_open(path, **kwargs):
+        captured["path"] = path
+        captured["kwargs"] = kwargs
+        return _FakeOpen()
+
+    monkeypatch.setattr("grib2io.open", _fake_open)
+
+    gen = ReferenceGenerator("s3://example-bucket/sample.grib2", storage_options={"anon": True})
+    gen._scan_file("s3://example-bucket/sample.grib2", "s3://example-bucket/sample.grib2", {})
+
+    assert captured["path"] == "s3://example-bucket/sample.grib2"
+    assert captured["kwargs"]["save_index"] is True
+    assert captured["kwargs"]["use_index"] is True
+
+
+def test_local_scan_keeps_save_index_disabled(monkeypatch, gfs_jpeg_path):
+    """Local scans should not create sidecar index files from ReferenceGenerator."""
+
+    class _Meta:
+        def __init__(self, value):
+            self.value = value
+
+    class _Msg:
+        shortName = "TMP"
+        typeOfFirstFixedSurface = _Meta(103)
+        productDefinitionTemplateNumber = _Meta(0)
+        typeOfSecondFixedSurface = _Meta(255)
+
+    class _FakeOpen:
+        def __init__(self):
+            self._index = {
+                "sectionOffset": [{6: None, 7: 1234}],
+                "sectionSize": [{6: 0, 7: 567}],
+                "bmapflag": [255],
+                "section3": [np.array([0, 0, 0, 0, 0, 0], dtype=np.int64)],
+                "section5": [np.array([0, 0, 0], dtype=np.int64)],
+            }
+            self._msgs = [_Msg()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def __iter__(self):
+            return iter(self._msgs)
+
+    captured = {}
+
+    def _fake_open(path, **kwargs):
+        captured["path"] = path
+        captured["kwargs"] = kwargs
+        return _FakeOpen()
+
+    monkeypatch.setattr("grib2io.open", _fake_open)
+
+    gen = ReferenceGenerator([gfs_jpeg_path])
+    gen._scan_file(gfs_jpeg_path, gfs_jpeg_path, {})
+
+    assert captured["path"] == gfs_jpeg_path
+    assert captured["kwargs"]["save_index"] is False
+    assert captured["kwargs"]["use_index"] is True

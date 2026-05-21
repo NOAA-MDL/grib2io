@@ -56,6 +56,10 @@ icechunk = ["icechunk"]
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
 
+[project.entry-points."zarr.codecs"]
+grib2io = "grib2io.codecs:Grib2SerializerCodec"
+"numcodecs.grib2io" = "grib2io.codecs:Grib2SerializerCodec"
+
 [project.scripts]
 grib2io = "grib2io.cli.main:main"
 

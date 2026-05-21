@@ -64,6 +64,14 @@ g2c_version = __g2clib_version__
 
 _LAZY_MODULES = {"codecs", "kerchunk", "icechunk"}
 
+# Eagerly import codecs so zarr v3 and numcodecs codec registrations fire
+# on `import grib2io`, enabling VirtualiZarr and kerchunk to work out of
+# the box without requiring `import grib2io.codecs` separately.
+try:
+    from . import codecs as _codecs_module  # noqa: F401
+except ImportError:
+    pass  # zarr/numcodecs not installed; codec registration deferred
+
 
 def __getattr__(name: str):
     if name in _LAZY_MODULES:
