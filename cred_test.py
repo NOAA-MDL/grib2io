@@ -1,4 +1,6 @@
-import icechunk, inspect
+import icechunk
+import inspect
+
 print("s3_anonymous:", type(icechunk.s3_anonymous_credentials()))
 try:
     c = icechunk.Credentials(s3=icechunk.s3_anonymous_credentials())

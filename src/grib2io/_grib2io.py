@@ -761,7 +761,6 @@ class Grib2Message:
         *args,
         **kwargs,
     ):
-
         if np.all(section1 == 0):
             try:
                 # Python >= 3.10
@@ -2457,7 +2456,6 @@ def _parse_wgrib2_idx(filehandle):
 
 
 def build_index(filehandle, offsets=None):
-
     index = dict()
     index["section0"] = []
     index["section1"] = []
@@ -2522,7 +2520,6 @@ def build_index(filehandle, offsets=None):
 
 
 def _process_message(filehandle, index, pos, header, messages):
-
     _secpos = dict.fromkeys(range(8))
     _secsize = dict.fromkeys(range(8))
     _secpos[0] = pos

@@ -825,10 +825,7 @@ def _map_messages_to_dimensions(
     msg_index_map: Dict[tuple, int] = {}
     for idx, entry in enumerate(msg_entries):
         msg = entry.msg
-        dim_tuple = tuple(
-            _get_dim_value(msg, "level" if d == level_dim_name else d)
-            for d in active_dims
-        )
+        dim_tuple = tuple(_get_dim_value(msg, "level" if d == level_dim_name else d) for d in active_dims)
         msg_index_map[dim_tuple] = idx
 
     return {
