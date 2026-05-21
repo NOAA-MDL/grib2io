@@ -545,7 +545,7 @@ class IcechunkWriter:
             v2_zattrs = json.loads(zattrs_str) if zattrs_str else {}
 
             shape = v2_zarray["shape"]
-            chunks = v2_zarray.get("chunks", shape)
+            chunks = [max(1, c) for c in v2_zarray.get("chunks", shape)]
             dtype_str = v2_zarray.get("dtype", "<f4")
             fill_value = v2_zarray.get("fill_value", None)
             dim_names = v2_zattrs.get("_ARRAY_DIMENSIONS", [])

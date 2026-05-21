@@ -8,6 +8,7 @@ jobs:
     name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CC: ${{ matrix.compiler }}
     strategy:
       matrix:

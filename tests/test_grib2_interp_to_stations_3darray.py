@@ -1,6 +1,13 @@
 import numpy as np
 import grib2io
 
+try:
+    import grib2io.iplib as iplib
+except ImportError:
+    import pytest
+
+    pytest.skip("NCEPLIBS-ip not found", allow_module_level=True)
+
 # Output grid (NBM 2.5km CONUS Grid)
 gdtn_out = 30
 gdt_out = np.array(

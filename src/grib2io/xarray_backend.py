@@ -619,7 +619,7 @@ def _is_kerchunk_reference(filename_or_obj) -> bool:
     # Parquet reference detection
     if os.path.isdir(path):
         has_zmetadata = os.path.isfile(os.path.join(path, ".zmetadata"))
-        has_parq = bool(glob.glob(os.path.join(path, "refs.*.parq")))
+        has_parq = bool(glob.glob(os.path.join(path, "**/refs.*.parq"), recursive=True))
         return has_zmetadata and has_parq
 
     return False
@@ -627,29 +627,29 @@ def _is_kerchunk_reference(filename_or_obj) -> bool:
 
 def _is_icechunk_store(filename_or_obj) -> bool:
     """Detect whether *filename_or_obj* is an Icechunk store."""
-    # Check for IcechunkStore instance (without importing icechunk at top level)
+    # Check for IcechunkStore instance
     type_name = type(filename_or_obj).__name__
     type_module = type(filename_or_obj).__module__ or ""
-    if type_name == "IcechunkStore" and "icechunk" in type_module:
+    if "IcechunkStore" in type_name and "icechunk" in type_module:
         return True
 
-    # Check for Icechunk URI schemes
-    if isinstance(filename_or_obj, str):
-        icechunk_schemes = (
-            "icechunk://",
-            "icechunk+s3://",
-            "icechunk+file://",
-            "icechunk+gcs://",
-        )
-        return filename_or_obj.startswith(icechunk_schemes)
-
+    if isinstance(filename_or_obj, (str, os.PathLike)):
+        path = str(filename_or_obj)
+        icechunk_schemes = ("icechunk://", "icechunk+s3://", "icechunk+file://", "icechunk+gcs://")
+        if path.startswith(icechunk_schemes):
+            return True
+        if os.path.isdir(path):
+            # Check for Icechunk v2 directory indicators
+            if os.path.exists(os.path.join(path, "repo")) and os.path.exists(os.path.join(path, "snapshots")):
+                return True
     return False
 
 
-def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
+def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, chunks=None, **kwargs) -> xr.Dataset:
     """Open a Kerchunk reference file as an xarray Dataset."""
     _ensure_kerchunk()
     import fsspec
+    import grib2io.codecs  # noqa: F401
 
     fs = fsspec.filesystem("reference", fo=str(filename_or_obj))
     mapper = fs.get_mapper("")
@@ -659,6 +659,8 @@ def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, 
         open_kwargs["chunks"] = chunks
     if drop_variables is not None:
         open_kwargs["drop_variables"] = drop_variables
+
+    open_kwargs.update(kwargs)
 
     ds = xr.open_zarr(mapper, **open_kwargs)
 
@@ -672,30 +674,42 @@ def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, 
     return ds
 
 
-def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
+def _open_from_icechunk(
+    filename_or_obj,
+    data_model=None,
+    drop_variables=None,
+    chunks=None,
+    branch="main",
+    **kwargs,
+) -> xr.Dataset:
     """Open an Icechunk store as an xarray Dataset."""
     _ensure_icechunk()
     import icechunk
+    import grib2io.codecs  # noqa: F401
 
-    if isinstance(filename_or_obj, icechunk.IcechunkStore):
+    if hasattr(filename_or_obj, "get") and hasattr(filename_or_obj, "set"):
+        # Assume it's already a store-like object
         store = filename_or_obj
     else:
         uri = str(filename_or_obj)
         if uri.startswith("icechunk+s3://"):
-            storage = icechunk.s3_storage(uri.replace("icechunk+s3://", "s3://"))
+            storage = icechunk.storage.s3_storage(uri.replace("icechunk+s3://", "s3://"))
         elif uri.startswith("icechunk+gcs://"):
-            storage = icechunk.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
+            storage = icechunk.storage.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
         elif uri.startswith("icechunk+file://"):
             local_path = uri.replace("icechunk+file://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
+            storage = icechunk.storage.local_filesystem_storage(path=local_path)
         elif uri.startswith("icechunk://"):
             local_path = uri.replace("icechunk://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
+            storage = icechunk.storage.local_filesystem_storage(path=local_path)
+        elif "://" in uri:
+            # Fallback for other URI schemes
+            storage = icechunk.storage.local_filesystem_storage(path=uri)
         else:
-            storage = icechunk.local_filesystem_storage(path=uri)
+            storage = icechunk.storage.local_filesystem_storage(path=uri)
 
         repo = icechunk.Repository.open(storage)
-        session = repo.readonly_session("main")
+        session = repo.readonly_session(branch)
         store = session.store
 
     open_kwargs = {"consolidated": False}
@@ -703,6 +717,8 @@ def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, c
         open_kwargs["chunks"] = chunks
     if drop_variables is not None:
         open_kwargs["drop_variables"] = drop_variables
+
+    open_kwargs.update(kwargs)
 
     ds = xr.open_zarr(store, **open_kwargs)
 
@@ -734,6 +750,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         filters=None,
         data_model=None,
         chunks=None,
+        branch="main",
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
@@ -778,6 +795,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
                 data_model=data_model,
                 drop_variables=drop_variables,
                 chunks=chunks,
+                branch=branch,
             )
 
         with grib2io.open(filename_or_obj, save_index=save_index, _xarray_backend=True) as f:

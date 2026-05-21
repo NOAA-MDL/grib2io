@@ -8,6 +8,7 @@ jobs:
     name: py${{ matrix.python-version }}_cc=${{ matrix.ccompiler }}_static=${{ matrix.staticlib }}
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CC: ${{ matrix.ccompiler }}
     strategy:
       matrix:

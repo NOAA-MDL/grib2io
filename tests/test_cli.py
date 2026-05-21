@@ -162,9 +162,10 @@ class TestKerchunkParquetOutput:
 
         assert os.path.isdir(out), f"Parquet output directory not created at {out}"
 
-        contents = os.listdir(out)
-        parq_files = [f for f in contents if f.endswith(".parq")]
-        assert len(parq_files) > 0, f"No .parq files found. Contents: {contents}"
+        parq_files = []
+        for root, dirs, files in os.walk(out):
+            parq_files.extend([f for f in files if f.endswith(".parq")])
+        assert len(parq_files) > 0, "No .parq files found"
 
 
 # ===========================================================================
