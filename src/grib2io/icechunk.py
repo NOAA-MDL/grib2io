@@ -1114,7 +1114,9 @@ def open_grib2(
     from grib2io.kerchunk import ReferenceGenerator
 
     gen = ReferenceGenerator(
-        url, filters=filters, storage_options=storage_options or {},
+        url,
+        filters=filters,
+        storage_options=storage_options or {},
         max_workers=max_workers,
     )
     manifest = gen.generate()

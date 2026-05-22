@@ -174,11 +174,7 @@ class ReferenceGenerator:
         all_var_messages: Dict[tuple, list] = {}
 
         n_files = len(self.file_paths)
-        use_parallel = (
-            self.max_workers != 1
-            and n_files > 1
-            and not _is_local_path(self.file_paths[0])
-        )
+        use_parallel = self.max_workers != 1 and n_files > 1 and not _is_local_path(self.file_paths[0])
 
         if use_parallel:
             import concurrent.futures
@@ -192,9 +188,7 @@ class ReferenceGenerator:
                 return local_msgs
 
             with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-                futures = {
-                    pool.submit(_scan_one, fp): fp for fp in self.file_paths
-                }
+                futures = {pool.submit(_scan_one, fp): fp for fp in self.file_paths}
                 for future in concurrent.futures.as_completed(futures):
                     fp = futures[future]
                     try:
@@ -1213,16 +1207,24 @@ def _build_latlon_coord_refs(msg, refs: Dict[str, Any]) -> None:
     ny, nx = int(msg.ny), int(msg.nx)
 
     for name, data, attrs in [
-        ("latitude", lats.astype(np.float64), {
-            "_ARRAY_DIMENSIONS": ["y", "x"],
-            "standard_name": "latitude",
-            "units": "degrees_north",
-        }),
-        ("longitude", lons.astype(np.float64), {
-            "_ARRAY_DIMENSIONS": ["y", "x"],
-            "standard_name": "longitude",
-            "units": "degrees_east",
-        }),
+        (
+            "latitude",
+            lats.astype(np.float64),
+            {
+                "_ARRAY_DIMENSIONS": ["y", "x"],
+                "standard_name": "latitude",
+                "units": "degrees_north",
+            },
+        ),
+        (
+            "longitude",
+            lons.astype(np.float64),
+            {
+                "_ARRAY_DIMENSIONS": ["y", "x"],
+                "standard_name": "longitude",
+                "units": "degrees_east",
+            },
+        ),
     ]:
         # Skip if already present (e.g. from a prior variable group)
         if f"{name}/.zarray" in refs:

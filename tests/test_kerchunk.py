@@ -669,11 +669,7 @@ def test_prefilter_idx_offsets_filters_none_keeps_all_shortname():
 
     from grib2io.kerchunk import _prefilter_idx_offsets
 
-    idx_content = (
-        "1:0:d=2024040100:TMP:1000 mb:anl:\n"
-        "2:27027584:d=2024040100:TMP:500 mb:anl:\n"
-        "3:54055168:d=2024040100:TMP:2 m above ground:anl:\n"
-    )
+    idx_content = "1:0:d=2024040100:TMP:1000 mb:anl:\n2:27027584:d=2024040100:TMP:500 mb:anl:\n3:54055168:d=2024040100:TMP:2 m above ground:anl:\n"
     offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP", filters=None)
     assert offsets == [0, 27027584, 54055168]
 
