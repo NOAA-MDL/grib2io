@@ -258,9 +258,16 @@ class ReferenceGenerator:
         _ensure_kerchunk()
         if self._manifest is None:
             self.generate()
-        from kerchunk.df import refs_to_dataframe
 
-        refs_to_dataframe(self._manifest, output_path)
+        import fsspec
+        from fsspec.implementations.reference import LazyReferenceMapper
+
+        fs, _ = fsspec.core.url_to_fs(output_path)
+        out = LazyReferenceMapper.create(output_path, fs=fs, record_size=100_000, engine="pyarrow")
+        refs = self._manifest.get("refs", self._manifest)
+        for k in sorted(refs):
+            out[k] = refs[k]
+        out.flush()
 
     # ------------------------------------------------------------------
     # Internal scanning

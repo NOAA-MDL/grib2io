@@ -117,9 +117,13 @@ class TestKerchunkPipeline:
             for zk in zarray_keys:
                 candidate = zk.rsplit("/.zarray", 1)[0]
                 zarray_meta = json.loads(mapper[zk])
-                # Data variables have a compressor with id "grib2io"
+                # Data variables have a grib2io codec in compressor or filters
                 compressor = zarray_meta.get("compressor")
+                filters = zarray_meta.get("filters") or []
                 if compressor and compressor.get("id") == "grib2io":
+                    var_name = candidate
+                    break
+                if any(f.get("id") == "grib2io" for f in filters if isinstance(f, dict)):
                     var_name = candidate
                     break
 
@@ -194,7 +198,11 @@ class TestKerchunkPipeline:
             if key.endswith("/.zarray"):
                 candidate = key.rsplit("/.zarray", 1)[0]
                 zarray = json.loads(refs[key])
-                if zarray.get("compressor") and zarray["compressor"].get("id") == "grib2io":
+                compressor = zarray.get("compressor")
+                filters = zarray.get("filters") or []
+                if compressor and compressor.get("id") == "grib2io":
+                    manifest_vars.add(candidate)
+                elif any(f.get("id") == "grib2io" for f in filters if isinstance(f, dict)):
                     manifest_vars.add(candidate)
 
         # Get variable names from direct grib2io read

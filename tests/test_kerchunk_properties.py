@@ -91,7 +91,7 @@ _AVAILABLE_BITMAP_FILES = [f for f in BITMAP_FILES if os.path.isfile(os.path.joi
 _AVAILABLE_MULTI_FILE_GROUPS = [g for g in MULTI_FILE_GROUPS if all(os.path.isfile(os.path.join(INPUT_DATA, f)) for f in g)]
 
 # Required fields in .zarray metadata
-ZARRAY_REQUIRED_FIELDS = {"chunks", "dtype", "fill_value", "shape", "compressor", "order"}
+ZARRAY_REQUIRED_FIELDS = {"chunks", "dtype", "fill_value", "shape", "compressor", "filters", "order"}
 
 # Required fields in .zattrs metadata
 ZATTRS_REQUIRED_FIELDS = {
@@ -101,8 +101,8 @@ ZATTRS_REQUIRED_FIELDS = {
     "parameterNumber",
     "typeOfFirstFixedSurface",
     "valueOfFirstFixedSurface",
-    "refDate",
-    "leadTime",
+    "valid_time",
+    "shortName",
 }
 
 
@@ -132,9 +132,10 @@ def _get_manifest(file_key):
 def _extract_variable_names(refs):
     """Extract data variable names from manifest refs.
 
-    Data variables have a ``.zarray`` whose ``compressor`` is a dict with
-    ``id == "grib2io"``.  Coordinate arrays (level, leadTime, refDate, …)
-    have ``compressor: null`` and are excluded.
+    Data variables have a ``.zarray`` whose ``compressor`` or ``filters``
+    contain a dict with ``id == "grib2io"``.  Coordinate arrays (level,
+    leadTime, refDate, …) have ``compressor: null`` and empty filters and
+    are excluded.
     """
     var_names = []
     for key in sorted(refs.keys()):
@@ -143,7 +144,10 @@ def _extract_variable_names(refs):
             if "/" not in var_name:
                 zarray = json.loads(refs[key])
                 compressor = zarray.get("compressor")
+                filters = zarray.get("filters") or []
                 if isinstance(compressor, dict) and compressor.get("id") == "grib2io":
+                    var_names.append(var_name)
+                elif any(isinstance(f, dict) and f.get("id") == "grib2io" for f in filters):
                     var_names.append(var_name)
     return var_names
 
@@ -179,7 +183,8 @@ for _fname in _AVAILABLE_FILES:
     for _vn in _vars:
         _VAR_CATALOG.append((_fname, _vn))
         _zarray = json.loads(_manifest["refs"][f"{_vn}/.zarray"])
-        if _zarray["compressor"]["bitmap_flag"] in {0, 254}:
+        _codec = (_zarray.get("filters") or [None])[0] or _zarray.get("compressor") or {}
+        if _codec.get("bitmap_flag") in {0, 254}:
             _BITMAP_VAR_CATALOG.append((_fname, _vn))
             # Collect bitmap companion ref keys
             for _k in _manifest["refs"]:
@@ -254,10 +259,15 @@ def test_manifest_structural_validity(data):
     assert isinstance(zarray["order"], str), f"{var_name} order must be a string"
     assert len(zarray["shape"]) == len(zarray["chunks"]), f"{var_name} shape and chunks must have same length"
 
-    # Verify compressor is a dict with 'id' = 'grib2io'
-    compressor = zarray["compressor"]
-    assert isinstance(compressor, dict), f"{var_name} compressor must be a dict"
-    assert compressor.get("id") == "grib2io", f"{var_name} compressor id must be 'grib2io'"
+    # Verify grib2io codec is present (in filters[0] or compressor)
+    filters = zarray.get("filters") or []
+    compressor = zarray.get("compressor")
+    codec = None
+    if filters and isinstance(filters[0], dict) and filters[0].get("id") == "grib2io":
+        codec = filters[0]
+    elif isinstance(compressor, dict) and compressor.get("id") == "grib2io":
+        codec = compressor
+    assert codec is not None, f"{var_name} must have grib2io codec in filters or compressor"
 
     # Verify .zattrs
     zattrs_key = f"{var_name}/.zattrs"
@@ -298,18 +308,21 @@ def test_manifest_bitmap_codec_config(data):
     refs = manifest["refs"]
 
     zarray = json.loads(refs[f"{var_name}/.zarray"])
-    compressor = zarray["compressor"]
+    filters = zarray.get("filters") or []
+    compressor = zarray.get("compressor")
+    codec = None
+    if filters and isinstance(filters[0], dict) and filters[0].get("id") == "grib2io":
+        codec = filters[0]
+    elif isinstance(compressor, dict) and compressor.get("id") == "grib2io":
+        codec = compressor
+    assert codec is not None, f"Variable {var_name} must have grib2io codec"
 
-    assert compressor["bitmap_flag"] in {0, 254}, f"Variable {var_name} expected bitmap_flag in {{0, 254}}, got {compressor['bitmap_flag']}"
-    assert compressor["bitmap_offset"] is not None, (
-        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} must have non-null bitmap_offset"
-    )
-    assert compressor["bitmap_length"] is not None, (
-        f"Variable {var_name} with bitmap_flag={compressor['bitmap_flag']} must have non-null bitmap_length"
-    )
-    assert isinstance(compressor["bitmap_offset"], int), f"Variable {var_name} bitmap_offset must be an int"
-    assert isinstance(compressor["bitmap_length"], int), f"Variable {var_name} bitmap_length must be an int"
-    assert compressor["bitmap_length"] > 0, f"Variable {var_name} bitmap_length must be > 0"
+    assert codec["bitmap_flag"] in {0, 254}, f"Variable {var_name} expected bitmap_flag in {{0, 254}}, got {codec['bitmap_flag']}"
+    assert codec["bitmap_offset"] is not None, f"Variable {var_name} with bitmap_flag={codec['bitmap_flag']} must have non-null bitmap_offset"
+    assert codec["bitmap_length"] is not None, f"Variable {var_name} with bitmap_flag={codec['bitmap_flag']} must have non-null bitmap_length"
+    assert isinstance(codec["bitmap_offset"], int), f"Variable {var_name} bitmap_offset must be an int"
+    assert isinstance(codec["bitmap_length"], int), f"Variable {var_name} bitmap_length must be an int"
+    assert codec["bitmap_length"] > 0, f"Variable {var_name} bitmap_length must be > 0"
 
     # Verify the specific ref is valid
     assert ref_key in refs, f"Ref {ref_key} not found in manifest"
