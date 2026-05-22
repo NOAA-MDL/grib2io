@@ -132,6 +132,7 @@ class ReferenceGenerator:
         file_paths: Union[str, List[str]],
         filters: Optional[Dict[str, Any]] = None,
         storage_options: Optional[Dict[str, Any]] = None,
+        max_workers: Optional[int] = None,
     ):
         _ensure_numcodecs()
 
@@ -150,6 +151,7 @@ class ReferenceGenerator:
         self.file_paths = file_paths
         self.filters = filters or {}
         self.storage_options = storage_options or {}
+        self.max_workers = max_workers
         self._manifest: Optional[dict] = None
 
     def generate(self) -> dict:
@@ -171,12 +173,43 @@ class ReferenceGenerator:
         # This ensures messages with different surface types are not mixed.
         all_var_messages: Dict[tuple, list] = {}
 
-        for file_path in self.file_paths:
-            file_uri = _file_uri(file_path)
-            try:
-                self._scan_file(file_path, file_uri, all_var_messages)
-            except Exception as e:
-                raise ValueError(f"Failed to parse GRIB2 file '{file_path}': {e}") from e
+        n_files = len(self.file_paths)
+        use_parallel = (
+            self.max_workers != 1
+            and n_files > 1
+            and not _is_local_path(self.file_paths[0])
+        )
+
+        if use_parallel:
+            import concurrent.futures
+
+            workers = self.max_workers or min(n_files, 8)
+
+            def _scan_one(file_path):
+                file_uri = _file_uri(file_path)
+                local_msgs: Dict[tuple, list] = {}
+                self._scan_file(file_path, file_uri, local_msgs)
+                return local_msgs
+
+            with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
+                futures = {
+                    pool.submit(_scan_one, fp): fp for fp in self.file_paths
+                }
+                for future in concurrent.futures.as_completed(futures):
+                    fp = futures[future]
+                    try:
+                        local_msgs = future.result()
+                        for key, entries in local_msgs.items():
+                            all_var_messages.setdefault(key, []).extend(entries)
+                    except Exception as e:
+                        raise ValueError(f"Failed to parse GRIB2 file '{fp}': {e}") from e
+        else:
+            for file_path in self.file_paths:
+                file_uri = _file_uri(file_path)
+                try:
+                    self._scan_file(file_path, file_uri, all_var_messages)
+                except Exception as e:
+                    raise ValueError(f"Failed to parse GRIB2 file '{file_path}': {e}") from e
 
         # For each variable group, map messages to dimensions and build refs.
         # Track used variable names to handle collisions (same shortName
@@ -195,6 +228,14 @@ class ReferenceGenerator:
                 used_var_names[var_name] = 0
                 zarr_var_name = var_name
             self._build_variable_refs(zarr_var_name, msg_entries, refs, level_coord_registry)
+
+        # Build latitude/longitude coordinate arrays from the grid definition.
+        # All messages are assumed to share the same grid (required by the
+        # xarray backend too), so we use the first available message.
+        if all_var_messages:
+            first_entries = next(iter(all_var_messages.values()))
+            rep_msg = first_entries[0].msg
+            _build_latlon_coord_refs(rep_msg, refs)
 
         self._manifest = {"version": 1, "refs": refs}
         return self._manifest
@@ -873,6 +914,7 @@ def _build_zattrs(msg, dim_labels: List[str]) -> dict:
 
     return {
         "_ARRAY_DIMENSIONS": dim_labels,
+        "coordinates": "latitude longitude",
         "discipline": int(msg.section0[2]),
         "parameterCategory": int(msg.parameterCategory),
         "parameterNumber": int(msg.parameterNumber),
@@ -1155,3 +1197,47 @@ def _build_coord_refs(
 
     # Inline data chunk
     refs[f"{dim_name}/0"] = "base64:" + b64_data
+
+
+def _build_latlon_coord_refs(msg, refs: Dict[str, Any]) -> None:
+    """Build inline latitude/longitude 2-D coordinate arrays from the grid.
+
+    Calls ``msg.latlons()`` to compute the full (ny, nx) grids and encodes
+    them as base64 inline Zarr refs, matching the xarray backend's behaviour.
+    """
+    try:
+        lats, lons = msg.latlons()
+    except Exception:
+        return
+
+    ny, nx = int(msg.ny), int(msg.nx)
+
+    for name, data, attrs in [
+        ("latitude", lats.astype(np.float64), {
+            "_ARRAY_DIMENSIONS": ["y", "x"],
+            "standard_name": "latitude",
+            "units": "degrees_north",
+        }),
+        ("longitude", lons.astype(np.float64), {
+            "_ARRAY_DIMENSIONS": ["y", "x"],
+            "standard_name": "longitude",
+            "units": "degrees_east",
+        }),
+    ]:
+        # Skip if already present (e.g. from a prior variable group)
+        if f"{name}/.zarray" in refs:
+            continue
+
+        zarray = {
+            "zarr_format": 2,
+            "shape": [ny, nx],
+            "chunks": [ny, nx],
+            "dtype": "<f8",
+            "fill_value": None,
+            "order": "C",
+            "compressor": None,
+            "filters": None,
+        }
+        refs[f"{name}/.zarray"] = json.dumps(zarray)
+        refs[f"{name}/.zattrs"] = json.dumps(attrs)
+        refs[f"{name}/0.0"] = "base64:" + base64.b64encode(data.tobytes()).decode("ascii")

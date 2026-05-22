@@ -1024,10 +1024,11 @@ def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
 
 
 def open_grib2(
-    url: str,
+    url: str | list[str],
     storage_options: dict | None = None,
     filters: dict | None = None,
     store_path: str | None = None,
+    max_workers: int | None = None,
     **xr_kwargs,
 ):
     """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
@@ -1100,9 +1101,21 @@ def open_grib2(
     Local file:
 
     >>> ds = open_grib2("/data/gfs.t00z.pgrb2.1p00.f024")
+
+    Multi-file with parallel scanning:
+
+    >>> ds = open_grib2(
+    ...     [f"s3://bucket/gfs.{d}/gfs.grib2" for d in dates],
+    ...     storage_options={"anon": True},
+    ...     filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103},
+    ...     max_workers=16,
+    ... )
     """
     from grib2io.kerchunk import ReferenceGenerator
 
-    gen = ReferenceGenerator(url, filters=filters, storage_options=storage_options or {})
+    gen = ReferenceGenerator(
+        url, filters=filters, storage_options=storage_options or {},
+        max_workers=max_workers,
+    )
     manifest = gen.generate()
     return open_dataset(manifest, store_path=store_path, **xr_kwargs)
