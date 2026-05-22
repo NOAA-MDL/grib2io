@@ -344,11 +344,15 @@ class IcechunkWriter:
         self,
         store_path: str,
         storage_config: Optional[Any] = None,
+        network_timeout: int = 120,
+        max_concurrent_requests: Optional[int] = 32,
     ):
         _ensure_icechunk()
 
         self._store_path = store_path
         self._storage_config = storage_config
+        self._network_timeout = network_timeout
+        self._max_concurrent_requests = max_concurrent_requests
         self._repo = None
         self._session = None
 
@@ -383,6 +387,13 @@ class IcechunkWriter:
 
         # Build repository config with virtual chunk containers
         config = icechunk.config.RepositoryConfig.default()
+
+        # Limit concurrent S3 requests to avoid hammering the endpoint and
+        # triggering rate-limit / timeout errors on large datasets.
+        if self._max_concurrent_requests is not None:
+            config.get_partial_values_concurrency = self._max_concurrent_requests
+            config.max_concurrent_requests = self._max_concurrent_requests
+
         for prefix in virtual_prefixes:
             container_store = self._make_container_store(prefix)
             config.set_virtual_chunk_container(icechunk.virtual.VirtualChunkContainer(prefix, container_store))
@@ -458,7 +469,10 @@ class IcechunkWriter:
                 local_path = local_path[:-1]
             return icechunk.storage.local_filesystem_store(local_path)
         elif prefix.startswith("s3://"):
-            return icechunk.storage.s3_store(region="us-east-1")
+            return icechunk.storage.s3_store(
+                region="us-east-1",
+                network_stream_timeout_seconds=self._network_timeout,
+            )
         elif prefix.startswith("gcs://"):
             return icechunk.storage.gcs_store(opts={})
         elif prefix.startswith("http://") or prefix.startswith("https://"):
@@ -972,7 +986,13 @@ class IcechunkWriter:
         return self._repo.readonly_session("main")
 
 
-def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
+def open_dataset(
+    manifest: dict,
+    store_path: str | None = None,
+    network_timeout: int = 120,
+    max_concurrent_requests: int | None = 32,
+    **xr_kwargs,
+):
     """Open a grib2io kerchunk manifest as an :class:`xarray.Dataset`.
 
     Writes the manifest into a temporary (or caller-supplied) Icechunk virtual
@@ -989,6 +1009,12 @@ def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
     store_path:
         Filesystem path for the Icechunk repository.  A temporary directory is
         created and used when omitted (suitable for ephemeral/notebook use).
+    network_timeout:
+        HTTP stream timeout in seconds for S3 virtual chunk reads.
+        Defaults to 120 s.
+    max_concurrent_requests:
+        Maximum concurrent HTTP requests for virtual chunk reads.
+        Defaults to 32.  Set to ``None`` for unlimited.
     **xr_kwargs:
         Additional keyword arguments forwarded to :func:`xarray.open_zarr`
         (e.g. ``chunks={}`` to enable Dask lazy loading).
@@ -1015,7 +1041,11 @@ def open_dataset(manifest: dict, store_path: str | None = None, **xr_kwargs):
     if store_path is None:
         store_path = tempfile.mkdtemp(prefix="grib2io_icechunk_")
 
-    writer = IcechunkWriter(store_path)
+    writer = IcechunkWriter(
+        store_path,
+        network_timeout=network_timeout,
+        max_concurrent_requests=max_concurrent_requests,
+    )
     writer.write(manifest)
     writer.commit("grib2io kerchunk manifest")
     session = writer.get_readonly_session()
@@ -1029,6 +1059,8 @@ def open_grib2(
     filters: dict | None = None,
     store_path: str | None = None,
     max_workers: int | None = None,
+    network_timeout: int = 120,
+    max_concurrent_requests: int | None = 32,
     **xr_kwargs,
 ):
     """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
@@ -1072,6 +1104,19 @@ def open_grib2(
     store_path:
         Filesystem path for the Icechunk repository.  A temporary directory is
         created and used when omitted.
+    max_workers:
+        Number of threads for parallel manifest scanning of multiple files.
+        Defaults to ``min(n_files, 8)``.  Lower values reduce S3 pressure
+        during the scanning phase.
+    network_timeout:
+        HTTP stream timeout in seconds for S3 virtual chunk reads during
+        ``.compute()``.  Defaults to 120 s (the icechunk built-in default
+        is much lower and causes timeouts on large datasets).
+    max_concurrent_requests:
+        Maximum number of concurrent HTTP requests icechunk will issue when
+        reading virtual chunks.  Defaults to 32.  Lower values (e.g. 8–16)
+        reduce S3 pressure at the cost of throughput.  Set to ``None`` for
+        unlimited.
     **xr_kwargs:
         Additional keyword arguments forwarded to :func:`xarray.open_zarr`.
 
@@ -1120,4 +1165,10 @@ def open_grib2(
         max_workers=max_workers,
     )
     manifest = gen.generate()
-    return open_dataset(manifest, store_path=store_path, **xr_kwargs)
+    return open_dataset(
+        manifest,
+        store_path=store_path,
+        network_timeout=network_timeout,
+        max_concurrent_requests=max_concurrent_requests,
+        **xr_kwargs,
+    )

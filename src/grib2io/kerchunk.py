@@ -279,13 +279,16 @@ class ReferenceGenerator:
 
         1. Checks grib2io's local cache – if the full or filtered index was
            saved from a previous run, it loads it instantly.
-        2. Otherwise fetches the wgrib2 ``.idx`` sidecar (a small text file)
-           and keeps only the byte offsets whose shortName matches the filter,
-           reducing HTTP range requests from ~700 to ~1–50.
-        3. Saves the partial index to a filter-specific cache key so the next
+        2. Checks for a remote grib2io ``.grib2ioidx`` sidecar (binary index)
+           alongside the GRIB2 file — the most efficient format, containing
+           pre-parsed section offsets and avoiding header reads entirely.
+        3. Fetches the wgrib2 ``.idx`` text sidecar and keeps only the byte
+           offsets whose shortName matches the filter, reducing HTTP range
+           requests from ~700 to ~1–50.
+        4. Saves the partial index to a filter-specific cache key so the next
            call for the same file+filter is also instant.
-        4. Falls back to ``grib2io.open`` (full index, slow on first call) if
-           no ``.idx`` sidecar is available.
+        5. Falls back to ``grib2io.open`` (full index, slow on first call) if
+           no sidecar is available.
 
         Returns
         -------
@@ -343,7 +346,31 @@ class ReferenceGenerator:
             return index, msgs
 
         # ------------------------------------------------------------------ #
-        # 3. wgrib2 .idx sidecar pre-filtering                                #
+        # 3. Remote grib2io index sidecar (.grib2ioidx)                       #
+        # ------------------------------------------------------------------ #
+        # grib2io publishes its own binary index alongside the GRIB2 file.
+        # This is the most efficient index format — it contains the full
+        # parsed section offsets/sizes and avoids any header reads.  Check
+        # for it before falling back to the wgrib2 text .idx sidecar.
+        grib2io_idx_url = file_path + ".grib2ioidx"
+        try:
+            with fsspec.open(grib2io_idx_url, "rb", **scan_storage_options) as gf:
+                index = pickle.load(gf)
+            msgs = msgs_from_index(index, filehandle=fh)
+            fh.close()
+            # Cache locally so subsequent calls are instant.
+            try:
+                os.makedirs(cache_root, exist_ok=True)
+                with builtins.open(full_cache_path, "wb") as cf:
+                    pickle.dump(index, cf)
+            except Exception:
+                pass
+            return index, msgs
+        except Exception:
+            pass
+
+        # ------------------------------------------------------------------ #
+        # 4. wgrib2 .idx sidecar pre-filtering                                #
         # ------------------------------------------------------------------ #
         idx_url = file_path + ".idx"
         idx_fetch_ok = False
@@ -373,7 +400,7 @@ class ReferenceGenerator:
             return index, msgs
 
         # ------------------------------------------------------------------ #
-        # 4. Fall back: let grib2io.open build the full index (slow on first  #
+        # 5. Fall back: let grib2io.open build the full index (slow on first  #
         #    call, but saves to grib2io's own cache for future calls).         #
         # ------------------------------------------------------------------ #
         fh.close()
