@@ -44,18 +44,18 @@ def run_stress_test(years=["2023", "2024"]):
 
     t0 = time.perf_counter()
     try:
-        # 1. Use the high-level open_grib2 which now has built-in retry logic for scanning.
-        # We also pass chunks to enable lazy loading with Dask.
-        from grib2io.icechunk import open_grib2
-
-        ds = open_grib2(
+        # 1. Use the standard Xarray interface with the grib2io engine.
+        # Setting use_icechunk=True enables the robust virtual store logic.
+        ds = xr.open_dataset(
             all_urls,
+            engine="grib2io",
+            use_icechunk=True,
             storage_options=storage_options,
             filters=T2M_FILTERS,
             max_workers=8,
             network_timeout=300,
             max_concurrent_requests=4,
-            max_scan_attempts=5,  # New parameter for robust scanning
+            max_scan_attempts=5,  # Parameter for robust scanning
             chunks={"valid_time": 30},  # Enable Dask
         )
 

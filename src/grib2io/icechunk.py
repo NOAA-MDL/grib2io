@@ -991,6 +991,8 @@ def open_dataset(
     store_path: str | None = None,
     network_timeout: int = 120,
     max_concurrent_requests: int | None = 32,
+    data_model: str | None = None,
+    drop_variables: list[str] | None = None,
     **xr_kwargs,
 ):
     """Open a grib2io kerchunk manifest as an :class:`xarray.Dataset`.
@@ -1055,7 +1057,18 @@ def open_dataset(
     writer.commit("grib2io kerchunk manifest")
     session = writer.get_readonly_session()
     xr_kwargs.setdefault("consolidated", False)
-    return xr.open_zarr(session.store, **xr_kwargs)
+
+    if drop_variables is not None:
+        xr_kwargs["drop_variables"] = drop_variables
+
+    ds = xr.open_zarr(session.store, **xr_kwargs)
+
+    if data_model is not None:
+        from .xarray_backend import parse_data_model
+
+        ds = parse_data_model(ds, data_model)
+
+    return ds
 
 
 def open_grib2(
@@ -1067,6 +1080,8 @@ def open_grib2(
     network_timeout: int = 120,
     max_concurrent_requests: int | None = 32,
     max_scan_attempts: int = 3,
+    data_model: str | None = None,
+    drop_variables: list[str] | None = None,
     **xr_kwargs,
 ):
     """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
@@ -1210,5 +1225,7 @@ def open_grib2(
         store_path=store_path,
         network_timeout=network_timeout,
         max_concurrent_requests=max_concurrent_requests,
+        data_model=data_model,
+        drop_variables=drop_variables,
         **xr_kwargs,
     )

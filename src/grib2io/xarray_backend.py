@@ -751,14 +751,22 @@ class GribBackendEntrypoint(BackendEntrypoint):
         data_model=None,
         chunks=None,
         branch="main",
+        use_icechunk=False,
+        storage_options=None,
+        max_workers=None,
+        network_timeout=120,
+        max_concurrent_requests=32,
+        max_scan_attempts=3,
+        store_path=None,
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
 
         Parameters
         ----------
-        filename : str
-            GRIB2 file to be opened.
+        filename_or_obj : str or file-like
+            GRIB2 file to be opened. Can be a local path, a remote URI, a
+            Kerchunk reference, or an Icechunk store.
         drop_variables : list of str, optional
             List of variables to exclude from the dataset.
         save_index : bool, optional
@@ -772,6 +780,24 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks : int, dict or 'auto', optional
             If chunks is provided, it is used to load the dataset into a
             dask-backed dataset.
+        branch : str, optional
+            Icechunk branch to open (only for Icechunk stores). Defaults to "main".
+        use_icechunk : bool, optional
+            If True, use the Icechunk virtual store path for robust remote
+            data access. Recommended for large numbers of remote files or
+            unreliable networks. Defaults to False.
+        storage_options : dict, optional
+            Extra options passed to the storage backend (e.g. fsspec or Icechunk).
+        max_workers : int, optional
+            Number of threads for parallel manifest scanning.
+        network_timeout : int, optional
+            HTTP stream timeout in seconds for remote reads. Defaults to 120.
+        max_concurrent_requests : int, optional
+            Maximum concurrent HTTP requests for remote reads. Defaults to 32.
+        max_scan_attempts : int, optional
+            Maximum attempts to scan remote GRIB2 files. Defaults to 3.
+        store_path : str, optional
+            Filesystem path for the temporary Icechunk repository.
 
         Returns
         -------
@@ -780,6 +806,24 @@ class GribBackendEntrypoint(BackendEntrypoint):
         """
         if filters is None:
             filters = {}
+
+        # --- Use Icechunk virtual store path if requested ---
+        if use_icechunk:
+            from .icechunk import open_grib2
+
+            return open_grib2(
+                filename_or_obj,
+                storage_options=storage_options,
+                filters=filters,
+                store_path=store_path,
+                max_workers=max_workers,
+                network_timeout=network_timeout,
+                max_concurrent_requests=max_concurrent_requests,
+                max_scan_attempts=max_scan_attempts,
+                data_model=data_model,
+                drop_variables=drop_variables,
+                chunks=chunks,
+            )
 
         # --- Format detection: Kerchunk reference or Icechunk store ---
         if _is_kerchunk_reference(filename_or_obj):
@@ -2635,6 +2679,7 @@ def open_mfdataset(
     parallel: bool = False,
     preprocess: typing.Optional[typing.Callable] = None,
     chunks: typing.Optional[typing.Union[int, typing.Dict[typing.Any, typing.Any], typing.Literal["auto"]]] = None,
+    use_icechunk: bool = False,
     **kwargs,
 ) -> xr.Dataset:
     """
@@ -2691,6 +2736,33 @@ def open_mfdataset(
         import glob
 
         filenames = sorted(glob.glob(filenames))
+
+    if use_icechunk:
+        from .icechunk import open_grib2
+
+        # Extract Icechunk-specific kwargs from combination kwargs
+        icechunk_kwargs = {
+            "storage_options": kwargs.pop("storage_options", None),
+            "max_workers": kwargs.pop("max_workers", None),
+            "network_timeout": kwargs.pop("network_timeout", 120),
+            "max_concurrent_requests": kwargs.pop("max_concurrent_requests", 32),
+            "max_scan_attempts": kwargs.pop("max_scan_attempts", 3),
+            "store_path": kwargs.pop("store_path", None),
+        }
+
+        ds = open_grib2(
+            filenames,
+            filters=filters,
+            data_model=data_model,
+            drop_variables=drop_variables,
+            chunks=chunks,
+            **icechunk_kwargs,
+        )
+
+        if preprocess is not None:
+            ds = preprocess(ds)
+
+        return ds
 
     def _get_index(fname_and_index: typing.Tuple[str, int]) -> pd.DataFrame:
         """
