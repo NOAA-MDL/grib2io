@@ -2141,6 +2141,27 @@ class Grib2ioDataSet:
 
         return newds
 
+    def compute(self, **kwargs):
+        """
+        Compute the Dask-backed Dataset with retries for transient errors.
+
+        Wraps :func:`grib2io.utils.compute_with_retries`.
+
+        Parameters
+        ----------
+        **kwargs
+            Arguments passed to :func:`grib2io.utils.compute_with_retries`,
+            e.g., `max_attempts` or `base_sleep`.
+
+        Returns
+        -------
+        xarray.Dataset
+            The computed Dataset with NumPy-backed data.
+        """
+        from .utils import compute_with_retries
+
+        return compute_with_retries(self._obj, **kwargs)
+
 
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
@@ -2581,6 +2602,27 @@ class Grib2ioDataArray:
         new_da.attrs["history"] = f"{now}: Subsetted to lats={lats}, lons={lons}\n{history}"
 
         return new_da
+
+    def compute(self, **kwargs):
+        """
+        Compute the Dask-backed DataArray with retries for transient errors.
+
+        Wraps :func:`grib2io.utils.compute_with_retries`.
+
+        Parameters
+        ----------
+        **kwargs
+            Arguments passed to :func:`grib2io.utils.compute_with_retries`,
+            e.g., `max_attempts` or `base_sleep`.
+
+        Returns
+        -------
+        xarray.DataArray
+            The computed DataArray with NumPy-backed data.
+        """
+        from .utils import compute_with_retries
+
+        return compute_with_retries(self._obj, **kwargs)
 
 
 def open_mfdataset(

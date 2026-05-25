@@ -1031,11 +1031,16 @@ def open_dataset(
     >>> ds = open_dataset(manifest)
     >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
 
+    Robust computation with retries:
+
+    >>> ds.TMP.grib2io.compute(max_attempts=10)
+
     Local data with a persistent store:
 
     >>> ds = open_dataset(manifest, store_path="/tmp/my_grib2_store")
     """
     import tempfile
+
     import xarray as xr
 
     if store_path is None:
@@ -1061,6 +1066,7 @@ def open_grib2(
     max_workers: int | None = None,
     network_timeout: int = 120,
     max_concurrent_requests: int | None = 32,
+    max_scan_attempts: int = 3,
     **xr_kwargs,
 ):
     """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
@@ -1117,6 +1123,10 @@ def open_grib2(
         reading virtual chunks.  Defaults to 32.  Lower values (e.g. 8–16)
         reduce S3 pressure at the cost of throughput.  Set to ``None`` for
         unlimited.
+    max_scan_attempts:
+        Maximum number of attempts to scan the GRIB2 files and generate the
+        manifest.  Useful for handling transient network errors during the
+        indexing phase.  Defaults to 3.
     **xr_kwargs:
         Additional keyword arguments forwarded to :func:`xarray.open_zarr`.
 
@@ -1143,6 +1153,10 @@ def open_grib2(
     ...     filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2},
     ... )
 
+    Robust computation with retries:
+
+    >>> ds.TMP.grib2io.compute(max_attempts=10)
+
     Local file:
 
     >>> ds = open_grib2("/data/gfs.t00z.pgrb2.1p00.f024")
@@ -1156,6 +1170,8 @@ def open_grib2(
     ...     max_workers=16,
     ... )
     """
+    import time
+
     from grib2io.kerchunk import ReferenceGenerator
 
     gen = ReferenceGenerator(
@@ -1164,7 +1180,31 @@ def open_grib2(
         storage_options=storage_options or {},
         max_workers=max_workers,
     )
-    manifest = gen.generate()
+
+    # Robust manifest generation with retries for transient scan errors
+    manifest = None
+    last_exc = None
+    for attempt in range(1, max_scan_attempts + 1):
+        try:
+            manifest = gen.generate()
+            break
+        except Exception as exc:
+            last_exc = exc
+            if attempt == max_scan_attempts:
+                break
+            sleep_s = 2**attempt
+            _logger.warning(
+                "Transient error during GRIB2 scan (attempt %d/%d), retrying in %ds: %s",
+                attempt,
+                max_scan_attempts,
+                sleep_s,
+                exc,
+            )
+            time.sleep(sleep_s)
+
+    if manifest is None:
+        raise last_exc
+
     return open_dataset(
         manifest,
         store_path=store_path,
