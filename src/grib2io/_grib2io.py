@@ -1930,7 +1930,6 @@ Subset only works for regular grids.
 
         return newmsg
 
-
     def validate(self):
         """
         Validate a complete GRIB2 message.
