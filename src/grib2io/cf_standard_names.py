@@ -773,3 +773,142 @@ grib_derived_to_cf_methods = {
         "cf_cell_methods": None,
     },  # Represents a missing value
 }
+
+
+def add_cf_metadata(ds):
+    # type: (xarray.Dataset,) -> xarray.Dataset
+    """Convert grib2io metadata to CF metadata.
+
+    Includes metadata from the Climate and Forecast (CF) conventions,
+    the Attribute Conventions for Data Discovery (ACDD) and some in
+    neither but recommended by the NCEI netCDF templates.
+
+    Parameters
+    ----------
+    ds : xr.Dataset
+        The dataset on which to convert metadata.
+        
+    Returns
+    -------
+    xr.Dataset
+        The same dataset, with more CF metadata
+    """
+    # Expand CRS metadata
+    import pyproj
+    ds_crs = pyproj.CRS.from_wkt(ds.attrs["crs_wkt"])
+    ds.coords["grid_mapping"] = ((), -1, ds_crs.to_cf())
+    if ds_crs.ellipsoid.inverse_flattening == 0.0:
+        # Data was calculated on a sphere
+        ds.coords["grid_mapping"].attrs["earth_radius"] = ds_crs.ellipsoid.semi_major_metre
+    
+    # Add dimension coords
+    if ds.coords["grid_mapping"].attrs["grid_mapping_name"] == "latitude_longitude":
+        # lat-lon CRS
+        ds.coords["y"] = (
+            ("y",),
+            ds.coords["latitude"].isel(x=0).values,
+            ds.coords["latitude"].attrs,
+        )
+        ds.coords["y"].attrs.update({"axis": "Y", "long_name": "latitude"})
+        ds.coords["x"] = (
+            ("x",),
+            ds.coords["longitude"].isel(y=0).values,
+            ds.coords["longitude"].attrs
+        )
+        ds.coords["x"].attrs.update({"axis": "X", "long_name": "longitude"})
+        ds.attrs.update(
+            {
+                "geospatial_lat_min": ds.coords["y"].min().values,
+                "geospatial_lat_max": ds.coords["y"].max().values,
+                "geospatial_lon_min": ds.coords["x"].min().values,
+                "geospatial_lon_max": ds.coords["x"].max().values
+            }
+        )
+    else:
+        _logger.warn("Unrecognized CRS: no x and y coordinates added")
+
+    # Add general metadata common to all variables
+    for name, var in ds.data_vars.items():
+        var.attrs["coverage_content_type"] = "modelResult"
+        # Add CRS metadata.  Assumes all grib variables are 2D
+        if "crs_wkt" not in var.attrs or var.attrs["crs_wkt"] == ds.attrs["crs_wkt"]:
+            var.attrs["grid_mapping"] = "grid_mapping"
+        else:
+            var_crs = pyproj.CRS.from_wkt(var.attrs["crs_wkt"])
+            var_crs_name = f"{var:s}_grid_mapping"
+            ds.coords[var_crs_name] = ((), -1, var_crs.to_cf())
+    for name, var in ds.coords.items():
+        if not name.endswith("grid_mapping"):
+            var.attrs["coverage_content_type"] = "coordinate"
+        else:
+            var.attrs["coverage_content_type"] = "referenceInformation"
+
+    # Get metadata from filesystem
+    file_metadata = os.stat(ds.encoding)
+    file_ctime = datetime.datetime.fromtimestamp(file_metadata.st_ctime)
+    file_mtime = datetime.datetime.fromtimestamp(file_metadata.st_mtime)
+    ds.attrs.update(
+        {
+            "Conventions": "CF-1.11, ACDD-1.3",
+            "date_modified": file_mtime.isoformat(),
+            "date_metadata_modified": _NOW.isoformat(),
+            "history": f"{_NOW:%c}: Grib 2 metadata converted to CF\n{file_ctime:%c}: Grib 2 file written or downloaded",
+            "standard_name_vocabulary": "CF Standard Name Table v93",
+            "ncei_template_version": "NCEI_NetCDF_Grid_Template_v2.0",
+            "featureType": "grid",
+            "cdm_data_type": "Grid",
+        }
+    )
+
+    # Add standard_names
+    std_name_df = cf_standard_names.set_index("NCEP GRIB Variable")
+    for name, var in ds.variables.items():
+        try:
+            var_metadata = std_name_df.loc[name, :]
+        except KeyError:
+            pass
+        else:
+            var.attrs.update(
+                {
+                    "standard_name": var_metadata["CF Standard Name"].values,
+                    "long_name": var_metadata["NCEP Description"].values,
+                }
+            )
+            cell_method = var_metadata["CF Cell Method"].values
+            if cell_method is not None:
+                var.attrs["cell_methods"] = cell_method
+        if name in ("refDate", "validDate"):
+            # Apparently deprecated in CF 1.13 in favor of implying
+            # leap second handling by calendar selectoin
+            var.attrs["units_metadata"] = "leap_seconds: unknown"
+            if name == "validDate":
+                coverage_start = var.min().values
+                ds.attrs["time_coverage_start"] = str(coverage_start)
+                coverage_end = var.max().values
+                ds.attrs["time_coverage_end"] = str(coverage_end)
+                coverage_duration = pd.to_timedelta(coverage_end - coverage_start)
+                ds.attrs["time_coverage_duration"] = coverage_duration.isoformat()
+        elif name == "latitude":
+            if "geospatial_lat_min" not in ds.attrs:
+                # Skip the calculations if already done by lat-lon
+                # CRS dim coord assignments
+                lat_min = var.min().values
+                lat_max = var.max().values
+                ds.attrs.update(
+                    {"geospatial_lat_min": lat_min, "geospatial_lat_max": lat_max}
+                )
+        elif name == "longitude":
+            if "geospatial_lon_min" not in ds.attrs:
+                # Skip calculation if lat-lon CRS dim-coord
+                # assignments already did it faster
+                lon_min = var.min().values
+                lon_max = var.max().values
+                ds.attrs.update(
+                    {"geospatial_lon_min": lon_min, "geospatial_lon_max": lon_max}
+                )
+        try:
+            ds.attrs["institution"] = var.attrs["originatingCenter"]
+            ds.attrs["source"] = var.attrs["originatingCenter"]
+        except KeyError:
+            pass
+    return ds
