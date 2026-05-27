@@ -17,6 +17,7 @@ import pytest
 
 from grib2io.cli.main import main
 from grib2io.cli.kerchunk import _parse_filters
+from pathlib import Path
 
 INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 
@@ -161,11 +162,8 @@ class TestKerchunkParquetOutput:
         )
 
         assert os.path.isdir(out), f"Parquet output directory not created at {out}"
-
-        parq_files = []
-        for root, dirs, files in os.walk(out):
-            parq_files.extend([f for f in files if f.endswith(".parq")])
-        assert len(parq_files) > 0, "No .parq files found"
+        parq_files = [f for f in Path(out).rglob("*.parq")]
+        assert len(parq_files) > 0, f"No .parq files found beneath {out}"
 
 
 # ===========================================================================

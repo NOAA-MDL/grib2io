@@ -87,6 +87,7 @@ from . import g2clib
 from . import tables
 from . import templates
 from . import utils
+from grib2io.utils import spatial
 
 DEFAULT_DRT_LEN = 20
 DEFAULT_FILL_VALUE = 9.9692099683868690e36
@@ -1711,50 +1712,60 @@ Subset only works for regular grids.
             np.copy(self.section5),
         )
 
-        msglats, msglons = self.grid()
+        msg_latitude, inlons = self.grid()
 
-        la1 = np.max(lats)
-        lo1 = np.min(lons)
-        la2 = np.min(lats)
-        lo2 = np.max(lons)
+        if lats is None:
+            lats = (msg_latitude.flatten()[-1], msg_latitude.flatten()[0])
 
-        # Find the indices of the first and last grid points to the nearest
-        # lat/lon values in the grid.
-        first_lat = np.abs(msglats - la1)
-        first_lon = np.abs(msglons - lo1)
-        max_idx = np.maximum(first_lat, first_lon)
-        first_j, first_i = np.where(max_idx == np.min(max_idx))
+        lats = (min(lats), max(lats))
 
-        last_lat = np.abs(msglats - la2)
-        last_lon = np.abs(msglons - lo2)
-        max_idx = np.maximum(last_lat, last_lon)
-        last_j, last_i = np.where(max_idx == np.min(max_idx))
+        if lons is None:
+            lons = (inlons.flatten()[0], inlons.flatten()[-1])
 
-        setattr(newmsg, "latitudeFirstGridpoint", msglats[first_j[0], first_i[0]])
-        setattr(newmsg, "longitudeFirstGridpoint", msglons[first_j[0], first_i[0]])
-        setattr(newmsg, "nx", np.abs(first_i[0] - last_i[0]))
-        setattr(newmsg, "ny", np.abs(first_j[0] - last_j[0]))
+        lons = (min(lons), max(lons))
+
+        # Internally work in common lon data representation (0->360 positive eastward from 0)
+        lons = np.mod(np.array(lons) + 360, 360)
+        msg_longitude = np.mod(inlons + 360, 360)
+
+        spatial.verify_lat_lon_bounds(lats, lons)
+
+        snap_first_point = spatial.snap_to_nearest_cell_center(msg_latitude, msg_longitude, lats[0], lons[0])
+        snap_last_point = spatial.snap_to_nearest_cell_center(msg_latitude, msg_longitude, lats[1], lons[1])
+        lats = (snap_first_point[0], snap_last_point[0])
+        lons = (snap_first_point[1], snap_last_point[1])
+
+        if len(msg_latitude.shape) == 2:
+            mask_lats = np.any((msg_latitude >= lats[0]) & (msg_latitude <= lats[1]), axis=1)
+        else:
+            mask_lats = np.any((msg_latitude >= lats[0]) & (msg_latitude <= lats[1]), axis=0)
+        mask_lons = np.any((msg_longitude >= lons[0]) & (msg_longitude <= lons[1]), axis=0)
+
+        newlats = msg_latitude[mask_lats, :][:, mask_lons]
+        newlons = msg_longitude[mask_lats, :][:, mask_lons]
+
+        setattr(newmsg, "latitudeFirstGridpoint", newlats.flatten()[0])
+        setattr(newmsg, "longitudeFirstGridpoint", newlons.flatten()[0])
+        setattr(newmsg, "nx", np.count_nonzero(mask_lons))
+        setattr(newmsg, "ny", np.count_nonzero(mask_lats))
 
         # Set *LastGridpoint attributes even if only used for gdtn=[0, 1, 40].
-        # This information is used to subset xarray datasets and even though
-        # unnecessary for some supported grid types, it won't affect a grib2io
-        # message to set them.
-        setattr(newmsg, "latitudeLastGridpoint", msglats[last_j[0], last_i[0]])
-        setattr(newmsg, "longitudeLastGridpoint", msglons[last_j[0], last_i[0]])
+        # Even though unnecessary for some supported grid types, it won't
+        # affect a grib2io message to set them.
+        setattr(newmsg, "latitudeLastGridpoint", newlats.flatten()[-1])
+        setattr(newmsg, "longitudeLastGridpoint", newlons.flatten()[-1])
 
         setattr(
             newmsg,
             "data",
-            self.data[
-                min(first_j[0], last_j[0]) : max(first_j[0], last_j[0]),
-                min(first_i[0], last_i[0]) : max(first_i[0], last_i[0]),
-            ].copy(),
+            self.data[mask_lats, :][:, mask_lons],
         )
 
-        # Need to set the newmsg._sha1_section3 to a blank string so the grid
-        # method ignores the cached lat/lon values.  This will force the grid
-        # method to recompute the lat/lon values for the subsetted grid.
-        newmsg._sha1_section3 = ""
+        # Need to reset the '_sha1_section3' attribute to the hash of section 3
+        # so the '.grid()' method ignores the cached lat/lon and instead
+        # force the '.grid()' method to recompute the lat/lon values for the
+        # new, subsetted grid.
+        newmsg._sha1_section3 = hashlib.sha1(newmsg.section3).hexdigest()
         newmsg.grid()
 
         return newmsg
