@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 import pytest
+from pathlib import Path
 
 pytestmark = pytest.mark.skipif(
     sys.version_info < (3, 11),
@@ -250,9 +251,8 @@ class TestParquetSerialization:
             assert os.path.isdir(parquet_path), f"Parquet output directory not created at {parquet_path}"
 
             # Should contain at least one .parq file
-            contents = os.listdir(parquet_path)
-            parq_files = [f for f in contents if f.endswith(".parq")]
-            assert len(parq_files) > 0, f"No .parq files found in {parquet_path}. Contents: {contents}"
+            parq_files = [f for f in Path(parquet_path).rglob("*.parq")]
+            assert len(parq_files) > 0, f"No .parq files found beneath {parquet_path}"
 
     def test_parquet_output_structure(self, gfs_jpeg_path):
         """Parquet output directory has expected structure."""
