@@ -123,6 +123,114 @@ class TestIcechunkImportError:
                 IcechunkWriter("/tmp/test_store")
 
 
+class TestIcechunkCompatibilityWrappers:
+    """Test that legacy icechunk open helpers delegate through existing UI."""
+
+    def test_open_grib2_single_routes_to_xarray_engine(self, monkeypatch):
+        import xarray as xr
+
+        import grib2io.icechunk as icechunk_mod
+
+        calls = {}
+
+        def _fake_open_dataset(path, **kwargs):
+            calls["path"] = path
+            calls["kwargs"] = kwargs
+            return "dataset"
+
+        monkeypatch.setattr(xr, "open_dataset", _fake_open_dataset)
+
+        with pytest.warns(DeprecationWarning):
+            out = icechunk_mod.open_grib2(
+                "s3://bucket/example.grib2",
+                storage_options={"anon": True},
+                filters={"shortName": "TMP"},
+                chunks={"valid_time": 1},
+            )
+
+        assert out == "dataset"
+        assert calls["path"] == "s3://bucket/example.grib2"
+        assert calls["kwargs"]["engine"] == "grib2io"
+        assert calls["kwargs"]["use_icechunk"] is True
+        assert calls["kwargs"]["filters"] == {"shortName": "TMP"}
+        assert calls["kwargs"]["chunks"] == {"valid_time": 1}
+
+    def test_open_grib2_multi_routes_to_open_mfdataset(self, monkeypatch):
+        import grib2io.icechunk as icechunk_mod
+        import grib2io.xarray_backend as xarray_backend
+
+        calls = {}
+
+        def _fake_open_mfdataset(filenames, **kwargs):
+            calls["filenames"] = filenames
+            calls["kwargs"] = kwargs
+            return "dataset"
+
+        monkeypatch.setattr(xarray_backend, "open_mfdataset", _fake_open_mfdataset)
+
+        with pytest.warns(DeprecationWarning):
+            out = icechunk_mod.open_grib2(
+                ["a.grib2", "b.grib2"],
+                filters={"shortName": "TMP"},
+                max_workers=4,
+            )
+
+        assert out == "dataset"
+        assert calls["filenames"] == ["a.grib2", "b.grib2"]
+        assert calls["kwargs"]["use_icechunk"] is True
+        assert calls["kwargs"]["filters"] == {"shortName": "TMP"}
+        assert calls["kwargs"]["max_workers"] == 4
+
+    def test_open_dataset_routes_to_backend_engine(self, monkeypatch):
+        import xarray as xr
+
+        import grib2io.icechunk as icechunk_mod
+
+        calls = {}
+
+        class _DummyWriter:
+            def __init__(self, store_path, network_timeout=120, max_concurrent_requests=32):
+                calls["writer_init"] = {
+                    "store_path": store_path,
+                    "network_timeout": network_timeout,
+                    "max_concurrent_requests": max_concurrent_requests,
+                }
+
+            def write(self, manifest):
+                calls["manifest"] = manifest
+
+            def commit(self, message):
+                calls["commit_message"] = message
+                return "snapshot"
+
+        def _fake_open_dataset(path, **kwargs):
+            calls["path"] = path
+            calls["kwargs"] = kwargs
+            return "dataset"
+
+        monkeypatch.setattr(icechunk_mod, "IcechunkWriter", _DummyWriter)
+        monkeypatch.setattr(xr, "open_dataset", _fake_open_dataset)
+
+        manifest = {"version": 1, "refs": {}}
+        with pytest.warns(DeprecationWarning):
+            out = icechunk_mod.open_dataset(
+                manifest,
+                store_path="/tmp/demo-store",
+                data_model="nws-viz",
+                drop_variables=["TMP"],
+                chunks={"valid_time": 1},
+                consolidated=False,
+            )
+
+        assert out == "dataset"
+        assert calls["path"] == "/tmp/demo-store"
+        assert calls["kwargs"]["engine"] == "grib2io"
+        assert calls["kwargs"]["data_model"] == "nws-viz"
+        assert calls["kwargs"]["drop_variables"] == ["TMP"]
+        assert calls["kwargs"]["chunks"] == {"valid_time": 1}
+        assert "consolidated" not in calls["kwargs"]
+
+
 # ===========================================================================
 # Write / Read Tests (Requirement 4.1, 4.2, 4.3) — skip if no icechunk
 # ===========================================================================

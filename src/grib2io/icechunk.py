@@ -35,6 +35,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import warnings
 from typing import Any, Dict, Optional, Set
 
 _logger = logging.getLogger(__name__)
@@ -995,55 +996,20 @@ def open_dataset(
     drop_variables: list[str] | None = None,
     **xr_kwargs,
 ):
-    """Open a grib2io kerchunk manifest as an :class:`xarray.Dataset`.
+    """Compatibility wrapper for opening a manifest via the xarray backend UI.
 
-    Writes the manifest into a temporary (or caller-supplied) Icechunk virtual
-    store and immediately opens it with :func:`xarray.open_zarr`.  Works for
-    manifests whose chunk data lives locally **or** on remote object stores
-    (S3, GCS, …) — credentials are resolved automatically from the virtual
-    chunk URI prefixes embedded in the manifest.
-
-    Parameters
-    ----------
-    manifest:
-        A kerchunk v1 reference manifest dict, as produced by
-        :meth:`grib2io.kerchunk.ReferenceGenerator.generate`.
-    store_path:
-        Filesystem path for the Icechunk repository.  A temporary directory is
-        created and used when omitted (suitable for ephemeral/notebook use).
-    network_timeout:
-        HTTP stream timeout in seconds for S3 virtual chunk reads.
-        Defaults to 120 s.
-    max_concurrent_requests:
-        Maximum concurrent HTTP requests for virtual chunk reads.
-        Defaults to 32.  Set to ``None`` for unlimited.
-    **xr_kwargs:
-        Additional keyword arguments forwarded to :func:`xarray.open_zarr`
-        (e.g. ``chunks={}`` to enable Dask lazy loading).
-
-    Returns
-    -------
-    xarray.Dataset
-
-    Examples
-    --------
-    Remote S3 data (anonymous access resolved automatically):
-
-    >>> from grib2io.icechunk import open_dataset
-    >>> ds = open_dataset(manifest)
-    >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
-
-    Robust computation with retries:
-
-    >>> ds.TMP.grib2io.compute(max_attempts=10)
-
-    Local data with a persistent store:
-
-    >>> ds = open_dataset(manifest, store_path="/tmp/my_grib2_store")
+    This function is kept for backward compatibility. New code should prefer
+    ``xarray.open_dataset(..., engine="grib2io")``.
     """
     import tempfile
 
     import xarray as xr
+
+    warnings.warn(
+        "grib2io.icechunk.open_dataset is deprecated; use xarray.open_dataset(..., engine='grib2io') instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     if store_path is None:
         store_path = tempfile.mkdtemp(prefix="grib2io_icechunk_")
@@ -1055,20 +1021,20 @@ def open_dataset(
     )
     writer.write(manifest)
     writer.commit("grib2io kerchunk manifest")
-    session = writer.get_readonly_session()
-    xr_kwargs.setdefault("consolidated", False)
+
+    chunks = xr_kwargs.pop("chunks", None)
+    xr_kwargs.pop("consolidated", None)
 
     if drop_variables is not None:
         xr_kwargs["drop_variables"] = drop_variables
 
-    ds = xr.open_zarr(session.store, **xr_kwargs)
-
-    if data_model is not None:
-        from .xarray_backend import parse_data_model
-
-        ds = parse_data_model(ds, data_model)
-
-    return ds
+    return xr.open_dataset(
+        store_path,
+        engine="grib2io",
+        data_model=data_model,
+        chunks=chunks,
+        **xr_kwargs,
+    )
 
 
 def open_grib2(
@@ -1084,148 +1050,54 @@ def open_grib2(
     drop_variables: list[str] | None = None,
     **xr_kwargs,
 ):
-    """Open a GRIB2 file as an :class:`xarray.Dataset` via a virtual Icechunk store.
+    """Compatibility wrapper for opening GRIB2 via the existing xarray UI.
 
-    One-call interface that combines manifest generation and dataset opening:
-
-    1. Builds a kerchunk reference manifest from *url* (local path or remote
-       object-store URI) using :class:`~grib2io.kerchunk.ReferenceGenerator`.
-    2. Passes the manifest to :func:`open_dataset`, which writes it into a
-       temporary Icechunk virtual store and opens it with
-       :func:`xarray.open_zarr`.
-
-    Cloud credentials are resolved automatically from the URI prefix.  For
-    anonymous public S3 buckets, pass ``storage_options={"anon": True}``.
-
-    For remote files, grib2io automatically uses a ``.idx`` sidecar file
-    (e.g. ``url + ".idx"``) when available to skip streaming the large data
-    payloads and read only message header bytes.  Combining this with
-    ``filters`` to restrict which GRIB2 messages are indexed makes manifest
-    generation near-instant even for multi-gigabyte files.
-
-    Parameters
-    ----------
-    url:
-        Path or URI to a GRIB2 file, e.g.
-        ``"s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000"``
-        or a local path like ``"/data/gfs.t00z.pgrb2.1p00.f024"``.
-    storage_options:
-        fsspec storage options forwarded to
-        :class:`~grib2io.kerchunk.ReferenceGenerator`, e.g.
-        ``{"anon": True}`` for public S3 buckets.
-    filters:
-        Optional dict of ``Grib2Message`` attribute filters passed to
-        :class:`~grib2io.kerchunk.ReferenceGenerator`.  Only messages
-        matching all key/value pairs are included in the manifest.  Use this
-        to restrict the dataset to specific variables and dramatically reduce
-        manifest-generation time for large files.  For example, to extract
-        only 2-metre temperature::
-
-            filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2}
-    store_path:
-        Filesystem path for the Icechunk repository.  A temporary directory is
-        created and used when omitted.
-    max_workers:
-        Number of threads for parallel manifest scanning of multiple files.
-        Defaults to ``min(n_files, 8)``.  Lower values reduce S3 pressure
-        during the scanning phase.
-    network_timeout:
-        HTTP stream timeout in seconds for S3 virtual chunk reads during
-        ``.compute()``.  Defaults to 120 s (the icechunk built-in default
-        is much lower and causes timeouts on large datasets).
-    max_concurrent_requests:
-        Maximum number of concurrent HTTP requests icechunk will issue when
-        reading virtual chunks.  Defaults to 32.  Lower values (e.g. 8–16)
-        reduce S3 pressure at the cost of throughput.  Set to ``None`` for
-        unlimited.
-    max_scan_attempts:
-        Maximum number of attempts to scan the GRIB2 files and generate the
-        manifest.  Useful for handling transient network errors during the
-        indexing phase.  Defaults to 3.
-    **xr_kwargs:
-        Additional keyword arguments forwarded to :func:`xarray.open_zarr`.
-
-    Returns
-    -------
-    xarray.Dataset
-
-    Examples
-    --------
-    Public S3 bucket (anonymous access):
-
-    >>> from grib2io.icechunk import open_grib2
-    >>> ds = open_grib2(
-    ...     "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000",
-    ...     storage_options={"anon": True},
-    ... )
-    >>> ds.TMP.isel(valid_time=0, isobaric_surface=0).compute()
-
-    Filter to a single variable (much faster for large files):
-
-    >>> ds = open_grib2(
-    ...     "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000",
-    ...     storage_options={"anon": True},
-    ...     filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2},
-    ... )
-
-    Robust computation with retries:
-
-    >>> ds.TMP.grib2io.compute(max_attempts=10)
-
-    Local file:
-
-    >>> ds = open_grib2("/data/gfs.t00z.pgrb2.1p00.f024")
-
-    Multi-file with parallel scanning:
-
-    >>> ds = open_grib2(
-    ...     [f"s3://bucket/gfs.{d}/gfs.grib2" for d in dates],
-    ...     storage_options={"anon": True},
-    ...     filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103},
-    ...     max_workers=16,
-    ... )
+    This function is kept for backward compatibility. New code should prefer
+    ``xarray.open_dataset(..., engine="grib2io", use_icechunk=True)`` or
+    ``xarray.open_mfdataset(..., engine="grib2io", use_icechunk=True)``.
     """
-    import time
+    import xarray as xr
 
-    from grib2io.kerchunk import ReferenceGenerator
+    from .xarray_backend import open_mfdataset
 
-    gen = ReferenceGenerator(
-        url,
-        filters=filters,
-        storage_options=storage_options or {},
-        max_workers=max_workers,
+    warnings.warn(
+        "grib2io.icechunk.open_grib2 is deprecated; use xarray open_dataset/open_mfdataset with engine='grib2io' instead.",
+        DeprecationWarning,
+        stacklevel=2,
     )
 
-    # Robust manifest generation with retries for transient scan errors
-    manifest = None
-    last_exc = None
-    for attempt in range(1, max_scan_attempts + 1):
-        try:
-            manifest = gen.generate()
-            break
-        except Exception as exc:
-            last_exc = exc
-            if attempt == max_scan_attempts:
-                break
-            sleep_s = 2**attempt
-            _logger.warning(
-                "Transient error during GRIB2 scan (attempt %d/%d), retrying in %ds: %s",
-                attempt,
-                max_scan_attempts,
-                sleep_s,
-                exc,
-            )
-            time.sleep(sleep_s)
+    chunks = xr_kwargs.pop("chunks", None)
 
-    if manifest is None:
-        raise last_exc
+    if isinstance(url, (list, tuple)):
+        return open_mfdataset(
+            url,
+            drop_variables=drop_variables,
+            filters=filters or {},
+            data_model=data_model,
+            chunks=chunks,
+            use_icechunk=True,
+            storage_options=storage_options,
+            max_workers=max_workers,
+            network_timeout=network_timeout,
+            max_concurrent_requests=max_concurrent_requests,
+            max_scan_attempts=max_scan_attempts,
+            store_path=store_path,
+            **xr_kwargs,
+        )
 
-    return open_dataset(
-        manifest,
-        store_path=store_path,
+    return xr.open_dataset(
+        url,
+        engine="grib2io",
+        drop_variables=drop_variables,
+        filters=filters or {},
+        data_model=data_model,
+        chunks=chunks,
+        use_icechunk=True,
+        storage_options=storage_options,
+        max_workers=max_workers,
         network_timeout=network_timeout,
         max_concurrent_requests=max_concurrent_requests,
-        data_model=data_model,
-        drop_variables=drop_variables,
+        max_scan_attempts=max_scan_attempts,
+        store_path=store_path,
         **xr_kwargs,
     )

@@ -693,6 +693,7 @@ def _open_from_icechunk(
     drop_variables=None,
     chunks=None,
     branch="main",
+    virtual_chunk_prefixes=None,
     **kwargs,
 ) -> xr.Dataset:
     """Open an Icechunk store as an xarray Dataset."""
@@ -721,7 +722,44 @@ def _open_from_icechunk(
         else:
             storage = icechunk.storage.local_filesystem_storage(path=uri)
 
-        repo = icechunk.Repository.open(storage)
+        config = icechunk.config.RepositoryConfig.default()
+        authorize = None
+        if virtual_chunk_prefixes:
+            raw_authorize = {}
+            for prefix in virtual_chunk_prefixes:
+                if not isinstance(prefix, str):
+                    continue
+
+                if prefix.startswith("file://"):
+                    local_path = prefix[7:]
+                    if local_path.endswith("/"):
+                        local_path = local_path[:-1]
+                    container_store = icechunk.storage.local_filesystem_store(local_path)
+                elif prefix.startswith("s3://"):
+                    container_store = icechunk.storage.s3_store(region="us-east-1")
+                elif prefix.startswith("gcs://") or prefix.startswith("gs://"):
+                    container_store = icechunk.storage.gcs_store(opts={})
+                elif prefix.startswith("http://") or prefix.startswith("https://"):
+                    container_store = icechunk.storage.http_store(opts={})
+                else:
+                    container_store = icechunk.storage.local_filesystem_store(prefix)
+
+                config.set_virtual_chunk_container(icechunk.virtual.VirtualChunkContainer(prefix, container_store))
+
+                if prefix.startswith("s3://"):
+                    raw_authorize[prefix] = icechunk.s3_anonymous_credentials()
+                elif prefix.startswith("gs://") or prefix.startswith("gcs://"):
+                    raw_authorize[prefix] = icechunk.gcs_credentials(anon=True)
+                else:
+                    raw_authorize[prefix] = None
+            if raw_authorize:
+                authorize = icechunk.containers_credentials(raw_authorize)
+
+        repo = icechunk.Repository.open(
+            storage,
+            config=config,
+            authorize_virtual_chunk_access=authorize,
+        )
         session = repo.readonly_session(branch)
         store = session.store
 
@@ -743,6 +781,100 @@ def _open_from_icechunk(
     ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Icechunk store {filename_or_obj}\n{history}"
 
     return ds
+
+
+def _open_grib2_via_icechunk(
+    url,
+    storage_options=None,
+    filters=None,
+    store_path=None,
+    max_workers=None,
+    network_timeout=120,
+    max_concurrent_requests=32,
+    max_scan_attempts=3,
+    data_model=None,
+    drop_variables=None,
+    chunks=None,
+    **xr_kwargs,
+) -> xr.Dataset:
+    """Open GRIB2 data through the Icechunk virtualization pipeline.
+
+    This is the backend-owned implementation for ``use_icechunk=True`` so
+    callers can continue using the standard grib2io/xarray interfaces.
+    """
+    import tempfile
+    import time
+
+    from grib2io.kerchunk import ReferenceGenerator
+
+    from .icechunk import IcechunkWriter
+
+    gen = ReferenceGenerator(
+        url,
+        filters=filters or {},
+        storage_options=storage_options or {},
+        max_workers=max_workers,
+    )
+
+    manifest = None
+    last_exc = None
+    for attempt in range(1, max_scan_attempts + 1):
+        try:
+            manifest = gen.generate()
+            break
+        except Exception as exc:
+            last_exc = exc
+            if attempt == max_scan_attempts:
+                break
+            sleep_s = 2**attempt
+            _logger.warning(
+                "Transient error during GRIB2 scan (attempt %d/%d), retrying in %ds: %s",
+                attempt,
+                max_scan_attempts,
+                sleep_s,
+                exc,
+            )
+            time.sleep(sleep_s)
+
+    if manifest is None:
+        raise last_exc
+
+    if store_path is None:
+        store_path = tempfile.mkdtemp(prefix="grib2io_icechunk_")
+
+    writer = IcechunkWriter(
+        store_path,
+        network_timeout=network_timeout,
+        max_concurrent_requests=max_concurrent_requests,
+    )
+    writer.write(manifest)
+    writer.commit("grib2io kerchunk manifest")
+
+    # Authorize virtual chunk containers when reopening the repository for
+    # read access. Icechunk enforces authorization at read time.
+    virtual_chunk_prefixes = set()
+    refs = manifest.get("refs", {}) if isinstance(manifest, dict) else {}
+    for value in refs.values():
+        url = None
+        if isinstance(value, (list, tuple)) and value:
+            if isinstance(value[0], str):
+                url = value[0]
+        elif isinstance(value, dict):
+            maybe_url = value.get("url")
+            if isinstance(maybe_url, str):
+                url = maybe_url
+        if isinstance(url, str) and "://" in url:
+            prefix = url.rsplit("/", 1)[0] + "/"
+            virtual_chunk_prefixes.add(prefix)
+
+    return _open_from_icechunk(
+        store_path,
+        data_model=data_model,
+        drop_variables=drop_variables,
+        chunks=chunks,
+        virtual_chunk_prefixes=virtual_chunk_prefixes,
+        **xr_kwargs,
+    )
 
 
 class GribBackendEntrypoint(BackendEntrypoint):
@@ -822,9 +954,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
 
         # --- Use Icechunk virtual store path if requested ---
         if use_icechunk:
-            from .icechunk import open_grib2
-
-            return open_grib2(
+            return _open_grib2_via_icechunk(
                 filename_or_obj,
                 storage_options=storage_options,
                 filters=filters,
@@ -2879,8 +3009,6 @@ def open_mfdataset(
         filenames = sorted(glob.glob(filenames))
 
     if use_icechunk:
-        from .icechunk import open_grib2
-
         # Extract Icechunk-specific kwargs from combination kwargs
         icechunk_kwargs = {
             "storage_options": kwargs.pop("storage_options", None),
@@ -2891,7 +3019,7 @@ def open_mfdataset(
             "store_path": kwargs.pop("store_path", None),
         }
 
-        ds = open_grib2(
+        ds = _open_grib2_via_icechunk(
             filenames,
             filters=filters,
             data_model=data_model,
