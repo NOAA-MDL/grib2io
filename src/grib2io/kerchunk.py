@@ -444,9 +444,7 @@ class ReferenceGenerator:
             # absent, other filters (e.g. typeOfFirstFixedSurface/level) are
             # still applied to the .idx, and the .grib2ioidx sidecar yields the
             # full parsed index with no header reads at all.
-            index, msgs = self._build_remote_index_filtered(
-                file_path, shortname_filter, scan_storage_options
-            )
+            index, msgs = self._build_remote_index_filtered(file_path, shortname_filter, scan_storage_options)
 
         n_msgs = len(msgs)
         for i in range(n_msgs):
