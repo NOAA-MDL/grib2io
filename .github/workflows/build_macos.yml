@@ -36,11 +36,7 @@ jobs:
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade setuptools
         python3 -m pip install --upgrade wheel
-        if [ "${{ matrix.python-version }}" = "3.8" ] || [ "${{ matrix.python-version }}" = "3.9" ] || [ "${{ matrix.python-version }}" = "3.10" ]; then
-          python3 -m pip install ".[base]"
-        else
-          python3 -m pip install ".[all]"
-        fi
+        python3 -m pip install ".[test]"
         python3 -m pip install numcodecs fsspec hypothesis
 
     - name: Install grib2io and test

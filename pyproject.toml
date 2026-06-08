@@ -49,10 +49,11 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
-base = ["xarray", "dask", "distributed", "cython", "pyproj", "pytest"]
+
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
 icechunk = ["icechunk; python_version >= '3.12'"]
+test = ["pytest", "s3fs", "dask", "distributed", "cython", "xarray", "kerchunk", "icechunk; python_version >= '3.12'", "virtualizarr", "dask[complete]"]
 demo = ["xarray", "kerchunk", "icechunk; python_version >= '3.12'", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
 all = [
   "xarray",

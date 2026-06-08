@@ -388,12 +388,28 @@ def test_remote_scan_enables_index_cache(monkeypatch):
 
     captured = {}
 
+    class _FakeRemoteFile:
+        def open(self):
+            return self
+
+        def info(self):
+            return {"size": 12345}
+
+        def close(self):
+            return None
+
+    def _fake_fsspec_open(path, mode="rb", **kwargs):
+        if path == "s3://example-bucket/sample.grib2":
+            return _FakeRemoteFile()
+        raise PermissionError("Forbidden")
+
     def _fake_open(path, **kwargs):
         captured["path"] = path
         captured["kwargs"] = kwargs
         return _FakeOpen()
 
     monkeypatch.setattr("grib2io.open", _fake_open)
+    monkeypatch.setattr("fsspec.open", _fake_fsspec_open)
 
     gen = ReferenceGenerator("s3://example-bucket/sample.grib2", storage_options={"anon": True})
     gen._scan_file("s3://example-bucket/sample.grib2", "s3://example-bucket/sample.grib2", {})
