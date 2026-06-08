@@ -52,6 +52,7 @@ dynamic = ["version"]
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
 icechunk = ["icechunk"]
+demo = ["xarray", "kerchunk", "icechunk", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
