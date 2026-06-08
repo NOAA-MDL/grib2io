@@ -49,10 +49,28 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+base = ["xarray", "dask", "distributed", "cython", "pyproj", "pytest"]
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
 icechunk = ["icechunk"]
 demo = ["xarray", "kerchunk", "icechunk", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
+all = [
+  "xarray",
+  "kerchunk",
+  "numcodecs",
+  "icechunk",
+  "virtualizarr",
+  "matplotlib",
+  "cartopy",
+  "jupyterlab",
+  "geoviews",
+  "hvplot",
+  "dask",
+  "distributed",
+  "cython",
+  "pyproj",
+  "pytest"
+]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
