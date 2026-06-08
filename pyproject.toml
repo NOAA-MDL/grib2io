@@ -52,13 +52,13 @@ dynamic = ["version"]
 base = ["xarray", "dask", "distributed", "cython", "pyproj", "pytest"]
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
-icechunk = ["icechunk"]
-demo = ["xarray", "kerchunk", "icechunk", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
+icechunk = ["icechunk; python_version >= '3.12'"]
+demo = ["xarray", "kerchunk", "icechunk; python_version >= '3.12'", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
 all = [
   "xarray",
   "kerchunk",
   "numcodecs",
-  "icechunk",
+  "icechunk; python_version >= '3.12'",
   "virtualizarr",
   "matplotlib",
   "cartopy",
