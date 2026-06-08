@@ -276,10 +276,14 @@ class ReferenceGenerator:
     def _build_remote_index_filtered(
         self,
         file_path: str,
-        shortname_filter: Union[str, Set[str]],
-        scan_storage_options: dict,
+        shortname_filter: Optional[Union[str, Set[str]]] = None,
+        scan_storage_options: Optional[dict] = None,
     ):
-        """Build a GRIB2 index for a remote file, pre-filtered by shortName.
+        """Build a GRIB2 index for a remote file using sidecar pre-filtering.
+
+        Works with any combination of filters: a ``shortName`` alone,
+        ``shortName`` plus additional filters (e.g. ``typeOfFirstFixedSurface``
+        / ``level``), or filters without a ``shortName`` at all.
 
         Instead of fetching headers for every message (~700 HTTP requests for a
         full GFS 0.25° file), this method:
@@ -312,6 +316,7 @@ class ReferenceGenerator:
         from grib2io._grib2io import build_index
         from grib2io import msgs_from_index
 
+        scan_storage_options = scan_storage_options or {}
         cache_root = os.path.join(os.path.expanduser("~"), ".cache", "grib2io")
 
         # Open the remote file to obtain its size (one lightweight HEAD/info call).
@@ -432,20 +437,16 @@ class ReferenceGenerator:
             # fast membership test; leave scalar strings as-is.
             if isinstance(shortname_filter, (list, tuple)):
                 shortname_filter = set(shortname_filter)
-            if shortname_filter is not None:
-                # Fast path: pre-filter by shortName using the wgrib2 .idx
-                # sidecar to avoid making ~700 range requests for non-matching
-                # messages.  Falls back to grib2io.open if no sidecar exists.
-                index, msgs = self._build_remote_index_filtered(file_path, shortname_filter, scan_storage_options)
-            else:
-                # Keep local behavior side-effect free, but allow remote scans
-                # to persist the parsed index in grib2io's local cache
-                # (~/.cache/grib2io/).  This avoids rebuilding the index from
-                # remote headers on repeated runs when only a wgrib2 .idx is
-                # available remotely.
-                with grib2io.open(file_path, save_index=True, use_index=True, **scan_storage_options) as f:
-                    index = f._index
-                    msgs = list(f)
+            # Fast path: resolve the index from a sidecar (.grib2ioidx or the
+            # wgrib2 .idx) instead of fetching headers for every message.  This
+            # works whether or not a shortName filter is given: when shortName
+            # is present it is combined with any other filters; when it is
+            # absent, other filters (e.g. typeOfFirstFixedSurface/level) are
+            # still applied to the .idx, and the .grib2ioidx sidecar yields the
+            # full parsed index with no header reads at all.
+            index, msgs = self._build_remote_index_filtered(
+                file_path, shortname_filter, scan_storage_options
+            )
 
         n_msgs = len(msgs)
         for i in range(n_msgs):
@@ -745,8 +746,8 @@ _TOFS_FIXED_STRINGS: Dict[int, tuple] = {
     1: ("surface", "ground or water surface"),
     6: ("max wind",),
     7: ("tropopause",),
-    10: ("top of atmosphere",),
-    11: ("top of atmosphere",),
+    8: ("top of atmosphere", "nominal top of atmosphere"),
+    10: ("entire atmosphere",),
     101: ("mean sea level",),
 }
 
@@ -798,7 +799,7 @@ def _idx_level_matches(level_str: str, tofs: Any, level_filter: Any) -> bool:
 
 def _prefilter_idx_offsets(
     filehandle,
-    shortname: Union[str, Set[str]],
+    shortname: Optional[Union[str, Set[str]]] = None,
     filters: Optional[Dict[str, Any]] = None,
 ) -> List[int]:
     """Parse a wgrib2 ``.idx`` sidecar and return byte offsets matching filters.
@@ -807,16 +808,20 @@ def _prefilter_idx_offsets(
 
         MSG_NUM:BYTE_OFFSET:d=YYYYMMDDCC:SHORTNAME:LEVEL:FORECAST:
 
-    *shortname* may be a single string or a set/list of strings.  When
-    *filters* is provided, the level string (``parts[4]``) is also checked
-    against ``typeOfFirstFixedSurface`` and ``level`` entries in *filters*,
-    which can drastically reduce the number of messages passed to
-    :func:`build_index` (e.g. from ~50 TMP pressure levels to 1 for T2M).
+    *shortname* may be a single string, a set/list of strings, or ``None``.
+    When ``None`` the shortName is not constrained and every message is kept
+    unless another filter rules it out.  When *filters* is provided, the level
+    string (``parts[4]``) is also checked against ``typeOfFirstFixedSurface``
+    and ``level`` entries in *filters*, which can drastically reduce the number
+    of messages passed to :func:`build_index` (e.g. from ~50 TMP pressure
+    levels to 1 for T2M).
 
     Returns an empty list if the sidecar cannot be parsed or contains no
     matching messages.
     """
-    names: Set[str] = {shortname} if isinstance(shortname, str) else set(shortname)
+    names: Optional[Set[str]] = None
+    if shortname is not None:
+        names = {shortname} if isinstance(shortname, str) else set(shortname)
     tofs = filters.get("typeOfFirstFixedSurface") if filters else None
     level_filter = filters.get("level") if filters else None
     offsets: List[int] = []
@@ -824,7 +829,7 @@ def _prefilter_idx_offsets(
         if isinstance(line, bytes):
             line = line.decode("utf-8", errors="replace")
         parts = line.split(":")
-        if len(parts) >= 5 and parts[3] in names:
+        if len(parts) >= 5 and (names is None or parts[3] in names):
             # Level-string pre-filter: skip if we can definitively rule out a
             # match from the .idx level description (e.g. "500 mb" vs "2 m
             # above ground").  Conservative: unknown formats are kept.

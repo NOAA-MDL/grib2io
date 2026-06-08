@@ -472,7 +472,7 @@ class IcechunkWriter:
         elif prefix.startswith("s3://"):
             return icechunk.storage.s3_store(
                 region="us-east-1",
-                network_stream_timeout_seconds=self._network_timeout,
+                network_stream_timeout_seconds=int(self._network_timeout),
             )
         elif prefix.startswith("gcs://"):
             return icechunk.storage.gcs_store(opts={})

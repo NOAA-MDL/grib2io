@@ -694,6 +694,8 @@ def _open_from_icechunk(
     chunks=None,
     branch="main",
     virtual_chunk_prefixes=None,
+    max_concurrent_requests=None,
+    network_timeout=None,
     **kwargs,
 ) -> xr.Dataset:
     """Open an Icechunk store as an xarray Dataset."""
@@ -723,6 +725,49 @@ def _open_from_icechunk(
             storage = icechunk.storage.local_filesystem_storage(path=uri)
 
         config = icechunk.config.RepositoryConfig.default()
+
+        # Limit concurrent S3 requests at read time to avoid hammering the
+        # endpoint and triggering connection-reset / connect-timeout errors
+        # while fetching virtual chunk references on large datasets.
+        if max_concurrent_requests is not None:
+            config.get_partial_values_concurrency = max_concurrent_requests
+            config.max_concurrent_requests = max_concurrent_requests
+
+        # Configure native object-store retries and timeouts so that transient
+        # remote errors ("connection closed before message completed",
+        # "HTTP connect timeout", SendRequest dispatch failures) encountered
+        # while fetching virtual chunk references are retried with backoff
+        # instead of failing the read. These settings govern the storage
+        # backend used for virtual chunk containers as well.
+        try:
+            from icechunk.storage import (
+                StorageSettings,
+                StorageRetriesSettings,
+                StorageTimeoutSettings,
+                StorageConcurrencySettings,
+            )
+
+            storage_kwargs = {
+                "retries": StorageRetriesSettings(
+                    max_tries=10,
+                    initial_backoff_ms=1000,
+                    max_backoff_ms=30000,
+                ),
+                "timeouts": StorageTimeoutSettings(
+                    connect_timeout_ms=30000,
+                    read_timeout_ms=int((network_timeout or 120) * 1000),
+                ),
+            }
+            if max_concurrent_requests is not None:
+                storage_kwargs["concurrency"] = StorageConcurrencySettings(
+                    max_concurrent_requests_for_object=max_concurrent_requests,
+                )
+            config.storage = StorageSettings(**storage_kwargs)
+        except Exception:
+            # Older icechunk without granular storage settings; the
+            # repository-level concurrency limit above still applies.
+            pass
+
         authorize = None
         if virtual_chunk_prefixes:
             raw_authorize = {}
@@ -736,7 +781,10 @@ def _open_from_icechunk(
                         local_path = local_path[:-1]
                     container_store = icechunk.storage.local_filesystem_store(local_path)
                 elif prefix.startswith("s3://"):
-                    container_store = icechunk.storage.s3_store(region="us-east-1")
+                    s3_store_kwargs = {"region": "us-east-1"}
+                    if network_timeout is not None:
+                        s3_store_kwargs["network_stream_timeout_seconds"] = int(network_timeout)
+                    container_store = icechunk.storage.s3_store(**s3_store_kwargs)
                 elif prefix.startswith("gcs://") or prefix.startswith("gs://"):
                     container_store = icechunk.storage.gcs_store(opts={})
                 elif prefix.startswith("http://") or prefix.startswith("https://"):
@@ -873,6 +921,8 @@ def _open_grib2_via_icechunk(
         drop_variables=drop_variables,
         chunks=chunks,
         virtual_chunk_prefixes=virtual_chunk_prefixes,
+        max_concurrent_requests=max_concurrent_requests,
+        network_timeout=network_timeout,
         **xr_kwargs,
     )
 
@@ -983,6 +1033,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
                 drop_variables=drop_variables,
                 chunks=chunks,
                 branch=branch,
+                max_concurrent_requests=max_concurrent_requests,
+                network_timeout=network_timeout,
             )
 
         with grib2io.open(filename_or_obj, save_index=save_index, _xarray_backend=True) as f:
