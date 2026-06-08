@@ -28,6 +28,8 @@ jobs:
         brew install jasper libpng libaec
         brew tap eengl/nceplibs
         brew install nceplibs-g2c nceplibs-ip
+        echo "G2C_DIR=$(brew --prefix nceplibs-g2c)" >> $GITHUB_ENV
+        echo "IP_DIR=$(brew --prefix nceplibs-ip)" >> $GITHUB_ENV
 
     - name: Install python dependencies via pip
       run: |
