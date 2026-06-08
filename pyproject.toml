@@ -69,7 +69,8 @@ all = [
   "distributed",
   "cython",
   "pyproj",
-  "pytest"
+  "pytest",
+  "s3fs",
 ]
 
 [project.entry-points."xarray.backends"]
