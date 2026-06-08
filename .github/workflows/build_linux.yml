@@ -40,16 +40,6 @@ jobs:
         fi
         python -m pip install numcodecs fsspec hypothesis
 
-    - name: Install optional python dependencies (kerchunk, Python >= 3.11)
-      if: ${{ contains(fromJson('["3.11","3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install kerchunk
-
-    - name: Install optional python dependencies (zarr + icechunk, Python >= 3.12)
-      if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install zarr icechunk
-
     - name: Install NCEPLIBS-g2c
       run: |
         wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.8.0.tar.gz
