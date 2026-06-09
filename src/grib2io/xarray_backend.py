@@ -56,6 +56,41 @@ _HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
 
 _logger = logging.getLogger(__name__)
 
+_DEFAULT_REMOTE_STORAGE_OPTIONS = {
+    "config_kwargs": {
+        "connect_timeout": 30,
+        "read_timeout": 120,
+        "retries": {"max_attempts": 10, "mode": "adaptive"},
+    }
+}
+
+
+def _merge_default_storage_options(storage_options):
+    """Merge user storage options over conservative remote defaults."""
+    merged = {
+        "config_kwargs": {
+            "connect_timeout": _DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["connect_timeout"],
+            "read_timeout": _DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["read_timeout"],
+            "retries": dict(_DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["retries"]),
+        }
+    }
+    user = storage_options or {}
+    if not isinstance(user, dict):
+        return merged
+
+    for key, value in user.items():
+        if key == "config_kwargs" and isinstance(value, dict):
+            merged_cfg = merged.setdefault("config_kwargs", {})
+            for cfg_key, cfg_val in value.items():
+                if cfg_key == "retries" and isinstance(cfg_val, dict):
+                    retries = merged_cfg.setdefault("retries", {})
+                    retries.update(cfg_val)
+                else:
+                    merged_cfg[cfg_key] = cfg_val
+        else:
+            merged[key] = value
+    return merged
+
 _LOCK = SerializableLock()
 
 _LEVEL_NAME_MAPPING = grib2io.tables.get_table("4.5.grib2io.level.name")
@@ -659,7 +694,38 @@ def _is_icechunk_store(filename_or_obj) -> bool:
 
 
 def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, chunks=None, **kwargs) -> xr.Dataset:
-    """Open a Kerchunk reference file as an xarray Dataset."""
+    """Open a Kerchunk reference file as an xarray Dataset.
+
+    Why this lives in grib2io (rather than just using ``engine="zarr"``)
+    -------------------------------------------------------------------
+    A Kerchunk reference produced by :class:`grib2io.kerchunk.ReferenceGenerator`
+    does **not** store decompressed arrays.  Each data chunk is a
+    ``[url, offset, length]`` pointer into the *raw GRIB2 bytes* of the
+    original file(s), and the array metadata names ``grib2io`` as its codec
+    (in the Zarr v2 ``filters``/``compressor`` field).  Decoding those bytes
+    into gridded values requires :class:`grib2io.codecs.Grib2Codec`, which is
+    registered with numcodecs only when ``grib2io.codecs`` is imported.
+
+    This function exists to guarantee three grib2io-specific things that a
+    bare ``xr.open_zarr`` / ``engine="zarr"`` call would not provide:
+
+    1. **Codec availability.** It imports ``grib2io.codecs`` so the
+       ``grib2io`` codec is registered before the reference filesystem tries
+       to decode any GRIB2 chunk.  Without this, reads raise
+       ``ValueError: codec not available: 'grib2io'``.
+    2. **GRIB2-aware post-processing.** When ``data_model`` is given it routes
+       the opened dataset through :func:`parse_data_model` (e.g. the
+       ``"nws-viz"`` CF normalization), which understands GRIB2 metadata
+       conventions and is meaningless for a generic Zarr store.
+    3. **A single, consistent entrypoint.** Users open native GRIB2 files,
+       Kerchunk references, and Icechunk stores all through
+       ``engine="grib2io"`` with the same kwargs and provenance ``history``
+       attribute, without needing to know the underlying storage format.
+
+    A reference that happens to use only standard Zarr codecs will still open
+    here, but in that case this path adds nothing over ``engine="zarr"``
+    except the optional ``data_model`` normalization and history attribute.
+    """
     _ensure_kerchunk()
     import fsspec
     import grib2io.codecs  # noqa: F401
@@ -698,7 +764,40 @@ def _open_from_icechunk(
     network_timeout=None,
     **kwargs,
 ) -> xr.Dataset:
-    """Open an Icechunk store as an xarray Dataset."""
+    """Open an Icechunk store as an xarray Dataset.
+
+    Why this lives in grib2io (rather than just using ``engine="zarr"``)
+    -------------------------------------------------------------------
+    An Icechunk store written by :class:`grib2io.icechunk.IcechunkWriter` is a
+    *virtual* Zarr v3 store: its data arrays hold no bytes of their own but
+    reference byte ranges of the original GRIB2 files via Icechunk virtual
+    chunk containers, and each data array carries
+    :class:`grib2io.codecs.Grib2SerializerCodec` as its Zarr v3 serializer so
+    the raw GRIB2 section-7 bytes can be decoded on read.  Opening such a
+    store correctly is more than a plain ``xr.open_zarr`` call; this function
+    centralizes the grib2io-specific setup:
+
+    1. **Codec availability.** It imports ``grib2io.codecs`` so the Zarr v3
+       ``Grib2SerializerCodec`` is registered before any chunk is decoded.
+       Without it, reads fail to instantiate the serializer.
+    2. **Virtual chunk container authorization.** It registers the
+       ``file://`` / ``s3://`` / ``gcs://`` / ``https://`` prefixes the GRIB2
+       chunks point at and wires up anonymous credentials for public buckets,
+       which Icechunk requires *at read time* to authorize virtual chunk
+       access.  A generic ``engine="zarr"`` open does none of this.
+    3. **Remote-read robustness.** It applies retry/backoff and
+       timeout/concurrency settings tuned for fetching many small GRIB2 byte
+       ranges from object storage, so transient network errors are retried
+       rather than failing the read.
+    4. **GRIB2-aware post-processing + unified entrypoint.** As with the
+       Kerchunk path, ``data_model`` routes through :func:`parse_data_model`,
+       and the store is reachable through the same ``engine="grib2io"``
+       interface and provenance ``history`` attribute as native GRIB2 files.
+
+    A store that uses only standard Zarr codecs and no virtual chunks will
+    still open here, but then this path adds little over ``engine="zarr"``
+    beyond the optional ``data_model`` normalization and history attribute.
+    """
     _ensure_icechunk()
     import icechunk
     import grib2io.codecs  # noqa: F401
@@ -836,10 +935,10 @@ def _open_grib2_via_icechunk(
     storage_options=None,
     filters=None,
     store_path=None,
-    max_workers=None,
-    network_timeout=120,
-    max_concurrent_requests=32,
-    max_scan_attempts=3,
+    max_workers=2,
+    network_timeout=300,
+    max_concurrent_requests=8,
+    max_scan_attempts=5,
     data_model=None,
     drop_variables=None,
     chunks=None,
@@ -857,10 +956,12 @@ def _open_grib2_via_icechunk(
 
     from .icechunk import IcechunkWriter
 
+    merged_storage_options = _merge_default_storage_options(storage_options)
+
     gen = ReferenceGenerator(
         url,
         filters=filters or {},
-        storage_options=storage_options or {},
+        storage_options=merged_storage_options,
         max_workers=max_workers,
     )
 
@@ -948,10 +1049,10 @@ class GribBackendEntrypoint(BackendEntrypoint):
         branch="main",
         use_icechunk=False,
         storage_options=None,
-        max_workers=None,
-        network_timeout=120,
-        max_concurrent_requests=32,
-        max_scan_attempts=3,
+        max_workers=2,
+        network_timeout=300,
+        max_concurrent_requests=8,
+        max_scan_attempts=5,
         store_path=None,
     ) -> xr.Dataset:
         """
@@ -984,13 +1085,13 @@ class GribBackendEntrypoint(BackendEntrypoint):
         storage_options : dict, optional
             Extra options passed to the storage backend (e.g. fsspec or Icechunk).
         max_workers : int, optional
-            Number of threads for parallel manifest scanning.
+            Number of threads for parallel manifest scanning. Defaults to 2.
         network_timeout : int, optional
-            HTTP stream timeout in seconds for remote reads. Defaults to 120.
+            HTTP stream timeout in seconds for remote reads. Defaults to 300.
         max_concurrent_requests : int, optional
-            Maximum concurrent HTTP requests for remote reads. Defaults to 32.
+            Maximum concurrent HTTP requests for remote reads. Defaults to 8.
         max_scan_attempts : int, optional
-            Maximum attempts to scan remote GRIB2 files. Defaults to 3.
+            Maximum attempts to scan remote GRIB2 files. Defaults to 5.
         store_path : str, optional
             Filesystem path for the temporary Icechunk repository.
 
@@ -1037,7 +1138,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
                 network_timeout=network_timeout,
             )
 
-        with grib2io.open(filename_or_obj, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            filename_or_obj,
+            save_index=save_index,
+            _xarray_backend=True,
+            **(storage_options or {}),
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
@@ -3060,14 +3166,16 @@ def open_mfdataset(
 
         filenames = sorted(glob.glob(filenames))
 
+    storage_options = kwargs.pop("storage_options", None)
+
     if use_icechunk:
         # Extract Icechunk-specific kwargs from combination kwargs
         icechunk_kwargs = {
             "storage_options": kwargs.pop("storage_options", None),
-            "max_workers": kwargs.pop("max_workers", None),
-            "network_timeout": kwargs.pop("network_timeout", 120),
-            "max_concurrent_requests": kwargs.pop("max_concurrent_requests", 32),
-            "max_scan_attempts": kwargs.pop("max_scan_attempts", 3),
+            "max_workers": kwargs.pop("max_workers", 2),
+            "network_timeout": kwargs.pop("network_timeout", 300),
+            "max_concurrent_requests": kwargs.pop("max_concurrent_requests", 8),
+            "max_scan_attempts": kwargs.pop("max_scan_attempts", 5),
             "store_path": kwargs.pop("store_path", None),
         }
 
@@ -3100,7 +3208,12 @@ def open_mfdataset(
             The GRIB2 index for the specified file.
         """
         fname, i = fname_and_index
-        with grib2io.open(fname, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            fname,
+            save_index=save_index,
+            _xarray_backend=True,
+            **(storage_options or {}),
+        ) as f:
             idx = pd.DataFrame(f._index)
             idx = idx.assign(msg=list(f))
             idx["file_index"] = i

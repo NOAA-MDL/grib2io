@@ -345,8 +345,8 @@ class IcechunkWriter:
         self,
         store_path: str,
         storage_config: Optional[Any] = None,
-        network_timeout: int = 120,
-        max_concurrent_requests: Optional[int] = 32,
+        network_timeout: int = 300,
+        max_concurrent_requests: Optional[int] = 8,
     ):
         _ensure_icechunk()
 
@@ -990,8 +990,8 @@ class IcechunkWriter:
 def open_dataset(
     manifest: dict,
     store_path: str | None = None,
-    network_timeout: int = 120,
-    max_concurrent_requests: int | None = 32,
+    network_timeout: int = 300,
+    max_concurrent_requests: int | None = 8,
     data_model: str | None = None,
     drop_variables: list[str] | None = None,
     **xr_kwargs,
@@ -1042,10 +1042,10 @@ def open_grib2(
     storage_options: dict | None = None,
     filters: dict | None = None,
     store_path: str | None = None,
-    max_workers: int | None = None,
-    network_timeout: int = 120,
-    max_concurrent_requests: int | None = 32,
-    max_scan_attempts: int = 3,
+    max_workers: int | None = 2,
+    network_timeout: int = 300,
+    max_concurrent_requests: int | None = 8,
+    max_scan_attempts: int = 5,
     data_model: str | None = None,
     drop_variables: list[str] | None = None,
     **xr_kwargs,

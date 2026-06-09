@@ -431,7 +431,7 @@ class ReferenceGenerator:
                 index = f._index
                 msgs = list(f)
         else:
-            scan_storage_options = _remote_scan_storage_options(self.storage_options)
+            scan_storage_options = _remote_scan_storage_options(file_path, self.storage_options)
             shortname_filter = self.filters.get("shortName") if self.filters else None
             # Normalise list/tuple to a set so _prefilter_idx_offsets can do a
             # fast membership test; leave scalar strings as-is.
@@ -712,7 +712,7 @@ def _is_local_path(path: str) -> bool:
     return parsed.scheme == ""
 
 
-def _remote_scan_storage_options(storage_options: Dict[str, Any]) -> Dict[str, Any]:
+def _remote_scan_storage_options(file_path: str, storage_options: Dict[str, Any]) -> Dict[str, Any]:
     """Build tuned fsspec options for remote metadata scans.
 
     These defaults reduce accidental large-block downloads while scanning
@@ -723,6 +723,12 @@ def _remote_scan_storage_options(storage_options: Dict[str, Any]) -> Dict[str, A
         "default_cache_type": "none",
         "default_block_size": 131072,
     }
+
+    # Public S3 GRIB2 archives are common; default to anonymous access
+    # unless the caller explicitly requests credentialed access.
+    if urlparse(file_path).scheme in {"s3", "s3a"} and "anon" not in storage_options:
+        tuned["anon"] = True
+
     tuned.update(storage_options)
     return tuned
 
