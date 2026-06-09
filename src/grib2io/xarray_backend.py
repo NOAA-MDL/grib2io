@@ -91,6 +91,7 @@ def _merge_default_storage_options(storage_options):
             merged[key] = value
     return merged
 
+
 _LOCK = SerializableLock()
 
 _LEVEL_NAME_MAPPING = grib2io.tables.get_table("4.5.grib2io.level.name")
