@@ -23,7 +23,7 @@ def _fail_legacy_setup_invocation():
 
     # Only block legacy setup.py flows when this repository is configured for
     # a PEP 517 backend (scikit-build-core).
-    if "build-backend = \"scikit_build_core.build\"" not in pyproject_backend:
+    if 'build-backend = "scikit_build_core.build"' not in pyproject_backend:
         return
 
     argv = " ".join(sys.argv)
