@@ -8,6 +8,7 @@ jobs:
     name: py${{ matrix.python-version }}_cc=${{ matrix.ccompiler }}_static=${{ matrix.staticlib }}
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CC: ${{ matrix.ccompiler }}
     strategy:
       matrix:
@@ -26,24 +27,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install cmake gfortran libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev libopenblas-serial-dev
-
-    - name: Install python dependencies via pip
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        python -m pip install --upgrade wheel
-        python -m pip install -r requirements.txt
-        python -m pip install numcodecs fsspec hypothesis
-
-    - name: Install optional python dependencies (kerchunk, Python >= 3.11)
-      if: ${{ contains(fromJson('["3.11","3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install kerchunk
-
-    - name: Install optional python dependencies (zarr + icechunk, Python >= 3.12)
-      if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install zarr icechunk
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -64,6 +47,14 @@ jobs:
         cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON -DBLA_VENDOR=OpenBLAS ..
         make -j2
         sudo make install
+
+    - name: Install python dependencies via pip
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools
+        python -m pip install --upgrade wheel
+        python -m pip install ".[test]"
+        python -m pip install numcodecs fsspec hypothesis
 
     - name: Install grib2io and test
       run: |

@@ -330,6 +330,9 @@ if _HAS_ZARR_V3:
             raise NotImplementedError("Grib2SerializerCodec is decode-only")
 
     _zarr_registry.register_codec("grib2io", Grib2SerializerCodec)
+    # VirtualiZarr converts numcodecs {"id": "grib2io"} → zarr v3 {"name": "numcodecs.grib2io"}
+    # so we must also register under the prefixed name.
+    _zarr_registry.register_codec("numcodecs.grib2io", Grib2SerializerCodec)
 
 
 def _decode_grib2_bytes(
@@ -358,31 +361,81 @@ def _decode_grib2_bytes(
     if scan_mode_flags is not None and len(scan_mode_flags) > 2:
         storageorder = "F" if scan_mode_flags[2] else "C"
 
-    bmap = None
-    sec7_buf = raw
-    if bitmap_flag in {0, 254} and bitmap_length is not None and bitmap_length > 0:
-        bmap_bytes = raw[:bitmap_length]
-        sec7_buf = raw[bitmap_length:]
-        _bmapflag, bmap, _bpos = g2clib.unpack6(bmap_bytes, number_of_data_points)
+    # --- Dynamic per-chunk parsing -------------------------------------------
+    # If the raw bytes start with GRIB2 Section 5 (byte[4] == 5), parse the
+    # data representation template and bitmap from the chunk bytes rather than
+    # using the static codec-config values.  This allows arrays whose messages
+    # have different DRT values (reference value, scale factors, etc.) to all
+    # decode correctly from a single shared .zarray codec config.
+    if len(raw) > 11 and raw[4] == 5:
+        # Parse section 5
+        sec5_len = int.from_bytes(raw[0:4], "big")
+        _drtn, drt_arr, _npts, _ipos = g2clib.unpack5(bytes(raw[:sec5_len]))
+        drtn = int(_drtn)
+        number_of_packed_values = int(_npts)
+        raw = raw[sec5_len:]
 
-    fld1, _ipos = g2clib.unpack7(
-        sec7_buf,
-        gdtn,
-        gdt_arr,
-        drtn,
-        drt_arr,
-        number_of_packed_values,
-        storageorder=storageorder,
-    )
+    # Now raw starts with section 6 (bitmap indicator section).
+    # Always present (6 bytes minimum with indicator=255 when no bitmap).
+    if len(raw) > 5 and raw[4] == 6:
+        sec6_len = int.from_bytes(raw[0:4], "big")
+        bitmap_indicator = raw[5]
+        if bitmap_indicator in {0, 254}:
+            # Bitmap is present; unpack6 reads it from the sec6 bytes
+            bmap_bytes = bytes(raw[:sec6_len])
+            raw = raw[sec6_len:]
+            _bmapflag, bmap, _bpos = g2clib.unpack6(bmap_bytes, number_of_data_points)
+        else:
+            bmap = None
+            raw = raw[sec6_len:]
 
-    if bitmap_flag in {0, 254}:
-        if bmap is not None:
-            fld = np.full(number_of_data_points, np.nan, dtype=np.float32)
-            np.put(fld, np.nonzero(bmap), fld1)
+        fld1, _ipos = g2clib.unpack7(
+            raw,
+            gdtn,
+            gdt_arr,
+            drtn,
+            drt_arr,
+            number_of_packed_values,
+            storageorder=storageorder,
+        )
+
+        if bitmap_indicator in {0, 254}:
+            if bmap is not None:
+                fld = np.full(number_of_data_points, np.nan, dtype=np.float32)
+                np.put(fld, np.nonzero(bmap), fld1)
+            else:
+                fld = fld1
         else:
             fld = fld1
+
     else:
-        fld = fld1
+        # Legacy path: raw already starts at sec6 or sec7 (old manifest format)
+        bmap = None
+        sec7_buf = raw
+        if bitmap_flag in {0, 254} and bitmap_length is not None and bitmap_length > 0:
+            bmap_bytes = raw[:bitmap_length]
+            sec7_buf = raw[bitmap_length:]
+            _bmapflag, bmap, _bpos = g2clib.unpack6(bmap_bytes, number_of_data_points)
+
+        fld1, _ipos = g2clib.unpack7(
+            sec7_buf,
+            gdtn,
+            gdt_arr,
+            drtn,
+            drt_arr,
+            number_of_packed_values,
+            storageorder=storageorder,
+        )
+
+        if bitmap_flag in {0, 254}:
+            if bmap is not None:
+                fld = np.full(number_of_data_points, np.nan, dtype=np.float32)
+                np.put(fld, np.nonzero(bmap), fld1)
+            else:
+                fld = fld1
+        else:
+            fld = fld1
+    # -------------------------------------------------------------------------
 
     fld = np.reshape(fld, (ny, nx))
 

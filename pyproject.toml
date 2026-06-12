@@ -49,12 +49,37 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
-icechunk = ["icechunk"]
+icechunk = ["icechunk; python_version >= '3.12'"]
+test = ["pytest", "s3fs", "dask", "distributed", "cython", "xarray", "kerchunk", "icechunk; python_version >= '3.12'", "dask[complete]"]
+demo = ["xarray", "kerchunk", "icechunk; python_version >= '3.12'", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
+all = [
+  "xarray",
+  "kerchunk",
+  "numcodecs",
+  "icechunk; python_version >= '3.12'",
+  "virtualizarr",
+  "matplotlib",
+  "cartopy",
+  "jupyterlab",
+  "geoviews",
+  "hvplot",
+  "dask",
+  "distributed",
+  "cython",
+  "pyproj",
+  "pytest",
+  "s3fs",
+]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
+
+[project.entry-points."zarr.codecs"]
+grib2io = "grib2io.codecs:Grib2SerializerCodec"
+"numcodecs.grib2io" = "grib2io.codecs:Grib2SerializerCodec"
 
 [project.scripts]
 grib2io = "grib2io.cli.main:main"

@@ -35,6 +35,7 @@ from __future__ import annotations
 import base64
 import json
 import logging
+import warnings
 from typing import Any, Dict, Optional, Set
 
 _logger = logging.getLogger(__name__)
@@ -344,11 +345,15 @@ class IcechunkWriter:
         self,
         store_path: str,
         storage_config: Optional[Any] = None,
+        network_timeout: int = 300,
+        max_concurrent_requests: Optional[int] = 8,
     ):
         _ensure_icechunk()
 
         self._store_path = store_path
         self._storage_config = storage_config
+        self._network_timeout = network_timeout
+        self._max_concurrent_requests = max_concurrent_requests
         self._repo = None
         self._session = None
 
@@ -383,13 +388,24 @@ class IcechunkWriter:
 
         # Build repository config with virtual chunk containers
         config = icechunk.config.RepositoryConfig.default()
+
+        # Limit concurrent S3 requests to avoid hammering the endpoint and
+        # triggering rate-limit / timeout errors on large datasets.
+        if self._max_concurrent_requests is not None:
+            config.get_partial_values_concurrency = self._max_concurrent_requests
+            config.max_concurrent_requests = self._max_concurrent_requests
+
         for prefix in virtual_prefixes:
             container_store = self._make_container_store(prefix)
             config.set_virtual_chunk_container(icechunk.virtual.VirtualChunkContainer(prefix, container_store))
 
-        # Build authorize_virtual_chunk_access mapping
-        # Use None for credentials (will use environment or anonymous)
-        authorize = {prefix: None for prefix in virtual_prefixes}
+        # Build authorize_virtual_chunk_access mapping with appropriate credentials.
+        # icechunk.containers_credentials() validates and returns the {prefix: cred} dict
+        # in the format expected by Repository.open_or_create/open.
+        # None values (local file:// prefixes) are valid — they authorize local access
+        # without credentials. Do NOT filter them out.
+        raw_authorize = {prefix: self._make_credentials_for_prefix(prefix) for prefix in virtual_prefixes}
+        authorize = icechunk.containers_credentials(raw_authorize) if raw_authorize else None
 
         if mode == "w":
             self._repo = icechunk.Repository.open_or_create(
@@ -406,6 +422,29 @@ class IcechunkWriter:
             )
 
         self._session = self._repo.writable_session("main")
+
+    def _make_credentials_for_prefix(self, prefix: str):
+        """Return appropriate Icechunk credentials for a virtual chunk URI prefix.
+
+        Parameters
+        ----------
+        prefix : str
+            URI prefix like ``s3://bucket/prefix/``, ``file:///path/``, etc.
+
+        Returns
+        -------
+        Credentials or ``None``
+            Anonymous credentials for public S3/GCS; ``None`` for local files.
+        """
+        import icechunk  # local import — only used inside the class
+
+        if prefix.startswith("s3://"):
+            return icechunk.s3_anonymous_credentials()
+        elif prefix.startswith("gs://") or prefix.startswith("gcs://"):
+            return icechunk.gcs_credentials(anon=True)
+        else:
+            # Local filesystem or other — no credentials needed
+            return None
 
     def _make_container_store(self, prefix: str):
         """Create an appropriate Icechunk storage backend for a virtual
@@ -431,7 +470,10 @@ class IcechunkWriter:
                 local_path = local_path[:-1]
             return icechunk.storage.local_filesystem_store(local_path)
         elif prefix.startswith("s3://"):
-            return icechunk.storage.s3_store(region="us-east-1")
+            return icechunk.storage.s3_store(
+                region="us-east-1",
+                network_stream_timeout_seconds=int(self._network_timeout),
+            )
         elif prefix.startswith("gcs://"):
             return icechunk.storage.gcs_store(opts={})
         elif prefix.startswith("http://") or prefix.startswith("https://"):
@@ -545,7 +587,7 @@ class IcechunkWriter:
             v2_zattrs = json.loads(zattrs_str) if zattrs_str else {}
 
             shape = v2_zarray["shape"]
-            chunks = v2_zarray.get("chunks", shape)
+            chunks = [max(1, c) for c in v2_zarray.get("chunks", shape)]
             dtype_str = v2_zarray.get("dtype", "<f4")
             fill_value = v2_zarray.get("fill_value", None)
             dim_names = v2_zattrs.get("_ARRAY_DIMENSIONS", [])
@@ -559,8 +601,11 @@ class IcechunkWriter:
             if var_name in data_var_names:
                 # Data variable — use Grib2SerializerCodec so zarr v3 can
                 # decode the raw GRIB2 section 7 bytes from virtual chunks.
-                compressor = v2_zarray.get("compressor", {}) or {}
-                codec_cfg = {k: v for k, v in compressor.items() if k != "id"}
+                # The manifest stores the codec config in filters[0]
+                # (compressor is null); fall back to compressor for older manifests.
+                filters_list = v2_zarray.get("filters", []) or []
+                codec_src = filters_list[0] if filters_list else (v2_zarray.get("compressor") or {})
+                codec_cfg = {k: v for k, v in codec_src.items() if k != "id"}
                 serializer = _Grib2Ser(**codec_cfg)
                 root.create_array(
                     var_name,
@@ -914,3 +959,145 @@ class IcechunkWriter:
             raise RuntimeError("No active session. Call write() before commit().")
         snapshot_id = self._session.commit(message)
         return str(snapshot_id)
+
+    def get_readonly_session(self):
+        """Return a read-only Icechunk session for data access after committing.
+
+        Uses the same repository object (and therefore the same virtual chunk
+        credentials) that were set up during :meth:`write`.  Call this after
+        :meth:`commit` to open the store with ``xarray.open_zarr``.
+
+        Returns
+        -------
+        icechunk.Session
+            A read-only session on the ``"main"`` branch.
+
+        Raises
+        ------
+        RuntimeError
+            If :meth:`write` has not been called yet.
+
+        Example
+        -------
+        >>> session = writer.get_readonly_session()
+        >>> ds = xr.open_zarr(session.store, consolidated=False)
+        """
+        if self._repo is None:
+            raise RuntimeError("No repository open. Call write() before get_readonly_session().")
+        return self._repo.readonly_session("main")
+
+
+def open_dataset(
+    manifest: dict,
+    store_path: str | None = None,
+    network_timeout: int = 300,
+    max_concurrent_requests: int | None = 8,
+    data_model: str | None = None,
+    drop_variables: list[str] | None = None,
+    **xr_kwargs,
+):
+    """Compatibility wrapper for opening a manifest via the xarray backend UI.
+
+    This function is kept for backward compatibility. New code should prefer
+    ``xarray.open_dataset(..., engine="grib2io")``.
+    """
+    import tempfile
+
+    import xarray as xr
+
+    warnings.warn(
+        "grib2io.icechunk.open_dataset is deprecated; use xarray.open_dataset(..., engine='grib2io') instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    if store_path is None:
+        store_path = tempfile.mkdtemp(prefix="grib2io_icechunk_")
+
+    writer = IcechunkWriter(
+        store_path,
+        network_timeout=network_timeout,
+        max_concurrent_requests=max_concurrent_requests,
+    )
+    writer.write(manifest)
+    writer.commit("grib2io kerchunk manifest")
+
+    chunks = xr_kwargs.pop("chunks", None)
+    xr_kwargs.pop("consolidated", None)
+
+    if drop_variables is not None:
+        xr_kwargs["drop_variables"] = drop_variables
+
+    return xr.open_dataset(
+        store_path,
+        engine="grib2io",
+        data_model=data_model,
+        chunks=chunks,
+        **xr_kwargs,
+    )
+
+
+def open_grib2(
+    url: str | list[str],
+    storage_options: dict | None = None,
+    filters: dict | None = None,
+    store_path: str | None = None,
+    max_workers: int | None = 2,
+    network_timeout: int = 300,
+    max_concurrent_requests: int | None = 8,
+    max_scan_attempts: int = 5,
+    data_model: str | None = None,
+    drop_variables: list[str] | None = None,
+    **xr_kwargs,
+):
+    """Compatibility wrapper for opening GRIB2 via the existing xarray UI.
+
+    This function is kept for backward compatibility. New code should prefer
+    ``xarray.open_dataset(..., engine="grib2io", use_icechunk=True)`` or
+    ``xarray.open_mfdataset(..., engine="grib2io", use_icechunk=True)``.
+    """
+    import xarray as xr
+
+    from .xarray_backend import open_mfdataset
+
+    warnings.warn(
+        "grib2io.icechunk.open_grib2 is deprecated; use xarray open_dataset/open_mfdataset with engine='grib2io' instead.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+
+    chunks = xr_kwargs.pop("chunks", None)
+
+    if isinstance(url, (list, tuple)):
+        return open_mfdataset(
+            url,
+            drop_variables=drop_variables,
+            filters=filters or {},
+            data_model=data_model,
+            chunks=chunks,
+            use_icechunk=True,
+            storage_options=storage_options,
+            max_workers=max_workers,
+            network_timeout=network_timeout,
+            max_concurrent_requests=max_concurrent_requests,
+            max_scan_attempts=max_scan_attempts,
+            store_path=store_path,
+            **xr_kwargs,
+        )
+
+    return xr.open_dataset(
+        url,
+        engine="grib2io",
+        drop_variables=drop_variables,
+        filters=filters or {},
+        data_model=data_model,
+        chunks=chunks,
+        use_icechunk=True,
+        storage_options=storage_options,
+        max_workers=max_workers,
+        network_timeout=network_timeout,
+        max_concurrent_requests=max_concurrent_requests,
+        max_scan_attempts=max_scan_attempts,
+        store_path=store_path,
+        **xr_kwargs,
+    )

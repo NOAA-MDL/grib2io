@@ -162,7 +162,6 @@ class TestKerchunkParquetOutput:
         )
 
         assert os.path.isdir(out), f"Parquet output directory not created at {out}"
-
         parq_files = [f for f in Path(out).rglob("*.parq")]
         assert len(parq_files) > 0, f"No .parq files found beneath {out}"
 

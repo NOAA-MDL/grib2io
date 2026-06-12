@@ -17,7 +17,6 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def cmd_create_index(args: argparse.Namespace) -> int:
-
     # Open GRIB2 file.
     try:
         _ = grib2io.open(args.path, mode="r", use_index=False, save_index=True)
