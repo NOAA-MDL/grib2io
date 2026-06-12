@@ -79,10 +79,21 @@ conda install -c conda-forge grib2io
 pip install .
 ```
 
+Source builds use CMake via `scikit-build-core`. You can control interpolation
+support directly from pip:
+
+```shell
+# Build without NCEPLIBS-ip (interpolation disabled)
+pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+
+# Build with interpolation when libip is available (default)
+pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=ON
+```
+
 > [!NOTE]
 > ### Building with static libraries
-> **_It is recommended to not build with static libraries, but in NOAA HPC production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`. 
-> 
+> **_It is recommended to not build with static libraries, but in NOAA HPC production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`.
+>
 >```shell
 >export G2C_STATIC=True
 >export IP_STATIC=True
@@ -91,6 +102,24 @@ pip install .
 >export BLA_DIR=<path to BLAS/LAPACK used for ip> # Needed if IP_STATIC=True
 >pip install .
 >```
+
+## Build Troubleshooting
+
+If source builds cannot find libraries, set explicit include/lib paths:
+
+```shell
+export G2C_INCDIR=<path>/include
+export G2C_LIBDIR=<path>/lib
+export IP_INCDIR=<path>/include_d
+export IP_LIBDIR=<path>/lib
+pip install .
+```
+
+If you do not need interpolation support, disable it at build time:
+
+```shell
+pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+```
 
 ## Development
 

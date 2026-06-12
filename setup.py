@@ -1,7 +1,5 @@
 from ctypes.util import find_library as ctypes_find_library
 from pathlib import Path
-from setuptools import setup, Extension
-import numpy
 import os
 import platform
 import shutil
@@ -9,7 +7,41 @@ import subprocess
 import sys
 import sysconfig
 import warnings
+import numpy
+from setuptools import setup, Extension
 from Cython.Distutils import build_ext
+
+
+def _fail_legacy_setup_invocation():
+    """Exit early when setup.py is invoked directly or via legacy pip paths."""
+    pyproject_backend = ""
+    try:
+        with open("pyproject.toml", "rt", encoding="utf-8") as f:
+            pyproject_backend = f.read()
+    except OSError:
+        return
+
+    # Only block legacy setup.py flows when this repository is configured for
+    # a PEP 517 backend (scikit-build-core).
+    if "build-backend = \"scikit_build_core.build\"" not in pyproject_backend:
+        return
+
+    argv = " ".join(sys.argv)
+    if "egg_info" in argv or "develop" in argv or "bdist_wheel" in argv or "install" in argv:
+        msg = (
+            "\n"
+            "Legacy setup.py build path is disabled for this project.\n"
+            "Use pip with pyproject.toml (PEP 517/660) instead.\n\n"
+            "Examples:\n"
+            "  pip install .\n"
+            "  pip install -e .\n"
+            "  pip install . --no-build-isolation\n"
+            "\n"
+        )
+        raise SystemExit(msg)
+
+
+_fail_legacy_setup_invocation()
 
 # This maps package names to library names used in the library filename.
 pkgname_to_libname = {
