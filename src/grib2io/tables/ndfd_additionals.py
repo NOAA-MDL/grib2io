@@ -227,11 +227,7 @@ table_ndfd_tc_tornado_threat = {
 # Source: https://vlab.noaa.gov/web/mdl/additional-grib-tables#explanation-of-heat-risk-values
 # ----------------------------------------------------------------------------------------
 tabel_ndfd_heat_risk = {
-    0: {
-        "color": "green",
-        "risk": "No risk",
-        "definition": "Little to no risk from expected heat.",
-    },
+    0: {"color": "green", "risk": "No risk", "definition": "Little to no risk from expected heat."},
     1: {
         "color": "yellow",
         "risk": "Minor",

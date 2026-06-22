@@ -4,11 +4,7 @@ table_4_2_1_0 = {
         "kg m-2",
         "FFLDG",
     ],
-    "1": [
-        "Flash Flood Runoff (Encoded as an accumulation over a floating subinterval of time)",
-        "kg m-2",
-        "FFLDRO",
-    ],
+    "1": ["Flash Flood Runoff (Encoded as an accumulation over a floating subinterval of time)", "kg m-2", "FFLDRO"],
     "2": ["Remotely Sensed Snow Cover", "See Table 4.215", "RSSC"],
     "3": ["Elevation of Snow-Covered Terrain", "See Table 4.216", "ESCT"],
     "4": ["Snow Water Equivalent Percent of Normal", "%", "SWEPON"],
@@ -41,41 +37,17 @@ table_4_2_1_0 = {
     "255": ["Missing", "unknown", "unknown"],
 }
 table_4_2_1_1 = {
-    "0": [
-        "Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation)",
-        "kg m-2",
-        "CPPOP",
-    ],
-    "1": [
-        "Percent Precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period)",
-        "%",
-        "PPOSP",
-    ],
+    "0": ["Conditional percent precipitation amount fractile for an overall period (encoded as an accumulation)", "kg m-2", "CPPOP"],
+    "1": ["Percent Precipitation in a sub-period of an overall period (encoded as a percent accumulation over the sub-period)", "%", "PPOSP"],
     "2": ["Probability of 0.01 inch of precipitation (POP)", "%", "POP"],
     "3-191": ["Reserved", "unknown", "unknown"],
     "192-254": ["Reserved for Local Use", "unknown", "unknown"],
     "192": ["Probability of Freezing Precipitation", "%", "CPOZP"],
     "193": ["Percent of Frozen Precipitation", "%", "CPOFP"],
-    "194": [
-        "Probability of Precipitation Exceeding Flash Flood Guidance Values",
-        "%",
-        "PPFFG",
-    ],
-    "195": [
-        'Probability of Wetting Rain, exceeding in 0.10" in a given time period',
-        "%",
-        "CWR",
-    ],
-    "196": [
-        "Binary Probability of Precipitation Exceeding Average Recurrence Intervals (ARI)",
-        "see Code table 4.222",
-        "QPFARI",
-    ],
-    "197": [
-        "Binary Probability of Precipitation Exceeding Flash Flood Guidance Values",
-        "see Code table 4.222",
-        "QPFFFG",
-    ],
+    "194": ["Probability of Precipitation Exceeding Flash Flood Guidance Values", "%", "PPFFG"],
+    "195": ['Probability of Wetting Rain, exceeding in 0.10" in a given time period', "%", "CWR"],
+    "196": ["Binary Probability of Precipitation Exceeding Average Recurrence Intervals (ARI)", "see Code table 4.222", "QPFARI"],
+    "197": ["Binary Probability of Precipitation Exceeding Flash Flood Guidance Values", "see Code table 4.222", "QPFFFG"],
     "255": ["Missing", "unknown", "unknown"],
 }
 table_4_2_1_2 = {
@@ -89,16 +61,8 @@ table_4_2_1_2 = {
     "7": ["Ice Cover", "Proportion", "ICECIL"],
     "8": ["Land Cover (0=water, 1=land)", "Proportion", "LANDIL"],
     "9": ["Shape Factor with Respect to Salinity Profile", "unknown", "SFSAL"],
-    "10": [
-        "Shape Factor with Respect to Temperature Profile in Thermocline",
-        "unknown",
-        "SFTMP",
-    ],
-    "11": [
-        "Attenuation Coefficient of Water with Respect to Solar Radiation",
-        "m-1",
-        "ACWSR",
-    ],
+    "10": ["Shape Factor with Respect to Temperature Profile in Thermocline", "unknown", "SFTMP"],
+    "11": ["Attenuation Coefficient of Water with Respect to Solar Radiation", "m-1", "ACWSR"],
     "12": ["Salinity", "kg kg-1", "SALTIL"],
     "13": ["Cross Sectional Area of Flow in Channel", "m2", "CSAFC"],
     "14": ["Snow Temperature", "K", "LNDSNOWT"],
@@ -109,11 +73,7 @@ table_4_2_1_2 = {
     "19": ["Floodplain Flooded Area", "m2", "FLDPFLAR"],
     "20": ["River Fraction", "Proportion", "RVERFR"],
     "21": ["River Area", "m2", "RVERAR"],
-    "22": [
-        "Fraction of river coverage plus river related flooding",
-        "Proportion",
-        "FRCRF",
-    ],
+    "22": ["Fraction of river coverage plus river related flooding", "Proportion", "FRCRF"],
     "23": ["Area of river coverage plus river related flooding", "m2", "ARCRF"],
     "24-191": ["Reserved", "unknown", "unknown"],
     "192-254": ["Reserved for Local Use", "unknown", "unknown"],

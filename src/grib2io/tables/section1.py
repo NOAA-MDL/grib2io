@@ -35,7 +35,8 @@ table_1_0 = {
     "34": "Version Implemented on 15 November 2024",
     "35": "Version Implemented on 19 May 2025",
     "36": "Version Implemented on 17 November 2025",
-    "37": "Pre-operational to be implemented by next amendment",
+    "37": "Version Implemented on 1 June 2026",
+    "38": "Pre-operational to be implemented by next amendment",
     "38-254": "Future Versions",
     "255": 'Missing"',
 }
