@@ -1099,7 +1099,7 @@ test_dict = {
         "typeOfAerosol": 62006,
         "parameterCategory": 20,
         "units": "Numeric",
-        "fullName": "Sulphate Dry Aerosol Optical Thickness at 545-565nm",
+        "fullName": "Sulfate Dry Aerosol Optical Thickness at 545-565nm",
     },
     "so4ScatAOD550": {
         "typeOfFirstFixedSurface": 10,
@@ -1109,7 +1109,7 @@ test_dict = {
         "typeOfAerosol": 62006,
         "parameterCategory": 20,
         "units": "Numeric",
-        "fullName": "Sulphate Dry Absorption Aerosol Optical Thickness",
+        "fullName": "Sulfate Dry Absorption Aerosol Optical Thickness",
     },
     "omAOD550": {
         "typeOfFirstFixedSurface": 10,
@@ -1309,7 +1309,7 @@ test_dict = {
         "typeOfAerosol": 62006,
         "parameterCategory": 20,
         "units": "kg m-2",
-        "fullName": "Sulphate Dry Column-Integrated Mass Density",
+        "fullName": "Sulfate Dry Column-Integrated Mass Density",
     },
 }
 
