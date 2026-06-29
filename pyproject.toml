@@ -52,14 +52,12 @@ dynamic = ["version"]
 
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
-icechunk = ["icechunk; python_version >= '3.12'"]
-test = ["pytest", "s3fs", "dask", "distributed", "cython", "xarray", "kerchunk", "icechunk; python_version >= '3.12'", "dask[complete]"]
-demo = ["xarray", "kerchunk", "icechunk; python_version >= '3.12'", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
+test = ["pytest", "s3fs", "dask", "distributed", "cython", "xarray", "kerchunk", "dask[complete]"]
+demo = ["xarray", "kerchunk", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
 all = [
   "xarray",
   "kerchunk",
   "numcodecs",
-  "icechunk; python_version >= '3.12'",
   "virtualizarr",
   "matplotlib",
   "cartopy",
@@ -77,6 +75,14 @@ all = [
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
 
+[project.entry-points."numcodecs.codecs"]
+# Make the Zarr v2 / numcodecs GRIB2 codec auto-discoverable.  numcodecs
+# lazily loads codecs from this entry-point group the first time it sees an
+# unknown codec id (here ``grib2io``) in a ``.zarray``'s compressor/filters,
+# so a plain ``xr.open_zarr`` on a grib2io Kerchunk reference can decode GRIB2
+# chunks WITHOUT a prior ``import grib2io.codecs``.
+grib2io = "grib2io.codecs:Grib2Codec"
+
 [project.entry-points."zarr.codecs"]
 grib2io = "grib2io.codecs:Grib2SerializerCodec"
 "numcodecs.grib2io" = "grib2io.codecs:Grib2SerializerCodec"
@@ -90,7 +96,7 @@ Repository = "https://github.com/NOAA-MDL/grib2io"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-packages = ["grib2io", "grib2io.cli", "grib2io.tables", "grib2io.utils"]
+packages = ["grib2io", "grib2io.cli", "grib2io.tables", "grib2io.utils", "grib2io.vstore"]
 zip-safe = false
 
 [tool.setuptools.dynamic]

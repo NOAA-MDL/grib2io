@@ -39,7 +39,6 @@ __all__ = [
     "utils",
     "codecs",
     "kerchunk",
-    "icechunk",
     "Grib2Message",
     "_Grib2Message",
     "Grib2GridDef",
@@ -58,11 +57,11 @@ g2c_version = __g2clib_version__
 # Lazy imports for optional-dependency modules
 # ---------------------------------------------------------------------------
 # These modules are only imported when explicitly accessed (e.g.,
-# ``grib2io.codecs``, ``grib2io.kerchunk``, ``grib2io.icechunk``).
+# ``grib2io.codecs``, ``grib2io.kerchunk``).
 # This keeps the core package lightweight and avoids ImportError when
-# optional dependencies (numcodecs, kerchunk, icechunk) are not installed.
+# optional dependencies (numcodecs, kerchunk) are not installed.
 
-_LAZY_MODULES = {"codecs", "kerchunk", "icechunk"}
+_LAZY_MODULES = {"codecs", "kerchunk"}
 
 # Eagerly import codecs so zarr v3 and numcodecs codec registrations fire
 # on `import grib2io`, enabling VirtualiZarr and kerchunk to work out of
