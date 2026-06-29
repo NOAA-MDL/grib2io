@@ -139,39 +139,13 @@ class TestCodecsImportError:
                 sys.modules["grib2io.codecs"] = saved
 
 
-class TestIcechunkImportError:
-    """Accessing icechunk features without icechunk installed raises ImportError."""
-
-    def test_icechunk_ensure_guard(self):
-        """_ensure_icechunk raises ImportError with install instructions."""
-        with mock.patch.dict(sys.modules, {"icechunk": None}):
-            from grib2io.icechunk import _ensure_icechunk
-
-            with pytest.raises(
-                ImportError,
-                match=r"pip install grib2io\[icechunk\]",
-            ):
-                _ensure_icechunk()
-
-    def test_icechunk_error_message_content(self):
-        """ImportError message mentions 'icechunk is required'."""
-        with mock.patch.dict(sys.modules, {"icechunk": None}):
-            from grib2io.icechunk import _ensure_icechunk
-
-            with pytest.raises(
-                ImportError,
-                match="icechunk is required",
-            ):
-                _ensure_icechunk()
-
-
 # ---------------------------------------------------------------------------
 # Lazy import via grib2io.__getattr__
 # ---------------------------------------------------------------------------
 
 
 class TestLazyImports:
-    """Verify that grib2io.codecs/kerchunk/icechunk use lazy loading."""
+    """Verify that grib2io.codecs/kerchunk use lazy loading."""
 
     def test_lazy_codecs_import(self):
         """grib2io.codecs is importable via attribute access."""
@@ -186,13 +160,6 @@ class TestLazyImports:
 
         mod = grib2io.kerchunk
         assert mod.__name__ == "grib2io.kerchunk"
-
-    def test_lazy_icechunk_import(self):
-        """grib2io.icechunk is importable via attribute access."""
-        import grib2io
-
-        mod = grib2io.icechunk
-        assert mod.__name__ == "grib2io.icechunk"
 
     def test_invalid_attribute_raises(self):
         """Accessing a non-existent attribute raises AttributeError."""
