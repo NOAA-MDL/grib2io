@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   build-macos:
 
-    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}
+    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}_interp=${{ matrix.interp }}
     runs-on: ${{ matrix.os }}
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -14,6 +14,7 @@ jobs:
       matrix:
         os: ["macos-latest",]
         compiler: ["gcc-14"]
+        interp: ["on", "off"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12","3.13","3.14"]
 
     steps:
@@ -40,8 +41,17 @@ jobs:
         python3 -m pip install numcodecs fsspec hypothesis
 
     - name: Install grib2io and test
+      if: ${{ matrix.interp == 'on' }}
       run: |
         python --version
-        pip install .
+        G2C_STATIC=False IP_STATIC=False pip install .
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/
+
+    - name: Install grib2io without interpolation and smoke test
+      if: ${{ matrix.interp == 'off' }}
+      run: |
+        python --version
+        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+        python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
+        pytest ./tests/test_imports.py
