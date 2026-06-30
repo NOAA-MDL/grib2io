@@ -704,3 +704,38 @@ def test_prefilter_idx_offsets_isobaric_list():
     filters = {"shortName": "TMP", "typeOfFirstFixedSurface": 100, "level": [850, 500]}
     offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP", filters=filters)
     assert sorted(offsets) == [27027584, 54055168]
+
+
+# ---------------------------------------------------------------------------
+# Standard Zarr / Numcodecs open integration test
+# ---------------------------------------------------------------------------
+
+
+def test_standard_zarr_open(gfs_jpeg_path, tmp_path):
+    """Verify that a generated Kerchunk reference can be opened and decoded
+    by standard xarray using the 'zarr' engine and standard fsspec mapper,
+    proving that our global numcodecs registration works correctly.
+    """
+    import fsspec
+    import xarray as xr
+    import grib2io.codecs  # Force codec registration if not already done
+
+    # 1. Generate Kerchunk reference manifest
+    from grib2io.kerchunk import ReferenceGenerator
+    gen = ReferenceGenerator([gfs_jpeg_path])
+    gen.generate()
+    
+    json_path = str(tmp_path / "refs.json")
+    gen.to_json(json_path)
+
+    # 2. Open reference using standard fsspec and xarray (engine="zarr")
+    fs = fsspec.filesystem("reference", fo=json_path)
+    mapper = fs.get_mapper("")
+    ds = xr.open_dataset(mapper, engine="zarr", consolidated=False)
+
+    # 3. Access a variable and read its data
+    var_name = list(ds.data_vars)[0]
+    data = ds[var_name].values
+    assert data is not None
+    assert data.ndim == 4
+
