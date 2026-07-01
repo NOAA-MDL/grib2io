@@ -25,6 +25,8 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install macOS Dependencies
+      env:
+        HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
       run: |
         brew install jasper libpng libaec
         brew tap eengl/nceplibs
