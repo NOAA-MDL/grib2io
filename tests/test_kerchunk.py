@@ -722,9 +722,10 @@ def test_standard_zarr_open(gfs_jpeg_path, tmp_path):
 
     # 1. Generate Kerchunk reference manifest
     from grib2io.kerchunk import ReferenceGenerator
+
     gen = ReferenceGenerator([gfs_jpeg_path])
     gen.generate()
-    
+
     json_path = str(tmp_path / "refs.json")
     gen.to_json(json_path)
 
@@ -738,4 +739,3 @@ def test_standard_zarr_open(gfs_jpeg_path, tmp_path):
     data = ds[var_name].values
     assert data is not None
     assert data.ndim == 4
-

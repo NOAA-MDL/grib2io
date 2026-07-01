@@ -37,10 +37,7 @@ def test_grib2io_codec_advertised_in_numcodecs_entry_points():
     eps = entry_points().select(group="numcodecs.codecs")
     mapping = {e.name: e.value for e in eps}
 
-    assert "grib2io" in mapping, (
-        "grib2io codec is not advertised in the 'numcodecs.codecs' entry-point "
-        f"group; found: {sorted(mapping)}"
-    )
+    assert "grib2io" in mapping, f"grib2io codec is not advertised in the 'numcodecs.codecs' entry-point group; found: {sorted(mapping)}"
     assert mapping["grib2io"] == "grib2io.codecs:Grib2Codec"
 
 
@@ -115,8 +112,5 @@ def test_reference_decodes_in_fresh_process_without_grib2io_import():
             text=True,
         )
 
-    assert proc.returncode == 0, (
-        "fresh-process decode failed.\n"
-        f"stdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
-    )
+    assert proc.returncode == 0, f"fresh-process decode failed.\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}"
     assert "OK" in proc.stdout

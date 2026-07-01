@@ -89,7 +89,7 @@ def test_interp(request):
         ds = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
         da = ds.grib2io.interp("neighbor", nbm_grid_def).to_array()
         assert da.shape == (1, 1597, 2345)
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, ImportError):
         pytest.skip()
 
 
@@ -129,7 +129,7 @@ def test_interp_with_openmp_threads(request):
         ds = xr.open_dataset(data / "gfs.t00z.pgrb2.1p00.f012_subset", engine="grib2io", filters=filters)
         da = ds.grib2io.interp("neighbor", nbm_grid_def, num_threads=2).to_array()
         assert da.shape == (1, 1597, 2345)
-    except ModuleNotFoundError:
+    except (ModuleNotFoundError, ImportError):
         pytest.skip()
 
 
