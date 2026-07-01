@@ -44,7 +44,7 @@ jobs:
       if: ${{ matrix.interp == 'on' }}
       run: |
         python --version
-        G2C_STATIC=False IP_STATIC=False pip install .
+        G2C_STATIC=False IP_STATIC=False pip install . --force-reinstall --no-deps --no-cache-dir
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/
 
@@ -52,6 +52,6 @@ jobs:
       if: ${{ matrix.interp == 'off' }}
       run: |
         python --version
-        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF --force-reinstall --no-deps --no-cache-dir
         python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
         pytest ./tests/test_imports.py
