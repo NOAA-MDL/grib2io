@@ -545,6 +545,13 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     # change attr name in attrs
                     ds[new_var_name].attrs[new_attr_name] = ds[new_var_name].attrs.pop(attr)
 
+            new_cell_methods = section4_to_cell_methods(ds[new_var_name].attrs["grib_section4"])
+            if new_cell_methods is not None:
+                if ds[new_var_name].attrs["cell_methods"] is None:
+                    ds[new_var_name].attrs["cell_methods"] = new_cell_methods
+                else:
+                    ds[new_var_name].attrs["cell_methods"] = " ".join(ds[new_var_name].attrs["cell_methods"], new_cell_methods)
+
         # change dataset attrs to snake case
         for attr in list(ds.attrs.keys()):
             # change attr name to snake case
@@ -569,6 +576,32 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
     ds.attrs["history"] = f"{now}: Normalized to {data_model} data model\n{history}"
 
     return ds
+
+
+def section4_to_cell_methods(section4_array: np.ndarray) -> typing.Optional[str]:
+    cell_methods = None
+    if section4_array[1] == 0:
+        cell_methods = f"{cell_methods:s} lead_time: point"
+    elif section4_array[1] == 8:
+        to_join = []
+        # interval_end = datetime.datetime(*section4_array[17:23]
+        time_unit_table = tables.get_table("4.4")
+        for i in reversed(range(section4_array[23])):
+            offset = 6 * i
+            method = tables.get_table("4.10")[str(section4_array[25 + offset])]
+            method = method.replace("Average", "mean").lower()
+            if section4_array[26 + offset] == 1:
+                dim = "forecast_reference_time"
+            elif section4_array[26 + offset] == 2:
+                dim = "lead_time"
+            # duration_unit = time_unit_table[str(section4_array[27 + offset])].lower()
+            # duration_value = section4_array[28 + offset]
+            input_interval_units = time_unit_table[str(section4_array[29 + offset])].lower()
+            input_interval_value = section4_array[30 + offset]
+            to_join.append(f"{dim:s}: {method:s} (interval: {input_interval_value:d} {input_interval_units:s})")
+            # comment: duration {duration_value:d} {duration_unit:s} ending {interval_end:%Y-%m-%dT%H:%M:%s}
+        cell_methods = " ".join(to_join)
+    return cell_methods
 
 
 # ---------------------------------------------------------------------------
