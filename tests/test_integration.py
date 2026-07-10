@@ -38,16 +38,6 @@ INPUT_DATA = os.path.join(os.path.dirname(__file__), "input_data")
 # ---------------------------------------------------------------------------
 
 
-def _has_icechunk():
-    """Check if icechunk is installed."""
-    try:
-        import icechunk  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
-
-
 # ---------------------------------------------------------------------------
 # Fixtures
 # ---------------------------------------------------------------------------
@@ -117,9 +107,13 @@ class TestKerchunkPipeline:
             for zk in zarray_keys:
                 candidate = zk.rsplit("/.zarray", 1)[0]
                 zarray_meta = json.loads(mapper[zk])
-                # Data variables have a compressor with id "grib2io"
+                # Data variables have a grib2io codec in compressor or filters
                 compressor = zarray_meta.get("compressor")
+                filters = zarray_meta.get("filters") or []
                 if compressor and compressor.get("id") == "grib2io":
+                    var_name = candidate
+                    break
+                if any(f.get("id") == "grib2io" for f in filters if isinstance(f, dict)):
                     var_name = candidate
                     break
 
@@ -194,7 +188,11 @@ class TestKerchunkPipeline:
             if key.endswith("/.zarray"):
                 candidate = key.rsplit("/.zarray", 1)[0]
                 zarray = json.loads(refs[key])
-                if zarray.get("compressor") and zarray["compressor"].get("id") == "grib2io":
+                compressor = zarray.get("compressor")
+                filters = zarray.get("filters") or []
+                if compressor and compressor.get("id") == "grib2io":
+                    manifest_vars.add(candidate)
+                elif any(f.get("id") == "grib2io" for f in filters if isinstance(f, dict)):
                     manifest_vars.add(candidate)
 
         # Get variable names from direct grib2io read
@@ -232,100 +230,6 @@ class TestKerchunkPipeline:
             )
         finally:
             os.unlink(json_path)
-
-
-# ===========================================================================
-# Icechunk Pipeline Integration Tests (Requirements 4.3, 6.1)
-# ===========================================================================
-
-
-@pytest.mark.skipif(
-    sys.version_info < (3, 12),
-    reason="icechunk support requires Python >= 3.12",
-)
-@pytest.mark.skipif(
-    not _has_icechunk(),
-    reason="icechunk is not installed",
-)
-class TestIcechunkPipeline:
-    """End-to-end: generate refs → write to Icechunk → open with xarray → compare."""
-
-    def test_icechunk_pipeline_roundtrip(self, gfs_jpeg_path):
-        """Generate refs, write to Icechunk, open with xarray.open_zarr(),
-        and compare to direct grib2io read.
-
-        Validates: Requirements 4.3, 6.1
-        """
-        from grib2io.icechunk import IcechunkWriter
-
-        # Step 1: Generate refs
-        gen = ReferenceGenerator(gfs_jpeg_path)
-        manifest = gen.generate()
-
-        with tempfile.TemporaryDirectory() as tmpdir:
-            store_path = os.path.join(tmpdir, "icechunk_store")
-
-            # Step 2: Write to Icechunk
-            writer = IcechunkWriter(store_path)
-            writer.write(manifest)
-            snapshot_id = writer.commit("Integration test ingest")
-
-            assert isinstance(snapshot_id, str)
-            assert len(snapshot_id) > 0
-
-            # Step 3: Open with xarray.open_zarr()
-            import icechunk
-            from grib2io.icechunk import _collect_virtual_chunk_prefixes
-
-            storage = icechunk.local_filesystem_storage(path=store_path)
-            # Collect virtual chunk prefixes so we can authorize access
-            # when reading — icechunk requires authorization even for reads.
-            virtual_prefixes = _collect_virtual_chunk_prefixes(manifest["refs"])
-            authorize = {p: None for p in virtual_prefixes}
-            repo = icechunk.Repository.open(
-                storage,
-                authorize_virtual_chunk_access=authorize if authorize else None,
-            )
-            session = repo.readonly_session(branch="main")
-            store = session.store
-
-            ds_ice = xr.open_zarr(store, consolidated=False)
-
-            # Step 4: Verify the dataset has variables
-            assert len(ds_ice.data_vars) > 0, "Icechunk dataset has no data variables"
-
-            # Step 5: Compare a variable to direct grib2io read
-            var_name = list(ds_ice.data_vars)[0]
-            ice_data = ds_ice[var_name].values
-
-            # Get the shortName from attributes
-            short_name = ds_ice[var_name].attrs.get("shortName", var_name)
-
-            direct_data = None
-            with grib2io.open(gfs_jpeg_path) as f:
-                for m in f:
-                    if str(m.shortName) == short_name:
-                        direct_data = m.data
-                        break
-
-            assert direct_data is not None
-
-            # Extract 2D slice from icechunk data
-            ice_2d = ice_data
-            while ice_2d.ndim > 2:
-                ice_2d = ice_2d[0]
-
-            assert ice_2d.shape == direct_data.shape
-
-            # Compare non-NaN values
-            mask = ~np.isnan(ice_2d) & ~np.isnan(direct_data)
-            if mask.any():
-                np.testing.assert_allclose(
-                    ice_2d[mask].astype(np.float32),
-                    direct_data[mask].astype(np.float32),
-                    rtol=1e-5,
-                    atol=1e-5,
-                )
 
 
 # ===========================================================================

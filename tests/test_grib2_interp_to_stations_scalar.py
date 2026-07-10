@@ -1,6 +1,13 @@
 import numpy as np
 import grib2io
 
+try:
+    import grib2io.iplib as iplib
+except ImportError:
+    import pytest
+
+    pytest.skip("NCEPLIBS-ip not found", allow_module_level=True)
+
 # Test stations
 #            KPHL,     KPIT,     KMFL,     KORD,     KDEN,     KSFO
 lats = [39.8605, 40.4846, 25.7542, 41.9602, 39.8466, 37.6196]

@@ -5,15 +5,16 @@ on: [push, pull_request]
 jobs:
   build-linux:
 
-    name: py${{ matrix.python-version }}_cc=${{ matrix.ccompiler }}_static=${{ matrix.staticlib }}
+    name: py${{ matrix.python-version }}_cc=${{ matrix.ccompiler }}_interp=${{ matrix.interp }}
     runs-on: ubuntu-latest
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CC: ${{ matrix.ccompiler }}
     strategy:
       matrix:
         python-version: ["3.8","3.9","3.10","3.11","3.12","3.13","3.14"]
         ccompiler: ["gcc-14"]
-        staticlib: ["False"]
+        interp: ["on", "off"]
 
     steps:
     - uses: actions/checkout@v4
@@ -26,24 +27,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install cmake gfortran libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev libopenblas-serial-dev
-
-    - name: Install python dependencies via pip
-      run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        python -m pip install --upgrade wheel
-        python -m pip install -r requirements.txt
-        python -m pip install numcodecs fsspec hypothesis
-
-    - name: Install optional python dependencies (kerchunk, Python >= 3.11)
-      if: ${{ contains(fromJson('["3.11","3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install kerchunk
-
-    - name: Install optional python dependencies (zarr + icechunk, Python >= 3.12)
-      if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python -m pip install zarr icechunk
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -65,9 +48,26 @@ jobs:
         make -j2
         sudo make install
 
+    - name: Install python dependencies via pip
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade setuptools
+        python -m pip install --upgrade wheel
+        python -m pip install ".[test]"
+        python -m pip install numcodecs fsspec hypothesis
+
     - name: Install grib2io and test
+      if: ${{ matrix.interp == 'on' }}
       run: |
         python --version
-        USE_STATIC_LIBS=${{ matrix.staticlib }} pip install .
+        G2C_STATIC=False IP_STATIC=False pip install . --force-reinstall --no-deps --no-cache-dir
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/
+
+    - name: Install grib2io without interpolation and smoke test
+      if: ${{ matrix.interp == 'off' }}
+      run: |
+        python --version
+        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF --force-reinstall --no-deps --no-cache-dir
+        python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
+        pytest ./tests/test_imports.py

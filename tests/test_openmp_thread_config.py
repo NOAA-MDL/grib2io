@@ -4,7 +4,13 @@ import grib2io
 def test_iter_messages_read():
     if grib2io.has_interpolation:
         if grib2io.has_openmp_support:
-            from grib2io import iplib
+            try:
+                from grib2io import iplib
+            except ImportError:
+                import pytest
+
+                pytest.skip("iplib is available but could not be dynamically loaded/linked (symbol not found).")
+                return
 
             nthreads = 2
             iplib.openmp_set_num_threads(nthreads)

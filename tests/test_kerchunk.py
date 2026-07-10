@@ -14,6 +14,7 @@ import os
 import sys
 import tempfile
 
+import numpy as np
 import pytest
 from pathlib import Path
 
@@ -34,6 +35,14 @@ SMALL_TEST_FILES = [
     "gfs.jpeg.grib2",
     "gfs.complex.grib2",
 ]
+
+
+def test_file_uri_preserves_remote_uri():
+    """URI inputs should be preserved for streaming backends."""
+    from grib2io.kerchunk import _file_uri
+
+    s3_uri = "s3://noaa-gfs-bdp-pds/gfs.20240501/00/atmos/gfs.t00z.pgrb2.0p25.f000"
+    assert _file_uri(s3_uri) == s3_uri
 
 
 # ---------------------------------------------------------------------------
@@ -249,7 +258,6 @@ class TestParquetSerialization:
             gen.to_parquet(parquet_path)
 
             assert os.path.isdir(parquet_path), f"Parquet output directory not created at {parquet_path}"
-
             # Should contain at least one .parq file
             parq_files = [f for f in Path(parquet_path).rglob("*.parq")]
             assert len(parq_files) > 0, f"No .parq files found beneath {parquet_path}"
@@ -343,3 +351,391 @@ class TestErrorHandling:
         result = gen.generate()
         assert gen.manifest is result
         assert gen.manifest["version"] == 1
+
+
+def test_remote_scan_enables_index_cache(monkeypatch):
+    """Remote scans should allow grib2io to persist/reuse parsed indices."""
+
+    class _Meta:
+        def __init__(self, value):
+            self.value = value
+
+    class _Msg:
+        shortName = "TMP"
+        typeOfFirstFixedSurface = _Meta(103)
+        productDefinitionTemplateNumber = _Meta(0)
+        typeOfSecondFixedSurface = _Meta(255)
+
+    class _FakeOpen:
+        def __init__(self):
+            self._index = {
+                "sectionOffset": [{5: 900, 6: None, 7: 1234}],
+                "sectionSize": [{5: 21, 6: 6, 7: 567}],
+                "bmapflag": [255],
+                "section3": [np.array([0, 0, 0, 0, 0, 0], dtype=np.int64)],
+                "section5": [np.array([0, 0, 0], dtype=np.int64)],
+            }
+            self._msgs = [_Msg()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def __iter__(self):
+            return iter(self._msgs)
+
+    captured = {}
+
+    class _FakeRemoteFile:
+        def open(self):
+            return self
+
+        def info(self):
+            return {"size": 12345}
+
+        def close(self):
+            return None
+
+    def _fake_fsspec_open(path, mode="rb", **kwargs):
+        if path == "s3://example-bucket/sample.grib2":
+            return _FakeRemoteFile()
+        raise PermissionError("Forbidden")
+
+    def _fake_open(path, **kwargs):
+        captured["path"] = path
+        captured["kwargs"] = kwargs
+        return _FakeOpen()
+
+    monkeypatch.setattr("grib2io.open", _fake_open)
+    monkeypatch.setattr("fsspec.open", _fake_fsspec_open)
+
+    gen = ReferenceGenerator("s3://example-bucket/sample.grib2", storage_options={"anon": True})
+    gen._scan_file("s3://example-bucket/sample.grib2", "s3://example-bucket/sample.grib2", {})
+
+    assert captured["path"] == "s3://example-bucket/sample.grib2"
+    assert captured["kwargs"]["save_index"] is True
+    assert captured["kwargs"]["use_index"] is True
+
+
+def test_local_scan_keeps_save_index_disabled(monkeypatch, gfs_jpeg_path):
+    """Local scans should not create sidecar index files from ReferenceGenerator."""
+
+    class _Meta:
+        def __init__(self, value):
+            self.value = value
+
+    class _Msg:
+        shortName = "TMP"
+        typeOfFirstFixedSurface = _Meta(103)
+        productDefinitionTemplateNumber = _Meta(0)
+        typeOfSecondFixedSurface = _Meta(255)
+
+    class _FakeOpen:
+        def __init__(self):
+            self._index = {
+                "sectionOffset": [{5: 900, 6: None, 7: 1234}],
+                "sectionSize": [{5: 21, 6: 6, 7: 567}],
+                "bmapflag": [255],
+                "section3": [np.array([0, 0, 0, 0, 0, 0], dtype=np.int64)],
+                "section5": [np.array([0, 0, 0], dtype=np.int64)],
+            }
+            self._msgs = [_Msg()]
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def __iter__(self):
+            return iter(self._msgs)
+
+    captured = {}
+
+    def _fake_open(path, **kwargs):
+        captured["path"] = path
+        captured["kwargs"] = kwargs
+        return _FakeOpen()
+
+    monkeypatch.setattr("grib2io.open", _fake_open)
+
+    gen = ReferenceGenerator([gfs_jpeg_path])
+    gen._scan_file(gfs_jpeg_path, gfs_jpeg_path, {})
+
+    assert captured["path"] == gfs_jpeg_path
+    assert captured["kwargs"]["save_index"] is False
+    assert captured["kwargs"]["use_index"] is True
+
+
+# ---------------------------------------------------------------------------
+# Tests for _prefilter_idx_offsets
+# ---------------------------------------------------------------------------
+
+
+def test_prefilter_idx_offsets_basic():
+    """_prefilter_idx_offsets should return only offsets whose shortName matches."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = (
+        "1:0:d=2024040100:PRMSL:mean sea level:anl:\n"
+        "2:27027584:d=2024040100:TMP:2 m above ground:anl:\n"
+        "3:54055168:d=2024040100:UGRD:10 m above ground:anl:\n"
+        "4:81082752:d=2024040100:TMP:500 mb:anl:\n"
+    )
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP")
+    assert offsets == [27027584, 81082752]
+
+
+def test_prefilter_idx_offsets_no_match():
+    """_prefilter_idx_offsets should return [] when shortName is not present."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = "1:0:d=2024040100:PRMSL:mean sea level:anl:\n"
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP")
+    assert offsets == []
+
+
+def test_prefilter_idx_offsets_bytes_input():
+    """_prefilter_idx_offsets should handle bytes lines from fsspec."""
+    from io import BytesIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_bytes = b"1:0:d=2024040100:TMP:2 m above ground:anl:\n2:12345:d=2024040100:UGRD:10 m above ground:anl:\n"
+    offsets = _prefilter_idx_offsets(BytesIO(idx_bytes), "TMP")
+    assert offsets == [0]
+
+
+def test_remote_scan_uses_shortname_filter_fast_path(monkeypatch):
+    """When shortName filter is set, remote scan should use _build_remote_index_filtered."""
+    called = {}
+
+    def _fake_build(self, file_path, shortname_filter, scan_storage_options):
+        called["file_path"] = file_path
+        called["shortname_filter"] = shortname_filter
+        return {}, []
+
+    from grib2io.kerchunk import ReferenceGenerator as _RG
+
+    monkeypatch.setattr(_RG, "_build_remote_index_filtered", _fake_build)
+
+    gen = _RG(
+        "s3://example-bucket/sample.grib2",
+        filters={"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2},
+        storage_options={"anon": True},
+    )
+    gen._scan_file("s3://example-bucket/sample.grib2", "s3://example-bucket/sample.grib2", {})
+
+    assert called["file_path"] == "s3://example-bucket/sample.grib2"
+    assert called["shortname_filter"] == "TMP"
+
+
+# ---------------------------------------------------------------------------
+# _matches_filters — list, tuple, set, and slice support
+# ---------------------------------------------------------------------------
+
+
+class _FakeMsg:
+    """Minimal stand-in for Grib2Message used in _matches_filters tests."""
+
+    def __init__(self, **kwargs):
+        for k, v in kwargs.items():
+            setattr(self, k, v)
+
+
+def _make_gen(filters):
+    from grib2io.kerchunk import ReferenceGenerator
+
+    gen = ReferenceGenerator.__new__(ReferenceGenerator)
+    gen.filters = filters
+    return gen
+
+
+def test_matches_filters_list_match():
+    gen = _make_gen({"level": [500, 850, 250]})
+    assert gen._matches_filters(_FakeMsg(level=500))
+    assert gen._matches_filters(_FakeMsg(level=850))
+    assert not gen._matches_filters(_FakeMsg(level=1000))
+
+
+def test_matches_filters_tuple_match():
+    gen = _make_gen({"shortName": ("TMP", "UGRD", "VGRD")})
+    assert gen._matches_filters(_FakeMsg(shortName="TMP"))
+    assert not gen._matches_filters(_FakeMsg(shortName="PRMSL"))
+
+
+def test_matches_filters_set_match():
+    gen = _make_gen({"shortName": {"TMP", "UGRD"}})
+    assert gen._matches_filters(_FakeMsg(shortName="UGRD"))
+    assert not gen._matches_filters(_FakeMsg(shortName="HGT"))
+
+
+def test_matches_filters_slice_match():
+    gen = _make_gen({"level": slice(500, 1000)})
+    assert gen._matches_filters(_FakeMsg(level=500))
+    assert gen._matches_filters(_FakeMsg(level=850))
+    assert gen._matches_filters(_FakeMsg(level=1000))
+    assert not gen._matches_filters(_FakeMsg(level=250))
+
+
+def test_matches_filters_slice_open_ended():
+    gen = _make_gen({"level": slice(None, 500)})
+    assert gen._matches_filters(_FakeMsg(level=250))
+    assert not gen._matches_filters(_FakeMsg(level=850))
+
+
+def test_matches_filters_scalar_unchanged():
+    gen = _make_gen({"shortName": "TMP", "level": 2})
+    assert gen._matches_filters(_FakeMsg(shortName="TMP", level=2))
+    assert not gen._matches_filters(_FakeMsg(shortName="TMP", level=10))
+
+
+def test_prefilter_idx_offsets_list_shortname():
+    """_prefilter_idx_offsets should accept a set/list of shortNames."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = (
+        "1:0:d=2024040100:PRMSL:mean sea level:anl:\n"
+        "2:27027584:d=2024040100:TMP:2 m above ground:anl:\n"
+        "3:54055168:d=2024040100:UGRD:10 m above ground:anl:\n"
+        "4:81082752:d=2024040100:VGRD:10 m above ground:anl:\n"
+    )
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), {"UGRD", "VGRD"})
+    assert sorted(offsets) == [54055168, 81082752]
+
+
+# ---------------------------------------------------------------------------
+# _idx_level_matches and _prefilter_idx_offsets with level filters
+# ---------------------------------------------------------------------------
+
+
+def test_idx_level_matches_height_above_ground():
+    from grib2io.kerchunk import _idx_level_matches
+
+    # tofs=103, level=2 → "2 m above ground" should match
+    assert _idx_level_matches("2 m above ground", 103, 2) is True
+    # level=10 should not match "2 m above ground"
+    assert _idx_level_matches("2 m above ground", 103, 10) is False
+    # isobaric string should not match tofs=103
+    assert _idx_level_matches("500 mb", 103, 2) is False
+    # no level filter — any matching surface type passes
+    assert _idx_level_matches("10 m above ground", 103, None) is True
+
+
+def test_idx_level_matches_isobaric():
+    from grib2io.kerchunk import _idx_level_matches
+
+    # tofs=100, level in Pa: 500 mb → 50000 Pa
+    assert _idx_level_matches("500 mb", 100, 50000) is True
+    # also accept hPa value
+    assert _idx_level_matches("500 mb", 100, 500) is True
+    # wrong level
+    assert _idx_level_matches("500 mb", 100, 85000) is False
+    # non-isobaric string doesn't match tofs=100
+    assert _idx_level_matches("2 m above ground", 100, 50000) is False
+
+
+def test_idx_level_matches_fixed_labels():
+    from grib2io.kerchunk import _idx_level_matches
+
+    assert _idx_level_matches("surface", 1, None) is True
+    assert _idx_level_matches("mean sea level", 101, None) is True
+    # wrong surface type
+    assert _idx_level_matches("surface", 101, None) is False
+
+
+def test_idx_level_matches_unknown_type_conservative():
+    from grib2io.kerchunk import _idx_level_matches
+
+    # Unknown tofs → conservative, returns True
+    assert _idx_level_matches("some obscure level", 200, 42) is True
+
+
+def test_prefilter_idx_offsets_with_level_filter():
+    """_prefilter_idx_offsets with filters should reduce TMP to only the 2m line."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = (
+        "1:0:d=2024040100:TMP:1000 mb:anl:\n"
+        "2:27027584:d=2024040100:TMP:500 mb:anl:\n"
+        "3:54055168:d=2024040100:TMP:2 m above ground:anl:\n"
+        "4:81082752:d=2024040100:UGRD:10 m above ground:anl:\n"
+    )
+    filters = {"shortName": "TMP", "typeOfFirstFixedSurface": 103, "level": 2}
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP", filters=filters)
+    # Only the "2 m above ground" TMP line should remain
+    assert offsets == [54055168]
+
+
+def test_prefilter_idx_offsets_filters_none_keeps_all_shortname():
+    """Without level filters, _prefilter_idx_offsets keeps all matching shortNames."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = "1:0:d=2024040100:TMP:1000 mb:anl:\n2:27027584:d=2024040100:TMP:500 mb:anl:\n3:54055168:d=2024040100:TMP:2 m above ground:anl:\n"
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP", filters=None)
+    assert offsets == [0, 27027584, 54055168]
+
+
+def test_prefilter_idx_offsets_isobaric_list():
+    """Level list filter should keep only the matching pressure levels."""
+    from io import StringIO
+
+    from grib2io.kerchunk import _prefilter_idx_offsets
+
+    idx_content = (
+        "1:0:d=2024040100:TMP:1000 mb:anl:\n"
+        "2:27027584:d=2024040100:TMP:850 mb:anl:\n"
+        "3:54055168:d=2024040100:TMP:500 mb:anl:\n"
+        "4:81082752:d=2024040100:TMP:250 mb:anl:\n"
+    )
+    # Select 850 and 500 hPa (pass as hPa values — grib2io may return hPa)
+    filters = {"shortName": "TMP", "typeOfFirstFixedSurface": 100, "level": [850, 500]}
+    offsets = _prefilter_idx_offsets(StringIO(idx_content), "TMP", filters=filters)
+    assert sorted(offsets) == [27027584, 54055168]
+
+
+# ---------------------------------------------------------------------------
+# Standard Zarr / Numcodecs open integration test
+# ---------------------------------------------------------------------------
+
+
+def test_standard_zarr_open(gfs_jpeg_path, tmp_path):
+    """Verify that a generated Kerchunk reference can be opened and decoded
+    by standard xarray using the 'zarr' engine and standard fsspec mapper,
+    proving that our global numcodecs registration works correctly.
+    """
+    import fsspec
+    import xarray as xr
+    import grib2io.codecs  # Force codec registration if not already done
+
+    # 1. Generate Kerchunk reference manifest
+    from grib2io.kerchunk import ReferenceGenerator
+
+    gen = ReferenceGenerator([gfs_jpeg_path])
+    gen.generate()
+
+    json_path = str(tmp_path / "refs.json")
+    gen.to_json(json_path)
+
+    # 2. Open reference using standard fsspec and xarray (engine="zarr")
+    fs = fsspec.filesystem("reference", fo=json_path)
+    mapper = fs.get_mapper("")
+    ds = xr.open_dataset(mapper, engine="zarr", consolidated=False)
+
+    # 3. Access a variable and read its data
+    var_name = list(ds.data_vars)[0]
+    data = ds[var_name].values
+    assert data is not None
+    assert data.ndim == 4

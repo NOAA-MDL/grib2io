@@ -5,14 +5,16 @@ on: [push, pull_request]
 jobs:
   build-macos:
 
-    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}
+    name: py${{ matrix.python-version }}_cc=${{ matrix.compiler }}_interp=${{ matrix.interp }}
     runs-on: ${{ matrix.os }}
     env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       CC: ${{ matrix.compiler }}
     strategy:
       matrix:
         os: ["macos-latest",]
         compiler: ["gcc-14"]
+        interp: ["on", "off"]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12","3.13","3.14"]
 
     steps:
@@ -23,32 +25,35 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install macOS Dependencies
+      env:
+        HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
       run: |
         brew install jasper libpng libaec
         brew tap eengl/nceplibs
         brew install nceplibs-g2c nceplibs-ip
+        echo "G2C_DIR=$(brew --prefix nceplibs-g2c)" >> $GITHUB_ENV
+        echo "IP_DIR=$(brew --prefix nceplibs-ip)" >> $GITHUB_ENV
 
     - name: Install python dependencies via pip
       run: |
         python3 -m pip install --upgrade pip
         python3 -m pip install --upgrade setuptools
         python3 -m pip install --upgrade wheel
-        python3 -m pip install -r requirements.txt
+        python3 -m pip install ".[test]"
         python3 -m pip install numcodecs fsspec hypothesis
 
-    - name: Install optional python dependencies (kerchunk, Python >= 3.11)
-      if: ${{ contains(fromJson('["3.11","3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python3 -m pip install kerchunk
-
-    - name: Install optional python dependencies (zarr + icechunk, Python >= 3.12)
-      if: ${{ contains(fromJson('["3.12","3.13","3.14"]'), matrix.python-version) }}
-      run: |
-        python3 -m pip install zarr icechunk
-
     - name: Install grib2io and test
+      if: ${{ matrix.interp == 'on' }}
       run: |
         python --version
-        pip install .
+        G2C_STATIC=False IP_STATIC=False pip install . --force-reinstall --no-deps --no-cache-dir
         python -c "import grib2io; grib2io.show_config()"
         pytest ./tests/
+
+    - name: Install grib2io without interpolation and smoke test
+      if: ${{ matrix.interp == 'off' }}
+      run: |
+        python --version
+        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF --force-reinstall --no-deps --no-cache-dir
+        python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
+        pytest ./tests/test_imports.py

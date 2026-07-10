@@ -2,12 +2,13 @@
 requires = [
   "Cython>=3",
   "numpy",
-  "setuptools>=61.0",
+  "scikit-build-core>=0.10",
 ]
-build-backend = "setuptools.build_meta"
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "grib2io"
+version = "2.7.0"
 description = "Python interface to the NCEP G2C Library for reading/writing GRIB2 files."
 authors = [
   {name = "Eric Engle", email = "eric.engle@noaa.gov"},
@@ -46,15 +47,45 @@ dependencies = [
   "numpy",
   "pyproj",
 ]
-dynamic = ["version"]
 
 [project.optional-dependencies]
+
 xarray = ["xarray"]
 kerchunk = ["kerchunk", "numcodecs"]
-icechunk = ["icechunk"]
+test = ["pytest", "s3fs", "dask", "distributed", "cython", "xarray", "kerchunk", "dask[complete]"]
+demo = ["xarray", "kerchunk", 'virtualizarr', 'matplotlib', 'cartopy', 'jupyterlab', 'geoviews', 'hvplot']
+all = [
+  "xarray",
+  "kerchunk",
+  "numcodecs",
+  "virtualizarr",
+  "matplotlib",
+  "cartopy",
+  "jupyterlab",
+  "geoviews",
+  "hvplot",
+  "dask",
+  "distributed",
+  "cython",
+  "pyproj",
+  "pytest",
+  "s3fs",
+]
 
 [project.entry-points."xarray.backends"]
 grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
+
+[project.entry-points."numcodecs.codecs"]
+# Make the Zarr v2 / numcodecs GRIB2 codec auto-discoverable.  numcodecs
+# lazily loads codecs from this entry-point group the first time it sees an
+# unknown codec id (here ``grib2io``) in a ``.zarray``'s compressor/filters,
+# so a plain ``xr.open_zarr`` on a grib2io Kerchunk reference can decode GRIB2
+# chunks WITHOUT a prior ``import grib2io.codecs``.
+grib2io = "grib2io.codecs:Grib2Codec"
+
+[project.entry-points."zarr.codecs"]
+grib2io = "grib2io.codecs:Grib2SerializerCodec"
+"numcodecs.grib2io" = "grib2io.codecs:Grib2SerializerCodec"
 
 [project.scripts]
 grib2io = "grib2io.cli.main:main"
@@ -63,13 +94,19 @@ grib2io = "grib2io.cli.main:main"
 Documentation = "https://noaa-mdl.github.io/grib2io"
 Repository = "https://github.com/NOAA-MDL/grib2io"
 
-[tool.setuptools]
-package-dir = {"" = "src"}
-packages = ["grib2io", "grib2io.cli", "grib2io.tables", "grib2io.utils"]
-zip-safe = false
-
-[tool.setuptools.dynamic]
-version = {attr = "grib2io.__config__.grib2io_version"}
+[tool.scikit-build]
+cmake.version = ">=3.18"
+wheel.packages = ["src/grib2io"]
+sdist.include = [
+  "CMakeLists.txt",
+  "cmake/grib2io_config.py.in",
+  "src/ext/**",
+  "src/grib2io/**",
+  "README.md",
+  "LICENSE",
+  "VERSION",
+]
+logging.level = "INFO"
 
 [tool.ruff]
 line-length = 150

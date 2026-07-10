@@ -52,7 +52,6 @@ def add_parser(subparsers: argparse._SubParsersAction) -> None:
 
 
 def cmd_ls(args: argparse.Namespace) -> int:
-
     # Open GRIB2 file.
     try:
         g = grib2io.open(args.path, mode="r", use_index=True, save_index=False)

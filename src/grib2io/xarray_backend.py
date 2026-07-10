@@ -56,6 +56,42 @@ _HAS_STRINGDTYPE = hasattr(np, "dtypes") and hasattr(np.dtypes, "StringDType")
 
 _logger = logging.getLogger(__name__)
 
+_DEFAULT_REMOTE_STORAGE_OPTIONS = {
+    "config_kwargs": {
+        "connect_timeout": 30,
+        "read_timeout": 120,
+        "retries": {"max_attempts": 10, "mode": "adaptive"},
+    }
+}
+
+
+def _merge_default_storage_options(storage_options):
+    """Merge user storage options over conservative remote defaults."""
+    merged = {
+        "config_kwargs": {
+            "connect_timeout": _DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["connect_timeout"],
+            "read_timeout": _DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["read_timeout"],
+            "retries": dict(_DEFAULT_REMOTE_STORAGE_OPTIONS["config_kwargs"]["retries"]),
+        }
+    }
+    user = storage_options or {}
+    if not isinstance(user, dict):
+        return merged
+
+    for key, value in user.items():
+        if key == "config_kwargs" and isinstance(value, dict):
+            merged_cfg = merged.setdefault("config_kwargs", {})
+            for cfg_key, cfg_val in value.items():
+                if cfg_key == "retries" and isinstance(cfg_val, dict):
+                    retries = merged_cfg.setdefault("retries", {})
+                    retries.update(cfg_val)
+                else:
+                    merged_cfg[cfg_key] = cfg_val
+        else:
+            merged[key] = value
+    return merged
+
+
 _LOCK = SerializableLock()
 
 _LEVEL_NAME_MAPPING = grib2io.tables.get_table("4.5.grib2io.level.name")
@@ -576,165 +612,6 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
 # ---------------------------------------------------------------------------
 
 
-def _ensure_kerchunk():
-    """Raise ``ImportError`` if *kerchunk* / *fsspec* reference support is not available."""
-    try:
-        import fsspec  # noqa: F401
-    except ImportError:
-        raise ImportError("kerchunk is required for reference generation. Install with: pip install grib2io[kerchunk]")
-
-
-def _ensure_icechunk():
-    """Raise ``ImportError`` if *icechunk* is not available."""
-    try:
-        import icechunk  # noqa: F401
-    except ImportError:
-        raise ImportError("icechunk is required for virtual store support. Install with: pip install grib2io[icechunk]")
-
-
-# ---------------------------------------------------------------------------
-# Format detection helpers
-# ---------------------------------------------------------------------------
-
-
-def _is_kerchunk_reference(filename_or_obj) -> bool:
-    """Detect whether *filename_or_obj* is a Kerchunk reference file.
-
-    Detection logic:
-    - **JSON reference**: path is a string ending with ``.json`` and the file
-      contains a ``"version"`` key at the top level.
-    - **Parquet reference**: path is a string pointing to a directory that
-      contains a ``.zmetadata`` file and at least one ``refs.*.parq`` file
-      beneath the directory:
-
-      my_dataset.parq/
-      |-- .zmetadata          <-- Consolidated metadata
-      |--  var1/
-           |--  refs.0.parq   <-- Parquet chunk references for variable 1
-      |--  var2/
-           |--  refs.0.parq   <-- Parquet chunk references for variable 2
-
-    """
-    if not isinstance(filename_or_obj, (str, os.PathLike)):
-        return False
-
-    path = str(filename_or_obj)
-
-    # JSON reference detection
-    if path.endswith(".json"):
-        try:
-            with open(path) as f:
-                data = json.load(f)
-            return isinstance(data, dict) and "version" in data
-        except (OSError, json.JSONDecodeError, UnicodeDecodeError):
-            return False
-
-    # Parquet reference detection
-    if os.path.isdir(path):
-        has_zmetadata = os.path.isfile(os.path.join(path, ".zmetadata"))
-
-        parq_files = [f for f in Path(path).rglob("*.parq")]
-
-        if len(parq_files) == 0:
-            has_parq = False
-        else:
-            has_parq = True
-        return has_zmetadata and has_parq
-
-    return False
-
-
-def _is_icechunk_store(filename_or_obj) -> bool:
-    """Detect whether *filename_or_obj* is an Icechunk store."""
-    # Check for IcechunkStore instance (without importing icechunk at top level)
-    type_name = type(filename_or_obj).__name__
-    type_module = type(filename_or_obj).__module__ or ""
-    if type_name == "IcechunkStore" and "icechunk" in type_module:
-        return True
-
-    # Check for Icechunk URI schemes
-    if isinstance(filename_or_obj, str):
-        icechunk_schemes = (
-            "icechunk://",
-            "icechunk+s3://",
-            "icechunk+file://",
-            "icechunk+gcs://",
-        )
-        return filename_or_obj.startswith(icechunk_schemes)
-
-    return False
-
-
-def _open_from_reference(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
-    """Open a Kerchunk reference file as an xarray Dataset."""
-    _ensure_kerchunk()
-    import fsspec
-
-    fs = fsspec.filesystem("reference", fo=str(filename_or_obj))
-    mapper = fs.get_mapper("")
-
-    open_kwargs = {"consolidated": False}
-    if chunks is not None:
-        open_kwargs["chunks"] = chunks
-    if drop_variables is not None:
-        open_kwargs["drop_variables"] = drop_variables
-
-    ds = xr.open_zarr(mapper, **open_kwargs)
-
-    if data_model is not None:
-        ds = parse_data_model(ds, data_model)
-
-    history = ds.attrs.get("history", "")
-    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Kerchunk reference {filename_or_obj}\n{history}"
-
-    return ds
-
-
-def _open_from_icechunk(filename_or_obj, data_model=None, drop_variables=None, chunks=None) -> xr.Dataset:
-    """Open an Icechunk store as an xarray Dataset."""
-    _ensure_icechunk()
-    import icechunk
-
-    if isinstance(filename_or_obj, icechunk.IcechunkStore):
-        store = filename_or_obj
-    else:
-        uri = str(filename_or_obj)
-        if uri.startswith("icechunk+s3://"):
-            storage = icechunk.s3_storage(uri.replace("icechunk+s3://", "s3://"))
-        elif uri.startswith("icechunk+gcs://"):
-            storage = icechunk.gcs_storage(uri.replace("icechunk+gcs://", "gcs://"))
-        elif uri.startswith("icechunk+file://"):
-            local_path = uri.replace("icechunk+file://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
-        elif uri.startswith("icechunk://"):
-            local_path = uri.replace("icechunk://", "")
-            storage = icechunk.local_filesystem_storage(path=local_path)
-        else:
-            storage = icechunk.local_filesystem_storage(path=uri)
-
-        repo = icechunk.Repository.open(storage)
-        session = repo.readonly_session("main")
-        store = session.store
-
-    open_kwargs = {"consolidated": False}
-    if chunks is not None:
-        open_kwargs["chunks"] = chunks
-    if drop_variables is not None:
-        open_kwargs["drop_variables"] = drop_variables
-
-    ds = xr.open_zarr(store, **open_kwargs)
-
-    if data_model is not None:
-        ds = parse_data_model(ds, data_model)
-
-    history = ds.attrs.get("history", "")
-    now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
-    ds.attrs["history"] = f"{now}: Initialized via grib2io xarray backend from Icechunk store {filename_or_obj}\n{history}"
-
-    return ds
-
-
 class GribBackendEntrypoint(BackendEntrypoint):
     """
     xarray backend engine entrypoint for opening and decoding grib2 files.
@@ -753,14 +630,15 @@ class GribBackendEntrypoint(BackendEntrypoint):
         filters=None,
         data_model=None,
         chunks=None,
+        storage_options=None,
     ) -> xr.Dataset:
         """
         Read and parse metadata from a GRIB2 file.
 
         Parameters
         ----------
-        filename : str
-            GRIB2 file to be opened.
+        filename_or_obj : str or file-like
+            GRIB2 file to be opened. Can be a local path or a remote URI.
         drop_variables : list of str, optional
             List of variables to exclude from the dataset.
         save_index : bool, optional
@@ -774,6 +652,8 @@ class GribBackendEntrypoint(BackendEntrypoint):
         chunks : int, dict or 'auto', optional
             If chunks is provided, it is used to load the dataset into a
             dask-backed dataset.
+        storage_options : dict, optional
+            Extra options passed to the storage backend.
 
         Returns
         -------
@@ -783,23 +663,12 @@ class GribBackendEntrypoint(BackendEntrypoint):
         if filters is None:
             filters = {}
 
-        # --- Format detection: Kerchunk reference or Icechunk store ---
-        if _is_kerchunk_reference(filename_or_obj):
-            return _open_from_reference(
-                filename_or_obj,
-                data_model=data_model,
-                drop_variables=drop_variables,
-                chunks=chunks,
-            )
-        if _is_icechunk_store(filename_or_obj):
-            return _open_from_icechunk(
-                filename_or_obj,
-                data_model=data_model,
-                drop_variables=drop_variables,
-                chunks=chunks,
-            )
-
-        with grib2io.open(filename_or_obj, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            filename_or_obj,
+            save_index=save_index,
+            _xarray_backend=True,
+            **(storage_options or {}),
+        ) as f:
             file_index = pd.DataFrame(f._index)
             file_index = file_index.assign(msg=list(f))
 
@@ -2196,6 +2065,27 @@ class Grib2ioDataSet:
 
         return newds
 
+    def compute(self, **kwargs):
+        """
+        Compute the Dask-backed Dataset with retries for transient errors.
+
+        Wraps :func:`grib2io.utils.compute_with_retries`.
+
+        Parameters
+        ----------
+        **kwargs
+            Arguments passed to :func:`grib2io.utils.compute_with_retries`,
+            e.g., `max_attempts` or `base_sleep`.
+
+        Returns
+        -------
+        xarray.Dataset
+            The computed Dataset with NumPy-backed data.
+        """
+        from .utils import compute_with_retries
+
+        return compute_with_retries(self._obj, **kwargs)
+
 
 @xr.register_dataarray_accessor("grib2io")
 class Grib2ioDataArray:
@@ -2711,6 +2601,27 @@ class Grib2ioDataArray:
 
         return da
 
+    def compute(self, **kwargs):
+        """
+        Compute the Dask-backed DataArray with retries for transient errors.
+
+        Wraps :func:`grib2io.utils.compute_with_retries`.
+
+        Parameters
+        ----------
+        **kwargs
+            Arguments passed to :func:`grib2io.utils.compute_with_retries`,
+            e.g., `max_attempts` or `base_sleep`.
+
+        Returns
+        -------
+        xarray.DataArray
+            The computed DataArray with NumPy-backed data.
+        """
+        from .utils import compute_with_retries
+
+        return compute_with_retries(self._obj, **kwargs)
+
 
 def open_mfdataset(
     filenames: typing.Union[str, typing.Sequence[str]],
@@ -2779,6 +2690,8 @@ def open_mfdataset(
 
         filenames = sorted(glob.glob(filenames))
 
+    storage_options = kwargs.pop("storage_options", None)
+
     def _get_index(fname_and_index: typing.Tuple[str, int]) -> pd.DataFrame:
         """
         Internal utility to read GRIB2 index from a file.
@@ -2794,7 +2707,12 @@ def open_mfdataset(
             The GRIB2 index for the specified file.
         """
         fname, i = fname_and_index
-        with grib2io.open(fname, save_index=save_index, _xarray_backend=True) as f:
+        with grib2io.open(
+            fname,
+            save_index=save_index,
+            _xarray_backend=True,
+            **(storage_options or {}),
+        ) as f:
             idx = pd.DataFrame(f._index)
             idx = idx.assign(msg=list(f))
             idx["file_index"] = i

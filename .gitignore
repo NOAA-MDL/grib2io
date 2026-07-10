@@ -2,6 +2,10 @@
 *.so
 *.pyd
 build/
+site/
+wheelhouse/
+pip-wheel-metadata/
+*.egg
 dist/
 *.egg-info/
 src/grib2io/__config__.py
@@ -19,19 +23,36 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*$py.class
+.Python
+
+# Python tooling / local env files
+.python-version
+.env
+.env.*
+!.env.example
+.direnv/
 
 # Virtual environments
 .venv/
 venv/
 env/
+ENV/
 
 # Test / tool caches
 .pytest_cache/
 .hypothesis/
 .ruff_cache/
 .mypy_cache/
+.pyre/
+.pytype/
+.dmypy.json
 .coverage
+.coverage.*
+coverage.xml
 htmlcov/
+.tox/
+.nox/
 
 # grib2io index files
 *.grib2ioidx
@@ -48,6 +69,7 @@ htmlcov/
 **/.DS_Store
 
 # Jupyter
+.ipynb_checkpoints/
 *.ipynb_checkpoints/
 
 # Project-specific

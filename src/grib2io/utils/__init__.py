@@ -355,3 +355,56 @@ def latlon_to_ij(
     )
 
     return xpts.astype(np.float32), ypts.astype(np.float32)
+
+
+def compute_with_retries(obj, *, max_attempts: int = 6, base_sleep: float = 2.0):
+    """
+    Compute a Dask-backed object (Xarray Dataset or DataArray) with retries for transient errors.
+
+    Transient errors typically include network timeouts, connection resets, and
+    cloud-specific errors (e.g. IcechunkError, S3 SlowDown 429).
+
+    Parameters
+    ----------
+    obj : xarray.Dataset, xarray.DataArray, or dask.delayed.Delayed
+        The object to compute.
+    max_attempts : int, optional
+        Maximum number of attempts. Defaults to 6.
+    base_sleep : float, optional
+        Base sleep time in seconds for exponential backoff. Defaults to 2.0.
+
+    Returns
+    -------
+    The computed result (typically a NumPy-backed Xarray object or a scalar).
+
+    Raises
+    ------
+    Exception
+        The last exception encountered if all attempts fail, or any non-transient
+        exception.
+    """
+    import time
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            return obj.compute()
+        except Exception as exc:
+            msg = str(exc).lower()
+            # Basic transient error detection across typical remote backends
+            exc_name = type(exc).__name__.lower()
+            transient = (
+                "icechunkerror" in exc_name
+                or "timeout" in msg
+                or "timed out" in msg
+                or "connect" in msg
+                or "slowdown" in msg
+                or "429" in msg
+                or "503" in msg
+                or "eof occurred in violation of protocol" in msg
+                or "connection reset" in msg
+            )
+            if (not transient) or attempt == max_attempts:
+                raise
+            sleep_s = base_sleep**attempt
+            print(f"Transient read error ({type(exc).__name__}) on attempt {attempt}/{max_attempts}; retrying in {sleep_s}s...")
+            time.sleep(sleep_s)
