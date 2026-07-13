@@ -180,7 +180,7 @@ def get_duration(pdtn: int, pdt: ArrayLike) -> datetime.timedelta:
             pdt[templates.UnitOfTimeRangeOfStatisticalProcess._key[pdtn]],
             "scale_time_seconds",
         )
-        d = ntime * duration_unit * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
+        d = min(ntime, 1) * duration_unit * pdt[templates.TimeRangeOfStatisticalProcess._key[pdtn]]
     else:
         d = 0
     return datetime.timedelta(seconds=int(d))
