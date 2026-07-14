@@ -545,12 +545,16 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
                     # change attr name in attrs
                     ds[new_var_name].attrs[new_attr_name] = ds[new_var_name].attrs.pop(attr)
 
-            new_cell_methods = section4_to_cell_methods(ds[new_var_name].attrs["grib_section4"])
-            if new_cell_methods is not None:
-                if ds[new_var_name].attrs["cell_methods"] is None:
-                    ds[new_var_name].attrs["cell_methods"] = new_cell_methods
-                else:
-                    ds[new_var_name].attrs["cell_methods"] = " ".join(ds[new_var_name].attrs["cell_methods"], new_cell_methods)
+            try:
+               new_cell_methods = section4_to_cell_methods(ds[new_var_name].attrs["grib_section4"])
+            except KeyError:
+               pass
+            else:
+                if new_cell_methods is not None:
+                    if ds[new_var_name].attrs["cell_methods"] is None:
+                        ds[new_var_name].attrs["cell_methods"] = new_cell_methods
+                    else:
+                        ds[new_var_name].attrs["cell_methods"] = " ".join(ds[new_var_name].attrs["cell_methods"], new_cell_methods)
 
         # change dataset attrs to snake case
         for attr in list(ds.attrs.keys()):
