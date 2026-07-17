@@ -1066,35 +1066,19 @@ class _Grib2Message:
             selected attributes.
         """
         pdtn = self.pdtn
-        prefix = (
-            f"{self._msgnum}:d={self.refDate}:"
-            f"{self.shortName}:{self.fullName}"
-        )
+        prefix = f"{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName}"
 
         if pdtn in {5, 9}:
-            return (
-                f"{prefix} (%):{self.level}:{self.leadTime}:"
-                f"{self.duration}:{self.threshold} "
-                f"({self.parameterUnits})"
-            )
+            return f"{prefix} (%):{self.level}:{self.leadTime}:{self.duration}:{self.threshold} ({self.parameterUnits})"
 
         if pdtn in {6, 10}:
             percentile = utils.percentile_string(self.percentileValue)
-            return (
-                f"{prefix} ({self.units}):{self.level}:{self.leadTime}:"
-                f"{self.duration}:{percentile}"
-            )
+            return f"{prefix} ({self.units}):{self.level}:{self.leadTime}:{self.duration}:{percentile}"
 
         if pdtn == 8:
-            return (
-                f"{prefix} ({self.units}):{self.level}:{self.leadTime}:"
-                f"{self.duration} {self.statisticalProcess.definition}"
-            )
+            return f"{prefix} ({self.units}):{self.level}:{self.leadTime}:{self.duration} {self.statisticalProcess.definition}"
 
-        return (
-            f"{prefix} ({self.units}):{self.level}:"
-            f"{self.leadTime}"
-        )
+        return f"{prefix} ({self.units}):{self.level}:{self.leadTime}"
 
     def _generate_signature(self):
         """Generature SHA-1 hash string from GRIB2 integer sections."""
