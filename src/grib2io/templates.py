@@ -1330,6 +1330,18 @@ class ParameterNumber:
         obj.section4[self._key[obj.pdtn] + 2] = value
 
 
+class ParameterUnits:
+    """Native units as described by the GRIB2 Discipline, Parameter Category, and Parameter Number"""
+
+    def __get__(self, obj, objtype=None):
+        return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[1]
+
+    def __set__(self, obj, value):
+        raise RuntimeError(
+            "Cannot set the units of the message.  Instead set shortName OR set the appropriate discipline, parameterCategory, and parameterNumber.  The units will be set automatically from these other attributes."
+        )
+
+
 class VarInfo:
     """
     Variable Information.
@@ -1395,7 +1407,7 @@ class Units:
     """Units of the Variable."""
 
     def __get__(self, obj, objtype=None):
-        return tables.get_varinfo_from_table(obj.section0[2], *obj.section4[2:4], isNDFD=obj._isNDFD)[1]
+        return obj.parameterUnits if obj.pdtn not in {5, 9} else "%"
 
     def __set__(self, obj, value):
         raise RuntimeError(
@@ -2912,6 +2924,7 @@ class ProductDefinitionTemplateBase:
     # Begin template here...
     parameterCategory: int = field(init=False, repr=False, default=ParameterCategory())
     parameterNumber: int = field(init=False, repr=False, default=ParameterNumber())
+    parameterUnits: int = field(init=False, repr=False, default=ParameterUnits())
     typeOfGeneratingProcess: Grib2Metadata = field(init=False, repr=False, default=TypeOfGeneratingProcess())
     generatingProcess: Grib2Metadata = field(init=False, repr=False, default=GeneratingProcess())
     backgroundGeneratingProcessIdentifier: int = field(init=False, repr=False, default=BackgroundGeneratingProcessIdentifier())

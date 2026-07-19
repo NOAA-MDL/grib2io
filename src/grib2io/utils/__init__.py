@@ -408,3 +408,43 @@ def compute_with_retries(obj, *, max_attempts: int = 6, base_sleep: float = 2.0)
             sleep_s = base_sleep**attempt
             print(f"Transient read error ({type(exc).__name__}) on attempt {attempt}/{max_attempts}; retrying in {sleep_s}s...")
             time.sleep(sleep_s)
+
+
+def percentile_string(pct):
+    """
+    Return a percentile string with the proper English ordinal suffix.
+
+    Parameters
+    ----------
+    pct : int
+        Percentile value in the range [0, 100].
+
+    Returns
+    -------
+    str
+        Percentile string, e.g., ``"1st percentile"``,
+        ``"21st percentile"``, or ``"90th percentile"``.
+
+    Raises
+    ------
+    ValueError
+        If `pct` is not in the range [0, 100].
+
+    Examples
+    --------
+    >>> percentile_string(1)
+    '1st percentile'
+    >>> percentile_string(21)
+    '21st percentile'
+    >>> percentile_string(90)
+    '90th percentile'
+    """
+    if not (0 <= pct <= 100):
+        raise ValueError("percentile must be between 0 and 100")
+
+    if 11 <= (pct % 100) <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(pct % 10, "th")
+
+    return f"{pct}{suffix} percentile"

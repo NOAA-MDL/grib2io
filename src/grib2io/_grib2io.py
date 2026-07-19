@@ -1065,7 +1065,20 @@ class _Grib2Message:
             A formatted string representation of the object, including
             selected attributes.
         """
-        return f"{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName} ({self.units}):{self.level}:{self.leadTime}"
+        pdtn = self.pdtn
+        prefix = f"{self._msgnum}:d={self.refDate}:{self.shortName}:{self.fullName}"
+
+        if pdtn in {5, 9}:
+            return f"{prefix} (%):{self.level}:{self.leadTime}:{self.duration}:{self.threshold} ({self.parameterUnits})"
+
+        if pdtn in {6, 10}:
+            percentile = utils.percentile_string(self.percentileValue)
+            return f"{prefix} ({self.units}):{self.level}:{self.leadTime}:{self.duration}:{percentile}"
+
+        if pdtn == 8:
+            return f"{prefix} ({self.units}):{self.level}:{self.leadTime}:{self.duration} {self.statisticalProcess.definition}"
+
+        return f"{prefix} ({self.units}):{self.level}:{self.leadTime}"
 
     def _generate_signature(self):
         """Generature SHA-1 hash string from GRIB2 integer sections."""
