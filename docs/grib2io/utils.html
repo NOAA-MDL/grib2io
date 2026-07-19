@@ -64,6 +64,12 @@
             <li>
                     <a class="function" href="#latlon_to_ij">latlon_to_ij</a>
             </li>
+            <li>
+                    <a class="function" href="#compute_with_retries">compute_with_retries</a>
+            </li>
+            <li>
+                    <a class="function" href="#percentile_string">percentile_string</a>
+            </li>
     </ul>
 
 
@@ -271,7 +277,7 @@ of GRIB2 Messages.</p>
 </span><span id="L-180"><a href="#L-180"><span class="linenos">180</span></a>            <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">UnitOfTimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]],</span>
 </span><span id="L-181"><a href="#L-181"><span class="linenos">181</span></a>            <span class="s2">&quot;scale_time_seconds&quot;</span><span class="p">,</span>
 </span><span id="L-182"><a href="#L-182"><span class="linenos">182</span></a>        <span class="p">)</span>
-</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="n">ntime</span> <span class="o">*</span> <span class="n">duration_unit</span> <span class="o">*</span> <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">TimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]]</span>
+</span><span id="L-183"><a href="#L-183"><span class="linenos">183</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ntime</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">duration_unit</span> <span class="o">*</span> <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">TimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]]</span>
 </span><span id="L-184"><a href="#L-184"><span class="linenos">184</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="L-185"><a href="#L-185"><span class="linenos">185</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="L-186"><a href="#L-186"><span class="linenos">186</span></a>    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
@@ -446,6 +452,99 @@ of GRIB2 Messages.</p>
 </span><span id="L-355"><a href="#L-355"><span class="linenos">355</span></a>    <span class="p">)</span>
 </span><span id="L-356"><a href="#L-356"><span class="linenos">356</span></a>
 </span><span id="L-357"><a href="#L-357"><span class="linenos">357</span></a>    <span class="k">return</span> <span class="n">xpts</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">ypts</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+</span><span id="L-358"><a href="#L-358"><span class="linenos">358</span></a>
+</span><span id="L-359"><a href="#L-359"><span class="linenos">359</span></a>
+</span><span id="L-360"><a href="#L-360"><span class="linenos">360</span></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_with_retries</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">base_sleep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">):</span>
+</span><span id="L-361"><a href="#L-361"><span class="linenos">361</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-362"><a href="#L-362"><span class="linenos">362</span></a><span class="sd">    Compute a Dask-backed object (Xarray Dataset or DataArray) with retries for transient errors.</span>
+</span><span id="L-363"><a href="#L-363"><span class="linenos">363</span></a>
+</span><span id="L-364"><a href="#L-364"><span class="linenos">364</span></a><span class="sd">    Transient errors typically include network timeouts, connection resets, and</span>
+</span><span id="L-365"><a href="#L-365"><span class="linenos">365</span></a><span class="sd">    cloud-specific errors (e.g. IcechunkError, S3 SlowDown 429).</span>
+</span><span id="L-366"><a href="#L-366"><span class="linenos">366</span></a>
+</span><span id="L-367"><a href="#L-367"><span class="linenos">367</span></a><span class="sd">    Parameters</span>
+</span><span id="L-368"><a href="#L-368"><span class="linenos">368</span></a><span class="sd">    ----------</span>
+</span><span id="L-369"><a href="#L-369"><span class="linenos">369</span></a><span class="sd">    obj : xarray.Dataset, xarray.DataArray, or dask.delayed.Delayed</span>
+</span><span id="L-370"><a href="#L-370"><span class="linenos">370</span></a><span class="sd">        The object to compute.</span>
+</span><span id="L-371"><a href="#L-371"><span class="linenos">371</span></a><span class="sd">    max_attempts : int, optional</span>
+</span><span id="L-372"><a href="#L-372"><span class="linenos">372</span></a><span class="sd">        Maximum number of attempts. Defaults to 6.</span>
+</span><span id="L-373"><a href="#L-373"><span class="linenos">373</span></a><span class="sd">    base_sleep : float, optional</span>
+</span><span id="L-374"><a href="#L-374"><span class="linenos">374</span></a><span class="sd">        Base sleep time in seconds for exponential backoff. Defaults to 2.0.</span>
+</span><span id="L-375"><a href="#L-375"><span class="linenos">375</span></a>
+</span><span id="L-376"><a href="#L-376"><span class="linenos">376</span></a><span class="sd">    Returns</span>
+</span><span id="L-377"><a href="#L-377"><span class="linenos">377</span></a><span class="sd">    -------</span>
+</span><span id="L-378"><a href="#L-378"><span class="linenos">378</span></a><span class="sd">    The computed result (typically a NumPy-backed Xarray object or a scalar).</span>
+</span><span id="L-379"><a href="#L-379"><span class="linenos">379</span></a>
+</span><span id="L-380"><a href="#L-380"><span class="linenos">380</span></a><span class="sd">    Raises</span>
+</span><span id="L-381"><a href="#L-381"><span class="linenos">381</span></a><span class="sd">    ------</span>
+</span><span id="L-382"><a href="#L-382"><span class="linenos">382</span></a><span class="sd">    Exception</span>
+</span><span id="L-383"><a href="#L-383"><span class="linenos">383</span></a><span class="sd">        The last exception encountered if all attempts fail, or any non-transient</span>
+</span><span id="L-384"><a href="#L-384"><span class="linenos">384</span></a><span class="sd">        exception.</span>
+</span><span id="L-385"><a href="#L-385"><span class="linenos">385</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-386"><a href="#L-386"><span class="linenos">386</span></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+</span><span id="L-387"><a href="#L-387"><span class="linenos">387</span></a>
+</span><span id="L-388"><a href="#L-388"><span class="linenos">388</span></a>    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_attempts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="L-389"><a href="#L-389"><span class="linenos">389</span></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="L-390"><a href="#L-390"><span class="linenos">390</span></a>            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="L-391"><a href="#L-391"><span class="linenos">391</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span id="L-392"><a href="#L-392"><span class="linenos">392</span></a>            <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span id="L-393"><a href="#L-393"><span class="linenos">393</span></a>            <span class="c1"># Basic transient error detection across typical remote backends</span>
+</span><span id="L-394"><a href="#L-394"><span class="linenos">394</span></a>            <span class="n">exc_name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span id="L-395"><a href="#L-395"><span class="linenos">395</span></a>            <span class="n">transient</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="L-396"><a href="#L-396"><span class="linenos">396</span></a>                <span class="s2">&quot;icechunkerror&quot;</span> <span class="ow">in</span> <span class="n">exc_name</span>
+</span><span id="L-397"><a href="#L-397"><span class="linenos">397</span></a>                <span class="ow">or</span> <span class="s2">&quot;timeout&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-398"><a href="#L-398"><span class="linenos">398</span></a>                <span class="ow">or</span> <span class="s2">&quot;timed out&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-399"><a href="#L-399"><span class="linenos">399</span></a>                <span class="ow">or</span> <span class="s2">&quot;connect&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-400"><a href="#L-400"><span class="linenos">400</span></a>                <span class="ow">or</span> <span class="s2">&quot;slowdown&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-401"><a href="#L-401"><span class="linenos">401</span></a>                <span class="ow">or</span> <span class="s2">&quot;429&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-402"><a href="#L-402"><span class="linenos">402</span></a>                <span class="ow">or</span> <span class="s2">&quot;503&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-403"><a href="#L-403"><span class="linenos">403</span></a>                <span class="ow">or</span> <span class="s2">&quot;eof occurred in violation of protocol&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-404"><a href="#L-404"><span class="linenos">404</span></a>                <span class="ow">or</span> <span class="s2">&quot;connection reset&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="L-405"><a href="#L-405"><span class="linenos">405</span></a>            <span class="p">)</span>
+</span><span id="L-406"><a href="#L-406"><span class="linenos">406</span></a>            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">transient</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
+</span><span id="L-407"><a href="#L-407"><span class="linenos">407</span></a>                <span class="k">raise</span>
+</span><span id="L-408"><a href="#L-408"><span class="linenos">408</span></a>            <span class="n">sleep_s</span> <span class="o">=</span> <span class="n">base_sleep</span><span class="o">**</span><span class="n">attempt</span>
+</span><span id="L-409"><a href="#L-409"><span class="linenos">409</span></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transient read error (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">) on attempt </span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2">; retrying in </span><span class="si">{</span><span class="n">sleep_s</span><span class="si">}</span><span class="s2">s...&quot;</span><span class="p">)</span>
+</span><span id="L-410"><a href="#L-410"><span class="linenos">410</span></a>            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_s</span><span class="p">)</span>
+</span><span id="L-411"><a href="#L-411"><span class="linenos">411</span></a>
+</span><span id="L-412"><a href="#L-412"><span class="linenos">412</span></a>
+</span><span id="L-413"><a href="#L-413"><span class="linenos">413</span></a><span class="k">def</span><span class="w"> </span><span class="nf">percentile_string</span><span class="p">(</span><span class="n">pct</span><span class="p">):</span>
+</span><span id="L-414"><a href="#L-414"><span class="linenos">414</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-415"><a href="#L-415"><span class="linenos">415</span></a><span class="sd">    Return a percentile string with the proper English ordinal suffix.</span>
+</span><span id="L-416"><a href="#L-416"><span class="linenos">416</span></a>
+</span><span id="L-417"><a href="#L-417"><span class="linenos">417</span></a><span class="sd">    Parameters</span>
+</span><span id="L-418"><a href="#L-418"><span class="linenos">418</span></a><span class="sd">    ----------</span>
+</span><span id="L-419"><a href="#L-419"><span class="linenos">419</span></a><span class="sd">    pct : int</span>
+</span><span id="L-420"><a href="#L-420"><span class="linenos">420</span></a><span class="sd">        Percentile value in the range [0, 100].</span>
+</span><span id="L-421"><a href="#L-421"><span class="linenos">421</span></a>
+</span><span id="L-422"><a href="#L-422"><span class="linenos">422</span></a><span class="sd">    Returns</span>
+</span><span id="L-423"><a href="#L-423"><span class="linenos">423</span></a><span class="sd">    -------</span>
+</span><span id="L-424"><a href="#L-424"><span class="linenos">424</span></a><span class="sd">    str</span>
+</span><span id="L-425"><a href="#L-425"><span class="linenos">425</span></a><span class="sd">        Percentile string, e.g., ``&quot;1st percentile&quot;``,</span>
+</span><span id="L-426"><a href="#L-426"><span class="linenos">426</span></a><span class="sd">        ``&quot;21st percentile&quot;``, or ``&quot;90th percentile&quot;``.</span>
+</span><span id="L-427"><a href="#L-427"><span class="linenos">427</span></a>
+</span><span id="L-428"><a href="#L-428"><span class="linenos">428</span></a><span class="sd">    Raises</span>
+</span><span id="L-429"><a href="#L-429"><span class="linenos">429</span></a><span class="sd">    ------</span>
+</span><span id="L-430"><a href="#L-430"><span class="linenos">430</span></a><span class="sd">    ValueError</span>
+</span><span id="L-431"><a href="#L-431"><span class="linenos">431</span></a><span class="sd">        If `pct` is not in the range [0, 100].</span>
+</span><span id="L-432"><a href="#L-432"><span class="linenos">432</span></a>
+</span><span id="L-433"><a href="#L-433"><span class="linenos">433</span></a><span class="sd">    Examples</span>
+</span><span id="L-434"><a href="#L-434"><span class="linenos">434</span></a><span class="sd">    --------</span>
+</span><span id="L-435"><a href="#L-435"><span class="linenos">435</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(1)</span>
+</span><span id="L-436"><a href="#L-436"><span class="linenos">436</span></a><span class="sd">    &#39;1st percentile&#39;</span>
+</span><span id="L-437"><a href="#L-437"><span class="linenos">437</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(21)</span>
+</span><span id="L-438"><a href="#L-438"><span class="linenos">438</span></a><span class="sd">    &#39;21st percentile&#39;</span>
+</span><span id="L-439"><a href="#L-439"><span class="linenos">439</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(90)</span>
+</span><span id="L-440"><a href="#L-440"><span class="linenos">440</span></a><span class="sd">    &#39;90th percentile&#39;</span>
+</span><span id="L-441"><a href="#L-441"><span class="linenos">441</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-442"><a href="#L-442"><span class="linenos">442</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">pct</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">):</span>
+</span><span id="L-443"><a href="#L-443"><span class="linenos">443</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;percentile must be between 0 and 100&quot;</span><span class="p">)</span>
+</span><span id="L-444"><a href="#L-444"><span class="linenos">444</span></a>
+</span><span id="L-445"><a href="#L-445"><span class="linenos">445</span></a>    <span class="k">if</span> <span class="mi">11</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">pct</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">13</span><span class="p">:</span>
+</span><span id="L-446"><a href="#L-446"><span class="linenos">446</span></a>        <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;th&quot;</span>
+</span><span id="L-447"><a href="#L-447"><span class="linenos">447</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="L-448"><a href="#L-448"><span class="linenos">448</span></a>        <span class="n">suffix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;st&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;nd&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;rd&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pct</span> <span class="o">%</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;th&quot;</span><span class="p">)</span>
+</span><span id="L-449"><a href="#L-449"><span class="linenos">449</span></a>
+</span><span id="L-450"><a href="#L-450"><span class="linenos">450</span></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pct</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2"> percentile&quot;</span>
 </span></pre></div>
 
 
@@ -701,7 +800,7 @@ Integer value.</li>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_leadtime</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">pdtn</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">pdt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_array_like</span><span class="o">.</span><span class="n">_SupportsArray</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_nested_sequence</span><span class="o">.</span><span class="n">_NestedSequence</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_array_like</span><span class="o">.</span><span class="n">_SupportsArray</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="n">Any</span><span class="p">]]],</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_nested_sequence</span><span class="o">.</span><span class="n">_NestedSequence</span><span class="p">[</span><span class="nb">complex</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]</span></span><span class="return-annotation">) -> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>:</span></span>
+        <span class="name">get_leadtime</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">pdtn</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">pdt</span><span class="p">:</span> <span class="n">ArrayLike</span></span><span class="return-annotation">) -> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>:</span></span>
 
                 <label class="view-source-button" for="get_leadtime-view-source"><span>View Source</span></label>
 
@@ -758,7 +857,7 @@ Number, and Product Definition Template (Section 4).</p>
 <div class="attr function">
             
         <span class="def">def</span>
-        <span class="name">get_duration</span><span class="signature pdoc-code multiline">(<span class="param">	<span class="n">pdtn</span><span class="p">:</span> <span class="nb">int</span>,</span><span class="param">	<span class="n">pdt</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Buffer</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_array_like</span><span class="o">.</span><span class="n">_SupportsArray</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_nested_sequence</span><span class="o">.</span><span class="n">_NestedSequence</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_array_like</span><span class="o">.</span><span class="n">_SupportsArray</span><span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dtype</span><span class="p">[</span><span class="n">Any</span><span class="p">]]],</span> <span class="nb">complex</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">_typing</span><span class="o">.</span><span class="n">_nested_sequence</span><span class="o">.</span><span class="n">_NestedSequence</span><span class="p">[</span><span class="nb">complex</span> <span class="o">|</span> <span class="nb">bytes</span> <span class="o">|</span> <span class="nb">str</span><span class="p">]]</span></span><span class="return-annotation">) -> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>:</span></span>
+        <span class="name">get_duration</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">pdtn</span><span class="p">:</span> <span class="nb">int</span>, </span><span class="param"><span class="n">pdt</span><span class="p">:</span> <span class="n">ArrayLike</span></span><span class="return-annotation">) -> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span>:</span></span>
 
                 <label class="view-source-button" for="get_duration-view-source"><span>View Source</span></label>
 
@@ -790,7 +889,7 @@ Number, and Product Definition Template (Section 4).</p>
 </span><span id="get_duration-181"><a href="#get_duration-181"><span class="linenos">181</span></a>            <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">UnitOfTimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]],</span>
 </span><span id="get_duration-182"><a href="#get_duration-182"><span class="linenos">182</span></a>            <span class="s2">&quot;scale_time_seconds&quot;</span><span class="p">,</span>
 </span><span id="get_duration-183"><a href="#get_duration-183"><span class="linenos">183</span></a>        <span class="p">)</span>
-</span><span id="get_duration-184"><a href="#get_duration-184"><span class="linenos">184</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="n">ntime</span> <span class="o">*</span> <span class="n">duration_unit</span> <span class="o">*</span> <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">TimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]]</span>
+</span><span id="get_duration-184"><a href="#get_duration-184"><span class="linenos">184</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">ntime</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">duration_unit</span> <span class="o">*</span> <span class="n">pdt</span><span class="p">[</span><span class="n">templates</span><span class="o">.</span><span class="n">TimeRangeOfStatisticalProcess</span><span class="o">.</span><span class="n">_key</span><span class="p">[</span><span class="n">pdtn</span><span class="p">]]</span>
 </span><span id="get_duration-185"><a href="#get_duration-185"><span class="linenos">185</span></a>    <span class="k">else</span><span class="p">:</span>
 </span><span id="get_duration-186"><a href="#get_duration-186"><span class="linenos">186</span></a>        <span class="n">d</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="get_duration-187"><a href="#get_duration-187"><span class="linenos">187</span></a>    <span class="k">return</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">d</span><span class="p">))</span>
@@ -1105,6 +1204,192 @@ latitude/longitude points.</li>
 Grid y-coordinates (j-indices) corresponding to the input
 latitude/longitude points.</li>
 </ul>
+</div>
+
+
+                </section>
+                <section id="compute_with_retries">
+                            <input id="compute_with_retries-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">compute_with_retries</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">obj</span>, </span><span class="param"><span class="o">*</span>, </span><span class="param"><span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span>, </span><span class="param"><span class="n">base_sleep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="compute_with_retries-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#compute_with_retries"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="compute_with_retries-361"><a href="#compute_with_retries-361"><span class="linenos">361</span></a><span class="k">def</span><span class="w"> </span><span class="nf">compute_with_retries</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">max_attempts</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">base_sleep</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">):</span>
+</span><span id="compute_with_retries-362"><a href="#compute_with_retries-362"><span class="linenos">362</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="compute_with_retries-363"><a href="#compute_with_retries-363"><span class="linenos">363</span></a><span class="sd">    Compute a Dask-backed object (Xarray Dataset or DataArray) with retries for transient errors.</span>
+</span><span id="compute_with_retries-364"><a href="#compute_with_retries-364"><span class="linenos">364</span></a>
+</span><span id="compute_with_retries-365"><a href="#compute_with_retries-365"><span class="linenos">365</span></a><span class="sd">    Transient errors typically include network timeouts, connection resets, and</span>
+</span><span id="compute_with_retries-366"><a href="#compute_with_retries-366"><span class="linenos">366</span></a><span class="sd">    cloud-specific errors (e.g. IcechunkError, S3 SlowDown 429).</span>
+</span><span id="compute_with_retries-367"><a href="#compute_with_retries-367"><span class="linenos">367</span></a>
+</span><span id="compute_with_retries-368"><a href="#compute_with_retries-368"><span class="linenos">368</span></a><span class="sd">    Parameters</span>
+</span><span id="compute_with_retries-369"><a href="#compute_with_retries-369"><span class="linenos">369</span></a><span class="sd">    ----------</span>
+</span><span id="compute_with_retries-370"><a href="#compute_with_retries-370"><span class="linenos">370</span></a><span class="sd">    obj : xarray.Dataset, xarray.DataArray, or dask.delayed.Delayed</span>
+</span><span id="compute_with_retries-371"><a href="#compute_with_retries-371"><span class="linenos">371</span></a><span class="sd">        The object to compute.</span>
+</span><span id="compute_with_retries-372"><a href="#compute_with_retries-372"><span class="linenos">372</span></a><span class="sd">    max_attempts : int, optional</span>
+</span><span id="compute_with_retries-373"><a href="#compute_with_retries-373"><span class="linenos">373</span></a><span class="sd">        Maximum number of attempts. Defaults to 6.</span>
+</span><span id="compute_with_retries-374"><a href="#compute_with_retries-374"><span class="linenos">374</span></a><span class="sd">    base_sleep : float, optional</span>
+</span><span id="compute_with_retries-375"><a href="#compute_with_retries-375"><span class="linenos">375</span></a><span class="sd">        Base sleep time in seconds for exponential backoff. Defaults to 2.0.</span>
+</span><span id="compute_with_retries-376"><a href="#compute_with_retries-376"><span class="linenos">376</span></a>
+</span><span id="compute_with_retries-377"><a href="#compute_with_retries-377"><span class="linenos">377</span></a><span class="sd">    Returns</span>
+</span><span id="compute_with_retries-378"><a href="#compute_with_retries-378"><span class="linenos">378</span></a><span class="sd">    -------</span>
+</span><span id="compute_with_retries-379"><a href="#compute_with_retries-379"><span class="linenos">379</span></a><span class="sd">    The computed result (typically a NumPy-backed Xarray object or a scalar).</span>
+</span><span id="compute_with_retries-380"><a href="#compute_with_retries-380"><span class="linenos">380</span></a>
+</span><span id="compute_with_retries-381"><a href="#compute_with_retries-381"><span class="linenos">381</span></a><span class="sd">    Raises</span>
+</span><span id="compute_with_retries-382"><a href="#compute_with_retries-382"><span class="linenos">382</span></a><span class="sd">    ------</span>
+</span><span id="compute_with_retries-383"><a href="#compute_with_retries-383"><span class="linenos">383</span></a><span class="sd">    Exception</span>
+</span><span id="compute_with_retries-384"><a href="#compute_with_retries-384"><span class="linenos">384</span></a><span class="sd">        The last exception encountered if all attempts fail, or any non-transient</span>
+</span><span id="compute_with_retries-385"><a href="#compute_with_retries-385"><span class="linenos">385</span></a><span class="sd">        exception.</span>
+</span><span id="compute_with_retries-386"><a href="#compute_with_retries-386"><span class="linenos">386</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="compute_with_retries-387"><a href="#compute_with_retries-387"><span class="linenos">387</span></a>    <span class="kn">import</span><span class="w"> </span><span class="nn">time</span>
+</span><span id="compute_with_retries-388"><a href="#compute_with_retries-388"><span class="linenos">388</span></a>
+</span><span id="compute_with_retries-389"><a href="#compute_with_retries-389"><span class="linenos">389</span></a>    <span class="k">for</span> <span class="n">attempt</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_attempts</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+</span><span id="compute_with_retries-390"><a href="#compute_with_retries-390"><span class="linenos">390</span></a>        <span class="k">try</span><span class="p">:</span>
+</span><span id="compute_with_retries-391"><a href="#compute_with_retries-391"><span class="linenos">391</span></a>            <span class="k">return</span> <span class="n">obj</span><span class="o">.</span><span class="n">compute</span><span class="p">()</span>
+</span><span id="compute_with_retries-392"><a href="#compute_with_retries-392"><span class="linenos">392</span></a>        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+</span><span id="compute_with_retries-393"><a href="#compute_with_retries-393"><span class="linenos">393</span></a>            <span class="n">msg</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span id="compute_with_retries-394"><a href="#compute_with_retries-394"><span class="linenos">394</span></a>            <span class="c1"># Basic transient error detection across typical remote backends</span>
+</span><span id="compute_with_retries-395"><a href="#compute_with_retries-395"><span class="linenos">395</span></a>            <span class="n">exc_name</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+</span><span id="compute_with_retries-396"><a href="#compute_with_retries-396"><span class="linenos">396</span></a>            <span class="n">transient</span> <span class="o">=</span> <span class="p">(</span>
+</span><span id="compute_with_retries-397"><a href="#compute_with_retries-397"><span class="linenos">397</span></a>                <span class="s2">&quot;icechunkerror&quot;</span> <span class="ow">in</span> <span class="n">exc_name</span>
+</span><span id="compute_with_retries-398"><a href="#compute_with_retries-398"><span class="linenos">398</span></a>                <span class="ow">or</span> <span class="s2">&quot;timeout&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-399"><a href="#compute_with_retries-399"><span class="linenos">399</span></a>                <span class="ow">or</span> <span class="s2">&quot;timed out&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-400"><a href="#compute_with_retries-400"><span class="linenos">400</span></a>                <span class="ow">or</span> <span class="s2">&quot;connect&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-401"><a href="#compute_with_retries-401"><span class="linenos">401</span></a>                <span class="ow">or</span> <span class="s2">&quot;slowdown&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-402"><a href="#compute_with_retries-402"><span class="linenos">402</span></a>                <span class="ow">or</span> <span class="s2">&quot;429&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-403"><a href="#compute_with_retries-403"><span class="linenos">403</span></a>                <span class="ow">or</span> <span class="s2">&quot;503&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-404"><a href="#compute_with_retries-404"><span class="linenos">404</span></a>                <span class="ow">or</span> <span class="s2">&quot;eof occurred in violation of protocol&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-405"><a href="#compute_with_retries-405"><span class="linenos">405</span></a>                <span class="ow">or</span> <span class="s2">&quot;connection reset&quot;</span> <span class="ow">in</span> <span class="n">msg</span>
+</span><span id="compute_with_retries-406"><a href="#compute_with_retries-406"><span class="linenos">406</span></a>            <span class="p">)</span>
+</span><span id="compute_with_retries-407"><a href="#compute_with_retries-407"><span class="linenos">407</span></a>            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">transient</span><span class="p">)</span> <span class="ow">or</span> <span class="n">attempt</span> <span class="o">==</span> <span class="n">max_attempts</span><span class="p">:</span>
+</span><span id="compute_with_retries-408"><a href="#compute_with_retries-408"><span class="linenos">408</span></a>                <span class="k">raise</span>
+</span><span id="compute_with_retries-409"><a href="#compute_with_retries-409"><span class="linenos">409</span></a>            <span class="n">sleep_s</span> <span class="o">=</span> <span class="n">base_sleep</span><span class="o">**</span><span class="n">attempt</span>
+</span><span id="compute_with_retries-410"><a href="#compute_with_retries-410"><span class="linenos">410</span></a>            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Transient read error (</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">exc</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">) on attempt </span><span class="si">{</span><span class="n">attempt</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">max_attempts</span><span class="si">}</span><span class="s2">; retrying in </span><span class="si">{</span><span class="n">sleep_s</span><span class="si">}</span><span class="s2">s...&quot;</span><span class="p">)</span>
+</span><span id="compute_with_retries-411"><a href="#compute_with_retries-411"><span class="linenos">411</span></a>            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_s</span><span class="p">)</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Compute a Dask-backed object (Xarray Dataset or DataArray) with retries for transient errors.</p>
+
+<p>Transient errors typically include network timeouts, connection resets, and
+cloud-specific errors (e.g. IcechunkError, S3 SlowDown 429).</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>obj</strong> (xarray.Dataset, xarray.DataArray, or dask.delayed.Delayed):
+The object to compute.</li>
+<li><strong>max_attempts</strong> (int, optional):
+Maximum number of attempts. Defaults to 6.</li>
+<li><strong>base_sleep</strong> (float, optional):
+Base sleep time in seconds for exponential backoff. Defaults to 2.0.</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<ul>
+<li><strong>The computed result (typically a NumPy-backed Xarray object or a scalar).</strong></li>
+</ul>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>Exception</strong>: The last exception encountered if all attempts fail, or any non-transient
+exception.</li>
+</ul>
+</div>
+
+
+                </section>
+                <section id="percentile_string">
+                            <input id="percentile_string-view-source" class="view-source-toggle-state" type="checkbox" aria-hidden="true" tabindex="-1">
+<div class="attr function">
+            
+        <span class="def">def</span>
+        <span class="name">percentile_string</span><span class="signature pdoc-code condensed">(<span class="param"><span class="n">pct</span></span><span class="return-annotation">):</span></span>
+
+                <label class="view-source-button" for="percentile_string-view-source"><span>View Source</span></label>
+
+    </div>
+    <a class="headerlink" href="#percentile_string"></a>
+            <div class="pdoc-code codehilite"><pre><span></span><span id="percentile_string-414"><a href="#percentile_string-414"><span class="linenos">414</span></a><span class="k">def</span><span class="w"> </span><span class="nf">percentile_string</span><span class="p">(</span><span class="n">pct</span><span class="p">):</span>
+</span><span id="percentile_string-415"><a href="#percentile_string-415"><span class="linenos">415</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="percentile_string-416"><a href="#percentile_string-416"><span class="linenos">416</span></a><span class="sd">    Return a percentile string with the proper English ordinal suffix.</span>
+</span><span id="percentile_string-417"><a href="#percentile_string-417"><span class="linenos">417</span></a>
+</span><span id="percentile_string-418"><a href="#percentile_string-418"><span class="linenos">418</span></a><span class="sd">    Parameters</span>
+</span><span id="percentile_string-419"><a href="#percentile_string-419"><span class="linenos">419</span></a><span class="sd">    ----------</span>
+</span><span id="percentile_string-420"><a href="#percentile_string-420"><span class="linenos">420</span></a><span class="sd">    pct : int</span>
+</span><span id="percentile_string-421"><a href="#percentile_string-421"><span class="linenos">421</span></a><span class="sd">        Percentile value in the range [0, 100].</span>
+</span><span id="percentile_string-422"><a href="#percentile_string-422"><span class="linenos">422</span></a>
+</span><span id="percentile_string-423"><a href="#percentile_string-423"><span class="linenos">423</span></a><span class="sd">    Returns</span>
+</span><span id="percentile_string-424"><a href="#percentile_string-424"><span class="linenos">424</span></a><span class="sd">    -------</span>
+</span><span id="percentile_string-425"><a href="#percentile_string-425"><span class="linenos">425</span></a><span class="sd">    str</span>
+</span><span id="percentile_string-426"><a href="#percentile_string-426"><span class="linenos">426</span></a><span class="sd">        Percentile string, e.g., ``&quot;1st percentile&quot;``,</span>
+</span><span id="percentile_string-427"><a href="#percentile_string-427"><span class="linenos">427</span></a><span class="sd">        ``&quot;21st percentile&quot;``, or ``&quot;90th percentile&quot;``.</span>
+</span><span id="percentile_string-428"><a href="#percentile_string-428"><span class="linenos">428</span></a>
+</span><span id="percentile_string-429"><a href="#percentile_string-429"><span class="linenos">429</span></a><span class="sd">    Raises</span>
+</span><span id="percentile_string-430"><a href="#percentile_string-430"><span class="linenos">430</span></a><span class="sd">    ------</span>
+</span><span id="percentile_string-431"><a href="#percentile_string-431"><span class="linenos">431</span></a><span class="sd">    ValueError</span>
+</span><span id="percentile_string-432"><a href="#percentile_string-432"><span class="linenos">432</span></a><span class="sd">        If `pct` is not in the range [0, 100].</span>
+</span><span id="percentile_string-433"><a href="#percentile_string-433"><span class="linenos">433</span></a>
+</span><span id="percentile_string-434"><a href="#percentile_string-434"><span class="linenos">434</span></a><span class="sd">    Examples</span>
+</span><span id="percentile_string-435"><a href="#percentile_string-435"><span class="linenos">435</span></a><span class="sd">    --------</span>
+</span><span id="percentile_string-436"><a href="#percentile_string-436"><span class="linenos">436</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(1)</span>
+</span><span id="percentile_string-437"><a href="#percentile_string-437"><span class="linenos">437</span></a><span class="sd">    &#39;1st percentile&#39;</span>
+</span><span id="percentile_string-438"><a href="#percentile_string-438"><span class="linenos">438</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(21)</span>
+</span><span id="percentile_string-439"><a href="#percentile_string-439"><span class="linenos">439</span></a><span class="sd">    &#39;21st percentile&#39;</span>
+</span><span id="percentile_string-440"><a href="#percentile_string-440"><span class="linenos">440</span></a><span class="sd">    &gt;&gt;&gt; percentile_string(90)</span>
+</span><span id="percentile_string-441"><a href="#percentile_string-441"><span class="linenos">441</span></a><span class="sd">    &#39;90th percentile&#39;</span>
+</span><span id="percentile_string-442"><a href="#percentile_string-442"><span class="linenos">442</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="percentile_string-443"><a href="#percentile_string-443"><span class="linenos">443</span></a>    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">pct</span> <span class="o">&lt;=</span> <span class="mi">100</span><span class="p">):</span>
+</span><span id="percentile_string-444"><a href="#percentile_string-444"><span class="linenos">444</span></a>        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;percentile must be between 0 and 100&quot;</span><span class="p">)</span>
+</span><span id="percentile_string-445"><a href="#percentile_string-445"><span class="linenos">445</span></a>
+</span><span id="percentile_string-446"><a href="#percentile_string-446"><span class="linenos">446</span></a>    <span class="k">if</span> <span class="mi">11</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">pct</span> <span class="o">%</span> <span class="mi">100</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">13</span><span class="p">:</span>
+</span><span id="percentile_string-447"><a href="#percentile_string-447"><span class="linenos">447</span></a>        <span class="n">suffix</span> <span class="o">=</span> <span class="s2">&quot;th&quot;</span>
+</span><span id="percentile_string-448"><a href="#percentile_string-448"><span class="linenos">448</span></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="percentile_string-449"><a href="#percentile_string-449"><span class="linenos">449</span></a>        <span class="n">suffix</span> <span class="o">=</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="s2">&quot;st&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s2">&quot;nd&quot;</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="s2">&quot;rd&quot;</span><span class="p">}</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">pct</span> <span class="o">%</span> <span class="mi">10</span><span class="p">,</span> <span class="s2">&quot;th&quot;</span><span class="p">)</span>
+</span><span id="percentile_string-450"><a href="#percentile_string-450"><span class="linenos">450</span></a>
+</span><span id="percentile_string-451"><a href="#percentile_string-451"><span class="linenos">451</span></a>    <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">pct</span><span class="si">}{</span><span class="n">suffix</span><span class="si">}</span><span class="s2"> percentile&quot;</span>
+</span></pre></div>
+
+
+            <div class="docstring"><p>Return a percentile string with the proper English ordinal suffix.</p>
+
+<h6 id="parameters">Parameters</h6>
+
+<ul>
+<li><strong>pct</strong> (int):
+Percentile value in the range [0, 100].</li>
+</ul>
+
+<h6 id="returns">Returns</h6>
+
+<ul>
+<li><strong>str</strong>: Percentile string, e.g., <code>"1st percentile"</code>,
+<code>"21st percentile"</code>, or <code>"90th percentile"</code>.</li>
+</ul>
+
+<h6 id="raises">Raises</h6>
+
+<ul>
+<li><strong>ValueError</strong>: If <code>pct</code> is not in the range [0, 100].</li>
+</ul>
+
+<h6 id="examples">Examples</h6>
+
+<div class="pdoc-code codehilite">
+<pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">percentile_string</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="go">&#39;1st percentile&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">percentile_string</span><span class="p">(</span><span class="mi">21</span><span class="p">)</span>
+<span class="go">&#39;21st percentile&#39;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">percentile_string</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+<span class="go">&#39;90th percentile&#39;</span>
+</code></pre>
+</div>
 </div>
 
 
