@@ -115,8 +115,8 @@ grib2io = "grib2io.xarray_backend:GribBackendEntrypoint"
 # Make the Zarr v2 / numcodecs GRIB2 codec auto-discoverable. numcodecs
 # lazily loads codecs from this entry-point group the first time it sees an
 # unknown codec ID (here "grib2io") in a ".zarray" compressor/filters, so a
-# plain "xr.open_zarr" on a grib2io Kerchunk reference can decode GRIB2 chunks
-# without a prior "import grib2io.codecs".
+# plain "xr.open_zarr" on a grib2io Kerchunk reference can decode GRIB2
+# chunks without a prior "import grib2io.codecs".
 grib2io = "grib2io.codecs:Grib2Codec"
 
 [project.entry-points."zarr.codecs"]
@@ -134,16 +134,40 @@ Repository = "https://github.com/NOAA-MDL/grib2io"
 minimum-version = "build-system.requires"
 cmake.version = ">=3.18"
 wheel.packages = ["src/grib2io"]
+logging.level = "INFO"
+
+# Include only the files and directories explicitly selected below.
+sdist.inclusion-mode = "explicit"
+
+# Equivalent to the include and graft directives from MANIFEST.in.
 sdist.include = [
-  "CMakeLists.txt",
-  "cmake/grib2io_config.py.in",
-  "src/ext/**",
-  "src/grib2io/**",
+  "MANIFEST.in",
+  "setup.py",
+  "pyproject.toml",
   "README.md",
   "LICENSE",
   "VERSION",
+  "create_docs.sh",
+  "requirements.txt",
+
+  # Files required by the CMake source build.
+  "CMakeLists.txt",
+  "cmake/**",
+
+  # Equivalent to the MANIFEST.in graft directives.
+  "docs/**",
+  "src/ext/**",
+  "src/grib2io/**",
 ]
-logging.level = "INFO"
+
+# Equivalent to the prune and global-exclude directives from MANIFEST.in.
+sdist.exclude = [
+  "tests/**",
+  "*.py[cod]",
+  "*.c",
+  "*.so",
+  "*.DS_Store",
+]
 
 [tool.ruff]
 line-length = 150
