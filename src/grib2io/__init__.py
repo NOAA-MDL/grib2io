@@ -17,7 +17,9 @@ try:
     has_interpolation = __config__.has_interpolation
     has_openmp_support = __config__.has_openmp_support
     g2c_static = __config__.g2c_static
+    g2c_library = __config__.g2c_library
     ip_static = __config__.ip_static
+    ip_library = __config__.ip_library
     extra_objects = __config__.extra_objects
 except ImportError:
     pass
@@ -88,12 +90,14 @@ def show_config():
     print("")
     print(f"NCEPLIBS-g2c library version: {__g2clib_version__}")
     print(f"\tStatic library: {g2c_static}")
+    print(f"\tLibrary: {g2c_library}")
     print(f"\tJPEG compression support: {has_jpeg_support}")
     print(f"\tPNG compression support: {has_png_support}")
     print(f"\tAEC compression support: {has_aec_support}")
     print("")
     print(f"NCEPLIPS-ip support: {has_interpolation}")
     print(f"\tStatic library: {ip_static}")
+    print(f"\tLibrary: {ip_library}")
     print(f"\tOpenMP support: {has_openmp_support}")
     print("")
     print("Static libs:")

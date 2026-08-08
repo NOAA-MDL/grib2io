@@ -2,7 +2,9 @@
 # It contains configuration information when building this package.
 grib2io_version = '@GRIB2IO_VERSION@'
 g2c_static = @GRIB2IO_G2C_STATIC_PY@
+g2c_library = '@GRIB2IO_G2C_LIBRARY@'
 has_interpolation = @GRIB2IO_HAS_INTERPOLATION_PY@
 ip_static = @GRIB2IO_IP_STATIC_PY@
+ip_library = '@GRIB2IO_IP_LIBRARY@'
 has_openmp_support = @GRIB2IO_HAS_OPENMP_PY@
 extra_objects = @GRIB2IO_EXTRA_OBJECTS@

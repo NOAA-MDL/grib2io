@@ -229,6 +229,7 @@ endif()
 get_filename_component(G2C_LIBRARY_DIR "${G2C_LIBRARY}" DIRECTORY)
 message(STATUS "Resolved G2C include dir: ${G2C_INCLUDE_DIR}")
 message(STATUS "Resolved G2C library: ${G2C_LIBRARY}")
+set(GRIB2IO_G2C_LIBRARY ${G2C_LIBRARY})
 
 # -----------------------------------------------------------------------------
 # g2clib extension module
@@ -334,6 +335,7 @@ if(GRIB2IO_WITH_IP)
     get_filename_component(IP_LIBRARY_DIR "${IP_LIBRARY}" DIRECTORY)
     message(STATUS "Resolved IP include dir: ${IP_INCLUDE_DIR}")
     message(STATUS "Resolved IP library: ${IP_LIBRARY}")
+    set(GRIB2IO_IP_LIBRARY ${IP_LIBRARY})
 
     grib2io_add_cython_module(
       iplib
