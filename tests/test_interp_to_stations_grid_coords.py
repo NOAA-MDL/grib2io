@@ -1,12 +1,11 @@
+import importlib.util
+
 import numpy as np
+import pytest
+
 import grib2io
 
-try:
-    import grib2io.iplib as iplib
-except ImportError:
-    import pytest
-
-    pytest.skip("NCEPLIBS-ip not found", allow_module_level=True)
+IPLIB_AVAILABLE = importlib.util.find_spec("grib2io.iplib") is not None
 
 # Test stations
 #            KPHL,     KPIT,     KMFL,     KORD,     KDEN,     KSFO      PMDY
@@ -43,6 +42,10 @@ def test_station_grid_coords(request):
     np.testing.assert_allclose(yloc, YLOC_EXPECTED, rtol=10e-4)
 
 
+@pytest.mark.skipif(
+    not IPLIB_AVAILABLE,
+    reason="grib2io was built without NCEPLIBS-ip support",
+)
 def test_interp_to_stations_outside_conus_grid(request):
     data = request.config.rootdir / "tests" / "input_data"
     with grib2io.open(data / "blend.t00z.core.f001.tmp.co.grib2") as f:
