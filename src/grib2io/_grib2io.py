@@ -2546,6 +2546,9 @@ def build_index(filehandle, offsets=None):
 def _process_message(filehandle, index, pos, header, messages):
     _secpos = dict.fromkeys(range(8))
     _secsize = dict.fromkeys(range(8))
+    # Offset of the last section 6 carrying an actual bitmap (indicator 0), reused by
+    # submessages whose indicator is 254 (previously defined bitmap applies).
+    _last_bitmap_pos = None
     _secpos[0] = pos
     _secsize[0] = 16
     secmsg = filehandle.read(12)
@@ -2596,6 +2599,10 @@ def _process_message(filehandle, index, pos, header, messages):
         elif secnum == 6:
             bmapflag = struct.unpack(">B", filehandle.read(1))[0]
             index["bmapflag"].append(bmapflag)
+            if bmapflag == 0:
+                _last_bitmap_pos = _secpos[6]
+            elif bmapflag == 254 and _last_bitmap_pos is not None:
+                _secpos[6] = _last_bitmap_pos
             filehandle.seek(filehandle.tell() + secsize - 6)
         elif secnum == 7:
             filehandle.seek(filehandle.tell() + secsize - 5)
