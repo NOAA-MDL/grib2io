@@ -29,6 +29,7 @@ jobs:
         HOMEBREW_NO_REQUIRE_TAP_TRUST: 1
       run: |
         brew install jasper libpng libaec
+        brew trust eengl/nceplibs
         brew tap eengl/nceplibs
         brew install nceplibs-g2c nceplibs-ip
         echo "G2C_DIR=$(brew --prefix nceplibs-g2c)" >> $GITHUB_ENV
