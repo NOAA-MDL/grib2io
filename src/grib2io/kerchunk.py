@@ -28,6 +28,7 @@ import json
 import logging
 import os
 import re
+import warnings
 from urllib.parse import urlparse
 from typing import Any, Dict, List, Optional, Set, Union
 
@@ -125,6 +126,11 @@ class ReferenceGenerator:
     storage_options : dict, optional
         Extra options passed to ``fsspec.open`` for remote URIs
         (e.g. ``{"anon": True}`` for public S3 buckets).
+    validate : bool, default True
+        Check the finished manifest for internal consistency before returning
+        it, and raise :class:`ValueError` if any variable's dimension lengths
+        disagree with the coordinate arrays it references.  Pass ``False`` to
+        emit the manifest regardless.
     """
 
     def __init__(
@@ -133,6 +139,7 @@ class ReferenceGenerator:
         filters: Optional[Dict[str, Any]] = None,
         storage_options: Optional[Dict[str, Any]] = None,
         max_workers: Optional[int] = None,
+        validate: bool = True,
     ):
         _ensure_numcodecs()
 
@@ -152,6 +159,7 @@ class ReferenceGenerator:
         self.filters = filters or {}
         self.storage_options = storage_options or {}
         self.max_workers = max_workers
+        self.validate = validate
         self._manifest: Optional[dict] = None
 
     def generate(self) -> dict:
@@ -212,7 +220,11 @@ class ReferenceGenerator:
         # type but different level extents get disambiguated names (mirrors
         # how the xarray backend keeps each surface type in its own Dataset).
         used_var_names: Dict[str, int] = {}
-        level_coord_registry: Dict[str, list] = {}  # name -> sorted level values
+        # Emitted dimension name -> coordinate values written under it.  Shared
+        # across every variable so that two variables needing different values
+        # for the same dimension get distinct names instead of one silently
+        # overwriting the other's coordinate array.
+        dim_coord_registry: Dict[str, list] = {}
         for group_key, msg_entries in all_var_messages.items():
             var_name = group_key[0]  # shortName is the first element
             if var_name in used_var_names:
@@ -221,7 +233,7 @@ class ReferenceGenerator:
             else:
                 used_var_names[var_name] = 0
                 zarr_var_name = var_name
-            self._build_variable_refs(zarr_var_name, msg_entries, refs, level_coord_registry)
+            self._build_variable_refs(zarr_var_name, msg_entries, refs, dim_coord_registry)
 
         # Build latitude/longitude coordinate arrays from the grid definition.
         # All messages are assumed to share the same grid (required by the
@@ -230,6 +242,17 @@ class ReferenceGenerator:
             first_entries = next(iter(all_var_messages.values()))
             rep_msg = first_entries[0].msg
             _build_latlon_coord_refs(rep_msg, refs)
+
+            # Root-level dataset metadata (CF global attributes + GRIB2
+            # provenance from Sections 0/1/4).  Without this, a manifest
+            # separated from its filename carries no record of which model,
+            # center, or cycle it describes.
+            refs[".zattrs"] = json.dumps(_build_root_zattrs(rep_msg))
+
+        if self.validate:
+            problems = _validate_refs(refs)
+            if problems:
+                raise ValueError(_format_validation_errors(problems))
 
         self._manifest = {"version": 1, "refs": refs}
         return self._manifest
@@ -447,6 +470,13 @@ class ReferenceGenerator:
             index, msgs = self._build_remote_index_filtered(file_path, shortname_filter, scan_storage_options)
 
         n_msgs = len(msgs)
+
+        # GRIB2 submessages may omit Section 3 and inherit the grid definition
+        # of the message before them, so index["section3"] is not necessarily
+        # parallel to the message list and must not be indexed by the message
+        # counter.  Resolve each message to its own Section 3 entry first.
+        sec3_map = _build_section3_map(index, n_msgs)
+
         for i in range(n_msgs):
             msg = msgs[i]
 
@@ -510,7 +540,7 @@ class ReferenceGenerator:
                 sec7_length=sec7_length,
                 sec6_offset=sec6_offset,
                 bmapflag=bmapflag,
-                index_section3=index["section3"][i],
+                index_section3=index["section3"][sec3_map[i]],
                 index_section5=index["section5"][i],
             )
 
@@ -559,36 +589,25 @@ class ReferenceGenerator:
         var_name: str,
         msg_entries: list,
         refs: Dict[str, Any],
-        level_coord_registry: Optional[Dict[str, list]] = None,
+        dim_coord_registry: Optional[Dict[str, list]] = None,
     ) -> None:
         """Build all Zarr refs for a single variable."""
-        # Derive surface-type-specific level dim name (mirrors xarray_backend)
-        level_name = _level_dim_name(msg_entries[0].msg)
-        # Map messages to dimensions
-        dim_mapping = _map_messages_to_dimensions(msg_entries, level_dim_name=level_name)
+        # Derive surface-type-specific level dim name (mirrors xarray_backend).
+        level_base = _level_dim_name(msg_entries[0].msg)
+        dim_mapping = _map_messages_to_dimensions(msg_entries, level_dim_name=level_base)
 
-        # Disambiguate the level dim name if this surface type already appears
-        # in the manifest with different level values.  This prevents xarray
-        # from seeing conflicting dimension sizes when variables at the same
-        # surface type have different level counts.
-        if level_coord_registry is not None and level_name in dim_mapping["dim_values"]:
-            level_vals = dim_mapping["dim_values"][level_name]
-            if level_name in level_coord_registry:
-                if level_coord_registry[level_name] != level_vals:
-                    # Same surface type, different level values — append suffix
-                    suffix = 2
-                    candidate = f"{level_name}_{suffix}"
-                    while candidate in level_coord_registry and level_coord_registry[candidate] != level_vals:
-                        suffix += 1
-                        candidate = f"{level_name}_{suffix}"
-                    level_name = candidate
-                    dim_mapping = _map_messages_to_dimensions(msg_entries, level_dim_name=level_name)
-            if level_name not in level_coord_registry:
-                level_coord_registry[level_name] = dim_mapping["dim_values"].get(level_name, [])
+        dim_names = dim_mapping["dim_names"]      # ordered, using base names
+        dim_values = dim_mapping["dim_values"]    # base name -> sorted unique values
+        msg_index_map = dim_mapping["msg_index_map"]
+        duplicate_entry_indices = dim_mapping["duplicate_entry_indices"]
 
-        dim_names = dim_mapping["dim_names"]  # ordered list of dim names
-        dim_values = dim_mapping["dim_values"]  # dict: dim_name -> sorted unique values
-        msg_index_map = dim_mapping["msg_index_map"]  # dict: dim_tuple -> msg_entry index
+        # Resolve every non-spatial dimension against the shared registry, not
+        # just the level one.  Two variables can disagree on the extent of any
+        # of them -- NBM, for example, emits CWASP over 7 percentiles and CAPE
+        # over 3 -- and whichever is written second would otherwise overwrite
+        # the first's coordinate array, leaving the manifest unopenable.
+        rename = _resolve_dim_names(dim_names, dim_values, dim_coord_registry)
+        emitted = [rename[d] for d in dim_names]
 
         # Representative message for metadata
         rep_msg = msg_entries[0].msg
@@ -603,8 +622,21 @@ class ReferenceGenerator:
         refs[f"{var_name}/.zarray"] = json.dumps(zarray)
 
         # Build .zattrs
-        dim_labels = dim_names + ["y", "x"]
+        dim_labels = emitted + ["y", "x"]
         zattrs = _build_zattrs(rep_msg, dim_labels)
+
+        # ``level`` and ``valueOfFirstFixedSurface`` describe the representative
+        # message only.  When several messages are folded into one array along a
+        # level dimension they are correct for the first level and wrong for
+        # every other one, so a consumer reading attributes instead of the
+        # coordinate array is misled (e.g. a 41-level pressure array labelled
+        # "0.01 mb").  Drop them here and let the level coordinate carry the
+        # information instead -- see _build_coord_refs / _level_coord_attrs.
+        n_levels = len(dim_values.get(level_base, ()))
+        if n_levels > 1:
+            for _key in ("level", "valueOfFirstFixedSurface"):
+                zattrs.pop(_key, None)
+
         refs[f"{var_name}/.zattrs"] = json.dumps(zattrs)
 
         # Build data chunk refs
@@ -628,10 +660,43 @@ class ReferenceGenerator:
                 entry.sec5_length + entry.sec6_length + entry.sec7_length,
             ]
 
-        # Build coordinate arrays as inline base64-encoded refs
-        for dim_name in dim_names:
-            values = dim_values[dim_name]
-            _build_coord_refs(dim_name, values, refs)
+        # Build coordinate arrays as inline base64-encoded refs.  The emitted
+        # name may be suffixed, so pass the base name too: the value encoding
+        # and CF attributes are chosen from what the dimension *is*, not from
+        # what it ended up being called.
+        for d in dim_names:
+            _build_coord_refs(
+                rename[d],
+                dim_values[d],
+                refs,
+                msg=rep_msg,
+                is_level=(d == level_base),
+                base_name=d,
+            )
+
+        # Re-emit any messages whose identifying metadata exactly collided
+        # with an earlier message as a sibling variable, so no message's
+        # bytes are silently dropped from the manifest.  smartinit, for
+        # example, encodes a 1-bit binary field whose PDT is byte-identical
+        # to the real surface TMP message; only the packing (Section 5)
+        # differs.  Which message is "the" variable and which is the
+        # duplicate is file-order and cannot be determined from metadata,
+        # hence the warning telling consumers to inspect both.
+        if duplicate_entry_indices:
+            dup_entries = [msg_entries[i] for i in duplicate_entry_indices]
+            m = re.match(r"^(.*)_dup(\d*)$", var_name)
+            if m:
+                dup_name = f"{m.group(1)}_dup{int(m.group(2) or 1) + 1}"
+            else:
+                dup_name = f"{var_name}_dup"
+            warnings.warn(
+                f"{len(dup_entries)} message(s) share identical identifying "
+                f"metadata with an earlier '{var_name}' message; emitting "
+                f"them as '{dup_name}'.  The GRIB2 encoding of these "
+                f"products is ambiguous; inspect both variables to "
+                f"determine which is the intended field."
+            )
+            self._build_variable_refs(dup_name, dup_entries, refs, dim_coord_registry)
 
     # ------------------------------------------------------------------
     # Manifest access
@@ -710,6 +775,66 @@ def _is_local_path(path: str) -> bool:
     """Return ``True`` if *path* looks like a local filesystem path."""
     parsed = urlparse(path)
     return parsed.scheme == ""
+
+
+def _build_section3_map(index: dict, n_msgs: int) -> List[int]:
+    """Map each message index onto its entry in ``index["section3"]``.
+
+    ``build_index`` appends to ``index["section3"]`` only when it actually
+    reads a Section 3.  After a message ends, the trailer check reads the next
+    section number, which may be 2, 3, or 4:
+
+    * ``nextsec == 4`` — Sections 2 and 3 are not repeated and the submessage
+      inherits the preceding grid definition, so ``section3`` does not grow.
+    * ``nextsec == 3`` — Section 3 is re-read and appended, so it does grow.
+    * ``nextsec == 2`` — Section 2 repeats and Section 3 follows, so it grows.
+
+    ``_isSubmessage`` is set for all three, which is why a counter keyed on it
+    is only correct for the first case.  ``sectionOffset[i][3]`` is deep-copied
+    per message and retains the previous Section 3 offset when a submessage
+    omits it, so distinct offsets in order of first appearance correspond
+    one-to-one with the appended Section 3 entries.  Mapping through the offset
+    is therefore correct in all three cases.
+
+    Parameters
+    ----------
+    index : dict
+        The grib2io file index.
+    n_msgs : int
+        Number of messages in the file.
+
+    Returns
+    -------
+    list of int
+        ``sec3_map[i]`` is the index into ``index["section3"]`` for message
+        ``i``.  Reduces to the identity mapping when no submessages are present.
+    """
+    n_sec3 = len(index.get("section3", ()))
+    if n_sec3 == 0:
+        return [0] * n_msgs
+
+    # Fast path: no submessages, so the lists are already parallel.
+    if n_sec3 == n_msgs:
+        return list(range(n_msgs))
+
+    offsets = index.get("sectionOffset")
+    if offsets is None:
+        # Nothing to map through; clamp so a malformed index degrades to the
+        # last known grid definition rather than raising IndexError.
+        return [min(i, n_sec3 - 1) for i in range(n_msgs)]
+
+    seen: Dict[int, int] = {}
+    sec3_map: List[int] = []
+    for i in range(n_msgs):
+        try:
+            off = int(offsets[i][3])
+        except (IndexError, KeyError, TypeError, ValueError):
+            sec3_map.append(sec3_map[-1] if sec3_map else 0)
+            continue
+        if off not in seen:
+            seen[off] = min(len(seen), n_sec3 - 1)
+        sec3_map.append(seen[off])
+    return sec3_map
 
 
 def _remote_scan_storage_options(file_path: str, storage_options: Dict[str, Any]) -> Dict[str, Any]:
@@ -910,6 +1035,136 @@ def _build_zarray_metadata(
     }
 
 
+def _decode(md: Any) -> Optional[str]:
+    """Return the plain-language definition of a ``Grib2Metadata`` value.
+
+    grib2io stores coded metadata as :class:`grib2io.templates.Grib2Metadata`
+    objects whose ``definition`` attribute is the decoded string.  Some code
+    tables (e.g. Table 4.5) return a ``[definition, units]`` list; in that case
+    only the description is taken.  Returns ``None`` when no definition exists.
+    """
+    if md is None:
+        return None
+    d = getattr(md, "definition", md)
+    if isinstance(d, (list, tuple)):
+        d = d[0] if d else None
+    if d is None:
+        return None
+    return str(d)
+
+
+def _cf_standard_name(msg) -> str:
+    """Return the CF standard name for a message, or ``"unknown"``.
+
+    Mirrors the lookup used by grib2io's xarray backend so that manifests and
+    the native backend agree on the CF vocabulary.
+    """
+    record = grib2io.tables.get_table("shortname_to_cf").get(str(msg.shortName))
+    if record is None:
+        return "unknown"
+    return record.get("cf_standard_name") or "unknown"
+
+
+def _cf_cell_methods(msg) -> Optional[str]:
+    """Return the CF ``cell_methods`` string for a message, if any."""
+    record = grib2io.tables.get_table("shortname_to_cf").get(str(msg.shortName))
+    if record is None:
+        return None
+    return record.get("cf_cell_methods")
+
+
+def _level_string(msg) -> str:
+    """Return the human-readable wgrib2-style level/layer description.
+
+    Uses grib2io's ``Level`` descriptor (e.g. ``"500 mb"``,
+    ``"2 m above ground"``), which is far more usable than the raw
+    ``typeOfFirstFixedSurface`` code and ``valueOfFirstFixedSurface``.
+    """
+    try:
+        return str(msg.level)
+    except Exception:
+        return ""
+
+
+def _timedelta_hours(td: Any) -> Optional[float]:
+    """Convert a ``timedelta``-like value to hours, or ``None``.
+
+    Returns a plain ``float`` (whole hours collapse to e.g. ``24.0``) suitable
+    for JSON serialization; returns ``None`` when the value is missing or not a
+    duration.
+    """
+    if td is None:
+        return None
+    total = getattr(td, "total_seconds", None)
+    if total is None:
+        return None
+    return total() / 3600.0
+
+
+def _build_root_zattrs(msg) -> dict:
+    """Build root-level (dataset) Zarr attributes from a representative message.
+
+    Combines CF global attributes with GRIB2 identification metadata decoded
+    from Sections 0/1/4.  This makes a manifest self-describing: which center
+    produced it, from what model, for which reference cycle, and under what
+    table versions — none of which the per-variable attributes capture.
+
+    Parameters
+    ----------
+    msg : Grib2Message
+        Representative message (all messages in a manifest are assumed to share
+        the same originating center, model, and reference time).
+
+    Returns
+    -------
+    dict
+        Root ``.zattrs`` metadata.
+    """
+    # Institution: originating center, with sub-center appended when defined.
+    institution = _decode(getattr(msg, "originatingCenter", None))
+    subcenter = _decode(getattr(msg, "originatingSubCenter", None))
+    if institution and subcenter:
+        institution = f"{institution} / {subcenter}"
+
+    # Reference time (model cycle) as ISO 8601.
+    ref = getattr(msg, "refDate", None)
+    if hasattr(ref, "isoformat"):
+        reference_time = ref.isoformat()
+    elif ref is not None:
+        reference_time = str(ref)
+    else:
+        reference_time = None
+
+    zattrs: Dict[str, Any] = {"Conventions": "CF-1.8"}
+
+    # Only emit keys we could actually decode, so consumers never see
+    # placeholder/None values in the manifest.
+    for key, value in [
+        ("institution", institution),
+        ("source", _decode(getattr(msg, "generatingProcess", None))),
+        ("reference_time", reference_time),
+        ("reference_time_significance", _decode(getattr(msg, "significanceOfReferenceTime", None))),
+        ("production_status", _decode(getattr(msg, "productionStatus", None))),
+        ("type_of_data", _decode(getattr(msg, "typeOfData", None))),
+    ]:
+        if value is not None:
+            zattrs[key] = value
+
+    # GRIB2 table versions (numeric codes) for full reproducibility.
+    master = getattr(msg, "masterTableInfo", None)
+    if master is not None:
+        zattrs["GRIB2_master_table_version"] = int(getattr(master, "value", master))
+    local = getattr(msg, "localTableInfo", None)
+    if local is not None:
+        zattrs["GRIB2_local_table_version"] = int(getattr(local, "value", local))
+
+    version = getattr(grib2io, "__version__", None)
+    if version:
+        zattrs["grib2io_version"] = str(version)
+
+    return zattrs
+
+
 def _build_zattrs(msg, dim_labels: List[str]) -> dict:
     """Extract GRIB2 section metadata as Zarr attributes.
 
@@ -924,6 +1179,14 @@ def _build_zattrs(msg, dim_labels: List[str]) -> dict:
     -------
     dict
         Zarr ``.zattrs`` metadata.
+
+    Notes
+    -----
+    ``level`` and ``valueOfFirstFixedSurface`` describe the representative
+    message.  They are meaningful only when the variable holds a single level;
+    :meth:`ReferenceGenerator._build_variable_refs` removes them for variables
+    that span a level dimension, where the level coordinate carries the values
+    instead.
     """
     # Extract typeOfFirstFixedSurface - handle Grib2Metadata objects
     type_of_first_fixed_surface = msg.typeOfFirstFixedSurface
@@ -949,19 +1212,43 @@ def _build_zattrs(msg, dim_labels: List[str]) -> dict:
     else:
         valid_time_str = str(vt)
 
-    return {
+    zattrs = {
         "_ARRAY_DIMENSIONS": dim_labels,
         "coordinates": "latitude longitude",
+        # CF vocabulary (Interoperable) -----------------------------------
+        "standard_name": _cf_standard_name(msg),
+        "long_name": str(msg.fullName),
+        "fullName": str(msg.fullName),
+        "units": str(msg.units),
+        # GRIB2-native provenance (kept alongside CF for Reusability) -----
         "discipline": int(msg.section0[2]),
         "parameterCategory": int(msg.parameterCategory),
         "parameterNumber": int(msg.parameterNumber),
         "typeOfFirstFixedSurface": int(type_of_first_fixed_surface),
         "valueOfFirstFixedSurface": float(value_of_first_fixed_surface),
-        "valid_time": valid_time_str,
+        "level": _level_string(msg),
         "shortName": str(msg.shortName),
-        "fullName": str(msg.fullName),
-        "units": str(msg.units),
+        "valid_time": valid_time_str,
     }
+
+    # Representative forecast lead time.  Distinguishes an f000 manifest from
+    # an f384 one, which is otherwise only recoverable from the filename.
+    lead_hours = _timedelta_hours(getattr(msg, "leadTime", None))
+    if lead_hours is not None:
+        zattrs["lead_time_hours"] = lead_hours
+
+    # Statistical processing period (e.g. accumulation/max/min window); only
+    # meaningful for messages that carry one.
+    dur_hours = _timedelta_hours(getattr(msg, "duration", None))
+    if dur_hours:
+        zattrs["duration_hours"] = dur_hours
+
+    # CF cell_methods only when the parameter defines one (e.g. time: maximum).
+    cell_methods = _cf_cell_methods(msg)
+    if cell_methods:
+        zattrs["cell_methods"] = cell_methods
+
+    return zattrs
 
 
 def _build_codec_config(entry: _MsgEntry) -> dict:
@@ -1107,6 +1394,8 @@ def _map_messages_to_dimensions(
         - ``"dim_names"``: ordered list of active dimension names
         - ``"dim_values"``: dict mapping dim name to sorted unique values
         - ``"msg_index_map"``: dict mapping dim-value tuple to entry index
+        - ``"duplicate_entry_indices"``: indices of entries whose dim-value
+          tuple exactly collided with an earlier entry's
     """
     # Build ordered dim names, substituting the surface-type-specific level name
     ordered_dims = [level_dim_name if d == "level" else d for d in _ORDERED_DIM_NAMES]
@@ -1157,52 +1446,231 @@ def _map_messages_to_dimensions(
     # Remap back so callers can use dim_names as coordinate keys directly
     # (level_dim_name is already baked in via ordered_dims)
 
-    # Build the mapping from dimension-value tuples to entry indices
+    # Build the mapping from dimension-value tuples to entry indices.
+    # Two messages can carry fully identical identifying metadata (same
+    # parameter, level, lead time, PDT) yet contain different data --
+    # smartinit encodes a 1-bit binary field with the same IDs as the real
+    # surface TMP.  Overwriting would silently drop the earlier message's
+    # bytes from the manifest, so collisions are collected for the caller
+    # to emit as a separate variable instead.
     msg_index_map: Dict[tuple, int] = {}
+    duplicate_entry_indices: List[int] = []
     for idx, entry in enumerate(msg_entries):
         msg = entry.msg
         dim_tuple = tuple(_get_dim_value(msg, "level" if d == level_dim_name else d) for d in active_dims)
-        msg_index_map[dim_tuple] = idx
+        if dim_tuple in msg_index_map:
+            duplicate_entry_indices.append(idx)
+        else:
+            msg_index_map[dim_tuple] = idx
 
     return {
         "dim_names": active_dims,
         "dim_values": dim_values,
         "msg_index_map": msg_index_map,
+        "duplicate_entry_indices": duplicate_entry_indices,
     }
+
+
+# CF attributes for vertical coordinates, keyed by GRIB2 Table 4.5
+# typeOfFirstFixedSurface.  Values are ``(standard_name, positive)``; either
+# element may be ``None`` when CF does not define it.  Units are read from
+# Table 4.5 itself rather than duplicated here.
+#
+# Single-valued surfaces (mean sea level, tropopause, planetary boundary layer,
+# entire atmosphere) are deliberately absent: they are labels rather than
+# measurable vertical coordinates, and the CF standard names that sound
+# applicable — air_pressure_at_mean_sea_level, for instance — belong to the data
+# variable, not to the coordinate it sits on.  Those surfaces still receive
+# units and a long_name from Table 4.5.
+_CF_LEVEL_ATTRS: Dict[int, tuple] = {
+    100: ("air_pressure", "down"),          # isobaric surface
+    102: ("altitude", "up"),                # specific altitude above mean sea level
+    103: ("height", "up"),                  # specified height above ground
+    # CF's atmosphere_sigma_coordinate and
+    # atmosphere_hybrid_sigma_pressure_coordinate are parametric and require
+    # formula_terms referencing the surface-pressure and coefficient variables.
+    # Those are not present in a kerchunk manifest, so claiming the
+    # standard_name without them would be non-conformant.  Direction alone is
+    # both safe and useful.
+    104: (None, "down"),                    # sigma level
+    105: (None, "down"),                    # hybrid level
+    106: ("depth", "down"),                 # depth below land surface
+    107: ("air_potential_temperature", "up"),   # isentropic (theta) level
+    108: ("air_pressure", "down"),          # pressure difference from ground
+    109: ("ertel_potential_vorticity", "up"),   # potential vorticity surface
+    160: ("depth", "down"),                 # depth below sea level
+}
+
+
+def _level_coord_attrs(msg, dim_name: str) -> dict:
+    """Build CF attributes for a vertical coordinate variable.
+
+    A vertical coordinate carrying only ``_ARRAY_DIMENSIONS`` is not
+    CF-conformant and leaves a consumer unable to distinguish Pa from hPa
+    except by inspecting the magnitude of the values.  Units and a description
+    come from Table 4.5, which grib2io already loads; ``standard_name`` and
+    ``positive`` come from :data:`_CF_LEVEL_ATTRS` where CF defines them.
+
+    Parameters
+    ----------
+    msg : Grib2Message
+        Representative message for the variable using this coordinate.
+    dim_name : str
+        Coordinate name, used only as a ``long_name`` fallback.
+
+    Returns
+    -------
+    dict
+        Attributes to merge into the coordinate's ``.zattrs``.  Empty when the
+        surface type cannot be determined.
+    """
+    toffs = getattr(msg, "typeOfFirstFixedSurface", None)
+    if toffs is None:
+        return {}
+    val = getattr(toffs, "value", toffs)
+    try:
+        val = int(val)
+    except (TypeError, ValueError):
+        return {}
+
+    attrs: Dict[str, Any] = {}
+
+    # Units and a human-readable description from Table 4.5, whose entries are
+    # ``[definition, units]``.  "unknown" units are omitted rather than emitted
+    # literally, since an explicit "unknown" is worse than a missing attribute.
+    try:
+        entry = grib2io.tables.get_table("4.5").get(str(val))
+    except Exception:
+        entry = None
+    if entry:
+        description = str(entry[0]) if len(entry) > 0 else ""
+        units = str(entry[1]) if len(entry) > 1 else ""
+        if units and units.lower() != "unknown":
+            attrs["units"] = units
+        if description:
+            attrs["long_name"] = description
+
+    if "long_name" not in attrs:
+        attrs["long_name"] = dim_name.replace("_", " ")
+
+    cf = _CF_LEVEL_ATTRS.get(val)
+    if cf:
+        standard_name, positive = cf
+        if standard_name:
+            attrs["standard_name"] = standard_name
+        if positive:
+            attrs["positive"] = positive
+
+    # Retain the GRIB2-native surface code alongside the CF vocabulary, for the
+    # same reason the data variables keep theirs.
+    attrs["typeOfFirstFixedSurface"] = val
+    return attrs
+
+
+def _resolve_dim_names(
+    dim_names: List[str],
+    dim_values: Dict[str, list],
+    registry: Optional[Dict[str, list]],
+) -> Dict[str, str]:
+    """Map each dimension to the name it should be emitted under.
+
+    A kerchunk manifest is a single flat Zarr group, so a dimension name means
+    one thing across the whole file.  Variables within a GRIB2 file frequently
+    disagree about a dimension's extent -- different pressure-level sets, some
+    fields at 7 percentiles and others at 3, accumulations over different
+    windows -- and whichever variable is written last would otherwise overwrite
+    the coordinate array, leaving earlier variables pointing at a coordinate of
+    the wrong length.  xarray then refuses to open the dataset.
+
+    Any dimension whose values differ from what the registry already holds is
+    given a numeric suffix ('percentileValue_2'), matching how the xarray
+    backend keeps each surface type in its own Dataset.  Dimensions whose
+    values match an existing entry share it, so unrelated variables at the same
+    levels continue to use one coordinate.
+
+    Parameters
+    ----------
+    dim_names : list of str
+        Base dimension names for this variable, in order.
+    dim_values : dict
+        Base dimension name -> sorted unique coordinate values.
+    registry : dict or None
+        Emitted name -> values already written to the manifest.  Updated in
+        place.  When ``None``, names pass through unchanged.
+
+    Returns
+    -------
+    dict
+        Base dimension name -> emitted dimension name.
+    """
+    out: Dict[str, str] = {}
+    for d in dim_names:
+        if registry is None:
+            out[d] = d
+            continue
+        vals = dim_values.get(d, [])
+        name = d
+        if name in registry and registry[name] != vals:
+            suffix = 2
+            candidate = f"{d}_{suffix}"
+            while candidate in registry and registry[candidate] != vals:
+                suffix += 1
+                candidate = f"{d}_{suffix}"
+            name = candidate
+        if name not in registry:
+            registry[name] = vals
+        out[d] = name
+    return out
 
 
 def _build_coord_refs(
     dim_name: str,
     values: list,
     refs: Dict[str, Any],
+    msg=None,
+    is_level: bool = False,
+    base_name: Optional[str] = None,
 ) -> None:
     """Build inline base64-encoded coordinate array refs.
 
     Parameters
     ----------
     dim_name : str
-        Coordinate/dimension name.
+        Name the coordinate is emitted under.  May carry a numeric suffix
+        assigned by :func:`_resolve_dim_names`.
     values : list
         Sorted unique coordinate values.
     refs : dict
         The refs dict to populate.
+    msg : Grib2Message, optional
+        Representative message, used to derive CF attributes for the vertical
+        coordinate.  When omitted the coordinate is written without them.
+    is_level : bool, default False
+        Whether this is the variable's vertical dimension.  Only that
+        coordinate receives vertical-coordinate attributes.
+    base_name : str, optional
+        Unsuffixed dimension name.  Value encoding and the time/duration
+        attributes are chosen from this, so that a renamed dimension such as
+        ``valid_time_2`` is still encoded as datetime64 rather than falling
+        through to the float64 default.  Defaults to *dim_name*.
     """
+    base = base_name or dim_name
     if values and isinstance(values[0], tuple):
         # Level-type coordinate: values are (v1, v2) tuples; use v1
         coord_values = np.array(
             [v[0] if isinstance(v, tuple) else float(v) for v in values],
             dtype=np.float64,
         )
-    elif dim_name == "valid_time":
+    elif base == "valid_time":
         # Store as int64 nanoseconds since epoch so xarray decodes as datetime64
         ns_vals = [int(np.datetime64(v, "ns").astype(np.int64)) for v in values]
         coord_values = np.array(ns_vals, dtype=np.int64)
-    elif dim_name == "duration":
+    elif base == "duration":
         # Store as float seconds
         coord_values = np.array(values, dtype=np.float64)
-    elif dim_name == "perturbationNumber":
+    elif base == "perturbationNumber":
         coord_values = np.array(values, dtype=np.int32)
-    elif dim_name == "percentileValue":
+    elif base == "percentileValue":
         coord_values = np.array(values, dtype=np.float64)
     else:
         coord_values = np.array(values, dtype=np.float64)
@@ -1225,15 +1693,125 @@ def _build_coord_refs(
     refs[f"{dim_name}/.zarray"] = json.dumps(coord_zarray)
 
     # .zattrs for the coordinate
-    coord_zattrs: dict = {"_ARRAY_DIMENSIONS": [dim_name]}
-    if dim_name == "valid_time":
+    coord_zattrs: Dict[str, Any] = {"_ARRAY_DIMENSIONS": [dim_name]}
+    if base == "valid_time":
         # CF-compliant time metadata so xarray decodes int64 ns as datetime64
         coord_zattrs["units"] = "nanoseconds since 1970-01-01T00:00:00"
         coord_zattrs["calendar"] = "proleptic_gregorian"
+    elif base == "duration":
+        coord_zattrs["units"] = "seconds"
+        coord_zattrs["long_name"] = "time period over which the field applies"
+    elif base == "percentileValue":
+        coord_zattrs["units"] = "%"
+        coord_zattrs["long_name"] = "percentile"
+    elif base == "perturbationNumber":
+        coord_zattrs["long_name"] = "ensemble member number"
+    elif msg is not None and is_level:
+        # Vertical coordinate: CF requires units here, and the level
+        # description belongs on the coordinate rather than repeated (and
+        # wrong) on every data variable that uses it.
+        coord_zattrs.update(_level_coord_attrs(msg, dim_name))
+
+    # Several variables can share a level dimension, and this function is
+    # called once per variable.  Keep whichever attribute set is richer so a
+    # later, barer write does not strip metadata an earlier one supplied.
+    existing = refs.get(f"{dim_name}/.zattrs")
+    if existing is not None:
+        try:
+            prev = json.loads(existing)
+        except (TypeError, ValueError):
+            prev = {}
+        if len(prev) > len(coord_zattrs):
+            coord_zattrs = prev
+
     refs[f"{dim_name}/.zattrs"] = json.dumps(coord_zattrs)
 
     # Inline data chunk
     refs[f"{dim_name}/0"] = "base64:" + b64_data
+
+
+def _validate_refs(refs: Dict[str, Any]) -> List[tuple]:
+    """Check a finished manifest for internal consistency.
+
+    A kerchunk manifest is only useful if it can be opened.  The failure mode
+    worth catching here is a variable whose array shape disagrees with the
+    length of a coordinate it names: the manifest serializes cleanly, uploads
+    cleanly, and then fails at ``xr.open_dataset`` with a conflicting-sizes
+    error that names the variables but not the cause.  Catching it at
+    generation time turns a downstream mystery into an immediate, local error.
+
+    Parameters
+    ----------
+    refs : dict
+        The finished ``refs`` mapping.
+
+    Returns
+    -------
+    list of tuple
+        ``(variable, dimension, variable_length, coordinate_length)`` for each
+        mismatch found.  Empty when the manifest is self-consistent.
+    """
+    # Lengths of the 1-D coordinate arrays.  latitude/longitude are 2-D and are
+    # not dimensions, so they are skipped.
+    coord_len: Dict[str, int] = {}
+    for key, val in refs.items():
+        if not key.endswith("/.zarray") or key.count("/") != 1:
+            continue
+        try:
+            shape = json.loads(val)["shape"]
+        except (TypeError, ValueError, KeyError):
+            continue
+        if len(shape) == 1:
+            coord_len[key.split("/")[0]] = int(shape[0])
+
+    problems: List[tuple] = []
+    for key, val in refs.items():
+        if not key.endswith("/.zattrs") or key.count("/") != 1:
+            continue
+        name = key.split("/")[0]
+        try:
+            attrs = json.loads(val)
+        except (TypeError, ValueError):
+            continue
+        if "shortName" not in attrs:
+            continue  # coordinate, not a data variable
+        zarray_key = f"{name}/.zarray"
+        if zarray_key not in refs:
+            continue
+        try:
+            shape = json.loads(refs[zarray_key])["shape"]
+        except (TypeError, ValueError, KeyError):
+            continue
+        for dim, length in zip(attrs.get("_ARRAY_DIMENSIONS", []), shape):
+            if dim in coord_len and coord_len[dim] != int(length):
+                problems.append((name, dim, int(length), coord_len[dim]))
+
+    return problems
+
+
+def _format_validation_errors(problems: List[tuple], limit: int = 10) -> str:
+    """Render :func:`_validate_refs` output as an actionable error message."""
+    dims = sorted({p[1] for p in problems})
+    lines = [
+        f"Manifest is internally inconsistent: {len(problems)} variable/dimension "
+        f"pairs disagree with their coordinate arrays.",
+        f"Affected dimensions: {', '.join(dims)}",
+        "",
+    ]
+    for var, dim, got, expected in problems[:limit]:
+        lines.append(f"  {var}: dimension '{dim}' has length {got}, "
+                     f"but the coordinate array has length {expected}")
+    if len(problems) > limit:
+        lines.append(f"  ... and {len(problems) - limit} more")
+    lines += [
+        "",
+        "This manifest would fail to open with xarray.  It usually means two "
+        "variables need different values for the same dimension and one "
+        "overwrote the other's coordinate array; _resolve_dim_names should "
+        "have given them distinct names.",
+        "Pass validate=False to ReferenceGenerator to emit it anyway.",
+    ]
+    return "\n".join(lines)
 
 
 def _build_latlon_coord_refs(msg, refs: Dict[str, Any]) -> None:
@@ -1286,3 +1864,4 @@ def _build_latlon_coord_refs(msg, refs: Dict[str, Any]) -> None:
         refs[f"{name}/.zarray"] = json.dumps(zarray)
         refs[f"{name}/.zattrs"] = json.dumps(attrs)
         refs[f"{name}/0.0"] = "base64:" + base64.b64encode(data.tobytes()).decode("ascii")
+        
