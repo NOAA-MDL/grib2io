@@ -78,6 +78,7 @@ import re
 import struct
 import sys
 import warnings
+import weakref
 
 from numpy.typing import NDArray
 import numpy as np
@@ -707,7 +708,9 @@ def msgs_from_index(index: dict, filehandle=None):
                 ndim=2,
                 dtype=TYPE_OF_VALUES_DTYPE[msg.typeOfValues],
                 filehandle=filehandle,
-                msg=msg,
+                # A weak reference: the message holds this array, so a strong one would make a reference cycle, and
+                # the message with its decoded data would outlive every user reference until a garbage collection.
+                msg=weakref.proxy(msg),
                 offset=offset,
                 bitmap_offset=secpos[6],
                 data_offset=secpos[7],
@@ -1288,6 +1291,9 @@ class _Grib2Message:
         """
         Flush the unpacked data values from the Grib2Message object.
 
+        This also removes the bitmap and the missing value map that unpacking
+        stores on the object; unpacking again recreates them.
+
         Notes
         -----
         If the Grib2Message object was constructed from "scratch" (i.e.
@@ -1296,6 +1302,8 @@ class _Grib2Message:
         """
         self._data = None
         self.bitmap = None
+        if hasattr(self, "_missvalmap"):
+            del self._missvalmap
 
     def __getitem__(self, item):
         return self.data[item]
