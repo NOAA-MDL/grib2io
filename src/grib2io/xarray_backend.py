@@ -621,7 +621,7 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
 def section4_to_cell_methods(section4_array: np.ndarray) -> typing.Optional[str]:
     cell_methods = None
     if section4_array[1] == 0:
-        cell_methods = f"{cell_methods:s} lead_time: point"
+        cell_methods = "lead_time: point"
     elif section4_array[1] == 8:
         to_join = []
         # interval_end = datetime.datetime(*section4_array[17:23]
@@ -722,6 +722,7 @@ class GribBackendEntrypoint(BackendEntrypoint):
         history = ds.attrs.get("history", "")
         now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
         ds.attrs["history"] = f"{now}: Initialized via grib2io.open_dataset from {filename_or_obj}\n{history}"
+        ds.attrs["data_model"] = "" if data_model is None else data_model
 
         return ds
 
