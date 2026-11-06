@@ -419,7 +419,7 @@ table_generating_process = {
     "102-103": "Reserved",
     "104": "National Blend GRIB",
     "105": "Rapid Refresh (RAP)",
-    "106": "Reserved",
+    "106": "Seasonal Forecast System (SFS)",
     "107": "Global Ensemble Forecast System (GEFS)",
     "108": "Localized Aviation MOS Program (LAMP)",
     "109": "Real Time Mesoscale Analysis (RTMA)",

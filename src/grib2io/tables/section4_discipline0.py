@@ -73,7 +73,7 @@ table_4_2_0_1 = {
     "18": ["Absolute Humidity", "kg m-3", "ABSH"],
     "19": ["Precipitation Type", "See Table 4.201", "PTYPE"],
     "20": ["Integrated Liquid Water", "kg m-2", "ILIQW"],
-    "21": ["Condensate", "kg kg-1", "TCOND"],
+    "21": ["Total Condensate", "kg kg-1", "TCOND"],
     "22": ["Cloud Mixing Ratio", "kg kg-1", "CLMR"],
     "23": ["Ice Water Mixing Ratio", "kg kg-1", "ICMR"],
     "24": ["Rain Mixing Ratio", "kg kg-1", "RWMR"],
