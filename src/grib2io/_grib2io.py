@@ -554,7 +554,10 @@ class open:
                 # write already packed bytes
                 self._filehandle.write(msg._msg)
             else:
-                if msg._signature == msg._generate_signature() and msg._data is None and hasattr(msg._ondiskarray, "filehandle"):
+                # Check if modified data is present
+                has_unpacked_data = msg._data_ref is not None and msg._data_ref() is not None
+                if msg._signature == msg._generate_signature() and not has_unpacked_data and hasattr(msg._ondiskarray, "filehandle"):
+                    # if msg._signature == msg._generate_signature() and msg._data is None and hasattr(msg._ondiskarray, "filehandle"):
                     # write unchanged message from input
                     offset = msg._ondiskarray.filehandle.tell()
                     msg._ondiskarray.filehandle.seek(msg._ondiskarray.offset)
@@ -902,6 +905,33 @@ class _Grib2Message:
     dataRepresentationTemplate: list = field(init=False, repr=False, default=templates.DataRepresentationTemplate())
     typeOfValues: templates.Grib2Metadata = field(init=False, repr=False, default=templates.TypeOfValues())
 
+    #    def __copy__(self):
+    #        """Shallow copy"""
+    #        new = Grib2Message(
+    #            self.section0,
+    #            self.section1,
+    #            self.section2,
+    #            self.section3,
+    #            self.section4,
+    #            drtn=self.drtn,
+    #        )
+    #        return new
+    #
+    #    def __deepcopy__(self, memo):
+    #        """Deep copy"""
+    #        new = Grib2Message(
+    #            np.copy(self.section0),
+    #            np.copy(self.section1),
+    #            copy.deepcopy(self.section2),
+    #            np.copy(self.section3),
+    #            np.copy(self.section4),
+    #            np.copy(self.section5),
+    #        )
+    #        memo[id(self)] = new
+    #        new.data = np.copy(self.data)
+    #        new.bitmap = None if self.bitmap is None else np.copy(self.bitmap)
+    #        return new
+
     def __copy__(self):
         """Shallow copy"""
         new = Grib2Message(
@@ -910,8 +940,19 @@ class _Grib2Message:
             self.section2,
             self.section3,
             self.section4,
-            drtn=self.drtn,
+            drtn=self.drtn,  # section5=self.section5,
+            bitMapFlag=self.bitMapFlag.value,
         )
+        # Preserve on-disk array reference for on-demand decoding
+        new._ondiskarray = self._ondiskarray
+        new._msgnum = self._msgnum
+        new._deflist = self._deflist
+        new._coordlist = self._coordlist
+        new._auto_nans = self._auto_nans
+
+        # Share the weak reference to data if already decoded
+        new._data_ref = self._data_ref
+        new.bitmap = self.bitmap
         return new
 
     def __deepcopy__(self, memo):
@@ -923,9 +964,29 @@ class _Grib2Message:
             np.copy(self.section3),
             np.copy(self.section4),
             np.copy(self.section5),
+            self.bitMapFlag.value,
         )
         memo[id(self)] = new
-        new.data = np.copy(self.data)
+
+        new._msgnum = self._msgnum
+        new._deflist = np.copy(self._deflist)
+        new._coordlist = np.copy(self._coordlist)
+        new._auto_nans = self._auto_nans
+
+        # Handle data copy:
+        # If the original has an active unpacked array OR no backing file, pin a copy
+        arr = self._data_ref() if self._data_ref is not None else None
+        if arr is not None:
+            # We must assign to a strong reference or ensure setter accommodates pinned data
+            copied_arr = np.copy(arr)
+            new._data_pinned = copied_arr  # Holds strong ref so weakref doesn't die
+            new._data_ref = weakref.ref(copied_arr)
+        else:
+            # Not yet decoded: clone the ondiskarray reference so it decodes on-demand
+            new._ondiskarray = copy.copy(self._ondiskarray)
+            new._data_pinned = None
+            new._data_ref = None
+
         new.bitmap = None if self.bitmap is None else np.copy(self.bitmap)
         return new
 
@@ -933,7 +994,9 @@ class _Grib2Message:
         """Set some attributes after init."""
         self._auto_nans = _AUTO_NANS
         self._coordlist = np.zeros((0), dtype=np.float32)
-        self._data = None
+        # self._data = None
+        self._data_ref = None
+        self._data_pinned = None
         self._deflist = np.zeros((0), dtype=np.int64)
         self._msgnum = -1
         self._ondiskarray = None
@@ -1188,10 +1251,17 @@ class _Grib2Message:
         self._sections.append(3)
 
         # Prepare data.
-        if self._data is None:
-            if self._ondiskarray is None:
-                raise ValueError("Grib2Message object has no data, thus it cannot be packed.")
-        field = np.copy(self.data)
+        #        if self._data is None:
+        #            if self._ondiskarray is None:
+        #                raise ValueError("Grib2Message object has no data, thus it cannot be packed.")
+        #        arr = self._data_ref() if self._data_ref is not None else None
+        #        if arr is None and self._ondiskarray is None:
+        #            raise ValueError("Grib2Message object has no data, thus it cannot be packed.")
+        #        field = np.copy(self.data)
+        try:
+            field = np.copy(self.data)
+        except ValueError:
+            raise ValueError("Grib2Message object has no data, thus it cannot be packed.")
         if self.scanModeFlags is not None:
             if self.scanModeFlags[3]:
                 fieldsave = field.astype("f")  # Casting makes a copy
@@ -1244,37 +1314,71 @@ class _Grib2Message:
         self._sections.append(8)
         self.section0[-1] = len(self._msg)
 
+    #    @property
+    #    def data(self) -> np.array:
+    #        """Access the unpacked data values."""
+    #        if self._data is None:
+    #            if self._auto_nans != _AUTO_NANS:
+    #                self._data = self._ondiskarray
+    #            self._data = np.asarray(self._ondiskarray)
+    #        return self._data
+    #
+    #    @data.setter
+    #    def data(self, arr):
+    #        """
+    #        Set the internal data array, enforcing shape (ny, nx) and dtype float32.
+    #
+    #        If the Grid Definition Section (section 3) of Grib2Message object is
+    #        not fully formed (i.e. nx, ny = 0, 0), then the shape of the data array
+    #        will be used to set nx and ny of the Grib2Message object. It will be the
+    #        responsibility of the user to populate the rest of the Grid Definition
+    #        Section attributes.
+    #
+    #        Parameters
+    #        ----------
+    #        arr : array_like
+    #            A 2D array whose shape must match ``(self.ny, self.nx)``.
+    #            It will be converted to ``float32`` and C-contiguous if needed.
+    #
+    #        Raises
+    #        ------
+    #        ValueError
+    #            If the shape of `arr` does not match the expected dimensions.
+    #        """
+    #        if not isinstance(arr, np.ndarray):
+    #            raise ValueError("Grib2Message data only supports numpy arrays")
+    #        if self.nx == 0 and self.ny == 0:
+    #            self.ny = arr.shape[0]
+    #            self.nx = arr.shape[1]
+    #        if arr.shape != (self.ny, self.nx):
+    #            raise ValueError(f"Data shape mismatch: expected ({self.ny}, {self.nx}), got {arr.shape}")
+    #        # Ensure contiguous memory layout (important for C interoperability)
+    #        if not arr.flags["C_CONTIGUOUS"]:
+    #            arr = np.ascontiguousarray(arr, dtype=np.float32)
+    #        self._data = arr
+
     @property
-    def data(self) -> np.array:
+    def data(self) -> np.ndarray:
         """Access the unpacked data values."""
-        if self._data is None:
-            if self._auto_nans != _AUTO_NANS:
-                self._data = self._ondiskarray
-            self._data = np.asarray(self._ondiskarray)
-        return self._data
+        # 1. Check pinned strong reference first (for in-memory created messages)
+        if self._data_pinned is not None:
+            return self._data_pinned
+
+        # 2. Check weak reference (for file-backed messages)
+        arr = self._data_ref() if self._data_ref is not None else None
+        if arr is not None:
+            return arr
+
+        # 3. If missing but ondiskarray exists, decode from disk on demand
+        if self._ondiskarray is not None:
+            arr = np.asarray(self._ondiskarray)
+            self._data_ref = weakref.ref(arr)
+            return arr
+
+        raise ValueError("Grib2Message object has no data.")
 
     @data.setter
     def data(self, arr):
-        """
-        Set the internal data array, enforcing shape (ny, nx) and dtype float32.
-
-        If the Grid Definition Section (section 3) of Grib2Message object is
-        not fully formed (i.e. nx, ny = 0, 0), then the shape of the data array
-        will be used to set nx and ny of the Grib2Message object. It will be the
-        responsibility of the user to populate the rest of the Grid Definition
-        Section attributes.
-
-        Parameters
-        ----------
-        arr : array_like
-            A 2D array whose shape must match ``(self.ny, self.nx)``.
-            It will be converted to ``float32`` and C-contiguous if needed.
-
-        Raises
-        ------
-        ValueError
-            If the shape of `arr` does not match the expected dimensions.
-        """
         if not isinstance(arr, np.ndarray):
             raise ValueError("Grib2Message data only supports numpy arrays")
         if self.nx == 0 and self.ny == 0:
@@ -1282,25 +1386,67 @@ class _Grib2Message:
             self.nx = arr.shape[1]
         if arr.shape != (self.ny, self.nx):
             raise ValueError(f"Data shape mismatch: expected ({self.ny}, {self.nx}), got {arr.shape}")
-        # Ensure contiguous memory layout (important for C interoperability)
         if not arr.flags["C_CONTIGUOUS"]:
             arr = np.ascontiguousarray(arr, dtype=np.float32)
-        self._data = arr
+
+        # If this message is not tied to a file on disk, we MUST pin it strongly
+        # so the data does not evaporate immediately.
+        if self._ondiskarray is None:
+            self._data_pinned = arr
+            self._data_ref = None
+        else:
+            # If user explicitly sets custom data on a file-backed message,
+            # pin it too because disk data no longer represents this message.
+            self._data_pinned = arr
+            self._data_ref = None
+
+    @property
+    def _data(self):
+        """Backward-compatible view of whether unpacked data is currently held."""
+        if self._data_pinned is not None:
+            return self._data_pinned
+        if self._data_ref is not None:
+            return self._data_ref()
+        return None
+
+    #    def flush_data(self):
+    #        """
+    #        Flush the unpacked data values from the Grib2Message object.
+    #
+    #        This also removes the bitmap and the missing value map that unpacking
+    #        stores on the object; unpacking again recreates them.
+    #
+    #        Notes
+    #        -----
+    #        If the Grib2Message object was constructed from "scratch" (i.e.
+    #        not read from file), this method will remove the data array from
+    #        the object and it cannot be recovered.
+    #        """
+    #        self._data = None
+    #        self.bitmap = None
+    #        if hasattr(self, "_missvalmap"):
+    #            del self._missvalmap
+
+    #    def flush_data(self):
+    #        """Flush the unpacked data values from the Grib2Message object."""
+    #        self._data_ref = None
+    #        self.bitmap = None
+    #        if hasattr(self, "_missvalmap"):
+    #            del self._missvalmap
 
     def flush_data(self):
         """
         Flush the unpacked data values from the Grib2Message object.
-
-        This also removes the bitmap and the missing value map that unpacking
-        stores on the object; unpacking again recreates them.
-
-        Notes
-        -----
-        If the Grib2Message object was constructed from "scratch" (i.e.
-        not read from file), this method will remove the data array from
-        the object and it cannot be recovered.
         """
-        self._data = None
+        # Only allow flushing if we have a backing file to reload from
+        if self._ondiskarray is not None:
+            self._data_pinned = None
+            self._data_ref = None
+        else:
+            # In-memory message with no backing file cannot be reloaded
+            self._data_pinned = None
+            self._data_ref = None
+
         self.bitmap = None
         if hasattr(self, "_missvalmap"):
             del self._missvalmap
@@ -1645,7 +1791,8 @@ class _Grib2Message:
             num_threads=num_threads,
         ).reshape(msg.ny, msg.nx)
         msg.section5[0] = grid_def_out.npoints
-        msg._data = newdata.astype(np.float32)
+        # msg._data = newdata.astype(np.float32)
+        msg.data = newdata.astype(np.float32)
         return msg
 
     def subset(self, lats, lons):
