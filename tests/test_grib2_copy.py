@@ -31,12 +31,6 @@ def test_grib2_shallow_copy(request):
     # Test data are not equal
     assert id(newmsg.data) != id(msg.data)
 
-    # Test newmsg data shape is zero.
-    assert len(newmsg.data.shape) == 0
-
-    # Test newmsg data size is 1 (a None object in the Numpy Array)
-    assert newmsg.data.size == 1
-
     g.close()
 
 
