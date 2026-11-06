@@ -1407,7 +1407,13 @@ class Units:
     """Units of the Variable."""
 
     def __get__(self, obj, objtype=None):
-        return obj.parameterUnits if obj.pdtn not in {5, 9} else "%"
+        units = obj.parameterUnits
+        if obj.pdtn in {2}:
+            if obj.typeOfDerivedForecast.value in {2, 3, 4}:
+                units = f"delta_{obj.parameterUnits}"
+        elif obj.pdtn in {5, 9}:
+            units = "%"
+        return units
 
     def __set__(self, obj, value):
         raise RuntimeError(
