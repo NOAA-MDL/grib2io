@@ -8,6 +8,7 @@ IMPORTANT: Make changes to this file, not the C code that Cython generates.
 
 cimport cython
 from cpython.buffer cimport Py_buffer, PyObject_GetBuffer, PyBuffer_Release, PyBUF_SIMPLE, PyBUF_WRITABLE
+from cpython.pycapsule cimport PyCapsule_New, PyCapsule_GetPointer
 from libc.stdlib cimport free
 from libc.string cimport memcpy
 
@@ -59,13 +60,13 @@ cdef extern from "grib2.h":
                      g2int *, g2float **, g2int *)
     g2int g2_unpack5(unsigned char *, g2int *, g2int *, g2int *, g2int **, g2int *)
     g2int g2_unpack6(unsigned char *, g2int *, g2int, g2int *, g2int **)
-    g2int g2_unpack7(unsigned char *, g2int *, g2int ,g2int *, g2int , g2int *,
+    g2int g2_unpack7(unsigned char *, g2int *, g2int, g2int *, g2int, g2int *,
                      g2int, g2float **)
     g2int g2_create(unsigned char *, g2int *, g2int *)
     g2int g2_addlocal(unsigned char *, unsigned char *, g2int)
     g2int g2_addgrid(unsigned char *, g2int *, g2int *, g2int *, g2int)
-    g2int g2_addfield(unsigned char *, g2int , g2int *, g2float *, g2int, g2int,
-                      g2int *, g2float *, g2int, g2int , g2int *)
+    g2int g2_addfield(unsigned char *, g2int, g2int *, g2float *, g2int, g2int,
+                      g2int *, g2float *, g2int, g2int, g2int *)
     g2int g2_gribend(unsigned char *)
 
 # ----------------------------------------------------------------------------------------
@@ -79,6 +80,33 @@ _has_aec = G2_AEC_ENABLED
 # ----------------------------------------------------------------------------------------
 # Python wrappers for g2c functions.
 # ----------------------------------------------------------------------------------------
+from cpython.ref cimport Py_INCREF
+
+cdef void _capsule_free(object cap) noexcept:
+    cdef void *ptr = PyCapsule_GetPointer(cap, "g2c_buffer")
+    if ptr != NULL:
+        free(ptr)
+
+
+cdef _wrap_zero_copy(void *items, cnp.npy_intp size, int typenum):
+    """
+    Wrap a dynamically allocated C buffer into a NumPy 1D array without copying.
+    Attaches a PyCapsule base object that automatically calls free(items) when
+    the NumPy array is garbage collected.
+    """
+    cdef cnp.npy_intp dims[1]
+    dims[0] = size
+    cdef cnp.ndarray arr = cnp.PyArray_SimpleNewFromData(1, dims, typenum, items)
+
+    cdef object cap = PyCapsule_New(items, "g2c_buffer", _capsule_free)
+    # PyArray_SetBaseObject steals a reference. We must INCREF because
+    # Cython will decrement its reference to 'cap' upon exiting this function.
+    Py_INCREF(cap)
+    cnp.PyArray_SetBaseObject(arr, cap)
+
+    return arr
+
+
 cdef _toarray(void *items, object a):
     """
     Function to fill a Numpy array with data from GRIB2 unpacking.
@@ -160,8 +188,8 @@ def unpack1(gribmsg):
         &idslen,
     )
     if iret != 0:
-       msg = f"Error unpacking section 1, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error unpacking section 1, error code = {iret}"
+        raise RuntimeError(msg)
 
     ids = _toarray(ids_ptr, np.empty(idslen, np.int64))
 
@@ -218,8 +246,8 @@ def unpack3(gribmsg):
         &idefnum,
     )
     if iret != 0:
-       msg = f"Error unpacking section 3, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error unpacking section 3, error code = {iret}"
+        raise RuntimeError(msg)
 
     gds = _toarray(gds_ptr, np.empty(5, np.int64))
     gdtmpl = _toarray(gdtmpl_ptr, np.empty(igdtlen, np.int64))
@@ -283,8 +311,8 @@ def unpack4(gribmsg):
         &numcoord,
     )
     if iret != 0:
-       msg = f"Error unpacking section 4,error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error unpacking section 4,error code = {iret}"
+        raise RuntimeError(msg)
 
     pdtmpl = _toarray(pdtmpl_ptr, np.empty(pdtlen, np.int64))
     coordlist = _toarray(coordlist_ptr, np.empty(numcoord, np.float32))
@@ -342,8 +370,8 @@ def unpack5(gribmsg):
         &drtmpl_ptr,
         &drtlen)
     if iret != 0:
-       msg = f"Error unpacking section 5, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error unpacking section 5, error code = {iret}"
+        raise RuntimeError(msg)
 
     drtmpl = _toarray(drtmpl_ptr, np.empty(drtlen, np.int64))
 
@@ -476,10 +504,12 @@ def unpack7(gribmsg,
         &fld_ptr
     )
     if iret != 0:
-       msg = f"Error in unpack7, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error in unpack7, error code = {iret}"
+        raise RuntimeError(msg)
 
-    fld = _toarray(fld_ptr, np.empty(ndpts, np.float32, order=storageorder))
+    fld = _wrap_zero_copy(fld_ptr, ndpts, cnp.NPY_FLOAT32)
+    if storageorder == "F":
+        fld = np.asfortranarray(fld)
 
     return fld, iofst//8
 
@@ -586,8 +616,8 @@ def grib2_addlocal(gribmsg,
         lensec2,
     )
     if iret < 0:
-       msg = f"Error in grib2_addlocal, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error in grib2_addlocal, error code = {iret}"
+        raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
@@ -648,8 +678,8 @@ def grib2_addgrid(gribmsg,
         <g2int>len(deflist),
     )
     if iret < 0:
-       msg = f"Error in grib2_addgrid, error code {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error in grib2_addgrid, error code {iret}"
+        raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
@@ -686,7 +716,7 @@ def grib2_addfield(gribmsg,
 
     coordlist : np.ndarray
         1D Numpy array containing floating point values intended to document
-        the vertical discretisation associated to model data on hybrid
+        the vertical discretisation associated to model data on hybrid 
         coordinate vertical levels.
 
     drtnum : int
@@ -740,8 +770,8 @@ def grib2_addfield(gribmsg,
         <g2int *>&bitmap_view[0],
     )
     if iret < 0:
-       msg = f"Error in grib2_addfield, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error in grib2_addfield, error code = {iret}"
+        raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
     return gribmsg, iret
@@ -779,8 +809,8 @@ def grib2_end(gribmsg):
 
     iret = g2_gribend(cgrib)
     if iret < 0:
-       msg = f"Error in grib2_end, error code = {iret}"
-       raise RuntimeError(msg)
+        msg = f"Error in grib2_end, error code = {iret}"
+        raise RuntimeError(msg)
 
     gribmsg = PyBytes_FromStringAndSize(<char *>cgrib, iret)
 
