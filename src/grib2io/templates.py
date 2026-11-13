@@ -997,7 +997,7 @@ class ProjParameters:
         elif obj.gdtn == 10:
             projparams["proj"] = "merc"
             projparams["lat_ts"] = float(obj.latitudeTrueScale)
-            projparams["lon_0"] = float(0.5 * (obj.longitudeFirstGridpoint + obj.longitudeLastGridpoint))
+            projparams["lon_0"] = 0.0
         elif obj.gdtn == 20:
             if obj.projectionCenterFlag == 0:
                 lat0 = 90.0
