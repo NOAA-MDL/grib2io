@@ -586,11 +586,9 @@ def parse_data_model(ds: xr.Dataset, data_model: str) -> xr.Dataset:
             except KeyError:
                 pass
             else:
-                if new_cell_methods is not None:
-                    if ds[new_var_name].attrs["cell_methods"] is None:
-                        ds[new_var_name].attrs["cell_methods"] = new_cell_methods
-                    else:
-                        ds[new_var_name].attrs["cell_methods"] = " ".join(ds[new_var_name].attrs["cell_methods"], new_cell_methods)
+                if new_cell_methods:
+                    existing = ds[new_var_name].attrs.get("cell_methods")
+                    ds[new_var_name].attrs["cell_methods"] = " ".join(filter(None, [existing, new_cell_methods]))
 
         # change dataset attrs to snake case
         for attr in list(ds.attrs.keys()):
@@ -637,7 +635,7 @@ def section4_to_cell_methods(section4_array: np.ndarray) -> typing.Optional[str]
             # duration_unit = time_unit_table[str(section4_array[27 + offset])].lower()
             # duration_value = section4_array[28 + offset]
             input_interval_units = time_unit_table[str(section4_array[29 + offset])].lower()
-            input_interval_value = section4_array[30 + offset]
+            input_interval_value = section4_array[28 + offset]
             to_join.append(f"{dim:s}: {method:s} (interval: {input_interval_value:d} {input_interval_units:s})")
             # comment: duration {duration_value:d} {duration_unit:s} ending {interval_end:%Y-%m-%dT%H:%M:%s}
         cell_methods = " ".join(to_join)
