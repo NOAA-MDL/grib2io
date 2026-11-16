@@ -228,7 +228,7 @@ class ReferenceGenerator:
         for group_key, msg_entries in all_var_messages.items():
             var_name = group_key[0]  # shortName is the first element
             # Probability products are named for their threshold so each one
-            # is self-describing, e.g. PTYPE_prob_between_1_and_2.
+            # is self-describing, e.g. PTYPE_prob_between_1p0_and_2p0.
             prob_key = group_key[4]
             if prob_key is not None:
                 var_name = f"{var_name}_{_probability_suffix(prob_key)}"
@@ -1149,18 +1149,20 @@ def _format_threshold(value: float) -> str:
     ``.`` and ``-`` are not safe in variable names, so the decimal point is
     written as ``p`` and a minus sign as ``m`` (the convention Panoply uses):
     ``304.8 -> "304p8"``, ``0.254 -> "0p254"``, ``-2.5 -> "m2p5"``.  Whole
-    numbers are written without a decimal part (``50.0 -> "50"``).
+    numbers keep one decimal place (``50.0 -> "50p0"``).
     """
-    text = f"{value:.6f}".rstrip("0").rstrip(".")
-    if text in ("", "-0"):
-        text = "0"
+    if value == 0:
+        value = 0.0  # normalise -0.0
+    text = f"{value:.6f}".rstrip("0")
+    if text.endswith("."):
+        text += "0"
     return text.replace("-", "m").replace(".", "p")
 
 
 def _probability_suffix(prob_key: tuple) -> str:
     """Build the variable-name suffix for a probability product.
 
-    Examples: ``prob_between_1_and_2``, ``prob_below_304p8``,
+    Examples: ``prob_between_1p0_and_2p0``, ``prob_below_304p8``,
     ``prob_above_0p254``, ``prob_above_normal``.
     """
     type_of_probability, lower, upper = prob_key
