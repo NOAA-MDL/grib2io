@@ -93,14 +93,15 @@ _AVAILABLE_MULTI_FILE_GROUPS = [g for g in MULTI_FILE_GROUPS if all(os.path.isfi
 # Required fields in .zarray metadata
 ZARRAY_REQUIRED_FIELDS = {"chunks", "dtype", "fill_value", "shape", "compressor", "filters", "order"}
 
-# Required fields in .zattrs metadata
+# Required fields in .zattrs metadata.  ``valueOfFirstFixedSurface`` is not
+# listed: it describes a single level and is omitted for variables that span
+# several levels, where the level coordinate carries the values instead.
 ZATTRS_REQUIRED_FIELDS = {
     "_ARRAY_DIMENSIONS",
     "discipline",
     "parameterCategory",
     "parameterNumber",
     "typeOfFirstFixedSurface",
-    "valueOfFirstFixedSurface",
     "valid_time",
     "shortName",
 }
@@ -276,6 +277,12 @@ def test_manifest_structural_validity(data):
 
     missing_attrs = ZATTRS_REQUIRED_FIELDS - set(zattrs.keys())
     assert not missing_attrs, f"Variable {var_name} .zattrs missing fields: {missing_attrs}"
+
+    # Single-level descriptors may only be absent when the variable spans
+    # more than one value along a non-spatial dimension.
+    if "valueOfFirstFixedSurface" not in zattrs:
+        assert "level" not in zattrs, f"{var_name} has 'level' but no 'valueOfFirstFixedSurface'"
+        assert any(n > 1 for n in zarray["shape"][:-2]), f"{var_name} omits valueOfFirstFixedSurface but does not span multiple levels"
 
     # Verify _ARRAY_DIMENSIONS is a list ending with y, x
     dims = zattrs["_ARRAY_DIMENSIONS"]

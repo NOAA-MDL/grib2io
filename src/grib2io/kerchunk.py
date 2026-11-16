@@ -177,7 +177,7 @@ class ReferenceGenerator:
         refs[".zgroup"] = json.dumps({"zarr_format": 2})
 
         # Collect all messages across files, keyed by variable group
-        # group_key = (shortName, typeOfFirstFixedSurface, pdtn, typeOfSecondFixedSurface)
+        # group_key = (shortName, typeOfFirstFixedSurface, pdtn, typeOfSecondFixedSurface, probability_key)
         # This ensures messages with different surface types are not mixed.
         all_var_messages: Dict[tuple, list] = {}
 
@@ -227,6 +227,11 @@ class ReferenceGenerator:
         dim_coord_registry: Dict[str, list] = {}
         for group_key, msg_entries in all_var_messages.items():
             var_name = group_key[0]  # shortName is the first element
+            # Probability products are named for their threshold so each one
+            # is self-describing, e.g. PTYPE_prob_between_1_and_2.
+            prob_key = group_key[4]
+            if prob_key is not None:
+                var_name = f"{var_name}_{_probability_suffix(prob_key)}"
             if var_name in used_var_names:
                 used_var_names[var_name] += 1
                 zarr_var_name = f"{var_name}_{used_var_names[var_name]}"
@@ -527,8 +532,12 @@ class ReferenceGenerator:
             else:
                 tosfs_val = type_of_second_fixed_surface
 
-            # Group key: shortName + surface type + pdtn + second surface type
-            group_key = (var_name, int(toffs_val), int(pdtn_val), int(tosfs_val))
+            # Group key: shortName + surface type + pdtn + second surface type,
+            # plus the probability threshold for probability products.  Those
+            # commonly share every other identifying field -- NBM PTYPE carries
+            # four messages that differ only in their category bounds -- so
+            # without the threshold they would collide into one variable.
+            group_key = (var_name, int(toffs_val), int(pdtn_val), int(tosfs_val), _probability_key(msg))
 
             entry = _MsgEntry(
                 msg=msg,
@@ -596,8 +605,8 @@ class ReferenceGenerator:
         level_base = _level_dim_name(msg_entries[0].msg)
         dim_mapping = _map_messages_to_dimensions(msg_entries, level_dim_name=level_base)
 
-        dim_names = dim_mapping["dim_names"]      # ordered, using base names
-        dim_values = dim_mapping["dim_values"]    # base name -> sorted unique values
+        dim_names = dim_mapping["dim_names"]  # ordered, using base names
+        dim_values = dim_mapping["dim_values"]  # base name -> sorted unique values
         msg_index_map = dim_mapping["msg_index_map"]
         duplicate_entry_indices = dim_mapping["duplicate_entry_indices"]
 
@@ -1101,6 +1110,67 @@ def _timedelta_hours(td: Any) -> Optional[float]:
     return total() / 3600.0
 
 
+# GRIB2 Code Table 4.9 (type of probability) -> the word used for it in
+# variable names and which threshold limit(s) that type uses.
+_PROBABILITY_NAMING: Dict[int, tuple] = {
+    0: ("below", ("lower",)),
+    1: ("above", ("upper",)),
+    2: ("between", ("lower", "upper")),
+    3: ("above", ("lower",)),
+    4: ("below", ("upper",)),
+    5: ("equal", ("lower",)),
+    6: ("above_normal", ()),
+    7: ("near_normal", ()),
+    8: ("below_normal", ()),
+}
+
+
+def _probability_key(msg) -> Optional[tuple]:
+    """Return ``(typeOfProbability, lower, upper)`` for a probability product.
+
+    Returns ``None`` for messages that are not probability products (only
+    PDTs 4.5 and 4.9 carry these fields).  A limit is ``None`` when the
+    probability type does not use it: grib2io decodes a missing limit as
+    ``0.0``, which must not leak into variable names or attributes.
+    """
+    type_of_probability = getattr(msg, "typeOfProbability", None)
+    if type_of_probability is None:
+        return None
+    type_of_probability = int(getattr(type_of_probability, "value", type_of_probability))
+    _, used = _PROBABILITY_NAMING.get(type_of_probability, (None, ("lower", "upper")))
+    lower = float(msg.thresholdLowerLimit) if "lower" in used else None
+    upper = float(msg.thresholdUpperLimit) if "upper" in used else None
+    return (type_of_probability, lower, upper)
+
+
+def _format_threshold(value: float) -> str:
+    """Format a threshold value for use in a variable name.
+
+    ``.`` and ``-`` are not safe in variable names, so the decimal point is
+    written as ``p`` and a minus sign as ``m`` (the convention Panoply uses):
+    ``304.8 -> "304p8"``, ``0.254 -> "0p254"``, ``-2.5 -> "m2p5"``.  Whole
+    numbers are written without a decimal part (``50.0 -> "50"``).
+    """
+    text = f"{value:.6f}".rstrip("0").rstrip(".")
+    if text in ("", "-0"):
+        text = "0"
+    return text.replace("-", "m").replace(".", "p")
+
+
+def _probability_suffix(prob_key: tuple) -> str:
+    """Build the variable-name suffix for a probability product.
+
+    Examples: ``prob_between_1_and_2``, ``prob_below_304p8``,
+    ``prob_above_0p254``, ``prob_above_normal``.
+    """
+    type_of_probability, lower, upper = prob_key
+    word, _ = _PROBABILITY_NAMING.get(type_of_probability, (f"type{type_of_probability}", ()))
+    limits = [_format_threshold(v) for v in (lower, upper) if v is not None]
+    if word == "between" and len(limits) == 2:
+        return f"prob_between_{limits[0]}_and_{limits[1]}"
+    return "_".join(["prob", word] + limits)
+
+
 def _build_root_zattrs(msg) -> dict:
     """Build root-level (dataset) Zarr attributes from a representative message.
 
@@ -1247,6 +1317,17 @@ def _build_zattrs(msg, dim_labels: List[str]) -> dict:
     cell_methods = _cf_cell_methods(msg)
     if cell_methods:
         zattrs["cell_methods"] = cell_methods
+
+    # Probability products: record the threshold the variable name was derived
+    # from, so the distinction is machine-readable and not only in the name.
+    prob_key = _probability_key(msg)
+    if prob_key is not None:
+        type_of_probability, lower, upper = prob_key
+        zattrs["typeOfProbability"] = type_of_probability
+        if lower is not None:
+            zattrs["thresholdLowerLimit"] = lower
+        if upper is not None:
+            zattrs["thresholdUpperLimit"] = upper
 
     return zattrs
 
@@ -1483,22 +1564,22 @@ def _map_messages_to_dimensions(
 # variable, not to the coordinate it sits on.  Those surfaces still receive
 # units and a long_name from Table 4.5.
 _CF_LEVEL_ATTRS: Dict[int, tuple] = {
-    100: ("air_pressure", "down"),          # isobaric surface
-    102: ("altitude", "up"),                # specific altitude above mean sea level
-    103: ("height", "up"),                  # specified height above ground
+    100: ("air_pressure", "down"),  # isobaric surface
+    102: ("altitude", "up"),  # specific altitude above mean sea level
+    103: ("height", "up"),  # specified height above ground
     # CF's atmosphere_sigma_coordinate and
     # atmosphere_hybrid_sigma_pressure_coordinate are parametric and require
     # formula_terms referencing the surface-pressure and coefficient variables.
     # Those are not present in a kerchunk manifest, so claiming the
     # standard_name without them would be non-conformant.  Direction alone is
     # both safe and useful.
-    104: (None, "down"),                    # sigma level
-    105: (None, "down"),                    # hybrid level
-    106: ("depth", "down"),                 # depth below land surface
-    107: ("air_potential_temperature", "up"),   # isentropic (theta) level
-    108: ("air_pressure", "down"),          # pressure difference from ground
-    109: ("ertel_potential_vorticity", "up"),   # potential vorticity surface
-    160: ("depth", "down"),                 # depth below sea level
+    104: (None, "down"),  # sigma level
+    105: (None, "down"),  # hybrid level
+    106: ("depth", "down"),  # depth below land surface
+    107: ("air_potential_temperature", "up"),  # isentropic (theta) level
+    108: ("air_pressure", "down"),  # pressure difference from ground
+    109: ("ertel_potential_vorticity", "up"),  # potential vorticity surface
+    160: ("depth", "down"),  # depth below sea level
 }
 
 
@@ -1793,14 +1874,12 @@ def _format_validation_errors(problems: List[tuple], limit: int = 10) -> str:
     """Render :func:`_validate_refs` output as an actionable error message."""
     dims = sorted({p[1] for p in problems})
     lines = [
-        f"Manifest is internally inconsistent: {len(problems)} variable/dimension "
-        f"pairs disagree with their coordinate arrays.",
+        f"Manifest is internally inconsistent: {len(problems)} variable/dimension pairs disagree with their coordinate arrays.",
         f"Affected dimensions: {', '.join(dims)}",
         "",
     ]
     for var, dim, got, expected in problems[:limit]:
-        lines.append(f"  {var}: dimension '{dim}' has length {got}, "
-                     f"but the coordinate array has length {expected}")
+        lines.append(f"  {var}: dimension '{dim}' has length {got}, but the coordinate array has length {expected}")
     if len(problems) > limit:
         lines.append(f"  ... and {len(problems) - limit} more")
     lines += [
@@ -1864,4 +1943,3 @@ def _build_latlon_coord_refs(msg, refs: Dict[str, Any]) -> None:
         refs[f"{name}/.zarray"] = json.dumps(zarray)
         refs[f"{name}/.zattrs"] = json.dumps(attrs)
         refs[f"{name}/0.0"] = "base64:" + base64.b64encode(data.tobytes()).decode("ascii")
-        
