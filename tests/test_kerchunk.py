@@ -739,3 +739,36 @@ def test_standard_zarr_open(gfs_jpeg_path, tmp_path):
     data = ds[var_name].values
     assert data is not None
     assert data.ndim == 4
+
+
+# ---------------------------------------------------------------------------
+# Probability products: one variable per threshold, named for the threshold
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "value, expected",
+    [(304.8, "304p8"), (0.254, "0p254"), (50.0, "50p0"), (0.0, "0p0"), (-0.0, "0p0"), (-2.5, "m2p5")],
+)
+def test_format_threshold(value, expected):
+    from grib2io.kerchunk import _format_threshold
+
+    assert _format_threshold(value) == expected
+
+
+def test_probability_products_named_by_threshold():
+    """NBM PTYPE carries four probability messages that differ only in their
+    category bounds; each becomes its own variable named for those bounds."""
+    path = os.path.join(INPUT_DATA, "blend.t00z.core.f001.co_4x_reduce.grib2")
+    if not os.path.isfile(path):
+        pytest.skip("blend test file not available")
+    refs = ReferenceGenerator([path], filters={"shortName": "PTYPE"}).generate()["refs"]
+    names = sorted(k.split("/")[0] for k in refs if k.endswith("/.zarray") and k.startswith("PTYPE"))
+    assert names == [
+        "PTYPE_prob_between_1p0_and_2p0",
+        "PTYPE_prob_between_3p0_and_4p0",
+        "PTYPE_prob_between_5p0_and_7p0",
+        "PTYPE_prob_between_8p0_and_9p0",
+    ]
+    zattrs = json.loads(refs["PTYPE_prob_between_5p0_and_7p0/.zattrs"])
+    assert (zattrs["thresholdLowerLimit"], zattrs["thresholdUpperLimit"]) == (5.0, 7.0)
