@@ -1,14 +1,22 @@
-FROM continuumio/anaconda3:latest
+FROM condaforge/miniforge3:latest
 
-ENV DEPENDS="cython numpy pyproj"
+ENV CMAKE_PREFIX_PATH=/opt/conda \
+    G2C_DIR=/opt/conda
 
-RUN apt update -y && \
-    apt install libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev && \
-    conda install -c conda-forge nceplibs-g2c && \
-    pip install $DEPENDS
+RUN mamba install -y -c conda-forge \
+        c-compiler \
+        cmake \
+        ninja \
+        nceplibs-g2c \
+        scikit-build-core \
+        cython \
+        numpy \
+        pyproj \
+        pip && \
+    conda clean -afy
 
 COPY . /grib2io
 
 WORKDIR /grib2io
 
-RUN pip install .
+RUN pip install --no-build-isolation --no-deps .
