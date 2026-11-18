@@ -184,10 +184,10 @@ def test_data(request):
     with grib2io.open(data / "gfs.t00z.pgrb2.1p00.f012_subset") as f:
         msg = f["REFC"][0]
         assert hashlib.sha1(msg.data).hexdigest() == "47a930feaf4c7389529cfb8de94578c06e3c9ce3"
-    assert msg.min == np.float32(-20.000002)
-    assert msg.max == np.float32(45.85)
-    assert msg.mean == np.float32(-11.05756)
-    assert msg.median == np.float32(-20.000002)
+        assert msg.min == np.float32(-20.000002)
+        assert msg.max == np.float32(45.85)
+        assert msg.mean == np.float32(-11.05756)
+        assert msg.median == np.float32(-20.000002)
 
 
 def test_latlons(request):
