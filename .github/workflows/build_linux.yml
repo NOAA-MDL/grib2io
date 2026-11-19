@@ -23,25 +23,21 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Ubuntu Dependencies
+    - name: Build NCEPLIBS-g2c and codecs
       run: |
-        sudo apt-get -o Acquire::Retries=3 update
-        sudo apt-get -o Acquire::Retries=3 install cmake libopenjp2-7-dev libpng-dev libaec-dev
-
-    - name: Install NCEPLIBS-g2c
-      run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.8.0.tar.gz
-        tar -xzvf v1.8.0.tar.gz
-        cd NCEPLIBS-g2c-1.8.0
-        mkdir build && cd build
-        cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DUSE_PNG=ON -DUSE_AEC=ON -DBUILD_SHARED_LIBS=ON ..
-        make -j2
-        sudo make install
+        if ! printf '#include <zlib.h>\n' | "$CC" -x c -E - >/dev/null; then
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install -y zlib1g-dev
+        fi
+        export G2C_DIR="$RUNNER_TEMP/grib2io-g2c"
+        bash ci/build-wheel-deps.sh
+        echo "G2C_DIR=$G2C_DIR" >> "$GITHUB_ENV"
 
     - name: Install NCEPLIBS-ip
       if: matrix.interp == 'on'
       run: |
-        sudo apt-get -o Acquire::Retries=3 install gfortran libopenblas-serial-dev
+        sudo apt-get -o Acquire::Retries=3 update
+        sudo apt-get -o Acquire::Retries=3 install -y gfortran libopenblas-serial-dev
         wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
         tar -xzvf v5.1.0.tar.gz
         cd NCEPLIBS-ip-5.1.0
