@@ -25,8 +25,8 @@ jobs:
 
     - name: Install Ubuntu Dependencies
       run: |
-        sudo apt-get update
-        sudo apt-get install cmake libopenjp2-7-dev libpng-dev libaec-dev
+        sudo apt-get -o Acquire::Retries=3 update
+        sudo apt-get -o Acquire::Retries=3 install cmake libopenjp2-7-dev libpng-dev libaec-dev
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -41,7 +41,7 @@ jobs:
     - name: Install NCEPLIBS-ip
       if: matrix.interp == 'on'
       run: |
-        sudo apt-get install gfortran libopenblas-serial-dev
+        sudo apt-get -o Acquire::Retries=3 install gfortran libopenblas-serial-dev
         wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
         tar -xzvf v5.1.0.tar.gz
         cd NCEPLIBS-ip-5.1.0
