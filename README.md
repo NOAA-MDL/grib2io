@@ -38,89 +38,75 @@ Optionally (but recommended), grib2io supports spatial interpolation via its int
 * [API documentation](https://noaa-mdl.github.io/grib2io/grib2io.html)
 * [User Guide Jupyter Notebook](https://github.com/NOAA-MDL/grib2io/blob/master/demos/grib2io-v2.ipynb)
 
-## Required Software
-* [Python](https://python.org) 3.8, 3.9, 3.10, 3.11, 3.12, 3.13, 3.14, 3.15
-* [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0+
-* setuptools 34.0+
-* Cython 3.0+
-* NumPy 1.22+
-* pyproj 1.9.6+
-* C compiler: GNU, Intel, and Apple Clang have been tested.
-
-## Required External Libraries
-
-### NCEPLIBS-g2c
-The [NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) library is required for grib2io.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-g2c can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the *conda ecosystems, then you can install via `conda install -c conda-forge nceplibs-g2c`.
-
-## Optional External Libraries
-
-### NCEPLIBS-ip (v5.1.0 or newer)
-The [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) Fortran library provides interpolation support.  You will have to build and install this yourself, but this is not difficult.  For macOS users, NCEPLIBS-ip can be installed via [this Homebrew Tap](https://github.com/eengl/homebrew-nceplibs).  If you use the *conda ecosystems, then you can install via `conda install -c conda-forge nceplibs-ip`.
-
-> [!IMPORTANT]
-> **Beginning with v2.8.0, grib2io will interface to the "d" version of NCEPLIBS-ip which defines 4-byte integers and 8-byte reals.**
-
 ## Install
 
-Once again, this assumes that NCEPLIBS-g2c has been installed.  If NCEPLIBS-g2c has been installed into a "common" installation path, then it will be found, otherwise define environment variable `G2C_DIR` with the installation path.
+Install from PyPI with pip or add grib2io to a uv project:
 
-* From [PyPI](https://pypi.python.org/pypi/grib2io) via pip:
+```shell
+python -m pip install grib2io
+uv add grib2io
+```
 
-```
-pip install grib2io
-```
-* From [conda-forge](https://anaconda.org/conda-forge/grib2io) via conda:
+When a compatible wheel is available, it supplies NCEPLIBS-g2c and supports
+JPEG2000, PNG, and AEC compression. A compiler, system NCEPLIBS-g2c installation,
+and NCEPLIBS-ip installation are unnecessary for wheel users. Interpolation is
+available through a source build with NCEPLIBS-ip.
 
-```
+The [wheel workflow](https://github.com/NOAA-MDL/grib2io/actions/workflows/build_wheels.yml)
+lists verified artifacts by operating system, architecture, and Python version.
+The [PyPI files list](https://pypi.org/project/grib2io/#files) shows which wheels
+are available for a published version.
+
+Conda users can install from conda-forge:
+
+```shell
 conda install -c conda-forge grib2io
 ```
 
-* From source:
-```shell
-pip install .
-```
+### Build from source
 
-Source builds use CMake via `scikit-build-core`. You can control interpolation
-support directly from pip:
+A source build requires a C compiler, CMake 3.18 or newer, and
+[NCEPLIBS-g2c](https://github.com/NOAA-EMC/NCEPLIBS-g2c) 1.7.0 or newer with
+headers. The Python build backend installs Cython and NumPy in the isolated
+build environment. Install g2c from source, from the
+[Homebrew tap](https://github.com/eengl/homebrew-nceplibs) on macOS, or with
+`conda install -c conda-forge nceplibs-g2c`.
 
-```shell
-# Build without NCEPLIBS-ip (interpolation disabled)
-pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
-
-# Build with interpolation when libip is available (default)
-pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=ON
-```
-
-> [!NOTE]
-> ### Building with static libraries
-> **_It is recommended to not build with static libraries, but in NOAA HPC production environments, this is preferred._**  Beginning with grib2io v2.4.0, the process to build with static libs as changed.  The environment variable, `USE_STATIC_LIBS` has been removed and replaced with library-specific env vars, `G2C_STATIC` and `IP_STATIC` with acceptable values of `True` or `False`.  The default value is `False` (i.e. build with shared libs).  If statically linking to NCEPLIBS-ip, then provide the path to of the BLAS/LAPACK library via env var `BLA_DIR`.
->
->```shell
->export G2C_STATIC=True
->export IP_STATIC=True
->export G2C_DIR=<path to g2c> # Optional
->export IP_DIR=<path to ip> # Optional
->export BLA_DIR=<path to BLAS/LAPACK used for ip> # Needed if IP_STATIC=True
->pip install .
->```
-
-## Build Troubleshooting
-
-If source builds cannot find libraries, set explicit include/lib paths:
+From a checkout, run either command:
 
 ```shell
-export G2C_INCDIR=<path>/include
-export G2C_LIBDIR=<path>/lib
-export IP_INCDIR=<path>/include_d
-export IP_LIBDIR=<path>/lib
-pip install .
+python -m pip install .
+uv pip install .
 ```
 
-If you do not need interpolation support, disable it at build time:
+For a custom g2c installation, point `G2C_DIR` at its prefix. Alternatively,
+set `G2C_INCDIR` and `G2C_LIBDIR` directly.
+
+### Enable interpolation
+
+To include interpolation, install the double-precision (`ip_d`) library and
+headers from [NCEPLIBS-ip](https://github.com/NOAA-EMC/NCEPLIBS-ip) 5.1.0 or newer
+before building grib2io. Set `IP_DIR` to its prefix if it is outside the
+standard search paths, or set `IP_INCDIR` and `IP_LIBDIR` directly. The source
+build includes interpolation when it finds both the library and header. It
+builds core GRIB2 support when either is missing.
+
+To disable interpolation explicitly, pass the CMake setting to the installer:
 
 ```shell
-pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+python -m pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
+uv pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF
 ```
+
+Check the installed package with
+`python -c "import grib2io; grib2io.show_config()"`.
+
+### Build with static libraries
+
+The source build looks for shared libraries by default. Set `G2C_STATIC=True`
+or `IP_STATIC=True` to select static libraries for an environment that requires
+them. Static interpolation also requires a compatible Fortran toolchain and
+the link dependencies of the supplied IP library.
 
 ## Development
 

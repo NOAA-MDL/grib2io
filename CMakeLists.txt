@@ -152,7 +152,7 @@ option(
   ON
 )
 grib2io_env_bool("G2C_STATIC" OFF GRIB2IO_G2C_STATIC)
-grib2io_env_bool("IP_STATIC" OFF GRIB2IO_IP_STATIC)
+set(GRIB2IO_IP_STATIC OFF)
 
 set(_g2c_hints)
 set(_g2c_include_hints)
@@ -261,6 +261,7 @@ set(GRIB2IO_HAS_INTERPOLATION OFF)
 set(GRIB2IO_HAS_OPENMP OFF)
 
 if(GRIB2IO_WITH_IP)
+  grib2io_env_bool("IP_STATIC" OFF GRIB2IO_IP_STATIC)
 
   set(_ip_hints)
   set(_ip_include_hints)
@@ -315,23 +316,24 @@ if(GRIB2IO_WITH_IP)
   )
 
   if(GRIB2IO_IP_STATIC)
-    enable_language(Fortran)
     grib2io_find_library(
       IP_LIBRARY
-      REQUIRED STATIC
+      STATIC
       NAMES "ip_d"
       HINTS ${_ip_hints}
     )
   else()
     grib2io_find_library(
       IP_LIBRARY
-      REQUIRED
       NAMES "ip_d"
       HINTS ${_ip_hints}
     )
   endif()
 
   if(IP_INCLUDE_DIR AND IP_LIBRARY)
+    if(GRIB2IO_IP_STATIC)
+      enable_language(Fortran)
+    endif()
     set(GRIB2IO_HAS_INTERPOLATION ON)
     get_filename_component(IP_LIBRARY_DIR "${IP_LIBRARY}" DIRECTORY)
     message(STATUS "Resolved IP include dir: ${IP_INCLUDE_DIR}")
@@ -360,6 +362,7 @@ if(GRIB2IO_WITH_IP)
       message(STATUS "Resolved OpenMP C flags: ${OpenMP_C_FLAGS}")
     endif()
   else()
+    set(GRIB2IO_IP_STATIC OFF)
     message(
       WARNING
       "NCEPLIBS-ip not found. grib2io will build without interpolation support."
@@ -385,6 +388,10 @@ configure_file(
   @ONLY
 )
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/__config__.py" DESTINATION grib2io)
+set(GRIB2IO_NATIVE_LICENSE_DIR "" CACHE PATH "License notices for bundled native libraries")
+if(GRIB2IO_NATIVE_LICENSE_DIR)
+  install(DIRECTORY "${GRIB2IO_NATIVE_LICENSE_DIR}/" DESTINATION grib2io/licenses)
+endif()
 
 message(STATUS "grib2io version: ${GRIB2IO_VERSION}")
 message(STATUS "NCEPLIBS-g2c static: ${GRIB2IO_G2C_STATIC}")
