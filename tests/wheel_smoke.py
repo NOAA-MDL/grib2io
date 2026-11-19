@@ -24,8 +24,12 @@ def check_round_trip(path, original, template, values):
         # CCSDS flags, block size, and reference sample interval.
         section5 = np.append(section5, [8, 16, 128])
     message = grib2io.Grib2Message(
-        original.section0.copy(), original.section1.copy(), None,
-        original.section3.copy(), original.section4.copy(), section5,
+        original.section0.copy(),
+        original.section1.copy(),
+        None,
+        original.section3.copy(),
+        original.section4.copy(),
+        section5,
     )
     message.data = values
     message.pack()
