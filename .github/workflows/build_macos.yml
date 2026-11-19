@@ -20,7 +20,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -29,30 +29,32 @@ jobs:
         brew install jasper libpng libaec
         brew trust eengl/nceplibs
         brew tap eengl/nceplibs
-        brew install nceplibs-g2c nceplibs-ip
+        brew install nceplibs-g2c
         echo "G2C_DIR=$(brew --prefix nceplibs-g2c)" >> $GITHUB_ENV
+
+    - name: Install NCEPLIBS-ip
+      if: matrix.interp == 'on'
+      run: |
+        brew install nceplibs-ip
         echo "IP_DIR=$(brew --prefix nceplibs-ip)" >> $GITHUB_ENV
 
-    - name: Install python dependencies via pip
+    - name: Install and test with interpolation
+      if: matrix.interp == 'on'
       run: |
-        python3 -m pip install --upgrade pip
-        python3 -m pip install --upgrade setuptools
-        python3 -m pip install --upgrade wheel
-        python3 -m pip install ".[test]"
-        python3 -m pip install numcodecs fsspec hypothesis
+        python -m pip install ".[test]" numcodecs fsspec hypothesis
+        python -c "import grib2io; assert grib2io.has_interpolation is True"
+        python -m pytest tests/
 
-    - name: Install grib2io and test
-      if: ${{ matrix.interp == 'on' }}
+    - name: Install from a source distribution without NCEPLIBS-ip
+      if: matrix.interp == 'off'
       run: |
-        python --version
-        G2C_STATIC=False IP_STATIC=False pip install . --force-reinstall --no-deps --no-cache-dir
-        python -c "import grib2io; grib2io.show_config()"
-        pytest ./tests/
-
-    - name: Install grib2io without interpolation and smoke test
-      if: ${{ matrix.interp == 'off' }}
-      run: |
-        python --version
-        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF --force-reinstall --no-deps --no-cache-dir
-        python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
-        pytest ./tests/test_imports.py
+        python -m pip install build uv
+        workdir=$(mktemp -d)
+        python -m build --sdist --outdir "$workdir"
+        python -m venv "$workdir/pip-env"
+        "$workdir/pip-env/bin/python" -m pip install "$workdir"/grib2io-*.tar.gz
+        uv venv --python "$(command -v python)" "$workdir/uv-env"
+        uv pip install --python "$workdir/uv-env/bin/python" "$workdir"/grib2io-*.tar.gz
+        for installer in pip uv; do
+          "$workdir/$installer-env/bin/python" tests/wheel_smoke.py tests/input_data --core-only
+        done

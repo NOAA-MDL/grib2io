@@ -181,3 +181,19 @@ ignore = [
   "F811", # Ignore redefinition
 ]
 select = ["E4", "E7", "E9", "F"] # Preserve Ruff < 0.16.0 rules
+
+
+[tool.cibuildwheel]
+build = "cp3{10,11,12,13,14}-*"
+skip = "*-musllinux_*"
+before-all = "bash ci/build-wheel-deps.sh"
+config-settings = { "cmake.define.GRIB2IO_WITH_IP" = "OFF", "cmake.define.GRIB2IO_NATIVE_LICENSE_DIR" = "/tmp/grib2io-wheel-deps/share/grib2io-licenses" }
+
+[tool.cibuildwheel.linux]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+before-all = "dnf install -y zlib-devel && bash ci/build-wheel-deps.sh"
+environment = { G2C_DIR = "/tmp/grib2io-wheel-deps" }
+
+[tool.cibuildwheel.macos]
+environment = { G2C_DIR = "/tmp/grib2io-wheel-deps", MACOSX_DEPLOYMENT_TARGET = "12.0" }

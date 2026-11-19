@@ -1,0 +1,89 @@
+name: Build and validate portable wheels
+
+on: [push, pull_request, workflow_dispatch]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {runner: ubuntu-24.04, arch: x86_64}
+          - {runner: ubuntu-24.04-arm, arch: aarch64}
+          - {runner: macos-15-intel, arch: x86_64}
+          - {runner: macos-15, arch: arm64}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - name: Build and repair wheels
+        env:
+          CIBW_ARCHS: ${{ matrix.arch }}
+        run: |
+          python -m pip install cibuildwheel==3.3.1
+          python -m cibuildwheel --output-dir wheelhouse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: candidate-wheels-${{ matrix.runner }}
+          path: wheelhouse/*.whl
+          if-no-files-found: error
+
+  validate:
+    needs: build
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm, macos-15-intel, macos-15]
+        python: ['3.10', '3.11', '3.12', '3.13', '3.14']
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate-wheels-${{ matrix.runner }}
+          path: wheelhouse
+      - name: Install and test with pip and uv
+        env:
+          PYTHON_VERSION: ${{ matrix.python }}
+        run: |
+          test ! -e /tmp/grib2io-wheel-deps
+          python -m pip install uv
+          python_bin=$(command -v python)
+          uv_bin=$(command -v uv)
+          python_tag=cp${PYTHON_VERSION/./}
+          set -- "$PWD"/wheelhouse/grib2io-*-"$python_tag"-"$python_tag"-*.whl
+          test "$#" -eq 1
+          test -f "$1"
+          wheel=$1
+          echo "WHEEL_PATH=$wheel" >> "$GITHUB_ENV"
+          workdir=$(mktemp -d)
+          cp tests/wheel_smoke.py tests/input_data/gfs.{complex,jpeg,png}.grib2 "$workdir"
+          cd "$workdir"
+          "$python_bin" -m venv pip-env
+          pip-env/bin/python -m pip install --only-binary=:all: "$wheel"
+          pip-env/bin/python wheel_smoke.py .
+
+          "$uv_bin" init --bare uv-project
+          (
+            cd uv-project
+            "$uv_bin" add --python "$python_bin" --no-build "$wheel"
+            "$uv_bin" run --no-sync python ../wheel_smoke.py ..
+          )
+
+          if [ "$PYTHON_VERSION" = '3.12' ]; then
+            pip-env/bin/python -m pip install --only-binary=:all: 'numpy<2'
+            pip-env/bin/python wheel_smoke.py .
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: verified-wheel-${{ matrix.runner }}-py${{ matrix.python }}
+          path: ${{ env.WHEEL_PATH }}
+          if-no-files-found: error

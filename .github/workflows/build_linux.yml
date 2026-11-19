@@ -19,14 +19,14 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v6
       with:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Ubuntu Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install cmake gfortran libopenjp2-7 libopenjp2-7-dev libpng16-16 libpng-dev libaec0 libaec-dev libopenblas-serial-dev
+        sudo apt-get install cmake libopenjp2-7-dev libpng-dev libaec-dev
 
     - name: Install NCEPLIBS-g2c
       run: |
@@ -34,12 +34,14 @@ jobs:
         tar -xzvf v1.8.0.tar.gz
         cd NCEPLIBS-g2c-1.8.0
         mkdir build && cd build
-        cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_PNG=ON -DBUILD_AEC=ON -DBUILD_SHARED_LIBS=ON ..
+        cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DUSE_PNG=ON -DUSE_AEC=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
         sudo make install
 
     - name: Install NCEPLIBS-ip
+      if: matrix.interp == 'on'
       run: |
+        sudo apt-get install gfortran libopenblas-serial-dev
         wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
         tar -xzvf v5.1.0.tar.gz
         cd NCEPLIBS-ip-5.1.0
@@ -48,26 +50,23 @@ jobs:
         make -j2
         sudo make install
 
-    - name: Install python dependencies via pip
+    - name: Install and test with interpolation
+      if: matrix.interp == 'on'
       run: |
-        python -m pip install --upgrade pip
-        python -m pip install --upgrade setuptools
-        python -m pip install --upgrade wheel
-        python -m pip install ".[test]"
-        python -m pip install numcodecs fsspec hypothesis
+        python -m pip install ".[test]" numcodecs fsspec hypothesis
+        python -c "import grib2io; assert grib2io.has_interpolation is True"
+        python -m pytest tests/
 
-    - name: Install grib2io and test
-      if: ${{ matrix.interp == 'on' }}
+    - name: Install from a source distribution without NCEPLIBS-ip
+      if: matrix.interp == 'off'
       run: |
-        python --version
-        G2C_STATIC=False IP_STATIC=False pip install . --force-reinstall --no-deps --no-cache-dir
-        python -c "import grib2io; grib2io.show_config()"
-        pytest ./tests/
-
-    - name: Install grib2io without interpolation and smoke test
-      if: ${{ matrix.interp == 'off' }}
-      run: |
-        python --version
-        G2C_STATIC=False IP_STATIC=False pip install . --config-settings=cmake.define.GRIB2IO_WITH_IP=OFF --force-reinstall --no-deps --no-cache-dir
-        python -c "import grib2io; grib2io.show_config(); assert grib2io.has_interpolation is False"
-        pytest ./tests/test_imports.py
+        python -m pip install build uv
+        workdir=$(mktemp -d)
+        python -m build --sdist --outdir "$workdir"
+        python -m venv "$workdir/pip-env"
+        "$workdir/pip-env/bin/python" -m pip install "$workdir"/grib2io-*.tar.gz
+        uv venv --python "$(command -v python)" "$workdir/uv-env"
+        uv pip install --python "$workdir/uv-env/bin/python" "$workdir"/grib2io-*.tar.gz
+        for installer in pip uv; do
+          "$workdir/$installer-env/bin/python" tests/wheel_smoke.py tests/input_data --core-only
+        done
