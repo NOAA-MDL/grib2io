@@ -16,6 +16,7 @@ build_dependency() {
     shift 4
     local source="$workdir/$name"
     mkdir -p "$source"
+    printf 'Downloading %s from %s\n' "$name" "$url"
     curl --fail --silent --show-error --location --retry 3 "$url" -o "$source.tar.gz"
     printf '%s  %s\n' "$checksum" "$source.tar.gz" | "${checksum_command[@]}" --check
     tar -xzf "$source.tar.gz" -C "$source" --strip-components=1
@@ -35,8 +36,8 @@ build_dependency openjpeg https://codeload.github.com/uclouvain/openjpeg/tar.gz/
 build_dependency libpng https://codeload.github.com/pnggroup/libpng/tar.gz/refs/tags/v1.6.54 \
     ba7efce137409079989df4667706c339bebfbb10e9f413474718012a13c8cd4c LICENSE \
     -DPNG_STATIC=OFF -DPNG_TESTS=OFF -DPNG_TOOLS=OFF -DPNG_FRAMEWORK=OFF
-build_dependency libaec https://gitlab.dkrz.de/k202009/libaec/-/archive/v1.1.4/libaec-v1.1.4.tar.gz \
-    b910e47d526ecbfb802ba6cdc6d262420f6ca436e87edfb57a32966f5148f762 LICENSE.txt
+build_dependency libaec https://codeload.github.com/Deutsches-Klimarechenzentrum/libaec/tar.gz/refs/tags/v1.1.4 \
+    7a64324a37f75f96ca8e0f6d1ad9d13057b013bb5a05298c43469f6476a40232 LICENSE.txt
 build_dependency nceplibs-g2c https://codeload.github.com/NOAA-EMC/NCEPLIBS-g2c/tar.gz/refs/tags/v1.8.0 \
     4ce9f5a7cb0950699fe08ebc5a463ab4d09ef550c050391a319308a2494f971f LICENSE.md \
     -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DUSE_PNG=ON -DUSE_AEC=ON -DUTILS=OFF
