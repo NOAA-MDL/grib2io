@@ -32,7 +32,7 @@ cdef extern from "Python.h":
 # string will change from G2_VERSION to G2C_VERSION from g2c v1.7.0 to v1.8.0. The ifdef
 # check accommodates before and after the change.
 # ----------------------------------------------------------------------------------------
-cdef extern from "grib2.h":
+cdef extern from "grib2.h" nogil:
     """
     #ifndef G2_PNG_ENABLED
         #define G2_PNG_ENABLED 0
@@ -444,21 +444,21 @@ def unpack7(gribmsg,
             int ndpts,
             storageorder="C"):
     """
-    Unpacks GRIB2 Section 6 (Bitmap Section)
+    Unpacks GRIB2 Section 7 (Data Section)
 
-    This is Cython function serves as a wrapper to the NCEPLIBS-g2c function,
-    g2_unpack6().
+    This Cython function serves as a wrapper to the NCEPLIBS-g2c function,
+    g2_unpack7().
 
     Parameters
     ----------
     gribmsg : bytes
-        Python bytes object containing packed section 4 of the GRIB2 message.
+        Python bytes object containing packed section 7 of the GRIB2 message.
 
     gdtnum : int
-        Grid Defintion Template number.
+        Grid Definition Template number.
 
     gdtmpl : np.ndarray
-        1D Numpy array containing the grid defintion template values.
+        1D Numpy array containing the grid definition template values.
 
     drtnum : int
         Data Representation Template number.
@@ -472,7 +472,7 @@ def unpack7(gribmsg,
     storageorder : {'C', 'F'}, optional
         Specify memory layout of unpacked data. The newly created array
         will be in 'C' order (row major) unless 'F' is specified, in which
-        case it will be in Fortran order (column major). 
+        case it will be in Fortran order (column major).
 
     Returns
     -------
@@ -483,35 +483,44 @@ def unpack7(gribmsg,
         Number of bytes read/processed from unpacking.
     """
     cdef unsigned char *cgrib
-    cdef g2int iofst
-    cdef g2int iret
-    cdef g2float *fld_ptr
-    cdef g2int[:] igdstmpl_view = gdtmpl
-    cdef g2int[:] idrtmpl_view = drtmpl
+    cdef g2int iofst = 0
+    cdef g2int iret = 0
+    cdef g2float *fld_ptr = NULL
 
-    iret = 0
-    iofst = 0
+    # Require contiguous 1D views so pointer arithmetic in C is valid
+    cdef g2int[::1] igdstmpl_view = gdtmpl
+    cdef g2int[::1] idrtmpl_view = drtmpl
+
+    # Guard against 0-length template arrays before taking &view[0]
+    cdef g2int *igdstmpl_ptr = &igdstmpl_view[0] if igdstmpl_view.shape[0] > 0 else NULL
+    cdef g2int *idrtmpl_ptr = &idrtmpl_view[0] if idrtmpl_view.shape[0] > 0 else NULL
+
+    # Extract raw pointer while GIL is held; gribmsg stays alive on the stack
+    # for the duration of this call, keeping cgrib valid.
     cgrib = <unsigned char *>PyBytes_AsString(gribmsg)
 
-    iret = g2_unpack7(
-        cgrib,
-        &iofst,
-        <g2int>gdtnum,
-        <g2int *>&igdstmpl_view[0],
-        <g2int>drtnum,
-        <g2int *>&idrtmpl_view[0],
-        <g2int>ndpts,
-        &fld_ptr
-    )
+    with nogil:
+        iret = g2_unpack7(
+            cgrib,
+            &iofst,
+            <g2int>gdtnum,
+            igdstmpl_ptr,
+            <g2int>drtnum,
+            idrtmpl_ptr,
+            <g2int>ndpts,
+            &fld_ptr,
+        )
+
     if iret != 0:
-        msg = f"Error in unpack7, error code = {iret}"
-        raise RuntimeError(msg)
+        if fld_ptr != NULL:
+            free(fld_ptr)
+        raise RuntimeError(f"Error in unpack7, error code = {iret}")
 
     fld = _wrap_zero_copy(fld_ptr, ndpts, cnp.NPY_FLOAT32)
     if storageorder == "F":
         fld = np.asfortranarray(fld)
 
-    return fld, iofst//8
+    return fld, iofst // 8
 
 # ----------------------------------------------------------------------------------------
 # Routines for creating a GRIB2 message
