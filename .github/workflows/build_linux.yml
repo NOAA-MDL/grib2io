@@ -30,9 +30,9 @@ jobs:
 
     - name: Install NCEPLIBS-g2c
       run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v1.8.0.tar.gz
-        tar -xzvf v1.8.0.tar.gz
-        cd NCEPLIBS-g2c-1.8.0
+        wget https://github.com/NOAA-EMC/NCEPLIBS-g2c/archive/refs/tags/v2.3.0.tar.gz
+        tar -xzvf v2.3.0.tar.gz
+        cd NCEPLIBS-g2c-2.3.0
         mkdir build && cd build
         cmake -DUSE_Jasper=OFF -DUSE_OpenJPEG=ON -DBUILD_PNG=ON -DBUILD_AEC=ON -DBUILD_SHARED_LIBS=ON ..
         make -j2
@@ -40,9 +40,9 @@ jobs:
 
     - name: Install NCEPLIBS-ip
       run: |
-        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.1.0.tar.gz
-        tar -xzvf v5.1.0.tar.gz
-        cd NCEPLIBS-ip-5.1.0
+        wget https://github.com/NOAA-EMC/NCEPLIBS-ip/archive/refs/tags/v5.4.1.tar.gz
+        tar -xzvf v5.4.1.tar.gz
+        cd NCEPLIBS-ip-5.4.1
         mkdir build && cd build
         cmake -DOPENMP=ON -DBUILD_SHARED_LIBS=ON -DBLA_VENDOR=OpenBLAS ..
         make -j2
