@@ -45,7 +45,7 @@
     </ul>
 
 
-            <footer>grib2io v2.8.2</footer>
+            <footer>grib2io v2.9.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -66,7 +66,7 @@
 
                         <label class="view-source-button" for="mod-rotated_grid-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;Tools for working with Rotated Lat/Lon Grids.&quot;&quot;&quot;</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">"""Tools for working with Rotated Lat/Lon Grids."""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="kn">from</span><span class="w"> </span><span class="nn">numpy.typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">NDArray</span>
@@ -82,10 +82,10 @@
 </span><span id="L-14"><a href="#L-14"><span class="linenos"> 14</span></a>    <span class="n">splat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="L-15"><a href="#L-15"><span class="linenos"> 15</span></a>    <span class="n">splon</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="L-16"><a href="#L-16"><span class="linenos"> 16</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]:</span>
-</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a><span class="sd">    Perform grid rotation.</span>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    This function is adapted from ECMWF&#39;s ecCodes library void function,</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="sd">    This function is adapted from ECMWF's ecCodes library void function,</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">    rotate().</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
@@ -111,7 +111,7 @@
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a><span class="sd">    lons</span>
 </span><span id="L-44"><a href="#L-44"><span class="linenos"> 44</span></a><span class="sd">        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units</span>
 </span><span id="L-45"><a href="#L-45"><span class="linenos"> 45</span></a><span class="sd">        of degrees.</span>
-</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-46"><a href="#L-46"><span class="linenos"> 46</span></a><span class="sd">    """</span>
 </span><span id="L-47"><a href="#L-47"><span class="linenos"> 47</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.0</span><span class="p">))</span>
 </span><span id="L-48"><a href="#L-48"><span class="linenos"> 48</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.0</span><span class="p">))</span>
 </span><span id="L-49"><a href="#L-49"><span class="linenos"> 49</span></a>    <span class="n">zxmxc</span> <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
@@ -146,10 +146,10 @@
 </span><span id="L-78"><a href="#L-78"><span class="linenos"> 78</span></a>    <span class="n">splat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="L-79"><a href="#L-79"><span class="linenos"> 79</span></a>    <span class="n">splon</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="L-80"><a href="#L-80"><span class="linenos"> 80</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]:</span>
-</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-81"><a href="#L-81"><span class="linenos"> 81</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-82"><a href="#L-82"><span class="linenos"> 82</span></a><span class="sd">    Perform grid un-rotation.</span>
 </span><span id="L-83"><a href="#L-83"><span class="linenos"> 83</span></a>
-</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    This function is adapted from ECMWF&#39;s ecCodes library void function,</span>
+</span><span id="L-84"><a href="#L-84"><span class="linenos"> 84</span></a><span class="sd">    This function is adapted from ECMWF's ecCodes library void function,</span>
 </span><span id="L-85"><a href="#L-85"><span class="linenos"> 85</span></a><span class="sd">    unrotate().</span>
 </span><span id="L-86"><a href="#L-86"><span class="linenos"> 86</span></a>
 </span><span id="L-87"><a href="#L-87"><span class="linenos"> 87</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
@@ -175,7 +175,7 @@
 </span><span id="L-107"><a href="#L-107"><span class="linenos">107</span></a><span class="sd">    lons</span>
 </span><span id="L-108"><a href="#L-108"><span class="linenos">108</span></a><span class="sd">        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units</span>
 </span><span id="L-109"><a href="#L-109"><span class="linenos">109</span></a><span class="sd">        of degrees.</span>
-</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-110"><a href="#L-110"><span class="linenos">110</span></a><span class="sd">    """</span>
 </span><span id="L-111"><a href="#L-111"><span class="linenos">111</span></a>    <span class="n">lon_x</span> <span class="o">=</span> <span class="n">lonin</span>
 </span><span id="L-112"><a href="#L-112"><span class="linenos">112</span></a>    <span class="n">lat_y</span> <span class="o">=</span> <span class="n">latin</span>
 </span><span id="L-113"><a href="#L-113"><span class="linenos">113</span></a>
@@ -201,7 +201,7 @@
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="c1"># Then convert back to &#39;normal&#39; (lat,lon)</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a>    <span class="c1"># Then convert back to 'normal' (lat,lon)</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a>    <span class="c1"># Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>    <span class="c1"># avoid error on calculating e.g. asin(1.00000001)</span>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
@@ -263,10 +263,10 @@
 </span><span id="rotate-15"><a href="#rotate-15"><span class="linenos">15</span></a>    <span class="n">splat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="rotate-16"><a href="#rotate-16"><span class="linenos">16</span></a>    <span class="n">splon</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="rotate-17"><a href="#rotate-17"><span class="linenos">17</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]:</span>
-</span><span id="rotate-18"><a href="#rotate-18"><span class="linenos">18</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="rotate-18"><a href="#rotate-18"><span class="linenos">18</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="rotate-19"><a href="#rotate-19"><span class="linenos">19</span></a><span class="sd">    Perform grid rotation.</span>
 </span><span id="rotate-20"><a href="#rotate-20"><span class="linenos">20</span></a>
-</span><span id="rotate-21"><a href="#rotate-21"><span class="linenos">21</span></a><span class="sd">    This function is adapted from ECMWF&#39;s ecCodes library void function,</span>
+</span><span id="rotate-21"><a href="#rotate-21"><span class="linenos">21</span></a><span class="sd">    This function is adapted from ECMWF's ecCodes library void function,</span>
 </span><span id="rotate-22"><a href="#rotate-22"><span class="linenos">22</span></a><span class="sd">    rotate().</span>
 </span><span id="rotate-23"><a href="#rotate-23"><span class="linenos">23</span></a>
 </span><span id="rotate-24"><a href="#rotate-24"><span class="linenos">24</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
@@ -292,7 +292,7 @@
 </span><span id="rotate-44"><a href="#rotate-44"><span class="linenos">44</span></a><span class="sd">    lons</span>
 </span><span id="rotate-45"><a href="#rotate-45"><span class="linenos">45</span></a><span class="sd">        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units</span>
 </span><span id="rotate-46"><a href="#rotate-46"><span class="linenos">46</span></a><span class="sd">        of degrees.</span>
-</span><span id="rotate-47"><a href="#rotate-47"><span class="linenos">47</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rotate-47"><a href="#rotate-47"><span class="linenos">47</span></a><span class="sd">    """</span>
 </span><span id="rotate-48"><a href="#rotate-48"><span class="linenos">48</span></a>    <span class="n">zsycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.0</span><span class="p">))</span>
 </span><span id="rotate-49"><a href="#rotate-49"><span class="linenos">49</span></a>    <span class="n">zcycen</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">splat</span> <span class="o">+</span> <span class="mf">90.0</span><span class="p">))</span>
 </span><span id="rotate-50"><a href="#rotate-50"><span class="linenos">50</span></a>    <span class="n">zxmxc</span> <span class="o">=</span> <span class="n">DEG2RAD</span> <span class="o">*</span> <span class="p">(</span><span class="n">lonin</span> <span class="o">-</span> <span class="n">splon</span><span class="p">)</span>
@@ -368,10 +368,10 @@ of degrees.</li>
 </span><span id="unrotate-79"><a href="#unrotate-79"><span class="linenos"> 79</span></a>    <span class="n">splat</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="unrotate-80"><a href="#unrotate-80"><span class="linenos"> 80</span></a>    <span class="n">splon</span><span class="p">:</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span>
 </span><span id="unrotate-81"><a href="#unrotate-81"><span class="linenos"> 81</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">],</span> <span class="n">NDArray</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">]]:</span>
-</span><span id="unrotate-82"><a href="#unrotate-82"><span class="linenos"> 82</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="unrotate-82"><a href="#unrotate-82"><span class="linenos"> 82</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="unrotate-83"><a href="#unrotate-83"><span class="linenos"> 83</span></a><span class="sd">    Perform grid un-rotation.</span>
 </span><span id="unrotate-84"><a href="#unrotate-84"><span class="linenos"> 84</span></a>
-</span><span id="unrotate-85"><a href="#unrotate-85"><span class="linenos"> 85</span></a><span class="sd">    This function is adapted from ECMWF&#39;s ecCodes library void function,</span>
+</span><span id="unrotate-85"><a href="#unrotate-85"><span class="linenos"> 85</span></a><span class="sd">    This function is adapted from ECMWF's ecCodes library void function,</span>
 </span><span id="unrotate-86"><a href="#unrotate-86"><span class="linenos"> 86</span></a><span class="sd">    unrotate().</span>
 </span><span id="unrotate-87"><a href="#unrotate-87"><span class="linenos"> 87</span></a>
 </span><span id="unrotate-88"><a href="#unrotate-88"><span class="linenos"> 88</span></a><span class="sd">    https://github.com/ecmwf/eccodes/blob/develop/src/grib_geography.cc</span>
@@ -397,7 +397,7 @@ of degrees.</li>
 </span><span id="unrotate-108"><a href="#unrotate-108"><span class="linenos">108</span></a><span class="sd">    lons</span>
 </span><span id="unrotate-109"><a href="#unrotate-109"><span class="linenos">109</span></a><span class="sd">        `numpy.ndarrays` with `dtype=numpy.float32` of grid longitudes in units</span>
 </span><span id="unrotate-110"><a href="#unrotate-110"><span class="linenos">110</span></a><span class="sd">        of degrees.</span>
-</span><span id="unrotate-111"><a href="#unrotate-111"><span class="linenos">111</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="unrotate-111"><a href="#unrotate-111"><span class="linenos">111</span></a><span class="sd">    """</span>
 </span><span id="unrotate-112"><a href="#unrotate-112"><span class="linenos">112</span></a>    <span class="n">lon_x</span> <span class="o">=</span> <span class="n">lonin</span>
 </span><span id="unrotate-113"><a href="#unrotate-113"><span class="linenos">113</span></a>    <span class="n">lat_y</span> <span class="o">=</span> <span class="n">latin</span>
 </span><span id="unrotate-114"><a href="#unrotate-114"><span class="linenos">114</span></a>
@@ -423,7 +423,7 @@ of degrees.</li>
 </span><span id="unrotate-134"><a href="#unrotate-134"><span class="linenos">134</span></a>    <span class="n">ret_lat</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="unrotate-135"><a href="#unrotate-135"><span class="linenos">135</span></a>    <span class="n">ret_lon</span> <span class="o">=</span> <span class="mi">0</span>
 </span><span id="unrotate-136"><a href="#unrotate-136"><span class="linenos">136</span></a>
-</span><span id="unrotate-137"><a href="#unrotate-137"><span class="linenos">137</span></a>    <span class="c1"># Then convert back to &#39;normal&#39; (lat,lon)</span>
+</span><span id="unrotate-137"><a href="#unrotate-137"><span class="linenos">137</span></a>    <span class="c1"># Then convert back to 'normal' (lat,lon)</span>
 </span><span id="unrotate-138"><a href="#unrotate-138"><span class="linenos">138</span></a>    <span class="c1"># Uses arcsin, to convert back to degrees, put in range -1 to 1 in case of slight rounding error</span>
 </span><span id="unrotate-139"><a href="#unrotate-139"><span class="linenos">139</span></a>    <span class="c1"># avoid error on calculating e.g. asin(1.00000001)</span>
 </span><span id="unrotate-140"><a href="#unrotate-140"><span class="linenos">140</span></a>    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">z</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>

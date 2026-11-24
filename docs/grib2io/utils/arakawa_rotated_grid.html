@@ -48,7 +48,7 @@
     </ul>
 
 
-            <footer>grib2io v2.8.2</footer>
+            <footer>grib2io v2.9.0</footer>
 
         <a class="attribution" title="pdoc: Python API documentation generator" href="https://pdoc.dev" target="_blank">
             built with <span class="visually-hidden">pdoc</span><img
@@ -75,7 +75,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 
                         <label class="view-source-button" for="mod-arakawa_rotated_grid-view-source"><span>View Source</span></label>
 
-                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">&quot;&quot;&quot;</span>
+                        <div class="pdoc-code codehilite"><pre><span></span><span id="L-1"><a href="#L-1"><span class="linenos">  1</span></a><span class="sd">"""</span>
 </span><span id="L-2"><a href="#L-2"><span class="linenos">  2</span></a><span class="sd">Functions for handling an Arakawa Rotated Lat/Lon Grids.</span>
 </span><span id="L-3"><a href="#L-3"><span class="linenos">  3</span></a>
 </span><span id="L-4"><a href="#L-4"><span class="linenos">  4</span></a><span class="sd">This grid is not often used, but is currently used for the NCEP/RAP using</span>
@@ -83,7 +83,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-6"><a href="#L-6"><span class="linenos">  6</span></a>
 </span><span id="L-7"><a href="#L-7"><span class="linenos">  7</span></a><span class="sd">These functions are adapted from the NCAR Command Language (ncl),</span>
 </span><span id="L-8"><a href="#L-8"><span class="linenos">  8</span></a><span class="sd">from [NcGRIB2.c](https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c)</span>
-</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-9"><a href="#L-9"><span class="linenos">  9</span></a><span class="sd">"""</span>
 </span><span id="L-10"><a href="#L-10"><span class="linenos"> 10</span></a>
 </span><span id="L-11"><a href="#L-11"><span class="linenos"> 11</span></a><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 </span><span id="L-12"><a href="#L-12"><span class="linenos"> 12</span></a>
@@ -94,7 +94,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-17"><a href="#L-17"><span class="linenos"> 17</span></a>
 </span><span id="L-18"><a href="#L-18"><span class="linenos"> 18</span></a>
 </span><span id="L-19"><a href="#L-19"><span class="linenos"> 19</span></a><span class="k">def</span><span class="w"> </span><span class="nf">ll2rot</span><span class="p">(</span><span class="n">latin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">latpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-20"><a href="#L-20"><span class="linenos"> 20</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-21"><a href="#L-21"><span class="linenos"> 21</span></a><span class="sd">    Rotate a latitude/longitude pair.</span>
 </span><span id="L-22"><a href="#L-22"><span class="linenos"> 22</span></a>
 </span><span id="L-23"><a href="#L-23"><span class="linenos"> 23</span></a><span class="sd">    Parameters</span>
@@ -114,7 +114,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-37"><a href="#L-37"><span class="linenos"> 37</span></a><span class="sd">        Rotated latitude in units of degrees.</span>
 </span><span id="L-38"><a href="#L-38"><span class="linenos"> 38</span></a><span class="sd">    tlons</span>
 </span><span id="L-39"><a href="#L-39"><span class="linenos"> 39</span></a><span class="sd">        Rotated longitude in units of degrees.</span>
-</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-40"><a href="#L-40"><span class="linenos"> 40</span></a><span class="sd">    """</span>
 </span><span id="L-41"><a href="#L-41"><span class="linenos"> 41</span></a>    <span class="n">tlon</span> <span class="o">=</span> <span class="n">lonin</span> <span class="o">-</span> <span class="n">lonpole</span>
 </span><span id="L-42"><a href="#L-42"><span class="linenos"> 42</span></a>
 </span><span id="L-43"><a href="#L-43"><span class="linenos"> 43</span></a>    <span class="c1"># Convert to xyz coordinates</span>
@@ -148,7 +148,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-71"><a href="#L-71"><span class="linenos"> 71</span></a>
 </span><span id="L-72"><a href="#L-72"><span class="linenos"> 72</span></a>
 </span><span id="L-73"><a href="#L-73"><span class="linenos"> 73</span></a><span class="k">def</span><span class="w"> </span><span class="nf">rot2ll</span><span class="p">(</span><span class="n">latin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">latpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-74"><a href="#L-74"><span class="linenos"> 74</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-75"><a href="#L-75"><span class="linenos"> 75</span></a><span class="sd">    Unrotate a latitude/longitude pair.</span>
 </span><span id="L-76"><a href="#L-76"><span class="linenos"> 76</span></a>
 </span><span id="L-77"><a href="#L-77"><span class="linenos"> 77</span></a><span class="sd">    Parameters</span>
@@ -168,7 +168,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-91"><a href="#L-91"><span class="linenos"> 91</span></a><span class="sd">        Unrotated latitude in units of degrees.</span>
 </span><span id="L-92"><a href="#L-92"><span class="linenos"> 92</span></a><span class="sd">    tlons</span>
 </span><span id="L-93"><a href="#L-93"><span class="linenos"> 93</span></a><span class="sd">        Unrotated longitude in units of degrees.</span>
-</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-94"><a href="#L-94"><span class="linenos"> 94</span></a><span class="sd">    """</span>
 </span><span id="L-95"><a href="#L-95"><span class="linenos"> 95</span></a>    <span class="n">tlon</span> <span class="o">=</span> <span class="n">lonin</span>
 </span><span id="L-96"><a href="#L-96"><span class="linenos"> 96</span></a>
 </span><span id="L-97"><a href="#L-97"><span class="linenos"> 97</span></a>    <span class="c1"># Convert to xyz coordinates</span>
@@ -210,7 +210,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-133"><a href="#L-133"><span class="linenos">133</span></a>    <span class="n">losp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 </span><span id="L-134"><a href="#L-134"><span class="linenos">134</span></a>    <span class="n">xlat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 </span><span id="L-135"><a href="#L-135"><span class="linenos">135</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="L-136"><a href="#L-136"><span class="linenos">136</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="L-137"><a href="#L-137"><span class="linenos">137</span></a><span class="sd">    Generate a rotation angle value.</span>
 </span><span id="L-138"><a href="#L-138"><span class="linenos">138</span></a>
 </span><span id="L-139"><a href="#L-139"><span class="linenos">139</span></a><span class="sd">    The rotation angle value can be applied to a vector quantity to make it</span>
@@ -233,7 +233,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="L-156"><a href="#L-156"><span class="linenos">156</span></a><span class="sd">    -------</span>
 </span><span id="L-157"><a href="#L-157"><span class="linenos">157</span></a><span class="sd">    rot</span>
 </span><span id="L-158"><a href="#L-158"><span class="linenos">158</span></a><span class="sd">        Rotation angle in units of radians.</span>
-</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="L-159"><a href="#L-159"><span class="linenos">159</span></a><span class="sd">    """</span>
 </span><span id="L-160"><a href="#L-160"><span class="linenos">160</span></a>    <span class="n">slon</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">tlon</span> <span class="o">-</span> <span class="n">losp</span><span class="p">)</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
 </span><span id="L-161"><a href="#L-161"><span class="linenos">161</span></a>    <span class="n">cgridlat</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">xlat</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
 </span><span id="L-162"><a href="#L-162"><span class="linenos">162</span></a>    <span class="k">if</span> <span class="n">cgridlat</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
@@ -285,7 +285,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
     </div>
     <a class="headerlink" href="#ll2rot"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="ll2rot-20"><a href="#ll2rot-20"><span class="linenos">20</span></a><span class="k">def</span><span class="w"> </span><span class="nf">ll2rot</span><span class="p">(</span><span class="n">latin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">latpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="ll2rot-21"><a href="#ll2rot-21"><span class="linenos">21</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="ll2rot-21"><a href="#ll2rot-21"><span class="linenos">21</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="ll2rot-22"><a href="#ll2rot-22"><span class="linenos">22</span></a><span class="sd">    Rotate a latitude/longitude pair.</span>
 </span><span id="ll2rot-23"><a href="#ll2rot-23"><span class="linenos">23</span></a>
 </span><span id="ll2rot-24"><a href="#ll2rot-24"><span class="linenos">24</span></a><span class="sd">    Parameters</span>
@@ -305,7 +305,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="ll2rot-38"><a href="#ll2rot-38"><span class="linenos">38</span></a><span class="sd">        Rotated latitude in units of degrees.</span>
 </span><span id="ll2rot-39"><a href="#ll2rot-39"><span class="linenos">39</span></a><span class="sd">    tlons</span>
 </span><span id="ll2rot-40"><a href="#ll2rot-40"><span class="linenos">40</span></a><span class="sd">        Rotated longitude in units of degrees.</span>
-</span><span id="ll2rot-41"><a href="#ll2rot-41"><span class="linenos">41</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="ll2rot-41"><a href="#ll2rot-41"><span class="linenos">41</span></a><span class="sd">    """</span>
 </span><span id="ll2rot-42"><a href="#ll2rot-42"><span class="linenos">42</span></a>    <span class="n">tlon</span> <span class="o">=</span> <span class="n">lonin</span> <span class="o">-</span> <span class="n">lonpole</span>
 </span><span id="ll2rot-43"><a href="#ll2rot-43"><span class="linenos">43</span></a>
 </span><span id="ll2rot-44"><a href="#ll2rot-44"><span class="linenos">44</span></a>    <span class="c1"># Convert to xyz coordinates</span>
@@ -372,7 +372,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
     </div>
     <a class="headerlink" href="#rot2ll"></a>
             <div class="pdoc-code codehilite"><pre><span></span><span id="rot2ll-74"><a href="#rot2ll-74"><span class="linenos"> 74</span></a><span class="k">def</span><span class="w"> </span><span class="nf">rot2ll</span><span class="p">(</span><span class="n">latin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonin</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">latpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">lonpole</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]:</span>
-</span><span id="rot2ll-75"><a href="#rot2ll-75"><span class="linenos"> 75</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="rot2ll-75"><a href="#rot2ll-75"><span class="linenos"> 75</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="rot2ll-76"><a href="#rot2ll-76"><span class="linenos"> 76</span></a><span class="sd">    Unrotate a latitude/longitude pair.</span>
 </span><span id="rot2ll-77"><a href="#rot2ll-77"><span class="linenos"> 77</span></a>
 </span><span id="rot2ll-78"><a href="#rot2ll-78"><span class="linenos"> 78</span></a><span class="sd">    Parameters</span>
@@ -392,7 +392,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="rot2ll-92"><a href="#rot2ll-92"><span class="linenos"> 92</span></a><span class="sd">        Unrotated latitude in units of degrees.</span>
 </span><span id="rot2ll-93"><a href="#rot2ll-93"><span class="linenos"> 93</span></a><span class="sd">    tlons</span>
 </span><span id="rot2ll-94"><a href="#rot2ll-94"><span class="linenos"> 94</span></a><span class="sd">        Unrotated longitude in units of degrees.</span>
-</span><span id="rot2ll-95"><a href="#rot2ll-95"><span class="linenos"> 95</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="rot2ll-95"><a href="#rot2ll-95"><span class="linenos"> 95</span></a><span class="sd">    """</span>
 </span><span id="rot2ll-96"><a href="#rot2ll-96"><span class="linenos"> 96</span></a>    <span class="n">tlon</span> <span class="o">=</span> <span class="n">lonin</span>
 </span><span id="rot2ll-97"><a href="#rot2ll-97"><span class="linenos"> 97</span></a>
 </span><span id="rot2ll-98"><a href="#rot2ll-98"><span class="linenos"> 98</span></a>    <span class="c1"># Convert to xyz coordinates</span>
@@ -467,7 +467,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="vector_rotation_angles-134"><a href="#vector_rotation_angles-134"><span class="linenos">134</span></a>    <span class="n">losp</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 </span><span id="vector_rotation_angles-135"><a href="#vector_rotation_angles-135"><span class="linenos">135</span></a>    <span class="n">xlat</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 </span><span id="vector_rotation_angles-136"><a href="#vector_rotation_angles-136"><span class="linenos">136</span></a><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-</span><span id="vector_rotation_angles-137"><a href="#vector_rotation_angles-137"><span class="linenos">137</span></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="vector_rotation_angles-137"><a href="#vector_rotation_angles-137"><span class="linenos">137</span></a><span class="w">    </span><span class="sd">"""</span>
 </span><span id="vector_rotation_angles-138"><a href="#vector_rotation_angles-138"><span class="linenos">138</span></a><span class="sd">    Generate a rotation angle value.</span>
 </span><span id="vector_rotation_angles-139"><a href="#vector_rotation_angles-139"><span class="linenos">139</span></a>
 </span><span id="vector_rotation_angles-140"><a href="#vector_rotation_angles-140"><span class="linenos">140</span></a><span class="sd">    The rotation angle value can be applied to a vector quantity to make it</span>
@@ -490,7 +490,7 @@ from <a href="https://github.com/NCAR/ncl/blob/develop/ni/src/ncl/NclGRIB2.c">Nc
 </span><span id="vector_rotation_angles-157"><a href="#vector_rotation_angles-157"><span class="linenos">157</span></a><span class="sd">    -------</span>
 </span><span id="vector_rotation_angles-158"><a href="#vector_rotation_angles-158"><span class="linenos">158</span></a><span class="sd">    rot</span>
 </span><span id="vector_rotation_angles-159"><a href="#vector_rotation_angles-159"><span class="linenos">159</span></a><span class="sd">        Rotation angle in units of radians.</span>
-</span><span id="vector_rotation_angles-160"><a href="#vector_rotation_angles-160"><span class="linenos">160</span></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="vector_rotation_angles-160"><a href="#vector_rotation_angles-160"><span class="linenos">160</span></a><span class="sd">    """</span>
 </span><span id="vector_rotation_angles-161"><a href="#vector_rotation_angles-161"><span class="linenos">161</span></a>    <span class="n">slon</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">((</span><span class="n">tlon</span> <span class="o">-</span> <span class="n">losp</span><span class="p">)</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
 </span><span id="vector_rotation_angles-162"><a href="#vector_rotation_angles-162"><span class="linenos">162</span></a>    <span class="n">cgridlat</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">xlat</span> <span class="o">*</span> <span class="n">DEG2RAD</span><span class="p">)</span>
 </span><span id="vector_rotation_angles-163"><a href="#vector_rotation_angles-163"><span class="linenos">163</span></a>    <span class="k">if</span> <span class="n">cgridlat</span> <span class="o">&lt;=</span> <span class="mf">0.0</span><span class="p">:</span>
